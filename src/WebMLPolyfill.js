@@ -1,5 +1,11 @@
+import * as nn from './nn'
+
 class WebNN {
   constructor() {
+    this.Compilation = nn.Compilation;
+    this.Execution = nn.Execution;
+    this.Memory = nn.Memory;
+    this.Model = nn.Model;
   }
 }
 

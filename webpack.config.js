@@ -7,22 +7,9 @@ module.exports = {
     path: path.resolve(__dirname, 'dist')
   },
 	module: {
-		rules: [
-			{
-			test: /\.js$/,
-			include: [
-				path.resolve(__dirname, "src"),
-			],
-			use: {
-				loader: 'babel-loader',
-				options: {
-				presets: ['env']
-				}
-			}
-			}
-		]
+		rules: [{ test: /\.js$/, loader: 'babel-loader', exclude: /node_modules/ }]
   },
   resolve: {
-	extensions: ['.js']
+		extensions: ['.js']
   }  
 };
