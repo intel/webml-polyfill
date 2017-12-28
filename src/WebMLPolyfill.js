@@ -6,6 +6,11 @@ class WebNN {
     this.Execution = nn.Execution;
     this.Memory = nn.Memory;
     this.Model = nn.Model;
+    this.OperationCode = nn.OperationCode;
+    this.OperandCode = nn.OperationCode;
+    this.PaddingCode = nn.PaddingCode;
+    this.PreferenceCode = nn.PreferenceCode;
+    this.FuseCode = nn.FuseCode;
   }
 }
 
