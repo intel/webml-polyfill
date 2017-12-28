@@ -1,0 +1,31 @@
+{
+  "name": "webml-polyfill",
+  "version": "0.0.1",
+  "description": "WebML API polyfill",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "watch": "webpack --watch",
+    "start": "npm run build && http-server .",
+    "build": "webpack"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/intel/webml-polyfill.git"
+  },
+  "keywords": [],
+  "author": "ningxin.hu@intel.com",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/intel/webml-polyfill/issues"
+  },
+  "homepage": "https://github.com/intel/webml-polyfill#readme",
+  "devDependencies": {
+    "babel-core": "^6.26.0",
+    "babel-loader": "^7.1.1",
+    "babel-preset-env": "^1.6.0",
+    "http-server": "^0.10.0",
+    "webpack": "^3.5.5"
+  }
+}
