@@ -3,5 +3,6 @@ describe('Base Test', function() {
     
   it('check namespace', function() {
     assert(typeof navigator.ml !== 'undefined');
+    assert(typeof navigator.ml.nn !== 'undefined');
   });
 });
