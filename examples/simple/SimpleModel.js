@@ -1,6 +1,7 @@
 const nn = navigator.ml.nn;
 
 const TENSOR_SIZE = 200;
+const FLOAT_EPISILON = 1e-6;
 
 class SimpleModel {
   constructor(arrayBuffer) {
@@ -103,6 +104,14 @@ class SimpleModel {
     execution.setOutput(0, outputTensor);
 
     await execution.startCompute();
+
+    const goldenRef = (inputValue1 + 0.5) * (inputValue2 + 0.5);
+    for (let i = 0; i < outputTensor.length; ++i) {
+      let delta = Math.abs(outputTensor[i] - goldenRef);
+      if (delta > FLOAT_EPISILON) {
+        console.error(`Output computation error: output(${outputTensor[i]}), delta(${delta}) @ idx(${i})`)
+      }
+    }
 
     return outputTensor[0];
   }
