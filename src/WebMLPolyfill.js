@@ -4,7 +4,6 @@ class WebNN {
   constructor() {
     this.Compilation = nn.Compilation;
     this.Execution = nn.Execution;
-    this.Memory = nn.Memory;
     this.Model = nn.Model;
     this.OperationCode = nn.OperationCode;
     this.OperandCode = nn.OperationCode;
