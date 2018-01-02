@@ -1,4 +1,4 @@
-import {OperationCode, OperandCode, PaddingCode, PreferenceCode, FuseCode} from './Enums'
+import {OperationCode, OperandCode, PaddingCode, PreferenceCode, FuseCode, OperandLifetime} from './Enums'
 import * as utils from './utils'
 
 export default class Model {
@@ -12,12 +12,21 @@ export default class Model {
     this._completed = false;
     this._operands = [];
     this._operations = [];
+    this._inputs = null;
+    this._outputs = null;
   }
 
   /**
    * Indicate that we have finished modifying a model.
    */
-  finish() {}
+  finish() {
+    if (this._completed) {
+      throw new Error('finish called more than once');
+    }
+
+    this._sortIntoRunOrder();
+    this._completed = true;
+  }
 
   /**
    * Add an operand to a model.
@@ -43,6 +52,7 @@ export default class Model {
       scale: options.scale,
       zeroPoint: options.zeroPoint,
       numberOfConsumers: 0,
+      lifetime: OperandLifetime.temporary_variable,
       value: null
     }
     this._operands.push(operand);
@@ -62,6 +72,11 @@ export default class Model {
     let operand = this._operands[index];
     if (!this._validateOperandValue(value, operand)) {
       throw new Error(`Invalid value ${value}`);
+    }
+    if (utils.isTensor(operand.type)) {
+      operand.lifetime = OperandLifetime.constant_reference;
+    } else {
+      operand.lifetime = OperandLifetime.constant_copy;
     }
     operand.value = value;
   }
@@ -101,7 +116,22 @@ export default class Model {
    * @param {number[]} inputs - An array of indexes identifying the input operands.
    * @param {number[]} outputs - An array of indexes identifying the output operands.
    */
-  identifyInputsAndOutputs(inputs, outputs) {}
+  identifyInputsAndOutputs(inputs, outputs) {
+    if (!this._validateOperandList(inputs)) {
+      throw new Error(`Invalid inputs ${inputs}`);
+    }
+    if (!this._validateOperandList(outputs)) {
+      throw new Error(`Invalid outputs ${outputs}`);
+    }
+    this._inputs = inputs;
+    this._inputs.forEach(i => {
+      this._operands[i].lifetime = OperandLifetime.model_input;
+    })
+    this._outputs = outputs;
+    this._outputs.forEach(i => {
+      this._operands[i].lifetime = OperandLifetime.model_output;
+    })
+  }
 
   // private methods
   _validateOperandOptions(options) {
@@ -166,5 +196,49 @@ export default class Model {
     let ret = true;
     list.forEach(index => {if (index >= this._operands) ret = false;})
     return ret;
+  }
+
+  _sortIntoRunOrder() {
+    let opsReadyToRun = [];
+    let runOrder = [];
+    let unknownInputCount = new Array(this._operations.length);
+    unknownInputCount.fill(0);
+    let operandToOperations = new Map();
+    this._operations.forEach((operation, operationIndex) => {
+      let inputs = operation.inputs;
+      inputs.forEach(operandIndex => {
+        let lifetime = this._operands[operandIndex].lifetime;
+        if (lifetime === OperandLifetime.temporary_variable || lifetime === OperandLifetime.model_output) {
+          unknownInputCount[operationIndex] += 1;
+          if (!operandToOperations.has(operandIndex)) {
+            operandToOperations.set(operandIndex, [operationIndex]);
+          } else {
+            operandToOperations.set(operandIndex, operandToOperations.get(operandIndex).push(operationIndex));
+          }
+        }
+      });
+      if (unknownInputCount[operationIndex] === 0) {
+        opsReadyToRun.push(operationIndex)
+      }
+    });
+
+    while(opsReadyToRun.length > 0) {
+      let opIndex = opsReadyToRun.pop();
+      let operation = this._operations[opIndex];
+      runOrder.push(operation);
+
+      operation.outputs.forEach(operandIndex => {
+        if (operandToOperations.has(operandIndex)) {
+          operandToOperations.get(operandIndex).forEach(operationIndex => {
+            unknownInputCount[operationIndex] -= 1;
+            if (unknownInputCount[operationIndex] === 0) {
+              opsReadyToRun.push(operationIndex);
+            }
+          });
+        }
+      });
+    }
+
+    this._operations = runOrder;
   }
 }

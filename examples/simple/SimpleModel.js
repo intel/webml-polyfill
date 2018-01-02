@@ -53,17 +53,17 @@ class SimpleModel {
     // Its value will be computed during execution.
     let multiplierOutput = this.model_.addOperand(float32TensorType);
 
+    // Add the MUL operation. (Test operations reorder)
+    // Note that intermediateOutput0 and intermediateOutput1 are specified
+    // as inputs to the operation.
+    this.model_.addOperation('mul', [intermediateOutput0, intermediateOutput1, fusedActivationFuncNone], [multiplierOutput]);
+
     // Add the first ADD operation.
     this.model_.addOperation('add', [tensor0, tensor1, fusedActivationFuncNone], [intermediateOutput0]);
 
     // Add the second ADD operation.
     // Note the fusedActivationFuncNone is used again.
     this.model_.addOperation('add', [tensor2, tensor3, fusedActivationFuncNone], [intermediateOutput1]);
-
-    // Add the MUL operation.
-    // Note that intermediateOutput0 and intermediateOutput1 are specified
-    // as inputs to the operation.
-    this.model_.addOperation('mul', [intermediateOutput0, intermediateOutput1, fusedActivationFuncNone], [multiplierOutput]);
 
     // Identify the input and output tensors to the this.model_.
     // Inputs: {tensor1, tensor3}

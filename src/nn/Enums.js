@@ -18,3 +18,6 @@ PaddingCode.initEnum(['same', 'valid']);
 
 export class PreferenceCode extends Enum {}
 PreferenceCode.initEnum(['low_power', 'fast_single_answer', 'sustained_speed']);
+
+export class OperandLifetime extends Enum {}
+OperandLifetime.initEnum(['temporary_variable', 'model_input', 'model_output', 'constant_copy', 'constant_reference', 'no_value']);
