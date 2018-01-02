@@ -12,7 +12,7 @@ class SimpleModel {
 
   createCompiledModel() {
     // create a Model.
-    this.model_ = new nn.Model();
+    this.model_ = new nn.Model('SimpleModel');
 
     let float32TensorType = {type: 'tensor-float32', dimensions: [TENSOR_SIZE]};
     let scalarInt32Type = {type: 'int32'};
