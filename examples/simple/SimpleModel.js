@@ -14,14 +14,14 @@ class SimpleModel {
     // create a Model.
     this.model_ = new nn.Model('SimpleModel');
 
-    let float32TensorType = {type: 'tensor-float32', dimensions: [TENSOR_SIZE]};
+    let float32TensorType = {type: 'tensor_float32', dimensions: [TENSOR_SIZE]};
     let scalarInt32Type = {type: 'int32'};
 
     // We first add the operand for the NONE activation function, and set its
     // value to FUSED_NONE.
     // This constant scalar operand will be used for all 3 operations.
     let fusedActivationFuncNone = this.model_.addOperand(scalarInt32Type);
-    this.model_.setOperandValue(fusedActivationFuncNone, new Float32Array([nn.FuseCode.FUSED_NONE]));
+    this.model_.setOperandValue(fusedActivationFuncNone, nn.FuseCode.none.ordinal);
 
     // tensor0 is a constant tensor that was established during training.
     // We read these values from the corresponding memory object.
@@ -82,7 +82,7 @@ class SimpleModel {
     // can make better decisions.
     // Here we prefer to get the answer quickly, so we choose
     // FAST_SINGLE_ANSWER.
-    this.compilation_.setPreference('fast-single-answer');
+    this.compilation_.setPreference('fast_single_answer');
 
     // Finish the compilation.
     this.compilation_.finish();

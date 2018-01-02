@@ -1,4 +1,5 @@
 import {OperationCode, OperandCode, PaddingCode, PreferenceCode, FuseCode} from './Enums'
+import * as utils from './utils'
 
 export default class Model {
   /**
@@ -40,18 +41,29 @@ export default class Model {
       dimensions: options.dimensions,
       scale: options.scale,
       zeroPoint: options.zeroPoint,
-      numberOfConsumers: 0
+      numberOfConsumers: 0,
+      value: null
     }
     this._operands.push(operand);
+    return this._operands.length - 1;
   }
 
   /**
    * Sets an operand to a constant value.
    * 
    * @param {number} index - The index of the model operand we're setting.
-   * @param {TypedArray} buffer - The typed array containing the data to use.
+   * @param {TypedArray|number} value - The number for scalar value and typed array for tensor data.
    */
-  setOperandValue(index, buffer) {}
+  setOperandValue(index, value) {
+    if (index > this._operands.length) {
+      throw new Error(`Invalid index ${index}`);
+    }
+    let operand = this._operands[index];
+    if (!this._validateOperandValue(value, operand)) {
+      throw new Error(`Invalid value ${value}`);
+    }
+    operand.value = value;
+  }
 
   /**
    * Add an operation to a model.
@@ -77,7 +89,7 @@ export default class Model {
       console.error(`Invalid type ${options.type}`);
       return false;
     }
-    if (OperandCode.enumValueOf(type) === OperandCode.enumValueOf('tensor-quant8-asymm')) {
+    if (OperandCode.enumValueOf(type) === OperandCode.tensor_quant8_asymm) {
       if (typeof options.zeroPoint === 'undefined') {
         console.error('zeroPoint is undefined');
         return false;
@@ -91,5 +103,33 @@ export default class Model {
       }
     }
     return true;
+  }
+
+  _validateOperandValue(value, operand) {
+    let type = operand.type;
+    let enumValue = OperandCode.enumValueOf(type);
+    if (utils.isTensor(type)) {
+      let arrayType = utils.operandCodeToTypedArrayMap.get(enumValue);
+      if (value instanceof arrayType) {
+        let valueLength = value.length * value.BYTES_PER_ELEMENT;
+        let neededLength = utils.sizeOfTensorData(operand.type, operand.dimensions);
+        if (valueLength != neededLength) {
+          console.error(`Sets ${valueLength} bytes when needing ${neededLength}`);
+          return false;
+        } else {
+          return true;
+        }
+      } else {
+        console.error(`Invalid value type ${typeof value}`);
+        return false;
+      }
+    } else {
+      if (typeof value === 'number') {
+        return true;
+      } else {
+        console.error(`Invalid value type ${typeof value}`);
+        return false;
+      }
+    }
   }
 }
