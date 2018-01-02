@@ -11,6 +11,7 @@ export default class Model {
     this.name = name;
     this._completed = false;
     this._operands = [];
+    this._operations = [];
   }
 
   /**
@@ -72,7 +73,27 @@ export default class Model {
    * @param {number[]} inputs - An array of indexes identifying the input operands.
    * @param {number[]} outputs - An array of indexes identifying the output operands.
    */
-  addOperation(type, inputs, outputs) {}
+  addOperation(type, inputs, outputs) {
+    if (this._completed) {
+      throw new Error('addOperation cant modify after model finished');
+    }
+
+    if (!this._validateOperationCode(type)) {
+      throw new Error(`Invalid operation code ${type}`);
+    }
+    if (!this._validateOperandList(inputs)) {
+      throw new Error(`Invalid inputs ${inputs}`);
+    }
+    if (!this._validateOperandList(outputs)) {
+      throw new Error(`Invalid outputs ${outputs}`);
+    }
+    let op = {
+      type: type,
+      inputs: inputs,
+      outputs: outputs
+    };
+    this._operations.push(op);
+  }
 
   /**
    * Specfifies which operands will be the model's inputs and outputs.
@@ -131,5 +152,19 @@ export default class Model {
         return false;
       }
     }
+  }
+
+  _validateOperationCode(type) {
+    let enumValue = OperationCode.enumValueOf(type);
+    if (typeof enumValue === 'undefined') {
+      return false;
+    }
+    return true;
+  }
+
+  _validateOperandList(list) {
+    let ret = true;
+    list.forEach(index => {if (index >= this._operands) ret = false;})
+    return ret;
   }
 }
