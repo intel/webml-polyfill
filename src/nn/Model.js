@@ -107,6 +107,9 @@ export default class Model {
       inputs: inputs,
       outputs: outputs
     };
+    inputs.forEach(i => {
+      this._operands[i].numberOfConsumers += 1;
+    });
     this._operations.push(op);
   }
 

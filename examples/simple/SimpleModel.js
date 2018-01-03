@@ -103,7 +103,10 @@ class SimpleModel {
     let outputTensor = new Float32Array(this.tensorSize_);
     execution.setOutput(0, outputTensor);
 
-    await execution.startCompute();
+    let error = await execution.startCompute();
+    if (error) {
+      return error;
+    }
 
     const goldenRef = (inputValue1 + 0.5) * (inputValue2 + 0.5);
     for (let i = 0; i < outputTensor.length; ++i) {

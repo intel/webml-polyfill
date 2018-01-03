@@ -9,5 +9,7 @@ loadModelDataFile('model_data.bin').then(bytes => {
   simpleModel.createCompiledModel();
   simpleModel.compute(1, 1).then(result => {
     console.log(`result: ${result}`);
+  }).catch(error => {
+    console.log(error);
   })
 });
