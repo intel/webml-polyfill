@@ -11,5 +11,8 @@ module.exports = {
   },
   resolve: {
 		extensions: ['.js']
-  }  
+  },
+  externals: {
+    'fs': true
+  }
 };

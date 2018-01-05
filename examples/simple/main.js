@@ -6,10 +6,12 @@ async function loadModelDataFile(url) {
 
 loadModelDataFile('model_data.bin').then(bytes => {
   let simpleModel = new SimpleModel(bytes);
-  simpleModel.createCompiledModel();
-  simpleModel.compute(1, 1).then(result => {
-    console.log(`result: ${result}`);
-  }).catch(error => {
-    console.log(error);
-  })
+  simpleModel.createCompiledModel().then(result => {
+    console.log(`compilation result: ${result}`)
+    simpleModel.compute(1, 1).then(result => {
+      console.log(`execution result: ${result}`);
+    }).catch(error => {
+      console.log(error);
+    });
+  });
 });

@@ -28,5 +28,6 @@
     "http-server": "^0.10.0",
     "webpack": "^3.5.5",
     "enumify": "^1.0.4"
-  }
+  },
+  "dependencies": {}
 }

@@ -1,5 +1,7 @@
 import {OperationCode, OperandCode, PaddingCode, PreferenceCode, FuseCode, OperandLifetime} from './Enums'
 
+import WasmEngine from './wasm/WasmEngine'
+
 export default class Execution {
   /**
    * Create an Execution to apply the given compilation.
@@ -10,6 +12,7 @@ export default class Execution {
     this._compilation = compilation;
     this._model = compilation._model;
     this._executor = null;
+    this._engine = null;
   }
 
   /**
@@ -66,6 +69,10 @@ export default class Execution {
    * Schedule evaluation of the execution.
    */
   async startCompute() {
+    if (!this._engine) {
+      this._engine = await WasmEngine.getInstance();
+    }
+    // TODO: implement computation.
     return new Error('Not implemented');
   }
 }

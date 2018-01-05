@@ -10,7 +10,7 @@ class SimpleModel {
     this.model_ = null;
   }
 
-  createCompiledModel() {
+  async createCompiledModel() {
     // create a Model.
     this.model_ = new nn.Model('SimpleModel');
 
@@ -85,7 +85,7 @@ class SimpleModel {
     this.compilation_.setPreference('fast_single_answer');
 
     // Finish the compilation.
-    this.compilation_.finish();
+    return await this.compilation_.finish();
   }
 
   async compute(inputValue1, inputValue2) {
