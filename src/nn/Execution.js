@@ -9,20 +9,19 @@ export default class Execution {
    * @param {Compilation} compilation 
    */
   constructor(compilation) {
-    this._compilation = compilation;
-    this._model = compilation._model;
     this._preparedModel = compilation._preparedModel;
-    this._inputs = null;
-    this._outputs = null;
+    this._model = compilation._model;
+    this._inputs = [];
+    this._outputs = [];
   }
 
   /**
    * Associate a user data with an input of the model of the Execution.
    * 
    * @param {number} index - The index of the input argument we are setting.
-   * @param {TypedArray} value - The typed array containing the data.
+   * @param {TypedArray} buffer - The typed array containing the data.
    */
-  setInput(index, value) {
+  setInput(index, buffer) {
     let model = this._model;
     if (index > model._inputs.length) {
       throw new Error(`Invalid index ${index}`);
@@ -32,13 +31,17 @@ export default class Execution {
       throw new Error(`Invalid input index ${inputIndex}`);
     }
     let operand = model._operands[inputIndex];
-    if (!model._validateOperandValue(value, operand)) {
-      throw new Error(`Invalid value ${value}`);
+    if (!model._validateOperandValue(buffer, operand)) {
+      throw new Error(`Invalid value ${buffer}`);
     }
     if (operand.lifetime !== OperandLifetime.model_input) {
       throw new Error(`Invalid operand lifetime ${operand.lifetime}`);
     }
-    operand.value = value;
+    let tensor = {
+      index: inputIndex,
+      buffer: buffer
+    }
+    this._inputs.push(tensor);
   }
 
   /**
@@ -63,7 +66,11 @@ export default class Execution {
     if (operand.lifetime !== OperandLifetime.model_output) {
       throw new Error(`Invalid operand lifetime ${operand.lifetime}`);
     }
-    operand.value = buffer;
+    let tensor = {
+      index: outputIndex,
+      buffer: buffer
+    }
+    this._outputs.push(tensor);
   }
 
   /**

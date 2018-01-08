@@ -21,7 +21,7 @@ class SimpleModel {
     // value to FUSED_NONE.
     // This constant scalar operand will be used for all 3 operations.
     let fusedActivationFuncNone = this.model_.addOperand(scalarInt32Type);
-    this.model_.setOperandValue(fusedActivationFuncNone, nn.FuseCode.none.ordinal);
+    this.model_.setOperandValue(fusedActivationFuncNone, nn.FuseCode.none);
 
     // tensor0 is a constant tensor that was established during training.
     // We read these values from the corresponding memory object.

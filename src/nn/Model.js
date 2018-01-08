@@ -180,6 +180,8 @@ export default class Model {
     } else {
       if (typeof value === 'number') {
         return true;
+      } else if (value instanceof FuseCode || value instanceof PaddingCode) {
+        return true;
       } else {
         console.error(`Invalid value type ${typeof value}`);
         return false;
