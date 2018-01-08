@@ -1,6 +1,6 @@
 import {OperationCode, OperandCode, PaddingCode, PreferenceCode, FuseCode, OperandLifetime} from './Enums'
 
-import WasmEngine from './wasm/WasmEngine'
+import PreparedModel from './wasm/PreparedModel'
 
 export default class Execution {
   /**
@@ -11,8 +11,9 @@ export default class Execution {
   constructor(compilation) {
     this._compilation = compilation;
     this._model = compilation._model;
-    this._executor = null;
-    this._engine = null;
+    this._preparedModel = compilation._preparedModel;
+    this._inputs = null;
+    this._outputs = null;
   }
 
   /**
@@ -69,10 +70,6 @@ export default class Execution {
    * Schedule evaluation of the execution.
    */
   async startCompute() {
-    if (!this._engine) {
-      this._engine = await WasmEngine.getInstance();
-    }
-    // TODO: implement computation.
-    return new Error('Not implemented');
+    await this._preparedModel.execute(this._inputs, this._outputs);
   }
 }
