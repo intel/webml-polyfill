@@ -216,7 +216,9 @@ export default class Model {
           if (!operandToOperations.has(operandIndex)) {
             operandToOperations.set(operandIndex, [operationIndex]);
           } else {
-            operandToOperations.set(operandIndex, operandToOperations.get(operandIndex).push(operationIndex));
+            let array = operandToOperations.get(operandIndex);
+            array.push(operationIndex)
+            operandToOperations.set(operandIndex, array);
           }
         }
       });
