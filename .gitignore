@@ -1,2 +1,4 @@
 node_modules/
 dist/
+examples/mobilenet/model/
+!examples/mobilenet/model/README.md
