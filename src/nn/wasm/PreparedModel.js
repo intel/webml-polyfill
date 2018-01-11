@@ -174,7 +174,7 @@ export default class PreparedModel {
     const nn_ops = this._nn_ops;
     const OperandTypeMap = new Map([
       [OperandCode.tensor_float32, nn_ops.TENSOR_FLOAT32],
-      [OperandCode.tensor_int32, nn_ops.tensor_int32],
+      [OperandCode.tensor_int32, nn_ops.TENSOR_INT32],
       [OperandCode.tensor_quant8_asymm, nn_ops.TENSOR_QUANT8_ASYMM]
     ]);
     let shape = new nn_ops.Shape;
