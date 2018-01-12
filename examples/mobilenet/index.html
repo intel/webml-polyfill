@@ -5,6 +5,13 @@
     <title>WebML MobileNets Demo</title>
   </head>
   <body>
+    <canvas id="canvasInput" width=224 height=224 style="border: 1px solid black;"></canvas>
+    <div>
+      <input type="file" id="fileInput" name="file" accept="image/*" />
+    </div>
+    <div>
+      <button id="predict" disabled>Predict</button>
+    </div>
     <script src="/dist/webml-polyfill.js"></script>
     <script src="./flatbuffers/js/flatbuffers.js"></script>
     <script src="./schema/schema_generated.js"></script>

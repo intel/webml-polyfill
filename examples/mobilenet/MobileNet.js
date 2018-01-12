@@ -1,8 +1,5 @@
 const nn = navigator.ml.nn;
 
-const INPUT_TENSOR_SIZE = 224*224*3;
-const OUTPUT_TENSOR_SIZE = 1001;
-
 class MobileNet {
   constructor(tfModel) {
     this._tfModel = tfModel;
@@ -23,19 +20,17 @@ class MobileNet {
     return await this._compilation.finish();
   }
 
-  async compute(input) {
+  async compute(inputTensor, outputTensor) {
     let execution = new nn.Execution(this._compilation);
-    let inputTensor = new Float32Array(INPUT_TENSOR_SIZE);
 
     execution.setInput(0, inputTensor);
-
-    let outputTensor = new Float32Array(OUTPUT_TENSOR_SIZE);
     execution.setOutput(0, outputTensor);
 
     let error = await execution.startCompute();
     if (error) {
       return error;
     }
+    return 'success';
   }
 
   _addTensorOperands() {
