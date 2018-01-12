@@ -1,6 +1,7 @@
 import getNNOpsInstance from './NNOps'
 import {OperationCode, OperandCode, PaddingCode, PreferenceCode, FuseCode, OperandLifetime} from '../Enums'
 import * as utils from '../utils'
+import { product } from '../utils';
 
 export default class PreparedModel {
   constructor() {
@@ -67,6 +68,7 @@ export default class PreparedModel {
     let inputs = operation.inputs;
     let outputs = operation.outputs;
     let operands = this._operands;
+    let success;
 
     function allParametersPresent(requiredIns, requiredOuts) {
       function verify(requiredCount, indexes, type) {
@@ -90,6 +92,22 @@ export default class PreparedModel {
       [FuseCode.RELU1, nn_ops.RELU1],
       [FuseCode.RELU6, nn_ops.RELU6],
     ]);
+
+    function calculateExplicitPadding(inSize, stride, filterSize, paddingCode) {
+      let paddingHead = 0;
+      let paddingTail = 0;
+
+      if (paddingCode == PaddingCode.SAME) {
+        let outSize = (inSize + stride - 1) / stride;
+        let tmp = (outSize - 1) * stride + filterSize;
+        if (tmp > inSize) {
+          paddingHead = (tmp - inSize) / 2;
+          paddingTail = (tmp - inSize) - paddingHead;
+        }
+      }
+
+      return [paddingHead, paddingTail];
+    }
       
 
     switch(op) {
@@ -99,7 +117,7 @@ export default class PreparedModel {
         let in2 = operands[inputs[1]];
         let activation = FuseCodeMap.get(operands[inputs[2]].value);
         let out = operands[outputs[0]];
-        let success = nn_ops.addMulPrepare(in1.shape, in2.shape, out.shape);
+        success = nn_ops.addMulPrepare(in1.shape, in2.shape, out.shape);
         if (!success) {
           throw new Error('addMulPrepare fails');
         }
@@ -117,7 +135,7 @@ export default class PreparedModel {
         let in2 = operands[inputs[1]];
         let activation = FuseCodeMap.get(operands[inputs[2]].value);
         let out = operands[outputs[0]];
-        let success = nn_ops.addMulPrepare(in1.shape, in2.shape, out.shape);
+        success = nn_ops.addMulPrepare(in1.shape, in2.shape, out.shape);
         if (!success) {
           throw new Error('addMulPrepare fails');
         }
@@ -127,6 +145,209 @@ export default class PreparedModel {
                                     out.value, out.shape);
         if (!success) {
           throw new Error('mulFloat32 fails');
+        }
+      } break;
+      case OperationCode.CONV_2D: {
+        let inCount = inputs.length;
+        if (inCount !== 7 && inCount !== 10) {
+          throw new Error('Invalid parameters number of CONV_2D');
+        }
+        allParametersPresent(inCount, 1);
+        let i = 0;
+        let input = operands[inputs[i++]];
+        let filter = operands[inputs[i++]];
+        let bias = operands[inputs[i++]];
+        let paddingLeft, paddingRight;
+        let paddingTop, paddingBottom;
+        let strideWidth, strideHeight;
+        let activation;
+        if (inCount === 10) {
+          paddingLeft = operands[inputs[i++]].value;
+          paddingRight = operands[inputs[i++]].value;
+          paddingTop = operands[inputs[i++]].value;
+          paddingBottom = operands[inputs[i++]].value;
+          strideWidth = operands[inputs[i++]].value;
+          strideHeight = operands[inputs[i++]].value;
+          activation = FuseCodeMap.get(operands[inputs[i++]].value);
+        } else {
+          let paddingCode = operands[inputs[i++]].value;
+          strideWidth = operands[inputs[i++]].value;
+          strideHeight = operands[inputs[i++]].value;
+          activation = FuseCodeMap.get(operands[inputs[i++]].value);
+
+          let inputWidth = input.shape.dimensions[2];
+          let inputHeight = input.shape.dimensions[1];
+          let filterWidth = filter.shape.dimensions[2];
+          let filterHeight = filter.shape.dimensions[1];
+          [paddingLeft, paddingRight] = calculateExplicitPadding(inputWidth, strideWidth, filterWidth, paddingCode);
+          [paddingTop, paddingBottom] = calculateExplicitPadding(inputHeight, strideHeight, filterHeight, paddingCode);
+        }
+        let output = operands[outputs[0]];
+        success = nn_ops.convPrepare(input.shape, filter.shape, bias.shape,
+                                     paddingLeft, paddingRight,
+                                     paddingTop, paddingBottom,
+                                     strideWidth, strideHeight,
+                                     output.shape);
+        if (!success) {
+          throw new Error('convPrepare fails');
+        }
+        success = nn_ops.convFloat32(input.value, input.shape,
+                                      filter.value, filter.shape,
+                                      bias.value, bias.shape,
+                                      paddingLeft, paddingRight,
+                                      paddingTop, paddingBottom,
+                                      strideWidth, strideHeight, activation,
+                                      output.value, output.shape);
+        if (!success) {
+          throw new Error('convFloat32 fails');
+        }
+      } break;
+      case OperationCode.DEPTHWISE_CONV_2D: {
+        let inCount = inputs.length;
+        if (inCount !== 8 && inCount !== 11) {
+          throw new Error('Invalid parameters number of DEPTHWISE_CONV_2D');
+        }
+        allParametersPresent(inCount, 1);
+        let i = 0;
+        let input = operands[inputs[i++]];
+        let filter = operands[inputs[i++]];
+        let bias = operands[inputs[i++]];
+        let paddingLeft, paddingRight;
+        let paddingTop, paddingBottom;
+        let strideWidth, strideHeight;
+        let depthMultipler;
+        let activation;
+        if (inCount === 11) {
+          paddingLeft = operands[inputs[i++]].value;
+          paddingRight = operands[inputs[i++]].value;
+          paddingTop = operands[inputs[i++]].value;
+          paddingBottom = operands[inputs[i++]].value;
+          strideWidth = operands[inputs[i++]].value;
+          strideHeight = operands[inputs[i++]].value;
+          depthMultipler = operands[inputs[i++]].value;
+          activation = FuseCodeMap.get(operands[inputs[i++]].value);
+        } else {
+          let paddingCode = operands[inputs[i++]].value;
+          strideWidth = operands[inputs[i++]].value;
+          strideHeight = operands[inputs[i++]].value;
+          depthMultipler = operands[inputs[i++]].value;
+          activation = FuseCodeMap.get(operands[inputs[i++]].value);
+
+          let inputWidth = input.shape.dimensions[2];
+          let inputHeight = input.shape.dimensions[1];
+          let filterWidth = filter.shape.dimensions[2];
+          let filterHeight = filter.shape.dimensions[1];
+          [paddingLeft, paddingRight] = calculateExplicitPadding(inputWidth, strideWidth, filterWidth, paddingCode);
+          [paddingTop, paddingBottom] = calculateExplicitPadding(inputHeight, strideHeight, filterHeight, paddingCode);
+        }
+        let output = operands[outputs[0]];
+        success = nn_ops.depthwiseConvPrepare(input.shape, filter.shape, bias.shape,
+                                              paddingLeft, paddingRight,
+                                              paddingTop, paddingBottom,
+                                              strideWidth, strideHeight,
+                                              output.shape);
+        if (!success) {
+          throw new Error('depthwiseConvPrepare fails');
+        }
+        success = nn_ops.depthwiseConvFloat32(input.value, input.shape,
+                                              filter.value, filter.shape,
+                                              bias.value, bias.shape,
+                                              paddingLeft, paddingRight,
+                                              paddingTop, paddingBottom,
+                                              strideWidth, strideHeight,
+                                              depthMultipler, activation,
+                                              output.value, output.shape);
+        if (!success) {
+          throw new Error('depthwiseConvFloat32 fails');
+        }
+      } break;
+      case OperationCode.AVERAGE_POOL_2D: {
+        let inCount = inputs.length;
+        if (inCount !== 7 && inCount !== 10) {
+          throw new Error('Invalid parameters number of AVERAGE_POOL_2D');
+        }
+        allParametersPresent(inCount, 1);
+        let i = 0;
+        let input = operands[inputs[i++]];
+        let paddingLeft, paddingRight;
+        let paddingTop, paddingBottom;
+        let strideWidth, strideHeight;
+        let filterWidth, filterHeight;
+        let activation;
+        if (inCount === 10) {
+          paddingLeft = operands[inputs[i++]].value;
+          paddingRight = operands[inputs[i++]].value;
+          paddingTop = operands[inputs[i++]].value;
+          paddingBottom = operands[inputs[i++]].value;
+          strideWidth = operands[inputs[i++]].value;
+          strideHeight = operands[inputs[i++]].value;
+          filterWidth = operands[inputs[i++]].value;
+          filterHeight = operands[inputs[i++]].value;
+          activation = FuseCodeMap.get(operands[inputs[i++]].value);
+        } else {
+          let paddingCode = operands[inputs[i++]].value;
+          strideWidth = operands[inputs[i++]].value;
+          strideHeight = operands[inputs[i++]].value;
+          filterWidth = operands[inputs[i++]].value;
+          filterHeight = operands[inputs[i++]].value;
+          activation = FuseCodeMap.get(operands[inputs[i++]].value);
+
+          let inputWidth = input.shape.dimensions[2];
+          let inputHeight = input.shape.dimensions[1];
+          [paddingLeft, paddingRight] = calculateExplicitPadding(inputWidth, strideWidth, filterWidth, paddingCode);
+          [paddingTop, paddingBottom] = calculateExplicitPadding(inputHeight, strideHeight, filterHeight, paddingCode);
+        }
+        let output = operands[outputs[0]];
+        success = nn_ops.genericPoolingPrepare(input.shape,
+                                               paddingLeft, paddingRight,
+                                               paddingTop, paddingBottom,
+                                               strideWidth, strideHeight,
+                                               filterWidth, filterHeight,
+                                               output.shape);
+        if (!success) {
+          throw new Error('genericPoolingPrepare fails');
+        }
+        success = nn_ops.averagePoolFloat32(input.value, input.shape,
+                                            paddingLeft, paddingRight,
+                                            paddingTop, paddingBottom,
+                                            strideWidth, strideHeight,
+                                            filterWidth, filterHeight, activation,
+                                            output.value, output.shape);
+        if (!success) {
+          throw new Error('averagePoolFloat32 fails');
+        }
+      } break;
+      case OperationCode.SOFTMAX: {
+        allParametersPresent(2, 1);
+        let input = operands[inputs[0]];
+        let beta = operands[inputs[1]].value;
+        if (beta <= 0.0) {
+          throw new Error('beta must be positive for SOFTMAX');
+        }
+        let output = operands[outputs[0]];
+        success = nn_ops.genericActivationPrepare(input.shape, output.shape);
+        if (!success) {
+          throw new Error('genericActivationPrepare fails');
+        }
+        success = nn_ops.softmaxFloat32(input.value, input.shape, beta, output.value, output.shape);
+        if (!success) {
+          throw new Error('softmaxFloat32 fails');
+        }
+      } break;
+      case OperationCode.RESHAPE: {
+        allParametersPresent(2, 1);
+        let input = operands[inputs[0]];
+        let targetShape = operands[inputs[1]];
+        let targetShapeBufferLength = product(targetShape.shape.dimensions);
+
+        let output = operands[outputs[0]];
+        success = nn_ops.reshapePrepare(input.shape, targetShape.value, targetShapeBufferLength, output.shape);
+        if (!success) {
+          throw new Error('reshapePrepare fails');
+        }
+        success = nn_ops.reshapeGeneric(input.value, input.shape, output.value, output.shape);
+        if (!success) {
+          throw new Error('reshapeGeneric fails');
         }
       } break;
       default: {
