@@ -1,5 +1,3 @@
-import {Enum} from 'enumify';
-
 export let FuseCode = {
   /** NO fused activation function. */
   NONE: 0,
