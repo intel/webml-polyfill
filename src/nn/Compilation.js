@@ -1,6 +1,6 @@
 import {PreferenceCode} from './Enums'
-
 import Device from './wasm/Device'
+import * as utils from './utils'
 
 export default class Compilation {
   /**
@@ -25,11 +25,10 @@ export default class Compilation {
     if (this._finished) {
       throw new Error('setPreference cant modify after compilation finished');
     }
-    let enumValue = PreferenceCode.enumValueOf(preference);
-    if (!enumValue) {
+    if (!utils.validateEnum(preference, PreferenceCode)) {
       throw new Error(`Invalid preference value ${preference}`);
     }
-    this._preference = enumValue;
+    this._preference = preference;
   }
 
   /**

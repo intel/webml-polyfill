@@ -7,11 +7,11 @@ describe('Add Test', function() {
     
   it('check result', async function() {
     let model = new nn.Model('SimpleModel');
-    const float32TensorType = {type: 'tensor_float32', dimensions: TENSOR_DIMENSIONS};
+    const float32TensorType = {type: nn.OperandCode.TENSOR_FLOAT32, dimensions: TENSOR_DIMENSIONS};
     const tensorLength = product(float32TensorType.dimensions);
 
-    let fusedActivationFuncNone = model.addOperand({type: 'int32'});
-    model.setOperandValue(fusedActivationFuncNone, nn.FuseCode.none);
+    let fusedActivationFuncNone = model.addOperand({type: nn.OperandCode.INT32});
+    model.setOperandValue(fusedActivationFuncNone, nn.FuseCode.NONE);
 
     let input0 = model.addOperand(float32TensorType);
     let input0Data = new Float32Array(tensorLength);
@@ -22,13 +22,13 @@ describe('Add Test', function() {
     let input1 = model.addOperand(float32TensorType);
     let output = model.addOperand(float32TensorType);
 
-    model.addOperation('add', [input0, input1, fusedActivationFuncNone], [output]);
+    model.addOperation(nn.OperationCode.ADD, [input0, input1, fusedActivationFuncNone], [output]);
     model.identifyInputsAndOutputs([input1], [output]);
     model.finish();
 
     let compilation = new nn.Compilation(model);
 
-    compilation.setPreference('fast_single_answer');
+    compilation.setPreference(nn.PreferenceCode.FAST_SINGLE_ANSWER);
     
     await compilation.finish();
 

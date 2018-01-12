@@ -34,7 +34,7 @@ export default class Execution {
     if (!model._validateOperandValue(buffer, operand)) {
       throw new Error(`Invalid value ${buffer}`);
     }
-    if (operand.lifetime !== OperandLifetime.model_input) {
+    if (operand.lifetime !== OperandLifetime.MODEL_INPUT) {
       throw new Error(`Invalid operand lifetime ${operand.lifetime}`);
     }
     let tensor = {
@@ -63,7 +63,7 @@ export default class Execution {
     if (!model._validateOperandValue(buffer, operand)) {
       throw new Error(`Invalid value ${buffer}`);
     }
-    if (operand.lifetime !== OperandLifetime.model_output) {
+    if (operand.lifetime !== OperandLifetime.MODEL_OUTPUT) {
       throw new Error(`Invalid operand lifetime ${operand.lifetime}`);
     }
     let tensor = {

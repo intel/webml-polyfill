@@ -34,10 +34,12 @@ function main() {
           resultElement.innerHTML = result;
         }).catch(e => {
           console.log(`compute error ${e}`);
+          console.log(`stack: ${e.stack}`);
         })
       });
     }).catch(e => {
       console.log(`compilation error ${e}`);
+      console.log(`stack: ${e.stack}`);
     });
   });
 }

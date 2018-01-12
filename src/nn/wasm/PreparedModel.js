@@ -16,15 +16,19 @@ export default class PreparedModel {
    * @param {Object} model - A model object built by user.
    */
   async prepare(model) {
-    this._operations = model._operations;
-    this._operands = model._operands;
     this._nn_ops = await getNNOpsInstance();
-    for (let i = 0; i < this._operands.length; ++i) {
-      let operand = this._operands[i];
+    this._operations = model._operations;
+    for (let i = 0; i < model._operands.length; ++i) {
+      let operand = model._operands[i];
+      let runtimeOperand = {};
+      runtimeOperand.type = operand.type;
       if (utils.isTensor(operand.type)) {
-        operand.value = this._allocateTensor(operand);
-        operand.shape = this._allocateShape(operand);
+        runtimeOperand.value = this._allocateTensor(operand);
+        runtimeOperand.shape = this._allocateShape(operand);
+      } else {
+        runtimeOperand.value = operand.value;
       }
+      this._operands.push(runtimeOperand);
     }
     this._prepared = true;
   }
@@ -59,7 +63,7 @@ export default class PreparedModel {
 
   _executeOperation(operation) {
     const nn_ops = this._nn_ops;
-    let op = OperationCode.enumValueOf(operation.type);
+    let op = operation.type;
     let inputs = operation.inputs;
     let outputs = operation.outputs;
     let operands = this._operands;
@@ -71,7 +75,7 @@ export default class PreparedModel {
           throw new Error(`Operation ${op} requires ${requiredCount} ${type} operands, but got ${actualCount}.`);
         }
         indexes.forEach(index => {
-          if (operands[index].value === null || operands[index].lifetime === OperandLifetime.no_value) {
+          if (operands[index].value === null || operands[index].lifetime === OperandLifetime.NO_VALUE) {
             throw new Error(`Operation ${op} ${type} operand ${index} is required but missing.`);
           }
         })
@@ -81,14 +85,15 @@ export default class PreparedModel {
     }
 
     const FuseCodeMap = new Map([
-      [FuseCode.none, nn_ops.NONE],
-      [FuseCode.relu, nn_ops.RELU],
-      [FuseCode.relu1, nn_ops.RELU1],
-      [FuseCode.relu6, nn_ops.RELU6],
+      [FuseCode.NONE, nn_ops.NONE],
+      [FuseCode.RELU, nn_ops.RELU],
+      [FuseCode.RELU1, nn_ops.RELU1],
+      [FuseCode.RELU6, nn_ops.RELU6],
     ]);
+      
 
     switch(op) {
-      case OperationCode.add: {
+      case OperationCode.ADD: {
         allParametersPresent(3, 1);
         let in1 = operands[inputs[0]];
         let in2 = operands[inputs[1]];
@@ -106,7 +111,7 @@ export default class PreparedModel {
           throw new Error('addFloat32 fails');
         }
       } break;
-      case OperationCode.mul: {
+      case OperationCode.MUL: {
         allParametersPresent(3, 1);
         let in1 = operands[inputs[0]];
         let in2 = operands[inputs[1]];
@@ -132,12 +137,11 @@ export default class PreparedModel {
 
   _setTensorData(type, ptr, data) {
     const nn_ops = this._nn_ops;
-    let typeEnum = OperandCode.enumValueOf(type);
-    if (typeEnum === OperandCode.tensor_float32) {
+    if (type === OperandCode.TENSOR_FLOAT32) {
       nn_ops.HEAPF32.set(data, ptr>>2);
-    } else if (typeEnum === OperandCode.tensor_int32) {
+    } else if (type === OperandCode.TENSOR_INT32) {
       nn_ops.HEAP32.set(data, ptr>>2);
-    } else if (typeEnum === OperandCode.tensor_quant8_asymm) {
+    } else if (type === OperandCode.TENSOR_QUANT8_ASYMM) {
       nn_ops.HEAPU8.set(data, ptr);
     } else {
       throw new Error(`Operand type ${type} is not supproted`);
@@ -146,13 +150,12 @@ export default class PreparedModel {
 
   _getTensorData(type, ptr, buffer) {
     const nn_ops = this._nn_ops;
-    let typeEnum = OperandCode.enumValueOf(type);
     let view;
-    if (typeEnum === OperandCode.tensor_float32) {
+    if (type === OperandCode.TENSOR_FLOAT32) {
       view = new Float32Array(nn_ops.HEAPF32.buffer, ptr, buffer.length);
-    } else if (typeEnum === OperandCode.tensor_int32) {
+    } else if (type === OperandCode.TENSOR_INT32) {
       view = new Int32Array(nn_ops.HEAP32.buffer, ptr, buffer.length);
-    } else if (typeEnum === OperandCode.tensor_quant8_asymm) {
+    } else if (type === OperandCode.TENSOR_QUANT8_ASYMM) {
       view = new Uint8Array(nn_ops.HEAPU8.buffer, ptr, buffer.length);
     } else {
       throw new Error(`Operand type ${type} is not supproted`);
@@ -164,7 +167,7 @@ export default class PreparedModel {
     const nn_ops = this._nn_ops;
     let byteLength = utils.sizeOfTensorData(operand.type, operand.dimensions);
     let ptr = nn_ops._malloc(byteLength);
-    if (operand.lifetime === OperandLifetime.constant_reference) {
+    if (operand.lifetime === OperandLifetime.CONSTANT_REFERENCE) {
       this._setTensorData(operand.type, ptr, operand.value);
     }
     return ptr;
@@ -173,12 +176,12 @@ export default class PreparedModel {
   _allocateShape(operand) {
     const nn_ops = this._nn_ops;
     const OperandTypeMap = new Map([
-      [OperandCode.tensor_float32, nn_ops.TENSOR_FLOAT32],
-      [OperandCode.tensor_int32, nn_ops.TENSOR_INT32],
-      [OperandCode.tensor_quant8_asymm, nn_ops.TENSOR_QUANT8_ASYMM]
+      [OperandCode.TENSOR_FLOAT32, nn_ops.TENSOR_FLOAT32],
+      [OperandCode.TENSOR_INT32, nn_ops.TENSOR_INT32],
+      [OperandCode.TENSOR_QUANT8_ASYMM, nn_ops.TENSOR_QUANT8_ASYMM]
     ]);
     let shape = new nn_ops.Shape;
-    shape.type = OperandTypeMap.get(OperandCode.enumValueOf(operand.type));
+    shape.type = OperandTypeMap.get(operand.type);
     shape.dimensions = operand.dimensions;
     return shape;
   }

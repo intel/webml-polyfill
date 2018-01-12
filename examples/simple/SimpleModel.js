@@ -14,14 +14,14 @@ class SimpleModel {
     // create a Model.
     this.model_ = new nn.Model('SimpleModel');
 
-    let float32TensorType = {type: 'tensor_float32', dimensions: [TENSOR_SIZE]};
-    let scalarInt32Type = {type: 'int32'};
+    let float32TensorType = {type: nn.OperandCode.TENSOR_FLOAT32, dimensions: [TENSOR_SIZE]};
+    let scalarInt32Type = {type: nn.OperandCode.INT32};
 
     // We first add the operand for the NONE activation function, and set its
     // value to FUSED_NONE.
     // This constant scalar operand will be used for all 3 operations.
     let fusedActivationFuncNone = this.model_.addOperand(scalarInt32Type);
-    this.model_.setOperandValue(fusedActivationFuncNone, nn.FuseCode.none);
+    this.model_.setOperandValue(fusedActivationFuncNone, nn.FuseCode.NONE);
 
     // tensor0 is a constant tensor that was established during training.
     // We read these values from the corresponding memory object.
@@ -56,14 +56,14 @@ class SimpleModel {
     // Add the MUL operation. (Test operations reorder)
     // Note that intermediateOutput0 and intermediateOutput1 are specified
     // as inputs to the operation.
-    this.model_.addOperation('mul', [intermediateOutput0, intermediateOutput1, fusedActivationFuncNone], [multiplierOutput]);
+    this.model_.addOperation(nn.OperationCode.MUL, [intermediateOutput0, intermediateOutput1, fusedActivationFuncNone], [multiplierOutput]);
 
     // Add the first ADD operation.
-    this.model_.addOperation('add', [tensor0, tensor1, fusedActivationFuncNone], [intermediateOutput0]);
+    this.model_.addOperation(nn.OperationCode.ADD, [tensor0, tensor1, fusedActivationFuncNone], [intermediateOutput0]);
 
     // Add the second ADD operation.
     // Note the fusedActivationFuncNone is used again.
-    this.model_.addOperation('add', [tensor2, tensor3, fusedActivationFuncNone], [intermediateOutput1]);
+    this.model_.addOperation(nn.OperationCode.ADD, [tensor2, tensor3, fusedActivationFuncNone], [intermediateOutput1]);
 
     // Identify the input and output tensors to the this.model_.
     // Inputs: {tensor1, tensor3}
@@ -82,7 +82,7 @@ class SimpleModel {
     // can make better decisions.
     // Here we prefer to get the answer quickly, so we choose
     // FAST_SINGLE_ANSWER.
-    this.compilation_.setPreference('fast_single_answer');
+    this.compilation_.setPreference(nn.PreferenceCode.FAST_SINGLE_ANSWER);
 
     // Finish the compilation.
     return await this.compilation_.finish();

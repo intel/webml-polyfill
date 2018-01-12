@@ -52,7 +52,7 @@ export default class Model {
       scale: options.scale,
       zeroPoint: options.zeroPoint,
       numberOfConsumers: 0,
-      lifetime: OperandLifetime.temporary_variable,
+      lifetime: OperandLifetime.TEMPORARY_VARIABLE,
       value: null
     }
     this._operands.push(operand);
@@ -74,9 +74,9 @@ export default class Model {
       throw new Error(`Invalid value ${value}`);
     }
     if (utils.isTensor(operand.type)) {
-      operand.lifetime = OperandLifetime.constant_reference;
+      operand.lifetime = OperandLifetime.CONSTANT_REFERENCE;
     } else {
-      operand.lifetime = OperandLifetime.constant_copy;
+      operand.lifetime = OperandLifetime.CONSTANT_COPY;
     }
     operand.value = value;
   }
@@ -128,22 +128,22 @@ export default class Model {
     }
     this._inputs = inputs;
     this._inputs.forEach(i => {
-      this._operands[i].lifetime = OperandLifetime.model_input;
+      this._operands[i].lifetime = OperandLifetime.MODEL_INPUT;
     })
     this._outputs = outputs;
     this._outputs.forEach(i => {
-      this._operands[i].lifetime = OperandLifetime.model_output;
+      this._operands[i].lifetime = OperandLifetime.MODEL_OUTPUT;
     })
   }
 
   // private methods
   _validateOperandOptions(options) {
     let type = options.type;
-    if (!OperandCode.enumValueOf(type)) {
+    if (!utils.validateEnum(type, OperandCode)) {
       console.error(`Invalid type ${options.type}`);
       return false;
     }
-    if (OperandCode.enumValueOf(type) === OperandCode.tensor_quant8_asymm) {
+    if (type === OperandCode.TENSOR_QUANT8_ASYMM) {
       if (typeof options.zeroPoint === 'undefined') {
         console.error('zeroPoint is undefined');
         return false;
@@ -161,9 +161,8 @@ export default class Model {
 
   _validateOperandValue(value, operand) {
     let type = operand.type;
-    let enumValue = OperandCode.enumValueOf(type);
     if (utils.isTensor(type)) {
-      let arrayType = utils.operandCodeToTypedArrayMap.get(enumValue);
+      let arrayType = utils.operandCodeToTypedArrayMap.get(type);
       if (value instanceof arrayType) {
         let valueLength = value.length * value.BYTES_PER_ELEMENT;
         let neededLength = utils.sizeOfTensorData(operand.type, operand.dimensions);
@@ -180,8 +179,6 @@ export default class Model {
     } else {
       if (typeof value === 'number') {
         return true;
-      } else if (value instanceof FuseCode || value instanceof PaddingCode) {
-        return true;
       } else {
         console.error(`Invalid value type ${typeof value}`);
         return false;
@@ -190,11 +187,7 @@ export default class Model {
   }
 
   _validateOperationCode(type) {
-    let enumValue = OperationCode.enumValueOf(type);
-    if (typeof enumValue === 'undefined') {
-      return false;
-    }
-    return true;
+    return utils.validateEnum(type, OperationCode);
   }
 
   _validateOperandList(list) {
@@ -213,7 +206,7 @@ export default class Model {
       let inputs = operation.inputs;
       inputs.forEach(operandIndex => {
         let lifetime = this._operands[operandIndex].lifetime;
-        if (lifetime === OperandLifetime.temporary_variable || lifetime === OperandLifetime.model_output) {
+        if (lifetime === OperandLifetime.TEMPORARY_VARIABLE || lifetime === OperandLifetime.MODEL_OUTPUT) {
           unknownInputCount[operationIndex] += 1;
           if (!operandToOperations.has(operandIndex)) {
             operandToOperations.set(operandIndex, [operationIndex]);
