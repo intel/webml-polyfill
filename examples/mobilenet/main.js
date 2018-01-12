@@ -11,7 +11,7 @@ function main() {
   loadModelDataFile('./model/mobilenet_v1_1.0_224.tflite').then(bytes => {
     let buf = new flatbuffers.ByteBuffer(bytes);
     tfModel = tflite.Model.getRootAsModel(buf);
-    //printTfLiteModel(tfModel);
+    printTfLiteModel(tfModel);
     model = new MobileNet(tfModel);
     model.createCompiledModel().then(result => {
       console.log(`compilation result: ${result}`);

@@ -24,6 +24,10 @@ export default class Model {
       throw new Error('finish called more than once');
     }
 
+    if (this._inputs === null || this._outputs === null) {
+      throw new Error('No inputs or outputs of this model');
+    }
+
     this._sortIntoRunOrder();
     this._completed = true;
   }

@@ -9,6 +9,9 @@ export default class Execution {
    * @param {Compilation} compilation 
    */
   constructor(compilation) {
+    if (typeof compilation === 'undefined') {
+      throw new Error('Invalid argument');
+    }
     this._preparedModel = compilation._preparedModel;
     this._model = compilation._model;
     this._inputs = [];
