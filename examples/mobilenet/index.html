@@ -3,11 +3,23 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>WebML MobileNets Demo</title>
+    <style>
+      img {
+        max-width: 500px;
+        max-height: 500px;
+      }
+      canvas {
+        display: none;
+        position: absolute;
+        z-index: -3;
+      }
+    </style>
   </head>
   <body>
-    <canvas id="canvasInput" width=224 height=224 style="border: 1px solid black;"></canvas>
+    <img id="image" crossorigin="anonymous"></img>
+    <canvas id="canvas" width=224 height=224></canvas>
     <div>
-      <input type="file" id="fileInput" name="file" accept="image/*" />
+      <input type="file" id="input" name="file" accept="image/*" />
     </div>
     <div>
       <button id="predict" disabled>Predict</button>
