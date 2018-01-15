@@ -5,6 +5,9 @@
     <title>WebML MobileNet Demo</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/css/bootstrap.min.css" integrity="sha384-Zug+QiDoJOrZ5t4lssLdxGhVrurbmBWopoEl+M6BdEfwnCJZtKxi1KgxUyJq13dy" crossorigin="anonymous">
     <style>
+      img {
+        max-height: 400px;
+      }
       canvas {
         display: none;
         position: absolute;
@@ -45,10 +48,9 @@
         <div class="col">
         </div>
         <div class="col" align="center">
-            <label class="btn btn-primary">
-                Pick Image <input type="file" id="input" accept="image/*" hidden>
+            <label id="button" class="btn btn-primary disabled">
+                Pick Image <input type="file" id="input" accept="image/*" hidden disabled>
             </label>
-            <label class="btn btn-success btn-lg" id="predict" disabled hidden>Predict</label>
         </div>
         <div class="col">
         </div>

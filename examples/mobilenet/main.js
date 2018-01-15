@@ -17,6 +17,7 @@ function main() {
   const canvasElement = document.getElementById('canvas');
   const canvasContext = canvasElement.getContext('2d');
   const inputElement = document.getElementById('input');
+  const buttonEelement = document.getElementById('button');
   inputElement.addEventListener('change', (e) => {
     let files = e.target.files;
     if (files.length > 0) {
@@ -64,6 +65,8 @@ function main() {
     model.createCompiledModel().then(result => {
       console.log(`compilation result: ${result}`);
       predict();
+      button.setAttribute('class', 'btn btn-primary');
+      input.removeAttribute('disabled');
     }).catch(e => {
       console.error(e);
     })
