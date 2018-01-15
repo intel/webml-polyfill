@@ -10,39 +10,45 @@ var inputTensor, outputTensor;
 function main() {
   inputTensor = new Float32Array(INPUT_TENSOR_SIZE);
   outputTensor = new Float32Array(OUTPUT_TENSOR_SIZE);
-  let imageElement = document.getElementById('image');
-  let canvasElement = document.getElementById('canvas');
-  let canvasContext = canvasElement.getContext('2d');
-  let inputElement = document.getElementById('input');
+  const imageElement = document.getElementById('image');
+  const canvasElement = document.getElementById('canvas');
+  const canvasContext = canvasElement.getContext('2d');
+  const inputElement = document.getElementById('input');
   inputElement.addEventListener('change', (e) => {
     let files = e.target.files;
     if (files.length > 0) {
       imageElement.src = URL.createObjectURL(files[0]);
-      imageElement.onload = function() {
-        canvasContext.drawImage(imageElement, 0, 0,
-                                canvasElement.width,
-                                canvasElement.height);
-      }
     }
   }, false);
 
-  let predictButton = document.getElementById('predict');
-  predictButton.addEventListener('click', e => {
+  imageElement.onload = function() {
+    canvasContext.drawImage(imageElement, 0, 0,
+      canvasElement.width,
+      canvasElement.height);
+    predict();
+  }
+
+  function predict() {
     let start = performance.now();
     prepareInputTensor(inputTensor, canvasElement);
     model.compute(inputTensor, outputTensor).then(result => {
       let elapsed = performance.now() - start;
-      let classes = getTopClasses(outputTensor, labels);
-      console.log(`Elapsed time: ${elapsed.toFixed(2)} ms`);
-      console.log(`Compute result: ${result}`);
+      let classes = getTopClasses(outputTensor, labels, 3);
+      console.log(`Inference time: ${elapsed.toFixed(2)} ms`);
+      let inferenceTimeElement = document.getElementById('inferenceTime');
+      inferenceTimeElement.innerHTML = `inference time: ${elapsed.toFixed(2)} ms`;
       console.log(`Classes: `);
-      classes.forEach(c => {
+      classes.forEach((c, i) => {
         console.log(`\tlabel: ${c.label}, probability: ${c.prob}%`);
-      })
+        let labelElement = document.getElementById(`label${i}`);
+        let probElement = document.getElementById(`prob${i}`);
+        labelElement.innerHTML = `${c.label}`;
+        probElement.innerHTML = `${c.prob}%`;
+      });
     }).catch(e => {
       console.log(e);
     })
-  });
+  }
 
   loadModelAndLabels(MODEL_FILE, LABELS_FILE).then(result => {
     labels = result.text.split('\n');
@@ -53,7 +59,7 @@ function main() {
     model = new MobileNet(tfModel);
     model.createCompiledModel().then(result => {
       console.log(`compilation result: ${result}`);
-      predictButton.removeAttribute('disabled');
+      imageElement.src = './img/Welsh_Corgi_Pembroke_WPR_Kamien_07_10_07.jpg';
     }).catch(e => {
       console.error(e);
     })

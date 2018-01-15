@@ -2,7 +2,8 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>WebML MobileNets Demo</title>
+    <title>WebML MobileNet Demo</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/css/bootstrap.min.css" integrity="sha384-Zug+QiDoJOrZ5t4lssLdxGhVrurbmBWopoEl+M6BdEfwnCJZtKxi1KgxUyJq13dy" crossorigin="anonymous">
     <style>
       img {
         max-width: 500px;
@@ -16,14 +17,69 @@
     </style>
   </head>
   <body>
-    <img id="image" crossorigin="anonymous"></img>
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark" style="width:100%">
+      <span class="navbar-brand mb-0 h1">WebML MobileNet Demo</span>
+    </nav>
+    <div class="container" id="container">
+      <div class="row" style="margin-top:10px;">
+        <div class="col">
+        </div>
+        <div class="col-8" align="center">
+          <img id="image" crossorigin="anonymous" class="img-fluid" alt="Responsive image"></img>
+        </div>
+        <div class="col">
+        </div>
+      </div>
+      <div class="row" style="margin-top:10px;">
+        <div class="col">
+        </div>
+        <div class="col" align="center">
+            <label class="btn btn-primary">
+                Pick Image <input type="file" id="input" accept="image/*" hidden>
+            </label>
+            <label class="btn btn-success btn-lg" id="predict" disabled hidden>Predict</label>
+        </div>
+        <div class="col">
+        </div>
+      </div>
+      <div class="row">
+        <div id="inferenceTime" class="col" align="center">
+        </div>
+      </div>
+      <div class="row" style="margin-top:10px;">
+        <div class="col"></div>
+        <div class="col">
+            <table class="table table-sm">
+                <thead>
+                  <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Label</th>
+                    <th scope="col">Probability</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <th scope="row">1</th>
+                    <td id="label0"></td>
+                    <td id="prob0">Thornton</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">2</th>
+                    <td id="label1"></td>
+                    <td id="prob1"></td>
+                  </tr>
+                  <tr>
+                    <th scope="row">3</th>
+                    <td id="label2"></td>
+                    <td id="prob2"></td>
+                  </tr>
+                </tbody>
+              </table>
+        </div>
+        <div class="col"></div>
+      </div>
+    </div>
     <canvas id="canvas" width=224 height=224></canvas>
-    <div>
-      <input type="file" id="input" name="file" accept="image/*" />
-    </div>
-    <div>
-      <button id="predict" disabled>Predict</button>
-    </div>
     <script src="/dist/webml-polyfill.js"></script>
     <script src="./flatbuffers/js/flatbuffers.js"></script>
     <script src="./schema/schema_generated.js"></script>
