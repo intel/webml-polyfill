@@ -10,6 +10,9 @@ var inputTensor, outputTensor;
 function main() {
   inputTensor = new Float32Array(INPUT_TENSOR_SIZE);
   outputTensor = new Float32Array(OUTPUT_TENSOR_SIZE);
+  const container = document.getElementById('container');
+  const progressBar = document.getElementById('progressBar');
+  const progressContainer = document.getElementById('progressContainer');
   const imageElement = document.getElementById('image');
   const canvasElement = document.getElementById('canvas');
   const canvasContext = canvasElement.getContext('2d');
@@ -22,14 +25,14 @@ function main() {
   }, false);
 
   imageElement.onload = function() {
-    canvasContext.drawImage(imageElement, 0, 0,
-      canvasElement.width,
-      canvasElement.height);
     predict();
   }
 
   function predict() {
     let start = performance.now();
+    canvasContext.drawImage(imageElement, 0, 0,
+                            canvasElement.width,
+                            canvasElement.height);
     prepareInputTensor(inputTensor, canvasElement);
     model.compute(inputTensor, outputTensor).then(result => {
       let elapsed = performance.now() - start;
@@ -51,6 +54,7 @@ function main() {
   }
 
   loadModelAndLabels(MODEL_FILE, LABELS_FILE).then(result => {
+    container.removeChild(progressContainer);
     labels = result.text.split('\n');
     console.log(`labels: ${labels}`);
     let flatBuffer = new flatbuffers.ByteBuffer(result.bytes);
@@ -59,7 +63,7 @@ function main() {
     model = new MobileNet(tfModel);
     model.createCompiledModel().then(result => {
       console.log(`compilation result: ${result}`);
-      imageElement.src = './img/Welsh_Corgi_Pembroke_WPR_Kamien_07_10_07.jpg';
+      predict();
     }).catch(e => {
       console.error(e);
     })
@@ -77,12 +81,40 @@ function main() {
 }
 
 async function loadModelAndLabels(modelUrl, labelsUrl) {
-  let response = await fetch(modelUrl);
-  let arrayBuffer = await response.arrayBuffer();
+  let arrayBuffer = await loadUrl(modelUrl, true, true);
   let bytes = new Uint8Array(arrayBuffer);
-  response = await fetch(labelsUrl);
-  let text = await response.text();
+  text = await loadUrl(labelsUrl);
   return {bytes: bytes, text: text};
+}
+
+async function loadUrl(url, binary, progress) {
+  return new Promise((resolve, reject) => {
+    let request = new XMLHttpRequest();
+    request.open('GET', url, true);
+    if (binary) {
+      request.responseType = 'arraybuffer';
+    }
+    request.onload = function(ev) {
+      if (request.readyState === 4) {
+        if (request.status === 200) {
+            resolve(request.response);
+        } else {
+            reject(new Error('Failed to load ' + modelUrl + ' status: ' + request.status));
+        }
+      }
+    };
+    if (progress) {
+      request.onprogress = function(ev) {
+        if (ev.lengthComputable) {
+          let percentComplete = ev.loaded / ev.total * 100;
+          percentComplete = percentComplete.toFixed(0);
+          progressBar.style = `width: ${percentComplete}%`;
+          progressBar.innerHTML = `${percentComplete}%`;
+        }
+      }
+    }
+    request.send();
+  });
 }
 
 function prepareInputTensor(tensor, canvas) {
