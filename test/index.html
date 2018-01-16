@@ -11,15 +11,15 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chai/4.1.2/chai.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fetch/2.0.3/fetch.min.js"></script>
   
-    <script src="/dist/webml-polyfill.js"></script>
-    <script src="/test/utils.js"></script>
+    <script src="../dist/webml-polyfill.js"></script>
+    <script src="./utils.js"></script>
 
     <script>
       mocha.setup('bdd');
     </script>
-    <script src="/test/base/base.js"></script>
-    <script src="/test/operations/add.js"></script>
-    <script src="/test/operations/mul.js"></script>
+    <script src="./base/base.js"></script>
+    <script src="./operations/add.js"></script>
+    <script src="./operations/mul.js"></script>
     <script>
       mocha.globals(['jQuery']);
       mocha.run();
