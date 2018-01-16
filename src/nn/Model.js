@@ -1,5 +1,6 @@
 import {OperationCode, OperandCode, PaddingCode, PreferenceCode, FuseCode, OperandLifetime} from './Enums'
 import * as utils from './utils'
+import Compilation from './Compilation';
 
 export default class Model {
   /**
@@ -14,6 +15,18 @@ export default class Model {
     this._operations = [];
     this._inputs = null;
     this._outputs = null;
+  }
+
+  /**
+   * Create a compilation from this model.
+   * 
+   * @returns {Compilation} - the compilation instance.
+   */
+  createCompilation() {
+    if (!this._completed) {
+      throw new Error('Model is not finished');
+    }
+    return new Compilation(this);
   }
 
   /**

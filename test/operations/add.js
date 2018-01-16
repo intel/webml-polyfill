@@ -6,7 +6,7 @@ describe('Add Test', function() {
   const value1 = 0.5;
     
   it('check result', async function() {
-    let model = new nn.Model('SimpleModel');
+    let model = nn.createModel('SimpleModel');
     const float32TensorType = {type: nn.OperandCode.TENSOR_FLOAT32, dimensions: TENSOR_DIMENSIONS};
     const tensorLength = product(float32TensorType.dimensions);
 
@@ -26,13 +26,13 @@ describe('Add Test', function() {
     model.identifyInputsAndOutputs([input1], [output]);
     model.finish();
 
-    let compilation = new nn.Compilation(model);
+    let compilation = model.createCompilation();
 
     compilation.setPreference(nn.PreferenceCode.FAST_SINGLE_ANSWER);
     
     await compilation.finish();
 
-    let execution = new nn.Execution(compilation);
+    let execution = compilation.createExecution();
 
     let input1Data = new Float32Array(tensorLength);
     input1Data.fill(value1);

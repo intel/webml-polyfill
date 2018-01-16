@@ -1,6 +1,3 @@
-import Compilation from './Compilation'
-import Execution from './Execution'
-import Model from './Model'
-import {OperationCode, OperandCode, PaddingCode, PreferenceCode, FuseCode} from './Enums'
+import NeuralNetwork from './NeuralNetwork'
 
-export {Compilation, Execution, Model, OperationCode, OperandCode, PaddingCode, PreferenceCode, FuseCode}
+export {NeuralNetwork}

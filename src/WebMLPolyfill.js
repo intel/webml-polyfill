@@ -1,21 +1,8 @@
-import * as nn from './nn'
-
-class WebNN {
-  constructor() {
-    this.Compilation = nn.Compilation;
-    this.Execution = nn.Execution;
-    this.Model = nn.Model;
-    this.OperationCode = nn.OperationCode;
-    this.OperandCode = nn.OperandCode;
-    this.PaddingCode = nn.PaddingCode;
-    this.PreferenceCode = nn.PreferenceCode;
-    this.FuseCode = nn.FuseCode;
-  }
-}
+import {NeuralNetwork} from './nn'
 
 class WebMLPolyfill {
 	constructor() {
-    this.nn = new WebNN();
+    this.nn = new NeuralNetwork();
   }
 }
 

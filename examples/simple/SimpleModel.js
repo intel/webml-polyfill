@@ -12,7 +12,7 @@ class SimpleModel {
 
   async createCompiledModel() {
     // create a Model.
-    this.model_ = new nn.Model('SimpleModel');
+    this.model_ = nn.createModel('SimpleModel');
 
     let float32TensorType = {type: nn.OperandCode.TENSOR_FLOAT32, dimensions: [TENSOR_SIZE]};
     let scalarInt32Type = {type: nn.OperandCode.INT32};
@@ -76,7 +76,7 @@ class SimpleModel {
     this.model_.finish();
 
     // Create a Compilation object for the constructed this.model_.
-    this.compilation_ = new nn.Compilation(this.model_);
+    this.compilation_ = this.model_.createCompilation();
 
     // Set the preference for the compilation, so that the runtime and drivers
     // can make better decisions.
@@ -89,7 +89,7 @@ class SimpleModel {
   }
 
   async compute(inputValue1, inputValue2) {
-    let execution = new nn.Execution(this.compilation_);
+    let execution = this.compilation_.createExecution();
     let inputTensor1 = new Float32Array(this.tensorSize_);
     inputTensor1.fill(inputValue1);
     let inputTensor2 = new Float32Array(this.tensorSize_);

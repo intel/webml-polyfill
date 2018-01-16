@@ -1,6 +1,7 @@
 import {PreferenceCode} from './Enums'
 import Device from './wasm/Device'
 import * as utils from './utils'
+import Execution from './Execution'
 
 export default class Compilation {
   /**
@@ -14,6 +15,13 @@ export default class Compilation {
     this._preference = PreferenceCode.fast_single_answer;
     this._device = new Device;
     this._preparedModel = null;
+  }
+
+  createExecution() {
+    if (!this._finished) {
+      throw new Error('Compilation is not finished');
+    }
+    return new Execution(this);
   }
 
   /**

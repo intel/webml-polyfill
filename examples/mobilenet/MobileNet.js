@@ -9,19 +9,19 @@ class MobileNet {
   }
 
   async createCompiledModel() {
-    this._model = new nn.Model('MobileNet');
+    this._model = nn.createModel('MobileNet');
 
     this._addTensorOperands();
     this._addOpsAndParams();
 
     this._model.finish();
-    this._compilation = new nn.Compilation(this._model);
+    this._compilation = this._model.createCompilation();
     this._compilation.setPreference(nn.PreferenceCode.FAST_SINGLE_ANSWER);
     return await this._compilation.finish();
   }
 
   async compute(inputTensor, outputTensor) {
-    let execution = new nn.Execution(this._compilation);
+    let execution = this._compilation.createExecution();
 
     execution.setInput(0, inputTensor);
     execution.setOutput(0, outputTensor);
