@@ -1,3 +1,3 @@
-import NeuralNetwork from './NeuralNetwork'
+import NeuralNetworkContext from './NeuralNetworkContext'
 
-export {NeuralNetwork}
+export {NeuralNetworkContext}

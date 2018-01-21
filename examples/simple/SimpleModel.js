@@ -1,4 +1,4 @@
-const nn = navigator.ml.nn;
+const nn = navigator.ml.getNeuralNetworkContext();
 
 const TENSOR_SIZE = 200;
 const FLOAT_EPISILON = 1e-6;
@@ -8,20 +8,21 @@ class SimpleModel {
     this.arrayBuffer_ = arrayBuffer;
     this.tensorSize_ = TENSOR_SIZE;
     this.model_ = null;
+    this.compilation_ = null;
   }
 
   async createCompiledModel() {
     // create a Model.
-    this.model_ = nn.createModel('SimpleModel');
+    this.model_ = nn.createModel();
 
-    let float32TensorType = {type: nn.OperandCode.TENSOR_FLOAT32, dimensions: [TENSOR_SIZE]};
-    let scalarInt32Type = {type: nn.OperandCode.INT32};
+    let float32TensorType = {type: nn.TENSOR_FLOAT32, dimensions: [TENSOR_SIZE]};
+    let scalarInt32Type = {type: nn.INT32};
 
     // We first add the operand for the NONE activation function, and set its
     // value to FUSED_NONE.
     // This constant scalar operand will be used for all 3 operations.
     let fusedActivationFuncNone = this.model_.addOperand(scalarInt32Type);
-    this.model_.setOperandValue(fusedActivationFuncNone, nn.FuseCode.NONE);
+    this.model_.setOperandValue(fusedActivationFuncNone, nn.FUSED_NONE);
 
     // tensor0 is a constant tensor that was established during training.
     // We read these values from the corresponding memory object.
@@ -56,14 +57,14 @@ class SimpleModel {
     // Add the MUL operation. (Test operations reorder)
     // Note that intermediateOutput0 and intermediateOutput1 are specified
     // as inputs to the operation.
-    this.model_.addOperation(nn.OperationCode.MUL, [intermediateOutput0, intermediateOutput1, fusedActivationFuncNone], [multiplierOutput]);
+    this.model_.addOperation(nn.MUL, [intermediateOutput0, intermediateOutput1, fusedActivationFuncNone], [multiplierOutput]);
 
     // Add the first ADD operation.
-    this.model_.addOperation(nn.OperationCode.ADD, [tensor0, tensor1, fusedActivationFuncNone], [intermediateOutput0]);
+    this.model_.addOperation(nn.ADD, [tensor0, tensor1, fusedActivationFuncNone], [intermediateOutput0]);
 
     // Add the second ADD operation.
     // Note the fusedActivationFuncNone is used again.
-    this.model_.addOperation(nn.OperationCode.ADD, [tensor2, tensor3, fusedActivationFuncNone], [intermediateOutput1]);
+    this.model_.addOperation(nn.ADD, [tensor2, tensor3, fusedActivationFuncNone], [intermediateOutput1]);
 
     // Identify the input and output tensors to the this.model_.
     // Inputs: {tensor1, tensor3}
@@ -76,20 +77,20 @@ class SimpleModel {
     this.model_.finish();
 
     // Create a Compilation object for the constructed this.model_.
-    this.compilation_ = this.model_.createCompilation();
+    this.compilation_ = nn.createCompilation(this.model_);
 
     // Set the preference for the compilation, so that the runtime and drivers
     // can make better decisions.
     // Here we prefer to get the answer quickly, so we choose
-    // FAST_SINGLE_ANSWER.
-    this.compilation_.setPreference(nn.PreferenceCode.FAST_SINGLE_ANSWER);
+    // PREFER_FAST_SINGLE_ANSWER.
+    this.compilation_.setPreference(nn.PREFER_FAST_SINGLE_ANSWER);
 
     // Finish the compilation.
     return await this.compilation_.finish();
   }
 
   async compute(inputValue1, inputValue2) {
-    let execution = this.compilation_.createExecution();
+    let execution = nn.createExecution(this.compilation_);
     let inputTensor1 = new Float32Array(this.tensorSize_);
     inputTensor1.fill(inputValue1);
     let inputTensor2 = new Float32Array(this.tensorSize_);

@@ -17,13 +17,6 @@ export default class Compilation {
     this._preparedModel = null;
   }
 
-  createExecution() {
-    if (!this._finished) {
-      throw new Error('Compilation is not finished');
-    }
-    return new Execution(this);
-  }
-
   /**
    * Sets the execution preference.
    * 

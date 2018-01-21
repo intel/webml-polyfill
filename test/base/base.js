@@ -3,6 +3,10 @@ describe('Base Test', function() {
     
   it('check namespace', function() {
     assert(typeof navigator.ml !== 'undefined');
-    assert(typeof navigator.ml.nn !== 'undefined');
+  });
+
+  it('check getNeuralNetworkContext', function() {
+    const nn = navigator.ml.getNeuralNetworkContext();
+    assert(typeof nn !== 'undefined');
   });
 });

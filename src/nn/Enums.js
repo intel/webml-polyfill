@@ -1,4 +1,4 @@
-export let FuseCode = {
+export const FuseCode = {
   /** NO fused activation function. */
   NONE: 0,
   /** Fused ReLU activation function. */
@@ -9,7 +9,7 @@ export let FuseCode = {
   RELU6: 3,
 };
 
-export let OperandCode = {
+export const OperandCode = {
   /** The following entries are used to declare scalars. */
 
   /** A 32 bit floating point scalar value. */
@@ -38,7 +38,7 @@ export let OperandCode = {
   TENSOR_QUANT8_ASYMM: 5,
 };
 
-export let PaddingCode = {
+export const PaddingCode = {
   /**
    * SAME padding.
    * Padding on both ends are the "same":
@@ -66,7 +66,7 @@ export let PaddingCode = {
   VALID: 2,
 };
 
-export let PreferenceCode = {
+export const PreferenceCode = {
   /**
    * Prefer executing in a way that minimizes battery drain.
    * This is desirable for compilations that will be executed often.
@@ -84,7 +84,7 @@ export let PreferenceCode = {
   SUSTAINED_SPEED: 2,
 };
 
-export let OperationCode = {
+export const OperationCode = {
   /** Adds two tensors, element-wise.
    *
    * Takes two input tensors of identical type and compatible dimensions. The output
@@ -1154,7 +1154,7 @@ export let OperationCode = {
   TANH: 28,
 };
 
-export let OperandLifetime = {
+export const OperandLifetime = {
   TEMPORARY_VARIABLE: 0,
   MODEL_INPUT: 1,
   MODEL_OUTPUT: 2,

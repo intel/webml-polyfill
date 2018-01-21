@@ -1,17 +1,17 @@
 describe('Add Test', function() {
   const assert = chai.assert;
   const TENSOR_DIMENSIONS = [2, 2, 2, 2];
-  const nn = navigator.ml.nn;
+  const nn = navigator.ml.getNeuralNetworkContext();
   const value0 = 0.4;
   const value1 = 0.5;
     
   it('check result', async function() {
-    let model = nn.createModel('SimpleModel');
-    const float32TensorType = {type: nn.OperandCode.TENSOR_FLOAT32, dimensions: TENSOR_DIMENSIONS};
+    let model = nn.createModel();
+    const float32TensorType = {type: nn.TENSOR_FLOAT32, dimensions: TENSOR_DIMENSIONS};
     const tensorLength = product(float32TensorType.dimensions);
 
-    let fusedActivationFuncNone = model.addOperand({type: nn.OperandCode.INT32});
-    model.setOperandValue(fusedActivationFuncNone, nn.FuseCode.NONE);
+    let fusedActivationFuncNone = model.addOperand({type: nn.INT32});
+    model.setOperandValue(fusedActivationFuncNone, nn.FUSED_NONE);
 
     let input0 = model.addOperand(float32TensorType);
     let input0Data = new Float32Array(tensorLength);
@@ -22,17 +22,17 @@ describe('Add Test', function() {
     let input1 = model.addOperand(float32TensorType);
     let output = model.addOperand(float32TensorType);
 
-    model.addOperation(nn.OperationCode.ADD, [input0, input1, fusedActivationFuncNone], [output]);
+    model.addOperation(nn.ADD, [input0, input1, fusedActivationFuncNone], [output]);
     model.identifyInputsAndOutputs([input1], [output]);
     model.finish();
 
-    let compilation = model.createCompilation();
+    let compilation = nn.createCompilation(model);
 
-    compilation.setPreference(nn.PreferenceCode.FAST_SINGLE_ANSWER);
+    compilation.setPreference(nn.PREFER_FAST_SINGLE_ANSWER);
     
     await compilation.finish();
 
-    let execution = compilation.createExecution();
+    let execution = nn.createExecution(compilation);
 
     let input1Data = new Float32Array(tensorLength);
     input1Data.fill(value1);

@@ -5,28 +5,13 @@ import Compilation from './Compilation';
 export default class Model {
   /**
    * Create an empty model.
-   *
-   * @param {string} name - The model name.
    */
-  constructor(name) {
-    this.name = name;
+  constructor() {
     this._completed = false;
     this._operands = [];
     this._operations = [];
     this._inputs = null;
     this._outputs = null;
-  }
-
-  /**
-   * Create a compilation from this model.
-   * 
-   * @returns {Compilation} - the compilation instance.
-   */
-  createCompilation() {
-    if (!this._completed) {
-      throw new Error('Model is not finished');
-    }
-    return new Compilation(this);
   }
 
   /**
