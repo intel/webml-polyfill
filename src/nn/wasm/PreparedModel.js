@@ -115,7 +115,7 @@ export default class PreparedModel {
         allParametersPresent(3, 1);
         let in1 = operands[inputs[0]];
         let in2 = operands[inputs[1]];
-        let activation = FuseCodeMap.get(operands[inputs[2]].value);
+        let activation = FuseCodeMap.get(operands[inputs[2]].value[0]);
         let out = operands[outputs[0]];
         success = nn_ops.addMulPrepare(in1.shape, in2.shape, out.shape);
         if (!success) {
@@ -133,7 +133,7 @@ export default class PreparedModel {
         allParametersPresent(3, 1);
         let in1 = operands[inputs[0]];
         let in2 = operands[inputs[1]];
-        let activation = FuseCodeMap.get(operands[inputs[2]].value);
+        let activation = FuseCodeMap.get(operands[inputs[2]].value[0]);
         let out = operands[outputs[0]];
         success = nn_ops.addMulPrepare(in1.shape, in2.shape, out.shape);
         if (!success) {
@@ -162,18 +162,18 @@ export default class PreparedModel {
         let strideWidth, strideHeight;
         let activation;
         if (inCount === 10) {
-          paddingLeft = operands[inputs[i++]].value;
-          paddingRight = operands[inputs[i++]].value;
-          paddingTop = operands[inputs[i++]].value;
-          paddingBottom = operands[inputs[i++]].value;
-          strideWidth = operands[inputs[i++]].value;
-          strideHeight = operands[inputs[i++]].value;
-          activation = FuseCodeMap.get(operands[inputs[i++]].value);
+          paddingLeft = operands[inputs[i++]].value[0];
+          paddingRight = operands[inputs[i++]].value[0];
+          paddingTop = operands[inputs[i++]].value[0];
+          paddingBottom = operands[inputs[i++]].value[0];
+          strideWidth = operands[inputs[i++]].value[0];
+          strideHeight = operands[inputs[i++]].value[0];
+          activation = FuseCodeMap.get(operands[inputs[i++]].value[0]);
         } else {
-          let paddingCode = operands[inputs[i++]].value;
-          strideWidth = operands[inputs[i++]].value;
-          strideHeight = operands[inputs[i++]].value;
-          activation = FuseCodeMap.get(operands[inputs[i++]].value);
+          let paddingCode = operands[inputs[i++]].value[0];
+          strideWidth = operands[inputs[i++]].value[0];
+          strideHeight = operands[inputs[i++]].value[0];
+          activation = FuseCodeMap.get(operands[inputs[i++]].value[0]);
 
           let inputWidth = input.shape.dimensions[2];
           let inputHeight = input.shape.dimensions[1];
@@ -218,20 +218,20 @@ export default class PreparedModel {
         let depthMultipler;
         let activation;
         if (inCount === 11) {
-          paddingLeft = operands[inputs[i++]].value;
-          paddingRight = operands[inputs[i++]].value;
-          paddingTop = operands[inputs[i++]].value;
-          paddingBottom = operands[inputs[i++]].value;
-          strideWidth = operands[inputs[i++]].value;
-          strideHeight = operands[inputs[i++]].value;
-          depthMultipler = operands[inputs[i++]].value;
-          activation = FuseCodeMap.get(operands[inputs[i++]].value);
+          paddingLeft = operands[inputs[i++]].value[0];
+          paddingRight = operands[inputs[i++]].value[0];
+          paddingTop = operands[inputs[i++]].value[0];
+          paddingBottom = operands[inputs[i++]].value[0];
+          strideWidth = operands[inputs[i++]].value[0];
+          strideHeight = operands[inputs[i++]].value[0];
+          depthMultipler = operands[inputs[i++]].value[0];
+          activation = FuseCodeMap.get(operands[inputs[i++]].value[0]);
         } else {
-          let paddingCode = operands[inputs[i++]].value;
-          strideWidth = operands[inputs[i++]].value;
-          strideHeight = operands[inputs[i++]].value;
-          depthMultipler = operands[inputs[i++]].value;
-          activation = FuseCodeMap.get(operands[inputs[i++]].value);
+          let paddingCode = operands[inputs[i++]].value[0];
+          strideWidth = operands[inputs[i++]].value[0];
+          strideHeight = operands[inputs[i++]].value[0];
+          depthMultipler = operands[inputs[i++]].value[0];
+          activation = FuseCodeMap.get(operands[inputs[i++]].value[0]);
 
           let inputWidth = input.shape.dimensions[2];
           let inputHeight = input.shape.dimensions[1];
@@ -275,22 +275,22 @@ export default class PreparedModel {
         let filterWidth, filterHeight;
         let activation;
         if (inCount === 10) {
-          paddingLeft = operands[inputs[i++]].value;
-          paddingRight = operands[inputs[i++]].value;
-          paddingTop = operands[inputs[i++]].value;
-          paddingBottom = operands[inputs[i++]].value;
-          strideWidth = operands[inputs[i++]].value;
-          strideHeight = operands[inputs[i++]].value;
-          filterWidth = operands[inputs[i++]].value;
-          filterHeight = operands[inputs[i++]].value;
-          activation = FuseCodeMap.get(operands[inputs[i++]].value);
+          paddingLeft = operands[inputs[i++]].value[0];
+          paddingRight = operands[inputs[i++]].value[0];
+          paddingTop = operands[inputs[i++]].value[0];
+          paddingBottom = operands[inputs[i++]].value[0];
+          strideWidth = operands[inputs[i++]].value[0];
+          strideHeight = operands[inputs[i++]].value[0];
+          filterWidth = operands[inputs[i++]].value[0];
+          filterHeight = operands[inputs[i++]].value[0];
+          activation = FuseCodeMap.get(operands[inputs[i++]].value[0]);
         } else {
-          let paddingCode = operands[inputs[i++]].value;
-          strideWidth = operands[inputs[i++]].value;
-          strideHeight = operands[inputs[i++]].value;
-          filterWidth = operands[inputs[i++]].value;
-          filterHeight = operands[inputs[i++]].value;
-          activation = FuseCodeMap.get(operands[inputs[i++]].value);
+          let paddingCode = operands[inputs[i++]].value[0];
+          strideWidth = operands[inputs[i++]].value[0];
+          strideHeight = operands[inputs[i++]].value[0];
+          filterWidth = operands[inputs[i++]].value[0];
+          filterHeight = operands[inputs[i++]].value[0];
+          activation = FuseCodeMap.get(operands[inputs[i++]].value[0]);
 
           let inputWidth = input.shape.dimensions[2];
           let inputHeight = input.shape.dimensions[1];
@@ -320,7 +320,7 @@ export default class PreparedModel {
       case OperationCode.SOFTMAX: {
         allParametersPresent(2, 1);
         let input = operands[inputs[0]];
-        let beta = operands[inputs[1]].value;
+        let beta = operands[inputs[1]].value[0];
         if (beta <= 0.0) {
           throw new Error('beta must be positive for SOFTMAX');
         }

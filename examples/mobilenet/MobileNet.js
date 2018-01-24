@@ -72,14 +72,14 @@ class MobileNet {
   _addScalarInt32(value) {
     const scalarInt32Type = {type: nn.INT32};
     let index = this._model.addOperand(scalarInt32Type);
-    this._model.setOperandValue(index, value);
+    this._model.setOperandValue(index, new Int32Array([value]));
     return index;
   }
 
   _addScalarFloat32(value) {
     const scalarInt32Type = {type: nn.FLOAT32};
     let index = this._model.addOperand(scalarInt32Type);
-    this._model.setOperandValue(index, value);
+    this._model.setOperandValue(index, new Float32Array([value]));
     return index;
   }
 

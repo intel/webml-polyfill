@@ -65,7 +65,7 @@ export default class Model {
    * Sets an operand to a constant value.
    * 
    * @param {number} index - The index of the model operand we're setting.
-   * @param {TypedArray|number} value - The number for scalar value and typed array for tensor data.
+   * @param {TypedArray} value - The typed array containing data.
    */
   setOperandValue(index, value) {
     if (index > this._operands.length) {
@@ -163,28 +163,24 @@ export default class Model {
 
   _validateOperandValue(value, operand) {
     let type = operand.type;
-    if (utils.isTensor(type)) {
-      let arrayType = utils.operandCodeToTypedArrayMap.get(type);
-      if (value instanceof arrayType) {
-        let valueLength = value.length * value.BYTES_PER_ELEMENT;
-        let neededLength = utils.sizeOfTensorData(operand.type, operand.dimensions);
-        if (valueLength != neededLength) {
-          console.error(`Sets ${valueLength} bytes when needing ${neededLength}`);
-          return false;
-        } else {
-          return true;
-        }
+    let arrayType = utils.operandCodeToTypedArrayMap.get(type);
+    if (value instanceof arrayType) {
+      let valueLength = value.length * value.BYTES_PER_ELEMENT;
+      let neededLength;
+      if (utils.isTensor(type)) {
+        neededLength = utils.sizeOfTensorData(type, operand.dimensions);
       } else {
-        console.error(`Invalid value type ${typeof value}`);
+        neededLength = utils.sizeOfScalarData(type);
+      }
+      if (valueLength != neededLength) {
+        console.error(`Sets ${valueLength} bytes when needing ${neededLength}`);
         return false;
+      } else {
+        return true;
       }
     } else {
-      if (typeof value === 'number') {
-        return true;
-      } else {
-        console.error(`Invalid value type ${typeof value}`);
-        return false;
-      }
+      console.error(`Invalid value type ${typeof value}`);
+      return false;
     }
   }
 

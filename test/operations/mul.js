@@ -11,7 +11,7 @@ describe('Mul Test', function() {
     const tensorLength = product(float32TensorType.dimensions);
 
     let fusedActivationFuncNone = model.addOperand({type: nn.INT32});
-    model.setOperandValue(fusedActivationFuncNone, nn.FUSED_NONE);
+    model.setOperandValue(fusedActivationFuncNone, new Int32Array([nn.FUSED_NONE]));
 
     let input0 = model.addOperand(float32TensorType);
     let input0Data = new Float32Array(tensorLength);
