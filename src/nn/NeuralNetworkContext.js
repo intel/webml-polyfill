@@ -1,4 +1,4 @@
-import {OperationCode, OperandCode, PaddingCode, PreferenceCode, FuseCode} from './Enums'
+import {OperationCode, OperandCode, PaddingCode, PreferenceCode, FuseCode, ResultCode} from './Enums'
 import Model from './Model'
 import Compilation from './Compilation'
 import Execution from './Execution'
@@ -17,34 +17,8 @@ export default class NeuralNetworkContext {
    * 
    * @param {string} name - The model name.
    */
-  createModel(name) {
+  async createModel(name) {
     return new Model(name);
-  }
-
-   /**
-   * Create a compilation from model.
-   * 
-   * @param {Model} model - the model object.
-   * @returns {Compilation} - the compilation object.
-   */
-  createCompilation(model) {
-    if (!model._completed) {
-      throw new Error('Model is not finished');
-    }
-    return new Compilation(model);
-  }
-
-  /**
-   * Create a executino from compilation.
-   * 
-   * @param {Compilation} compilation - the compilation object.
-   * @returns {Execution} - the execution object.
-   */
-  createExecution(compilation) {
-    if (!compilation._finished) {
-      throw new Error('Compilation is not finished');
-    }
-    return new Execution(compilation);
   }
 
   _initOperandTypes() {
@@ -104,5 +78,16 @@ export default class NeuralNetworkContext {
     this.PREFER_LOW_POWER = PreferenceCode.LOW_POWER;
     this.PREFER_FAST_SINGLE_ANSWER = PreferenceCode.FAST_SINGLE_ANSWER;
     this.PREFER_SUSTAINED_SPEED = PreferenceCode.SUSTAINED_SPEED;
+  }
+
+  _initResultCodes() {
+    this.NO_ERROR = ResultCode.NO_ERROR;
+    this.OUT_OF_MEMORY = ResultCode.OUT_OF_MEMORY;
+    this.INCOMPLETE = ResultCode.INCOMPLETE;
+    this.UNEXPECTED_NULL = ResultCode.UNEXPECTED_NULL;
+    this.BAD_DATA = ResultCode.BAD_DATA;
+    this.OP_FAILED = ResultCode.OP_FAILED;
+    this.UNMAPPABLE = ResultCode.UNMAPPABLE;
+    this.BAD_STATE = ResultCode.BAD_STATE;
   }
 }

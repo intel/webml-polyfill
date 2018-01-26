@@ -1,4 +1,4 @@
-import {PreferenceCode} from './Enums'
+import {PreferenceCode,ResultCode} from './Enums'
 import Device from './wasm/Device'
 import * as utils from './utils'
 import Execution from './Execution'
@@ -17,12 +17,25 @@ export default class Compilation {
     this._preparedModel = null;
   }
 
+
+  /**
+   * Create a executino from compilation.
+   * 
+   * @returns {Execution} - the execution object.
+   */
+  async createExecution() {
+    if (!this._finished) {
+      throw new Error('Compilation is not finished');
+    }
+    return new Execution(this);
+  }
+
   /**
    * Sets the execution preference.
    * 
    * @param {number} preference - The execution preference, e.g. PreferenceCode.LOW_POWER.
    */
-  setPreference(preference) {
+  async setPreference(preference) {
     if (this._finished) {
       throw new Error('setPreference cant modify after compilation finished');
     }
@@ -30,6 +43,7 @@ export default class Compilation {
       throw new Error(`Invalid preference value ${preference}`);
     }
     this._preference = preference;
+    return ResultCode.NO_ERROR;
   }
 
   /**
@@ -38,6 +52,6 @@ export default class Compilation {
   async finish() {
     this._preparedModel = await this._device.prepareModel(this._model);
     this._finished = true;
-    return 'Success';
+    return ResultCode.NO_ERROR;
   }
 }

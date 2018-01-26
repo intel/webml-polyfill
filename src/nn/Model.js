@@ -1,4 +1,4 @@
-import {OperationCode, OperandCode, PaddingCode, PreferenceCode, FuseCode, OperandLifetime} from './Enums'
+import {OperationCode, OperandCode, PaddingCode, PreferenceCode, FuseCode, OperandLifetime, ResultCode} from './Enums'
 import * as utils from './utils'
 import Compilation from './Compilation';
 
@@ -15,9 +15,21 @@ export default class Model {
   }
 
   /**
+   * Create a compilation from model.
+   * 
+   * @returns {Compilation} - the compilation object.
+   */
+  async createCompilation() {
+    if (!this._completed) {
+      throw new Error('Model is not finished');
+    }
+    return new Compilation(this);
+  }
+
+  /**
    * Indicate that we have finished modifying a model.
    */
-  finish() {
+  async finish() {
     if (this._completed) {
       throw new Error('finish called more than once');
     }
@@ -28,6 +40,7 @@ export default class Model {
 
     this._sortIntoRunOrder();
     this._completed = true;
+    return ResultCode.NO_ERROR;
   }
 
   /**
@@ -37,9 +50,8 @@ export default class Model {
    * @param {number[]} options.dimensions - The dimensions of the tensor. It should be nullptr for scalars.
    * @param {number} options.scale - Only for quantized tensors whose value is defined by (value - zeroPoint) * scale.
    * @param {number} options.zeroPoint - Only for quantized tensors whose value is defined by (value - zeroPoint) * scale.
-   * @returns {number} - The operand index.
    */
-  addOperand(options = {}) {
+  async addOperand(options = {}) {
     if (this._completed) {
       throw new Error('addOperand cant modify after model finished');
     }
@@ -58,7 +70,7 @@ export default class Model {
       value: null
     }
     this._operands.push(operand);
-    return this._operands.length - 1;
+    return ResultCode.NO_ERROR;
   }
 
   /**
@@ -67,7 +79,7 @@ export default class Model {
    * @param {number} index - The index of the model operand we're setting.
    * @param {TypedArray} value - The typed array containing data.
    */
-  setOperandValue(index, value) {
+  async setOperandValue(index, value) {
     if (index > this._operands.length) {
       throw new Error(`Invalid index ${index}`);
     }
@@ -81,6 +93,7 @@ export default class Model {
       operand.lifetime = OperandLifetime.CONSTANT_COPY;
     }
     operand.value = value;
+    return ResultCode.NO_ERROR;
   }
 
   /**
@@ -90,7 +103,7 @@ export default class Model {
    * @param {number[]} inputs - An array of indexes identifying the input operands.
    * @param {number[]} outputs - An array of indexes identifying the output operands.
    */
-  addOperation(type, inputs, outputs) {
+  async addOperation(type, inputs, outputs) {
     if (this._completed) {
       throw new Error('addOperation cant modify after model finished');
     }
@@ -113,6 +126,7 @@ export default class Model {
       this._operands[i].numberOfConsumers += 1;
     });
     this._operations.push(op);
+    return ResultCode.NO_ERROR;
   }
 
   /**
@@ -121,7 +135,7 @@ export default class Model {
    * @param {number[]} inputs - An array of indexes identifying the input operands.
    * @param {number[]} outputs - An array of indexes identifying the output operands.
    */
-  identifyInputsAndOutputs(inputs, outputs) {
+  async identifyInputsAndOutputs(inputs, outputs) {
     if (!this._validateOperandList(inputs)) {
       throw new Error(`Invalid inputs ${inputs}`);
     }
@@ -136,6 +150,7 @@ export default class Model {
     this._outputs.forEach(i => {
       this._operands[i].lifetime = OperandLifetime.MODEL_OUTPUT;
     })
+    return ResultCode.NO_ERROR;
   }
 
   // private methods

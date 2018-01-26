@@ -1154,6 +1154,17 @@ export const OperationCode = {
   TANH: 28,
 };
 
+export const ResultCode = {
+  NO_ERROR: 0,
+  OUT_OF_MEMORY: 1,
+  INCOMPLETE: 2,
+  UNEXPECTED_NULL: 3,
+  BAD_DATA: 4,
+  OP_FAILED: 5,
+  UNMAPPABLE: 5,
+  BAD_STATE: 6,
+};
+
 export const OperandLifetime = {
   TEMPORARY_VARIABLE: 0,
   MODEL_INPUT: 1,

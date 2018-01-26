@@ -1,4 +1,4 @@
-import {OperationCode, OperandCode, PaddingCode, PreferenceCode, FuseCode, OperandLifetime} from './Enums'
+import {OperationCode, OperandCode, PaddingCode, PreferenceCode, FuseCode, OperandLifetime, ResultCode} from './Enums'
 
 import PreparedModel from './wasm/PreparedModel'
 
@@ -24,7 +24,7 @@ export default class Execution {
    * @param {number} index - The index of the input argument we are setting.
    * @param {TypedArray} buffer - The typed array containing the data.
    */
-  setInput(index, buffer) {
+  async setInput(index, buffer) {
     let model = this._model;
     if (index > model._inputs.length) {
       throw new Error(`Invalid index ${index}`);
@@ -45,6 +45,7 @@ export default class Execution {
       buffer: buffer
     }
     this._inputs.push(tensor);
+    return ResultCode.NO_ERROR;
   }
 
   /**
@@ -53,7 +54,7 @@ export default class Execution {
    * @param {number} index - The index of output.
    * @param {TypedArray} buffer - The typed array to receive the output data.
    */
-  setOutput(index, buffer) {
+  async setOutput(index, buffer) {
     let model = this._model;
     if (index > model._outputs.length) {
       throw new Error(`Invalid index ${index}`);
@@ -74,6 +75,7 @@ export default class Execution {
       buffer: buffer
     }
     this._outputs.push(tensor);
+    return ResultCode.NO_ERROR;
   }
 
   /**
@@ -81,5 +83,6 @@ export default class Execution {
    */
   async startCompute() {
     await this._preparedModel.execute(this._inputs, this._outputs);
+    return ResultCode.NO_ERROR;
   }
 }
