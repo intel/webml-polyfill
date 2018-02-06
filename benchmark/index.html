@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>WebML Benchmark</title>
+    <script src="../dist/webml-polyfill.js"></script>
+    <script src="../examples/mobilenet/flatbuffers/js/flatbuffers.js"></script>
+    <script src="../examples/mobilenet/schema/schema_generated.js"></script>
+    <script src="../examples/mobilenet/TfLiteModelUtils.js"></script>
+    <script src="../examples/mobilenet/MobileNet.js"></script>
+    <script src="index.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/css/bootstrap.min.css" integrity="sha384-Zug+QiDoJOrZ5t4lssLdxGhVrurbmBWopoEl+M6BdEfwnCJZtKxi1KgxUyJq13dy" crossorigin="anonymous">
+    <style>
+      body {
+        font-size: 13px;
+      }
+      img {
+        max-height: 400px;
+      }
+      canvas {
+        display: none;
+        position: absolute;
+        z-index: -3;
+      }
+      .top-margin {
+        margin-top:10px;
+      }
+      h1, h4 {
+        margin: 24px 0 0;
+      }
+      h1 { 
+        font-size: 2.0em;
+      }
+      h4 {
+        font-size: 1.2em;
+      }
+      pre {
+        font-family: 'Consolas', 'Monaco', monospace, serif;
+        font-size: 12px;
+        tab-size: 2;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container" id="container">
+      <div class="row">
+        <div class="col-12">
+          <h1>WebML Benchmark</h1>
+          <div>
+            <h4>Model</h4>
+            <select id="modelName">
+              <option value="mobilenet" selected>MobileNet</option>
+            </select>
+          </div>
+          <div>
+            <h4>Framework and backends</h4>
+            <select id="configurations">
+            </select>
+          </div>
+          <div>
+            <h4>Iterations</h4>
+            1(warming up) + <input type="number" id="iteration" min="1" size="4" value="3"/>
+          </div>
+          <div class="row top-margin">
+            <div class="col">
+            </div>
+            <div class="col-8" align="center">
+              <img id="image" crossorigin="anonymous" class="img-fluid" alt="Responsive image" src="../examples/mobilenet/img/bee_eater.jpg">
+              </img>
+            </div>
+            <div class="col">
+            </div>
+          </div>
+          <div class="row top-margin">
+            <div class="col">
+            </div>
+            <div class="col" align="center">
+              <label id="pickButton" class="btn btn-primary">Pick Image <input type="file" id="input" accept="image/*" hidden>
+              </label>
+            </div>
+            <div class="col">
+            </div>
+          </div>
+          <canvas id="canvas" width=224 height=224></canvas>
+          <button type="button" id="runButton" class="btn btn-primary disabled">Run</button>
+            (It will take several minutes)
+          <div>
+            <pre id="log"></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
