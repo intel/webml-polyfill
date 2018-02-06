@@ -183,12 +183,9 @@ class WebMLJSBenchmark extends Benchmark {
     }
   }
   async executeSingleAsync() {
-    this.model.compute(this.inputTensor, this.outputTensor).then(result => {
-      console.log(`compute result: ${result}`);
-      this.printPredictResult();
-    }).catch(e => {
-      console.log(e);
-    });
+    let result = await this.model.compute(this.inputTensor, this.outputTensor);
+    console.log(`compute result: ${result}`);
+    this.printPredictResult();
   }
   async finalizeAsync() {
     this.model = null;
