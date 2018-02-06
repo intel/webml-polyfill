@@ -5,6 +5,7 @@ class MobileNet {
     this._tfModel = tfModel;
     this._model = null;
     this._compilation;
+    this._execution;
     this._tensorIds = [];
     this._operandIndex = 0;
   }
@@ -12,29 +13,28 @@ class MobileNet {
   async createCompiledModel() {
     this._model = await nn.createModel();
 
-    await this._addTensorOperands();
-    await this._addOpsAndParams();
+    this._addTensorOperands();
+    this._addOpsAndParams();
 
     await this._model.finish();
     this._compilation = await this._model.createCompilation();
-    await this._compilation.setPreference(nn.PREFER_FAST_SINGLE_ANSWER);
-    return await this._compilation.finish();
+    this._compilation.setPreference(nn.PREFER_FAST_SINGLE_ANSWER);
+    await this._compilation.finish();
+    this._execution = await this._compilation.createExecution();
   }
 
   async compute(inputTensor, outputTensor) {
-    let execution = await this._compilation.createExecution();
+    this._execution.setInput(0, inputTensor);
+    this._execution.setOutput(0, outputTensor);
 
-    await execution.setInput(0, inputTensor);
-    await execution.setOutput(0, outputTensor);
-
-    let error = await execution.startCompute();
+    let error = await this._execution.startCompute();
     if (error) {
       return error;
     }
     return 'success';
   }
 
-  async _addTensorOperands() {
+  _addTensorOperands() {
     let graph = this._tfModel.subgraphs(0);
     let tensorsLength = graph.tensorsLength();
     for (let i = 0; i < tensorsLength; ++i) {
@@ -56,38 +56,38 @@ class MobileNet {
       }
       let tensorType = {type: type, dimensions: Array.from(tensor.shapeArray())};
       let tensorId = this._operandIndex++;
-      await this._model.addOperand(tensorType);
+      this._model.addOperand(tensorType);
       this._tensorIds.push(tensorId);
       let buffer = this._tfModel.buffers(tensor.buffer());
       if (buffer.dataLength() > 0) {
         let raw = buffer.dataArray();
         let data = new typedArray(raw.buffer, raw.byteOffset, raw.byteLength / typedArray.BYTES_PER_ELEMENT);
-        await this._model.setOperandValue(tensorId, data);
+        this._model.setOperandValue(tensorId, data);
       }
     }
 
     let inputs = Array.from(graph.inputsArray());
     let outputs = Array.from(graph.outputsArray());
-    await this._model.identifyInputsAndOutputs(inputs, outputs);
+    this._model.identifyInputsAndOutputs(inputs, outputs);
   }
 
-  async _addScalarInt32(value) {
+  _addScalarInt32(value) {
     const scalarInt32Type = {type: nn.INT32};
     let index = this._operandIndex++;
-    await this._model.addOperand(scalarInt32Type);
-    await this._model.setOperandValue(index, new Int32Array([value]));
+    this._model.addOperand(scalarInt32Type);
+    this._model.setOperandValue(index, new Int32Array([value]));
     return index;
   }
 
-  async _addScalarFloat32(value) {
+  _addScalarFloat32(value) {
     const scalarInt32Type = {type: nn.FLOAT32};
     let index = this._operandIndex++;
-    await this._model.addOperand(scalarInt32Type);
-    await this._model.setOperandValue(index, new Float32Array([value]));
+    this._model.addOperand(scalarInt32Type);
+    this._model.setOperandValue(index, new Float32Array([value]));
     return index;
   }
 
-  async _addOpsAndParams() {
+  _addOpsAndParams() {
     const PaddingCodeMap = new Map([
       [tflite.Padding.SAME, nn.PADDING_SAME],
       [tflite.Padding.VALID, nn.PADDING_VALID]
@@ -115,14 +115,14 @@ class MobileNet {
           if (typeof paddingCode === 'undefined') {
             throw new Error(`Padding code ${options.padding()} is not supported.`);
           }
-          inputs.push(await this._addScalarInt32(paddingCode));
-          inputs.push(await this._addScalarInt32(options.strideW()));
-          inputs.push(await this._addScalarInt32(options.strideH()));
+          inputs.push(this._addScalarInt32(paddingCode));
+          inputs.push(this._addScalarInt32(options.strideW()));
+          inputs.push(this._addScalarInt32(options.strideH()));
           let fuseCode = FuseCodeMap.get(options.fusedActivationFunction());
           if (typeof fuseCode === 'undefined') {
             throw new Error(`Fuse code ${options.fusedActivationFunction()} is not supported.`);
           }
-          inputs.push(await this._addScalarInt32(fuseCode));
+          inputs.push(this._addScalarInt32(fuseCode));
           opType = nn.CONV_2D;
         } break;
         case tflite.BuiltinOperator.DEPTHWISE_CONV_2D: {
@@ -131,15 +131,15 @@ class MobileNet {
           if (typeof paddingCode === 'undefined') {
             throw new Error(`Padding code ${options.padding()} is not supported.`);
           }
-          inputs.push(await this._addScalarInt32(paddingCode));
-          inputs.push(await this._addScalarInt32(options.strideW()));
-          inputs.push(await this._addScalarInt32(options.strideH()));
-          inputs.push(await this._addScalarInt32(options.depthMultiplier()));
+          inputs.push(this._addScalarInt32(paddingCode));
+          inputs.push(this._addScalarInt32(options.strideW()));
+          inputs.push(this._addScalarInt32(options.strideH()));
+          inputs.push(this._addScalarInt32(options.depthMultiplier()));
           let fuseCode = FuseCodeMap.get(options.fusedActivationFunction());
           if (typeof fuseCode === 'undefined') {
             throw new Error(`Fuse code ${options.fusedActivationFunction()} is not supported.`);
           }
-          inputs.push(await this._addScalarInt32(fuseCode));
+          inputs.push(this._addScalarInt32(fuseCode));
           opType = nn.DEPTHWISE_CONV_2D;
         } break;
         case tflite.BuiltinOperator.AVERAGE_POOL_2D: {
@@ -148,21 +148,21 @@ class MobileNet {
           if (typeof paddingCode === 'undefined') {
             throw new Error(`Padding code ${options.padding()} is not supported.`);
           }
-          inputs.push(await this._addScalarInt32(paddingCode));
-          inputs.push(await this._addScalarInt32(options.strideW()));
-          inputs.push(await this._addScalarInt32(options.strideH()));
-          inputs.push(await this._addScalarInt32(options.filterWidth()));
-          inputs.push(await this._addScalarInt32(options.filterHeight()));
+          inputs.push(this._addScalarInt32(paddingCode));
+          inputs.push(this._addScalarInt32(options.strideW()));
+          inputs.push(this._addScalarInt32(options.strideH()));
+          inputs.push(this._addScalarInt32(options.filterWidth()));
+          inputs.push(this._addScalarInt32(options.filterHeight()));
           let fuseCode = FuseCodeMap.get(options.fusedActivationFunction());
           if (typeof fuseCode === 'undefined') {
             throw new Error(`Fuse code ${options.fusedActivationFunction()} is not supported.`);
           }
-          inputs.push(await this._addScalarInt32(fuseCode));
+          inputs.push(this._addScalarInt32(fuseCode));
           opType = nn.AVERAGE_POOL_2D;
         } break;
         case tflite.BuiltinOperator.SOFTMAX: {
           let options = operator.builtinOptions(new tflite.SoftmaxOptions());
-          inputs.push(await this._addScalarFloat32(options.beta()));
+          inputs.push(this._addScalarFloat32(options.beta()));
           opType = nn.SOFTMAX;
         } break;
         case tflite.BuiltinOperator.RESHAPE: {
@@ -174,7 +174,7 @@ class MobileNet {
           throw new Error(`operator type ${opcode} is not supported.`);
         }
       }
-      await this._model.addOperation(opType, inputs, outputs);
+      this._model.addOperation(opType, inputs, outputs);
     }
   }
 }

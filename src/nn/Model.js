@@ -51,7 +51,7 @@ export default class Model {
    * @param {number} options.scale - Only for quantized tensors whose value is defined by (value - zeroPoint) * scale.
    * @param {number} options.zeroPoint - Only for quantized tensors whose value is defined by (value - zeroPoint) * scale.
    */
-  async addOperand(options = {}) {
+  addOperand(options = {}) {
     if (this._completed) {
       throw new Error('addOperand cant modify after model finished');
     }
@@ -79,7 +79,7 @@ export default class Model {
    * @param {number} index - The index of the model operand we're setting.
    * @param {TypedArray} value - The typed array containing data.
    */
-  async setOperandValue(index, value) {
+  setOperandValue(index, value) {
     if (index > this._operands.length) {
       throw new Error(`Invalid index ${index}`);
     }
@@ -103,7 +103,7 @@ export default class Model {
    * @param {number[]} inputs - An array of indexes identifying the input operands.
    * @param {number[]} outputs - An array of indexes identifying the output operands.
    */
-  async addOperation(type, inputs, outputs) {
+  addOperation(type, inputs, outputs) {
     if (this._completed) {
       throw new Error('addOperation cant modify after model finished');
     }
@@ -135,7 +135,7 @@ export default class Model {
    * @param {number[]} inputs - An array of indexes identifying the input operands.
    * @param {number[]} outputs - An array of indexes identifying the output operands.
    */
-  async identifyInputsAndOutputs(inputs, outputs) {
+  identifyInputsAndOutputs(inputs, outputs) {
     if (!this._validateOperandList(inputs)) {
       throw new Error(`Invalid inputs ${inputs}`);
     }

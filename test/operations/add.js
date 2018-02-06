@@ -12,28 +12,28 @@ describe('Add Test', function() {
     const tensorLength = product(float32TensorType.dimensions);
 
     let fusedActivationFuncNone = operandIndex++;
-    await model.addOperand({type: nn.INT32});
-    await model.setOperandValue(fusedActivationFuncNone, new Int32Array([nn.FUSED_NONE]));
+    model.addOperand({type: nn.INT32});
+    model.setOperandValue(fusedActivationFuncNone, new Int32Array([nn.FUSED_NONE]));
 
     let input0 = operandIndex++;
-    await model.addOperand(float32TensorType);
+    model.addOperand(float32TensorType);
     let input0Data = new Float32Array(tensorLength);
     input0Data.fill(value0);
 
-    await model.setOperandValue(input0, input0Data);
+    model.setOperandValue(input0, input0Data);
 
     let input1 = operandIndex++;
-    await model.addOperand(float32TensorType);
+    model.addOperand(float32TensorType);
     let output = operandIndex++;
-    await model.addOperand(float32TensorType);
+    model.addOperand(float32TensorType);
 
-    await model.addOperation(nn.ADD, [input0, input1, fusedActivationFuncNone], [output]);
-    await model.identifyInputsAndOutputs([input1], [output]);
+    model.addOperation(nn.ADD, [input0, input1, fusedActivationFuncNone], [output]);
+    model.identifyInputsAndOutputs([input1], [output]);
     await model.finish();
 
     let compilation = await model.createCompilation();
 
-    await compilation.setPreference(nn.PREFER_FAST_SINGLE_ANSWER);
+    compilation.setPreference(nn.PREFER_FAST_SINGLE_ANSWER);
     
     await compilation.finish();
 
@@ -42,10 +42,10 @@ describe('Add Test', function() {
     let input1Data = new Float32Array(tensorLength);
     input1Data.fill(value1);
 
-    await execution.setInput(0, input1Data);
+    execution.setInput(0, input1Data);
 
     let outputData = new Float32Array(tensorLength);
-    await execution.setOutput(0, outputData);
+    execution.setOutput(0, outputData);
 
     await execution.startCompute();
 

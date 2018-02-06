@@ -24,7 +24,7 @@ export default class Execution {
    * @param {number} index - The index of the input argument we are setting.
    * @param {TypedArray} buffer - The typed array containing the data.
    */
-  async setInput(index, buffer) {
+  setInput(index, buffer) {
     let model = this._model;
     if (index > model._inputs.length) {
       throw new Error(`Invalid index ${index}`);
@@ -54,7 +54,7 @@ export default class Execution {
    * @param {number} index - The index of output.
    * @param {TypedArray} buffer - The typed array to receive the output data.
    */
-  async setOutput(index, buffer) {
+  setOutput(index, buffer) {
     let model = this._model;
     if (index > model._outputs.length) {
       throw new Error(`Invalid index ${index}`);

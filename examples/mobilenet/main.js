@@ -30,11 +30,11 @@ function main() {
   }
 
   function predict() {
-    let start = performance.now();
     canvasContext.drawImage(imageElement, 0, 0,
                             canvasElement.width,
                             canvasElement.height);
     prepareInputTensor(inputTensor, canvasElement);
+    let start = performance.now();
     model.compute(inputTensor, outputTensor).then(result => {
       let elapsed = performance.now() - start;
       let classes = getTopClasses(outputTensor, labels, 3);

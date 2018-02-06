@@ -24,30 +24,30 @@ class SimpleModel {
     // value to FUSED_NONE.
     // This constant scalar operand will be used for all 3 operations.
     let fusedActivationFuncNone = operandIndex++;
-    await this.model_.addOperand(scalarInt32Type);
-    await this.model_.setOperandValue(fusedActivationFuncNone, new Int32Array([nn.FUSED_NONE]));
+    this.model_.addOperand(scalarInt32Type);
+    this.model_.setOperandValue(fusedActivationFuncNone, new Int32Array([nn.FUSED_NONE]));
 
     // tensor0 is a constant tensor that was established during training.
     // We read these values from the corresponding memory object.
     let tensor0 = operandIndex++;
-    await this.model_.addOperand(float32TensorType);
-    await this.model_.setOperandValue(tensor0, new Float32Array(this.arrayBuffer_, 0, TENSOR_SIZE));
+    this.model_.addOperand(float32TensorType);
+    this.model_.setOperandValue(tensor0, new Float32Array(this.arrayBuffer_, 0, TENSOR_SIZE));
 
     // tensor1 is one of the user provided input tensors to the trained this.model_.
     // Its value is determined pre-execution.
     let tensor1 = operandIndex++;
-    await this.model_.addOperand(float32TensorType);
+    this.model_.addOperand(float32TensorType);
 
     // tensor2 is a constant tensor that was established during training.
     // We read these values from the corresponding memory object.
     let tensor2 = operandIndex++;
-    await this.model_.addOperand(float32TensorType);
-    await this.model_.setOperandValue(tensor2, new Float32Array(this.arrayBuffer_, TENSOR_SIZE * Float32Array.BYTES_PER_ELEMENT, TENSOR_SIZE));
+    this.model_.addOperand(float32TensorType);
+    this.model_.setOperandValue(tensor2, new Float32Array(this.arrayBuffer_, TENSOR_SIZE * Float32Array.BYTES_PER_ELEMENT, TENSOR_SIZE));
 
     // tensor3 is one of the user provided input tensors to the trained this.model_.
     // Its value is determined pre-execution.
     let tensor3 = operandIndex++;
-    await this.model_.addOperand(float32TensorType);
+    this.model_.addOperand(float32TensorType);
 
     // intermediateOutput0 is the output of the first ADD operation.
     // Its value is computed during execution.
@@ -62,24 +62,24 @@ class SimpleModel {
     // multiplierOutput is the output of the MUL operation.
     // Its value will be computed during execution.
     let multiplierOutput = operandIndex++;
-    await this.model_.addOperand(float32TensorType);
+    this.model_.addOperand(float32TensorType);
 
     // Add the MUL operation. (Test operations reorder)
     // Note that intermediateOutput0 and intermediateOutput1 are specified
     // as inputs to the operation.
-    await this.model_.addOperation(nn.MUL, [intermediateOutput0, intermediateOutput1, fusedActivationFuncNone], [multiplierOutput]);
+    this.model_.addOperation(nn.MUL, [intermediateOutput0, intermediateOutput1, fusedActivationFuncNone], [multiplierOutput]);
 
     // Add the first ADD operation.
-    await this.model_.addOperation(nn.ADD, [tensor0, tensor1, fusedActivationFuncNone], [intermediateOutput0]);
+    this.model_.addOperation(nn.ADD, [tensor0, tensor1, fusedActivationFuncNone], [intermediateOutput0]);
 
     // Add the second ADD operation.
     // Note the fusedActivationFuncNone is used again.
-    await this.model_.addOperation(nn.ADD, [tensor2, tensor3, fusedActivationFuncNone], [intermediateOutput1]);
+    this.model_.addOperation(nn.ADD, [tensor2, tensor3, fusedActivationFuncNone], [intermediateOutput1]);
 
     // Identify the input and output tensors to the this.model_.
     // Inputs: {tensor1, tensor3}
     // Outputs: {multiplierOutput}
-    await this.model_.identifyInputsAndOutputs([tensor1, tensor3], [multiplierOutput]);
+    this.model_.identifyInputsAndOutputs([tensor1, tensor3], [multiplierOutput]);
 
     // Finish constructing the this.model_.
     // The values of constant and intermediate operands cannot be altered after
@@ -93,7 +93,7 @@ class SimpleModel {
     // can make better decisions.
     // Here we prefer to get the answer quickly, so we choose
     // PREFER_FAST_SINGLE_ANSWER.
-    await this.compilation_.setPreference(nn.PREFER_FAST_SINGLE_ANSWER);
+    this.compilation_.setPreference(nn.PREFER_FAST_SINGLE_ANSWER);
 
     // Finish the compilation.
     return await this.compilation_.finish();
@@ -108,11 +108,11 @@ class SimpleModel {
 
     // Tell the execution to associate inputTensor1 to the first of the two model inputs.
     // Note that the index of the modelInput list {tensor1, tensor3}
-    await execution.setInput(0, inputTensor1);
-    await execution.setInput(1, inputTensor2);
+    execution.setInput(0, inputTensor1);
+    execution.setInput(1, inputTensor2);
 
     let outputTensor = new Float32Array(this.tensorSize_);
-    await execution.setOutput(0, outputTensor);
+    execution.setOutput(0, outputTensor);
 
     let error = await execution.startCompute();
     if (error) {
