@@ -4,4 +4,4 @@ This benchmark loads MobileNet model trained by ImageNet in TensorFlow Lite form
 
 Download Model
 -----------
-Before performance this benchmark, you need to download the model. Please check out [README.md](../examples/mobilenet/model/README.md) in ../examples/mobilenet/model folder for details.
+Before run this benchmark, you need to download the model. Please check out [README.md](../examples/mobilenet/model/README.md) in ../examples/mobilenet/model folder for details.

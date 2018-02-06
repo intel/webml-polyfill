@@ -6,9 +6,6 @@ const MOBILENET_LABELS_FILE = '../examples/mobilenet/model/labels.txt';
 let imageElement = null;
 let inputElement = null;
 let pickBtnEelement = null;
-const InputSize = {
-  'mobilenet': 224,
-};
 class Logger {
   constructor($dom) {
     this.$dom = $dom;
@@ -215,7 +212,6 @@ async function run() {
     let configuration = JSON.parse(document.querySelector('#configurations').selectedOptions[0].value);
     configuration.modelName = document.querySelector('#modelName').selectedOptions[0].value;
     configuration.iteration = Number(document.querySelector('#iteration').value) + 1;
-    configuration.batchSize = Number(document.querySelector('#batchSize').value);
     logger.group('Environment Information');
     logger.log(`${'UserAgent'.padStart(12)}: ${(navigator.userAgent) || '(N/A)'}`);
     logger.log(`${'Platform'.padStart(12)}: ${(navigator.platform || '(N/A)')}`);
@@ -252,7 +248,6 @@ document.addEventListener('DOMContentLoaded', () => {
     framework: 'webml-polyfill.js',
     name: 'webml-polyfill.js (WebAssembly backend)',
     modelName: 'mobilenet',
-    batchSize: 0,
     iteration: 0
   }];
   let configurations = [];
@@ -264,6 +259,6 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelector('#configurations').appendChild(option);
   }
   let button = document.querySelector('#runButton');
-  button.setAttribute('class', 'btn btn-primary');;
+  button.setAttribute('class', 'btn btn-primary');
   button.addEventListener('click', run);
 });
