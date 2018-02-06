@@ -1,7 +1,7 @@
 function main() {
   let utils = new Utils();
   const videoElement = document.getElementById('video');
-  navigator.mediaDevices.getUserMedia({audio: false, video: {facingMode: {exact: "environment"}}}).then((stream) => {
+  navigator.mediaDevices.getUserMedia({audio: false, video: {facingMode: "environment"}}).then((stream) => {
     video.srcObject = stream;
     utils.init().then(() => {
       startPredict();
