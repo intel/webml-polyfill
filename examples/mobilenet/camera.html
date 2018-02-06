@@ -2,11 +2,11 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>WebML MobileNet Demo</title>
+    <title>WebML MobileNet Camera Demo</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/css/bootstrap.min.css" integrity="sha384-Zug+QiDoJOrZ5t4lssLdxGhVrurbmBWopoEl+M6BdEfwnCJZtKxi1KgxUyJq13dy" crossorigin="anonymous">
     <style>
-      img {
-        max-height: 400px;
+      video {
+        max-height: 360px;
       }
       canvas {
         display: none;
@@ -26,7 +26,7 @@
   </head>
   <body>
     <nav class="navbar navbar-expand-md navbar-dark bg-dark" style="width:100%">
-      <span class="navbar-brand mb-0 h1">WebML MobileNet Demo</span>
+      <span class="navbar-brand mb-0 h1">WebML MobileNet Camera Demo</span>
     </nav>
     <div class="container" id="container">
       <div id="progressContainer">
@@ -36,23 +36,8 @@
         </div>
       </div>
       <div class="row top-margin">
-        <div class="col">
-        </div>
-        <div class="col-8" align="center">
-          <img id="image" crossorigin="anonymous" class="img-fluid" alt="Responsive image" src="./img/bee_eater.jpg"></img>
-        </div>
-        <div class="col">
-        </div>
-      </div>
-      <div class="row top-margin">
-        <div class="col">
-        </div>
-        <div class="col" align="center">
-            <label id="button" class="btn btn-primary disabled">
-                Pick Image <input type="file" id="input" accept="image/*" hidden disabled>
-            </label>
-        </div>
-        <div class="col">
+        <div class="col-12" align="center">
+          <video id="video" autoplay playsinline></video>
         </div>
       </div>
       <div class="row">
@@ -99,7 +84,7 @@
     <script src="TfLiteModelUtils.js"></script>
     <script src="MobileNet.js"></script>
     <script src="utils.js"></script>
-    <script src="main.js"></script>
+    <script src="camera.js"></script>
     <script>
       window.onload = function() {
         main();
