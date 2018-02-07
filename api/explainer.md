@@ -4,6 +4,7 @@ WebML allows web developers to integrate machine learning (ML) models into web a
 
 WebML runs pre-trained ML models in web browser by using OS resources and taking advantages of CPU/GPU/accelerators on devices. WebML aims to provide maximum performance and efficiency which is essential for real-time applications, e.g. augmented reality. Together with progressive web apps, web apps using WebML can save network bandwidth and even remain functional and responsive when a network connection is unavailable.
 
+The components diagram of WebML
 ![WebML](webml.png)
 
 ## Use cases
@@ -24,6 +25,7 @@ Key advantages: real-time performance, save bandwidth, offline capability
  * [WebDNN](https://mil-tokyo.github.io/webdnn/)
  * [keras.js](https://github.com/transcranial/keras-js)
  * [deeplearn.js](https://deeplearnjs.org/)
+ * [A comprehensive look at existing libraries](https://github.com/AngeloKai/js-ml-libraries)
 
 ## Potential misuse
 ML inference is an expensive operation due to the algorithmic complexity. Many requests, or demanding systems like a live stream feed with a certain frame rate, could slow down the whole system or greatly increase power consumption.
