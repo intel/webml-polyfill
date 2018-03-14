@@ -2,6 +2,7 @@ import {OperationCode, OperandCode, PaddingCode, PreferenceCode, FuseCode, Resul
 import Model from './Model'
 import Compilation from './Compilation'
 import Execution from './Execution'
+import supportWebGL2 from './webgl2'
 
 export default class NeuralNetworkContext {
   constructor() {
@@ -10,6 +11,7 @@ export default class NeuralNetworkContext {
     this._initFusedActivationFunctionTypes();
     this._initImplicitPaddingTypes();
     this._initExecutionPreferenceTypes();
+    this.supportWebGL2 = supportWebGL2;
   }
 
   /**
@@ -17,8 +19,8 @@ export default class NeuralNetworkContext {
    * 
    * @param {string} name - The model name.
    */
-  async createModel(name) {
-    return new Model(name);
+  async createModel(options = {}) {
+    return new Model(options);
   }
 
   _initOperandTypes() {
