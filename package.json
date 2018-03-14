@@ -26,7 +26,10 @@
     "babel-loader": "^7.1.1",
     "babel-preset-env": "^1.6.0",
     "http-server": "^0.10.0",
-    "webpack": "^3.5.5"
+    "webpack": "^3.5.5",
+    "ndarray": "^1.0.18",
+    "ndarray-ops": "^1.2.2",
+    "ndarray-squeeze": "^1.0.2"
   },
   "dependencies": {}
 }

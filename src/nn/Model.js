@@ -6,12 +6,13 @@ export default class Model {
   /**
    * Create an empty model.
    */
-  constructor() {
+  constructor(options = {}) {
     this._completed = false;
     this._operands = [];
     this._operations = [];
     this._inputs = null;
     this._outputs = null;
+    this._useWebGL2 = options.useWebGL2;
   }
 
   /**
@@ -107,7 +108,7 @@ export default class Model {
     if (this._completed) {
       throw new Error('addOperation cant modify after model finished');
     }
-
+    
     if (!this._validateOperationCode(type)) {
       throw new Error(`Invalid operation code ${type}`);
     }
