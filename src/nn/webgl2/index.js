@@ -9,7 +9,8 @@ import ndarray from 'ndarray'
 import ops from 'ndarray-ops'
 import squeeze from 'ndarray-squeeze'
 
-const supportWebGL2 = webgl2.supportWebGL2
+const supportWebGL2 = webgl2.supportWebGL2;
+// const supportWebGL2 = false;
 // export { Tensor, Layer, webgl2, GPU_SUPPORT, layer, shader, ndarray, ops, squeeze }
 // const webmlGPU = { Tensor, Layer, webgl2, GPU_SUPPORT, layer, shader, ndarray, ops, squeeze }
 // export { webmlGPU as default }
