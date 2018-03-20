@@ -1,24 +1,52 @@
-const nn = navigator.ml.getNeuralNetworkContext();
+let nnPolyfill, nnNative;
+if (navigator.ml.isPolyfill) {
+  nnNative = null;
+  nnPolyfill = navigator.ml.getNeuralNetworkContext();
+} else {
+  nnNative = navigator.ml.getNeuralNetworkContext();
+  nnPolyfill = navigator.ml_polyfill.getNeuralNetworkContext();
+}
 
 class MobileNet {
-  constructor(tfModel) {
+  constructor(tfModel, backend) {
     this._tfModel = tfModel;
     this._model = null;
     this._compilation;
     this._execution;
     this._tensorIds = [];
     this._operandIndex = 0;
+    if (typeof backend !== 'undefined') {
+      this._backend = backend;
+    } else {
+      if (nnNative) {
+        this._backend = 'WebML';
+      } else {
+        this._backend = 'WASM';
+      }
+    }
+    if (this._backend === 'WebML') {
+      if (nnNative === null) {
+        throw Error('Fails to initialize neural network context');
+      }
+      this._nn = nnNative;
+    } else if (this._backend === 'WASM' || this._backend === 'WebGL2') {
+      this._nn = nnPolyfill;
+    }
   }
 
-  async createCompiledModel(options = {}) {
-    this._model = await nn.createModel(options);
+  async createCompiledModel() {
+    let options = {};
+    if (this._backend === 'WebGL2') {
+      options.useWebGL2 = true;
+    }
+    this._model = await this._nn.createModel(options);
 
     this._addTensorOperands();
     this._addOpsAndParams();
 
     await this._model.finish();
     this._compilation = await this._model.createCompilation();
-    this._compilation.setPreference(nn.PREFER_FAST_SINGLE_ANSWER);
+    this._compilation.setPreference(this._nn.PREFER_FAST_SINGLE_ANSWER);
     await this._compilation.finish();
     this._execution = await this._compilation.createExecution();
   }
@@ -43,11 +71,11 @@ class MobileNet {
       let typedArray;
       switch (tensor.type()) {
         case tflite.TensorType.FLOAT32: {
-          type = nn.TENSOR_FLOAT32;
+          type = this._nn.TENSOR_FLOAT32;
           typedArray = Float32Array;
         } break;
         case tflite.TensorType.INT32: {
-          type = nn.TENSOR_INT32;
+          type = this._nn.TENSOR_INT32;
           typedArray = Int32Array;
         } break;
         default: {
@@ -72,7 +100,7 @@ class MobileNet {
   }
 
   _addScalarInt32(value) {
-    const scalarInt32Type = {type: nn.INT32};
+    const scalarInt32Type = {type: this._nn.INT32};
     let index = this._operandIndex++;
     this._model.addOperand(scalarInt32Type);
     this._model.setOperandValue(index, new Int32Array([value]));
@@ -80,7 +108,7 @@ class MobileNet {
   }
 
   _addScalarFloat32(value) {
-    const scalarInt32Type = {type: nn.FLOAT32};
+    const scalarInt32Type = {type: this._nn.FLOAT32};
     let index = this._operandIndex++;
     this._model.addOperand(scalarInt32Type);
     this._model.setOperandValue(index, new Float32Array([value]));
@@ -89,15 +117,15 @@ class MobileNet {
 
   _addOpsAndParams() {
     const PaddingCodeMap = new Map([
-      [tflite.Padding.SAME, nn.PADDING_SAME],
-      [tflite.Padding.VALID, nn.PADDING_VALID]
+      [tflite.Padding.SAME, this._nn.PADDING_SAME],
+      [tflite.Padding.VALID, this._nn.PADDING_VALID]
     ]);
 
     const FuseCodeMap = new Map([
-      [tflite.ActivationFunctionType.NONE, nn.FUSED_NONE],
-      [tflite.ActivationFunctionType.RELU, nn.FUSED_RELU],
-      [tflite.ActivationFunctionType.RELU1, nn.FUSED_RELU1],
-      [tflite.ActivationFunctionType.RELU6, nn.FUSED_RELU6],
+      [tflite.ActivationFunctionType.NONE, this._nn.FUSED_NONE],
+      [tflite.ActivationFunctionType.RELU, this._nn.FUSED_RELU],
+      [tflite.ActivationFunctionType.RELU1, this._nn.FUSED_RELU1],
+      [tflite.ActivationFunctionType.RELU6, this._nn.FUSED_RELU6],
     ]);
 
     let graph = this._tfModel.subgraphs(0);
@@ -123,7 +151,7 @@ class MobileNet {
             throw new Error(`Fuse code ${options.fusedActivationFunction()} is not supported.`);
           }
           inputs.push(this._addScalarInt32(fuseCode));
-          opType = nn.CONV_2D;
+          opType = this._nn.CONV_2D;
         } break;
         case tflite.BuiltinOperator.DEPTHWISE_CONV_2D: {
           let options = operator.builtinOptions(new tflite.DepthwiseConv2DOptions());
@@ -140,7 +168,7 @@ class MobileNet {
             throw new Error(`Fuse code ${options.fusedActivationFunction()} is not supported.`);
           }
           inputs.push(this._addScalarInt32(fuseCode));
-          opType = nn.DEPTHWISE_CONV_2D;
+          opType = this._nn.DEPTHWISE_CONV_2D;
         } break;
         case tflite.BuiltinOperator.AVERAGE_POOL_2D: {
           let options = operator.builtinOptions(new tflite.Pool2DOptions());
@@ -158,17 +186,17 @@ class MobileNet {
             throw new Error(`Fuse code ${options.fusedActivationFunction()} is not supported.`);
           }
           inputs.push(this._addScalarInt32(fuseCode));
-          opType = nn.AVERAGE_POOL_2D;
+          opType = this._nn.AVERAGE_POOL_2D;
         } break;
         case tflite.BuiltinOperator.SOFTMAX: {
           let options = operator.builtinOptions(new tflite.SoftmaxOptions());
           inputs.push(this._addScalarFloat32(options.beta()));
-          opType = nn.SOFTMAX;
+          opType = this._nn.SOFTMAX;
         } break;
         case tflite.BuiltinOperator.RESHAPE: {
           let options = operator.builtinOptions(new tflite.ReshapeOptions());
           //targetShape is in tensor
-          opType = nn.RESHAPE;
+          opType = this._nn.RESHAPE;
         } break;
         default: {
           throw new Error(`operator type ${opcode} is not supported.`);

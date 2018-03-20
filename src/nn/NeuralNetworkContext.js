@@ -12,14 +12,20 @@ export default class NeuralNetworkContext {
     this._initImplicitPaddingTypes();
     this._initExecutionPreferenceTypes();
     this.supportWebGL2 = supportWebGL2;
+    this.supportWasm = !!window.WebAssembly;
   }
 
   /**
    * Create a model object.
    * 
-   * @param {string} name - The model name.
+   * @param {options} options.useWebGL2 - create model backed by WebGL2.
    */
   async createModel(options = {}) {
+    if (options.useWebGL2 && !this.supportWebGL2) {
+      return "WebGL2 is not available";
+    } else if (!this.supportWasm) {
+      return "WebAssembly is not available";
+    }
     return new Model(options);
   }
 
