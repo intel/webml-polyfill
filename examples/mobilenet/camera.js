@@ -1,41 +1,52 @@
 function main() {
   let utils = new Utils();
   const videoElement = document.getElementById('video');
-  const checkboxElement = document.getElementById('WebGL2');
-  const checkboxLable = document.getElementById('checkboxLable');
   let streaming = false;
+  const backend = document.getElementById('backend');
+  const wasm = document.getElementById('wasm');
+  const webgl = document.getElementById('webgl');
+  const webml = document.getElementById('webml');
+  let currentBackend = '';
 
-  checkboxElement.addEventListener('click', function(e) {
-    streaming = false;
-    if (checkboxElement.checked && nn.supportWebGL2) {
-      utils.model = new MobileNet(utils.tfModel);
-      utils.model.createCompiledModel( { useWebGL2: true }).then(result => {
-        utils.predict(videoElement, true).then(result => {
-          streaming = true;
-          startPredict();
-        });
-      }).catch(e => {
-        console.error(e);
-      })
-    } else {
-      utils.model = new MobileNet(utils.tfModel);
-      utils.model.createCompiledModel( { useWebGL2: false }).then(result => {
-        streaming = true;
-        startPredict();
-      }).catch(e => {
-        console.error(e);
-      })
+  function updateBackend() {
+    currentBackend = utils.model._backend;
+    backend.innerHTML = currentBackend;
+  }
+
+  function changeBackend(newBackend) {
+    if (currentBackend === newBackend) {
+      return;
     }
-  });
+    utils.init(newBackend).then(() => {
+      updateBackend();
+    });
+  }
+ 
+  if (nnNative) {
+    webml.setAttribute('class', 'dropdown-item');
+    webml.onclick = function (e) {
+      changeBackend('WebML');
+    }
+  }
+
+  if (nnPolyfill.supportWebGL2) {
+    webgl.setAttribute('class', 'dropdown-item');
+    webgl.onclick = function(e) {
+      changeBackend('WebGL2');
+    }
+  }
+
+  if (nnPolyfill.supportWasm) {
+    wasm.setAttribute('class', 'dropdown-item');
+    wasm.onclick = function(e) {
+      changeBackend('WASM');
+    }
+  }
 
   navigator.mediaDevices.getUserMedia({audio: false, video: {facingMode: "environment"}}).then((stream) => {
     video.srcObject = stream;
     utils.init().then(() => {
-      if (!nn.supportWebGL2) {
-        checkboxElement.setAttribute('hidden', true);
-        checkboxLable.innerHTML = 'Do not support WebGL2!';
-        checkboxLable.setAttribute('class', 'alert alert-warning');
-      }
+      updateBackend();
       streaming = true;
       startPredict();
     });

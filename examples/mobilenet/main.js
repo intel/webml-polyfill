@@ -3,28 +3,47 @@ function main() {
   const imageElement = document.getElementById('image');
   const inputElement = document.getElementById('input');
   const buttonEelement = document.getElementById('button');
-  const checkboxElement = document.getElementById('WebGL2');
-  const checkboxLable = document.getElementById('checkboxLable');
+  const backend = document.getElementById('backend');
+  const wasm = document.getElementById('wasm');
+  const webgl = document.getElementById('webgl');
+  const webml = document.getElementById('webml');
+  let currentBackend = '';
 
-  checkboxElement.addEventListener('click', function(e) {
-    if (checkboxElement.checked && nn.supportWebGL2) {
-      utils.model = new MobileNet(utils.tfModel);
-      utils.model.createCompiledModel( { useWebGL2: true }).then(result => {
-        utils.predict(imageElement, true).then(result => {
-          utils.predict(imageElement, false);
-        });
-      }).catch(e => {
-        console.error(e);
-      });
-    } else {
-      utils.model = new MobileNet(utils.tfModel);
-      utils.model.createCompiledModel( { useWebGL2: false }).then(result => {
-        utils.predict(imageElement);
-      }).catch(e => {
-        console.error(e);
-      });
+  function updateBackend() {
+    currentBackend = utils.model._backend;
+    backend.innerHTML = currentBackend;
+  }
+
+  function changeBackend(newBackend) {
+    if (currentBackend === newBackend) {
+      return;
     }
-  });
+    utils.init(newBackend).then(() => {
+      updateBackend();
+      utils.predict(imageElement);
+    });
+  }
+ 
+  if (nnNative) {
+    webml.setAttribute('class', 'dropdown-item');
+    webml.onclick = function (e) {
+      changeBackend('WebML');
+    }
+  }
+
+  if (nnPolyfill.supportWebGL2) {
+    webgl.setAttribute('class', 'dropdown-item');
+    webgl.onclick = function(e) {
+      changeBackend('WebGL2');
+    }
+  }
+
+  if (nnPolyfill.supportWasm) {
+    wasm.setAttribute('class', 'dropdown-item');
+    wasm.onclick = function(e) {
+      changeBackend('WASM');
+    }
+  }
 
   inputElement.addEventListener('change', (e) => {
     let files = e.target.files;
@@ -38,13 +57,9 @@ function main() {
   }
 
   utils.init().then(() => {
+    updateBackend();
     utils.predict(imageElement);
     button.setAttribute('class', 'btn btn-primary');
     input.removeAttribute('disabled');
-    if (!nn.supportWebGL2) {
-      checkboxElement.setAttribute('hidden', true);
-      checkboxLable.innerHTML = 'Do not support WebGL2!';
-      checkboxLable.setAttribute('class', 'alert alert-warning');
-    }
   });
 }

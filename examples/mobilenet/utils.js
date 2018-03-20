@@ -18,43 +18,53 @@ class Utils {
     this.progressContainer = document.getElementById('progressContainer');
     this.canvasElement = document.getElementById('canvas');
     this.canvasContext = this.canvasElement.getContext('2d');
+
+    this.initialized = false;
   }
 
-  async init() {
-    let result = await this.loadModelAndLabels(MODEL_FILE, LABELS_FILE);
-    this.container.removeChild(progressContainer);
-    this.labels = result.text.split('\n');
-    console.log(`labels: ${this.labels}`);
-    let flatBuffer = new flatbuffers.ByteBuffer(result.bytes);
-    this.tfModel = tflite.Model.getRootAsModel(flatBuffer);
-    printTfLiteModel(this.tfModel);
-    this.model = new MobileNet(this.tfModel);
+  async init(backend) {
+    this.initialized = false;
+    let result;
+    if (!this.tfModel) {
+      result = await this.loadModelAndLabels(MODEL_FILE, LABELS_FILE);
+      this.container.removeChild(progressContainer);
+      this.labels = result.text.split('\n');
+      console.log(`labels: ${this.labels}`);
+      let flatBuffer = new flatbuffers.ByteBuffer(result.bytes);
+      this.tfModel = tflite.Model.getRootAsModel(flatBuffer);
+      printTfLiteModel(this.tfModel);
+    }
+    this.model = new MobileNet(this.tfModel, backend);
     result = await this.model.createCompiledModel();
     console.log(`compilation result: ${result}`);
+    let start = performance.now();
+    result = await this.model.compute(this.inputTensor, this.outputTensor);
+    let elapsed = performance.now() - start;
+    console.log(`warmup time: ${elapsed.toFixed(2)} ms`);
+    this.initialized = true;
   }
 
-  async predict(imageSource, warmUp) {
+  async predict(imageSource) {
+    if (!this.initialized) return;
     this.canvasContext.drawImage(imageSource, 0, 0,
                                  this.canvasElement.width,
                                  this.canvasElement.height);
     this.prepareInputTensor(this.inputTensor, this.canvasElement);
     let start = performance.now();
     let result = await this.model.compute(this.inputTensor, this.outputTensor);
-    if (!warmUp) {
-      let elapsed = performance.now() - start;
-      let classes = this.getTopClasses(this.outputTensor, this.labels, 3);
-      console.log(`Inference time: ${elapsed.toFixed(2)} ms`);
-      let inferenceTimeElement = document.getElementById('inferenceTime');
-      inferenceTimeElement.innerHTML = `inference time: ${elapsed.toFixed(2)} ms`;
-      console.log(`Classes: `);
-      classes.forEach((c, i) => {
-        console.log(`\tlabel: ${c.label}, probability: ${c.prob}%`);
-        let labelElement = document.getElementById(`label${i}`);
-        let probElement = document.getElementById(`prob${i}`);
-        labelElement.innerHTML = `${c.label}`;
-        probElement.innerHTML = `${c.prob}%`;
-      });
-    }
+    let elapsed = performance.now() - start;
+    let classes = this.getTopClasses(this.outputTensor, this.labels, 3);
+    console.log(`Inference time: ${elapsed.toFixed(2)} ms`);
+    let inferenceTimeElement = document.getElementById('inferenceTime');
+    inferenceTimeElement.innerHTML = `inference time: ${elapsed.toFixed(2)} ms`;
+    console.log(`Classes: `);
+    classes.forEach((c, i) => {
+      console.log(`\tlabel: ${c.label}, probability: ${c.prob}%`);
+      let labelElement = document.getElementById(`label${i}`);
+      let probElement = document.getElementById(`prob${i}`);
+      labelElement.innerHTML = `${c.label}`;
+      probElement.innerHTML = `${c.prob}%`;
+    });
   }
 
   async loadModelAndLabels(modelUrl, labelsUrl) {

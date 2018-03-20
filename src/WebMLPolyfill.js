@@ -3,6 +3,7 @@ import {NeuralNetworkContext} from './nn'
 class WebMLPolyfill {
 	constructor() {
     this._nnContext;
+    this.isPolyfill = true;
   }
 
   getNeuralNetworkContext() {
@@ -15,4 +16,6 @@ class WebMLPolyfill {
 
 if (typeof navigator.ml === 'undefined') {
   navigator.ml = new WebMLPolyfill();
+} else {
+  navigator.ml_polyfill = new WebMLPolyfill();
 }
