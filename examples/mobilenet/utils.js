@@ -33,26 +33,28 @@ class Utils {
     console.log(`compilation result: ${result}`);
   }
 
-  async predict(imageSource) {
+  async predict(imageSource, warmUp) {
     this.canvasContext.drawImage(imageSource, 0, 0,
                                  this.canvasElement.width,
                                  this.canvasElement.height);
     this.prepareInputTensor(this.inputTensor, this.canvasElement);
     let start = performance.now();
     let result = await this.model.compute(this.inputTensor, this.outputTensor);
-    let elapsed = performance.now() - start;
-    let classes = this.getTopClasses(this.outputTensor, this.labels, 3);
-    console.log(`Inference time: ${elapsed.toFixed(2)} ms`);
-    let inferenceTimeElement = document.getElementById('inferenceTime');
-    inferenceTimeElement.innerHTML = `inference time: ${elapsed.toFixed(2)} ms`;
-    console.log(`Classes: `);
-    classes.forEach((c, i) => {
-      console.log(`\tlabel: ${c.label}, probability: ${c.prob}%`);
-      let labelElement = document.getElementById(`label${i}`);
-      let probElement = document.getElementById(`prob${i}`);
-      labelElement.innerHTML = `${c.label}`;
-      probElement.innerHTML = `${c.prob}%`;
-    });
+    if (!warmUp) {
+      let elapsed = performance.now() - start;
+      let classes = this.getTopClasses(this.outputTensor, this.labels, 3);
+      console.log(`Inference time: ${elapsed.toFixed(2)} ms`);
+      let inferenceTimeElement = document.getElementById('inferenceTime');
+      inferenceTimeElement.innerHTML = `inference time: ${elapsed.toFixed(2)} ms`;
+      console.log(`Classes: `);
+      classes.forEach((c, i) => {
+        console.log(`\tlabel: ${c.label}, probability: ${c.prob}%`);
+        let labelElement = document.getElementById(`label${i}`);
+        let probElement = document.getElementById(`prob${i}`);
+        labelElement.innerHTML = `${c.label}`;
+        probElement.innerHTML = `${c.prob}%`;
+      });
+    }
   }
 
   async loadModelAndLabels(modelUrl, labelsUrl) {

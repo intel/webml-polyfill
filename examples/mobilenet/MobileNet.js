@@ -10,8 +10,8 @@ class MobileNet {
     this._operandIndex = 0;
   }
 
-  async createCompiledModel() {
-    this._model = await nn.createModel();
+  async createCompiledModel(options = {}) {
+    this._model = await nn.createModel(options);
 
     this._addTensorOperands();
     this._addOpsAndParams();
