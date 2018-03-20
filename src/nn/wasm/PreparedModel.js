@@ -98,11 +98,11 @@ export default class PreparedModel {
       let paddingTail = 0;
 
       if (paddingCode == PaddingCode.SAME) {
-        let outSize = (inSize + stride - 1) / stride;
-        let tmp = (outSize - 1) * stride + filterSize;
+        let outSize = Math.floor((inSize + stride - 1) / stride);
+        let tmp = Math.floor((outSize - 1) * stride + filterSize);
         if (tmp > inSize) {
-          paddingHead = (tmp - inSize) / 2;
-          paddingTail = (tmp - inSize) - paddingHead;
+          paddingHead = Math.floor((tmp - inSize) / 2);
+          paddingTail = Math.floor((tmp - inSize) - paddingHead);
         }
       }
 
