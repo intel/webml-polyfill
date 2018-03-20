@@ -1,4 +1,4 @@
-import * as layers from '../layer'
+import * as layers from '../layers'
 import Tensor from '../Tensor'
 import {OperationCode, OperandCode, PaddingCode, PreferenceCode, FuseCode} from '../../Enums'
 
