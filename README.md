@@ -1,4 +1,4 @@
-# WebML polyfill and examples
+# Web Machine Learning (ML) API polyfill and examples
 
 ## Development / Testing
 
@@ -12,6 +12,12 @@ $ npm install
 
 ```sh
 $ npm run build
+```
+
+Production build:
+
+```sh
+$ NODE_ENV=production npm run build
 ```
 
 ### Test
