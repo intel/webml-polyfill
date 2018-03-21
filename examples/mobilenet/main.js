@@ -18,10 +18,13 @@ function main() {
     if (currentBackend === newBackend) {
       return;
     }
-    utils.init(newBackend).then(() => {
-      updateBackend();
-      utils.predict(imageElement);
-    });
+    backend.innerHTML = 'Setting...';
+    setTimeout(() => {
+      utils.init(newBackend).then(() => {
+        updateBackend();
+        utils.predict(imageElement);
+      });
+    }, 10);
   }
  
   if (nnNative) {
