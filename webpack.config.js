@@ -1,7 +1,8 @@
 const path = require('path');
+const webpack = require('webpack')
 
-module.exports = {
-  entry: './src/WebMLPolyfill.js',
+const config = {
+  entry: ['babel-polyfill', './src/WebMLPolyfill.js'],
   output: {
     filename: 'webml-polyfill.js',
     path: path.resolve(__dirname, 'dist')
@@ -16,3 +17,19 @@ module.exports = {
     'fs': true
   }
 };
+
+if (process.env.NODE_ENV === 'production') {
+  config.plugins = [
+    new webpack.DefinePlugin({ 'process.env.NODE_ENV': JSON.stringify('production') }),
+    new webpack.optimize.ModuleConcatenationPlugin(),
+    new webpack.optimize.UglifyJsPlugin({
+      compress: { warnings: false, unused: false },
+      output: { comments: false }
+    })
+  ]
+} else {
+  config.devtool = 'eval'
+  config.plugins = [new webpack.DefinePlugin({ 'process.env.NODE_ENV': JSON.stringify('development') })]
+}
+
+module.exports = config
