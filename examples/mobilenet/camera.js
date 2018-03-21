@@ -17,9 +17,12 @@ function main() {
     if (currentBackend === newBackend) {
       return;
     }
-    utils.init(newBackend).then(() => {
-      updateBackend();
-    });
+    backend.innerHTML = 'Setting...';
+    setTimeout(() => {
+      utils.init(newBackend).then(() => {
+        updateBackend();
+      });
+    }, 10);
   }
  
   if (nnNative) {
