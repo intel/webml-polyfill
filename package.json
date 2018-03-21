@@ -24,7 +24,8 @@
   "devDependencies": {
     "babel-core": "^6.26.0",
     "babel-loader": "^7.1.1",
-    "babel-preset-env": "^1.6.0",
+    "babel-polyfill": "^6.26.0",
+    "babel-preset-env": "^1.6.1",
     "http-server": "^0.10.0",
     "webpack": "^3.5.5",
     "ndarray": "^1.0.18",
