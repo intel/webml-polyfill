@@ -138,7 +138,6 @@ class WebMLJSBenchmark extends Benchmark {
     const std = 127.5;
     this.inputTensor = new Float32Array(MOBILENET_INPUT_TENSOR_SIZE);
     this.outputTensor = new Float32Array(MOBILENET_OUTPUT_TENSOR_SIZE);
-    //imageElement = document.getElementById('image');
     let canvasElement = document.getElementById('canvas');
     let canvasContext = canvasElement.getContext('2d');
     canvasContext.drawImage(imageElement, 0, 0, width, height);
@@ -147,7 +146,6 @@ class WebMLJSBenchmark extends Benchmark {
     for (let y = 0; y < height; ++y) {
       for (let x = 0; x < width; ++x) {
         for (let c = 0; c < channels; ++c) {
-          //let value = Math.floor(Math.random() * 255) + 1;
           let value = pixels[y * width * imageChannels + x * imageChannels + c];
           this.inputTensor[y * width * channels + x * channels + c] = (value - mean) / std;
         }
@@ -158,11 +156,9 @@ class WebMLJSBenchmark extends Benchmark {
     this.setInputOutput();
     let result = await this.loadModelAndLabels();
     this.labels = result.text.split('\n');
-    //console.log(`labels: ${this.labels}`);
     let flatBuffer = new flatbuffers.ByteBuffer(result.bytes);
     let tfModel = tflite.Model.getRootAsModel(flatBuffer);
-    //printTfLiteModel(tfModel);
-    this.model = new MobileNet(tfModel);
+    this.model = new MobileNet(tfModel, this.configuration.backend);
     await this.model.createCompiledModel();
   }
   printPredictResult() {
@@ -224,7 +220,7 @@ async function run() {
     let summary = await benchmark.runAsync(configuration);
     logger.groupEnd();
     logger.group('Result');
-    logger.log(`Elapsed Time: ${summary.mean.toFixed(2)}+-${summary.std.toFixed(2)}[ms/batch]`);
+    logger.log(`Elapsed Time: ${summary.mean.toFixed(2)}+-${summary.std.toFixed(2)}[ms]`);
     logger.groupEnd();
   } catch (err) {
     logger.error(err);
@@ -243,7 +239,13 @@ document.addEventListener('DOMContentLoaded', () => {
   }, false);
   let webmljsConfigurations = [{
     framework: 'webml-polyfill.js',
-    name: 'webml-polyfill.js (WebAssembly backend)',
+    backend: 'WASM',
+    modelName: 'mobilenet',
+    iteration: 0
+  },
+  {
+    framework: 'webml-polyfill.js',
+    backend: 'WebGL2',
     modelName: 'mobilenet',
     iteration: 0
   }];
@@ -252,7 +254,7 @@ document.addEventListener('DOMContentLoaded', () => {
   for (let configuration of configurations) {
     let option = document.createElement('option');
     option.value = JSON.stringify(configuration);
-    option.textContent = configuration.name;
+    option.textContent = configuration.framework + ' (' + configuration.backend + ' backend)';
     document.querySelector('#configurations').appendChild(option);
   }
   let button = document.querySelector('#runButton');
