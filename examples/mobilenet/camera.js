@@ -10,7 +10,11 @@ function main() {
 
   function updateBackend() {
     currentBackend = utils.model._backend;
-    backend.innerHTML = currentBackend;
+    if (getUrlParams('api_info') === 'true') {
+      backend.innerHTML = currentBackend === 'WebML' ? currentBackend + '/' + getNativeAPI() : currentBackend;
+    } else {
+      backend.innerHTML = currentBackend;
+    }
   }
 
   function changeBackend(newBackend) {
