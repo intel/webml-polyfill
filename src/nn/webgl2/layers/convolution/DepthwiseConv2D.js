@@ -145,9 +145,9 @@ export default class DepthwiseConv2D extends Layer {
       this.padding === 'SAME'
         ? Math.max(0, Math.floor((outputCols - 1) * this.strides[1] + kernelWDilated - inputCols))
         : 0;
-    const paddingRowBefore = Math.ceil(paddingRow / 2);
+    const paddingRowBefore = Math.floor(paddingRow / 2);
     const paddingRowAfter = paddingRow - paddingRowBefore;
-    const paddingColBefore = Math.ceil(paddingCol / 2);
+    const paddingColBefore = Math.floor(paddingCol / 2);
     const paddingColAfter = paddingCol - paddingColBefore;
     this.outputShape = [outputRows, outputCols, outputChannels];
     this.inputPadding = [paddingRowBefore, paddingRowAfter, paddingColBefore, paddingColAfter];

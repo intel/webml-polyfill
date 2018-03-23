@@ -41,7 +41,7 @@ class WebGL2 {
 
     let vertexShader = gl.createShader(gl.VERTEX_SHADER);
     if (vertexShader == null) {
-      deleteAll();
+      this.deleteAll();
       throw new Error('Unable to create vertex shader');
     }
     this.toDelete.shaders.push(vertexShader);
@@ -51,7 +51,7 @@ class WebGL2 {
 
     let compiled = gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS);
     if (!compiled) {
-      deleteAll();
+      this.deleteAll();
       throw new Error('Failed to compile vertex shader: ' + gl.getShaderInfoLog(vertexShader));
     }
 
@@ -68,13 +68,13 @@ class WebGL2 {
 
     let position = gl.getAttribLocation(program, 'position');
     if (position < 0) {
-      deleteAll();
+      this.deleteAll();
       throw new Error('Failed to get position in vertexShaderSource');
     }
 
     let vertexPositionBuffer = gl.createBuffer();
     if (!vertexPositionBuffer) {
-      deleteAll();
+      this.deleteAll();
       throw new Error('Failed to create the buffer object');
     }
 
@@ -90,13 +90,13 @@ class WebGL2 {
 
     let texcoord = gl.getAttribLocation(program, 'texcoord');
     if (texcoord < 0) {
-      deleteAll();
+      this.deleteAll();
       throw new Error('Failed to get texcoord in vertexShaderSource');
     }
     
     let vertexTexcoordBuffer = gl.createBuffer();
     if (!vertexTexcoordBuffer) {
-      deleteAll();
+      this.deleteAll();
       throw new Error('Failed to create the buffer object');
     }
 
@@ -122,7 +122,7 @@ class WebGL2 {
 
     const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
     if (fragmentShader == null) {
-      deleteAll();
+      this.deleteAll();
       throw new Error('Unable to create fragment shader');
     }
     this.toDelete.shaders.push(fragmentShader);
@@ -132,13 +132,13 @@ class WebGL2 {
 
     let compiled = gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS);
     if (!compiled) {
-      deleteAll();
+      this.deleteAll();
       throw new Error('Failed to compile fragment shader: ' + gl.getShaderInfoLog(fragmentShader));
     }
 
     const program = gl.createProgram();
     if (!program) {
-      deleteAll();
+      this.deleteAll();
       throw new Error('Unable to create program');
     }
     this.toDelete.programs.push(program);
@@ -149,7 +149,7 @@ class WebGL2 {
 
     let linked = gl.getProgramParameter(program, gl.LINK_STATUS);
     if (!linked) {
-      deleteAll();
+      this.deleteAll();
       throw new Error('Failed to link program: ' + gl.getProgramInfoLog(program));
     }
 
@@ -329,7 +329,7 @@ class WebGL2 {
     this.toDelete.buffers.forEach(buffer => gl.deleteBuffer(buffer));
     this.toDelete.shaders.forEach(shader => gl.deleteShader(shader));
     this.toDelete.programs.forEach(program => gl.deleteProgram(program));
-    this.toDelete.Framebuffers.forEach(Framebuffer => gl.deleteProgram(Framebuffer));
+    this.toDelete.Framebuffers.forEach(Framebuffer => gl.deleteFramebuffer(Framebuffer));
 
     this.toDelete = { 
       textures: [], 
