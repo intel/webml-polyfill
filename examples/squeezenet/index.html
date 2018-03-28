@@ -2,7 +2,8 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>WebML SqueezeNet Demo</title>
+    <title>WebML MobileNet Demo</title>
+    <link rel="stylesheet" href="../third_party/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
     <style>
       img {
         max-height: 400px;
@@ -25,13 +26,31 @@
   </head>
   <body>
     <nav class="navbar navbar-expand-md navbar-dark bg-dark" style="width:100%">
-      <span class="navbar-brand mb-0 h1">WebML SqueezeNet Demo</span>
+      <span class="navbar-brand mb-0 h1">WebML MobileNet Demo</span>
+      <div class="btn-group">
+        <button id="backend" type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          Setting...
+        </button>
+        <div class="dropdown-menu dropdown-menu-right">
+          <button class="dropdown-item disabled" type="button" id="wasm">WASM</button>
+          <button class="dropdown-item disabled" type="button" id="webgl">WebGL2</button>
+          <button class="dropdown-item disabled" type="button" id="webml">WebML</button>
+        </div>
+      </div>
     </nav>
     <div class="container" id="container">
       <div id="progressContainer">
-        <div class="progress-label">Loading Model:</div>
-        <div class="progress">
-          <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="progressBar">0%</div>
+        <div class="row">
+          <div class="col">
+          </div>
+          <div class="col-8" align="center">
+              <div class="progress-label">Loading Model:</div>
+              <div class="progress">
+                <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="progressBar">0%</div>
+              </div>
+          </div>
+          <div class="col">
+          </div>
         </div>
       </div>
       <div class="row top-margin">
@@ -93,19 +112,16 @@
     </div>
     <canvas id="canvas" width=224 height=224></canvas>
     <script src="../../dist/webml-polyfill.js"></script>
-    <script src="https://cdn.rawgit.com/dcodeIO/protobuf.js/6.8.0/dist/protobuf.min.js"></script>
-    <script src="./onnx.js"></script>
-    <script src="./utils.js"></script>
-    <script src="./OnnxModelUtils.js"></script>
+    <script src="../third_party/protobuf.min.js"></script>
+    <script src="onnx.js"></script>
+    <script src="utils.js"></script>
+    <script src="OnnxModelUtils.js"></script>
+    <script src="SqueezeNet.js"></script>
+    <script src="main.js"></script>
     <script>
-      window.onload = function() {
-        loadOnnxModel('./model/model.pb').then((model) => {
-          console.log('model is loaded');
-          printOnnxModel(model);
-        }).catch((e) => {
-          console.log(e);
-        });
-      }
+     window.onload = function() {
+      main();
+    }
     </script>
   </body>
 </html>
