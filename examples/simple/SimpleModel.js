@@ -52,12 +52,12 @@ class SimpleModel {
     // intermediateOutput0 is the output of the first ADD operation.
     // Its value is computed during execution.
     let intermediateOutput0 = operandIndex++;
-    await this.model_.addOperand(float32TensorType);
+    this.model_.addOperand(float32TensorType);
 
     // intermediateOutput1 is the output of the second ADD operation.
     // Its value is computed during execution.
     let intermediateOutput1 = operandIndex++;
-    await this.model_.addOperand(float32TensorType);
+    this.model_.addOperand(float32TensorType);
 
     // multiplierOutput is the output of the MUL operation.
     // Its value will be computed during execution.
@@ -87,7 +87,7 @@ class SimpleModel {
     await this.model_.finish();
 
     // Create a Compilation object for the constructed this.model_.
-    this.compilation_ = await this.model_.createCompilation(this.model_);
+    this.compilation_ = await this.model_.createCompilation();
 
     // Set the preference for the compilation, so that the runtime and drivers
     // can make better decisions.
@@ -100,7 +100,7 @@ class SimpleModel {
   }
 
   async compute(inputValue1, inputValue2) {
-    let execution = await this.compilation_.createExecution(this.compilation_);
+    let execution = await this.compilation_.createExecution();
     let inputTensor1 = new Float32Array(this.tensorSize_);
     inputTensor1.fill(inputValue1);
     let inputTensor2 = new Float32Array(this.tensorSize_);
