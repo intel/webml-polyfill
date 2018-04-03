@@ -64,12 +64,27 @@ function printOnnxModel(model) {
       }
     }
   }
+  function printValueInfo(valueInfo) {
+    console.log(`    name: ${valueInfo.name}`);
+    let tensorType = valueInfo.type.tensorType;
+    console.log(`    type: {elemType: ${tensorType.elemType}, shape: [${tensorType.shape.dim.map(dim => {return dim.dimValue;})}]}`);
+  }
   function printGraph(graph) {
     console.log(`name: ${graph.name}`);
-    console.log(`nodes(${graph.node.length}):`)
+    console.log(`node(${graph.node.length}):`);
     for (let i = 0; i < graph.node.length; ++i) {
       console.log(`  node[${i}]:`);
       printNode(graph.node[i]);
+    }
+    console.log(`input(${graph.input.length}):`);
+    for (let i = 0; i < graph.input.length; ++i) {
+      console.log(`  input[${i}]:`);
+      printValueInfo(graph.input[i]);
+    }
+    console.log(`output(${graph.output.length}):`);
+    for (let i = 0; i < graph.output.length; ++i) {
+      console.log(`  output[${i}]:`);
+      printValueInfo(graph.output[i]);
     }
   }
 
