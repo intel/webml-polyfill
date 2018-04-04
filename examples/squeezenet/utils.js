@@ -1,6 +1,6 @@
 const INPUT_TENSOR_SIZE = 224*224*3;
 const OUTPUT_TENSOR_SIZE = 1000;
-const MODEL_FILE = './model/model.pb';
+const MODEL_FILE = './model/model.onnx';
 const LABELS_FILE = './model/labels.txt';
 
 class Utils {
@@ -25,7 +25,7 @@ class Utils {
   async init(backend) {
     this.initialized = false;
     let result;
-    if (!this.tfModel) {
+    if (!this.onnxModel) {
       result = await this.loadModelAndLabels(MODEL_FILE, LABELS_FILE);
       this.container.removeChild(progressContainer);
       this.labels = result.text.split('\n');
@@ -37,7 +37,7 @@ class Utils {
       this.onnxModel = onnx.ModelProto.decode(result.bytes);
       printOnnxModel(this.onnxModel);
     }
-    this.model = new SqueezeNet(this.tfModel, backend);
+    this.model = new SqueezeNet(this.onnxModel, backend);
     result = await this.model.createCompiledModel();
     console.log(`compilation result: ${result}`);
     let start = performance.now();
