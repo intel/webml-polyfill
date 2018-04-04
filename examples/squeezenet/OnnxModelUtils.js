@@ -1,5 +1,9 @@
 var onnx = protobuf.roots.onnx.onnx;
 
+function product(array) {
+  return array.reduce((accumulator, currentValue) => accumulator * currentValue);
+}
+
 async function loadOnnxModel(modelName) {
   let response = await fetch(modelName);
   let bytes = await response.arrayBuffer();
@@ -69,6 +73,24 @@ function printOnnxModel(model) {
     let tensorType = valueInfo.type.tensorType;
     console.log(`    type: {elemType: ${tensorType.elemType}, shape: [${tensorType.shape.dim.map(dim => {return dim.dimValue;})}]}`);
   }
+  function printTensor(tensor) {
+    console.log(`    {name: ${tensor.name}, dataType: ${tensor.dataType}, dims: [${tensor.dims}]}`);
+    let data;
+    if (tensor.dataType == onnx.TensorProto.DataType.FLOAT) {
+      if (tensor.floatData && tensor.floatData.length > 0) {
+        data = tensor.floatData;
+      } else if (tensor.rawData && tensor.rawData.length > 0) {
+        let dataView = new DataView(tensor.rawData.buffer, tensor.rawData.byteOffset, tensor.rawData.byteLength);
+        let length = product(tensor.dims);
+        data = new Float32Array(length);
+        for (let i = 0; i < length; ++i) {
+          // raw data is stored in little-endian order
+          data[i] = dataView.getFloat32(i*Float32Array.BYTES_PER_ELEMENT, true);
+        }
+      }
+    }
+    console.log(`    data(${data.length}): [${data}]`);
+  }
   function printGraph(graph) {
     console.log(`name: ${graph.name}`);
     console.log(`node(${graph.node.length}):`);
@@ -85,6 +107,11 @@ function printOnnxModel(model) {
     for (let i = 0; i < graph.output.length; ++i) {
       console.log(`  output[${i}]:`);
       printValueInfo(graph.output[i]);
+    }
+    console.log(`initializer(${graph.initializer.length}):`);
+    for (let i = 0; i < graph.initializer.length; ++i) {
+      console.log(`  initializer[${i}]:`);
+      printTensor(graph.initializer[i]);
     }
   }
 
