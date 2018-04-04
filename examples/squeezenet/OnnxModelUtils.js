@@ -4,6 +4,15 @@ function product(array) {
   return array.reduce((accumulator, currentValue) => accumulator * currentValue);
 }
 
+function getObjectByName(array, name) {
+  let ret;
+  array.forEach((object) => {
+    if (object.name === name)
+      ret = object;
+  });
+  return ret;
+}
+
 async function loadOnnxModel(modelName) {
   let response = await fetch(modelName);
   let bytes = await response.arrayBuffer();
@@ -20,28 +29,19 @@ function printOnnxModel(model) {
   console.log(`Print ONNX model:`);
   console.log(model);
 
-  function getAttributeByName(attributes, name) {
-    let ret = null;
-    attributes.forEach((attr) => {
-      if (attr.name === name)
-        ret = attr;
-    });
-    return ret;
-  }
-
   function printNode(node) {
     console.log(`    {opType: ${node.opType}, input: [${node.input}], output: [${node.output}]}`);
     switch(node.opType) {
       case 'Conv': {
         let attributes = node.attribute;
         let attr = null;
-        if (attr = getAttributeByName(attributes, 'kernel_shape')) {
+        if (attr = getObjectByName(attributes, 'kernel_shape')) {
           console.log(`    kernel_shape: [${attr.ints}]`);
         }
-        if (attr = getAttributeByName(attributes, 'pads')) {
+        if (attr = getObjectByName(attributes, 'pads')) {
           console.log(`    pads: [${attr.ints}]`);
         }
-        if (attr = getAttributeByName(attributes, 'strides')) {
+        if (attr = getObjectByName(attributes, 'strides')) {
           console.log(`    strides: [${attr.ints}]`);
         }
       } break;
@@ -49,13 +49,13 @@ function printOnnxModel(model) {
       case 'MaxPool': {
         let attributes = node.attribute;
         let attr = null;
-        if (attr = getAttributeByName(attributes, 'kernel_shape')) {
+        if (attr = getObjectByName(attributes, 'kernel_shape')) {
           console.log(`    kernel_shape: [${attr.ints}]`);
         }
-        if (attr = getAttributeByName(attributes, 'pads')) {
+        if (attr = getObjectByName(attributes, 'pads')) {
           console.log(`    pads: [${attr.ints}]`);
         }
-        if (attr = getAttributeByName(attributes, 'strides')) {
+        if (attr = getObjectByName(attributes, 'strides')) {
           console.log(`    strides: [${attr.ints}]`);
         }
       } break;
