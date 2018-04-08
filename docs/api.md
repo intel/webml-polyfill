@@ -80,7 +80,7 @@ interface NeuralNetworkContext {
 ### Model
 ```webidl
 dictionary OperandOptions {
-  long type;
+  required long type;
   sequence<unsigned long> dimensions;
   float scale;
   long zeroPoint;
