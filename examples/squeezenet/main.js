@@ -27,6 +27,8 @@ function main() {
       utils.init(newBackend).then(() => {
         updateBackend();
         utils.predict(imageElement);
+      }).catch((e) => {
+        console.log(e);
       });
     }, 10);
   }
@@ -66,7 +68,7 @@ function main() {
   utils.init().then(() => {
     updateBackend();
     utils.predict(imageElement);
-    button.setAttribute('class', 'btn btn-primary');
-    input.removeAttribute('disabled');
+    buttonEelement.setAttribute('class', 'btn btn-primary');
+    inputElement.removeAttribute('disabled');
   });
 }

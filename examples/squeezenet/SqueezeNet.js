@@ -136,7 +136,7 @@ class SqueezeNet {
           }
         }
       }
-      if (initializer.dims == 4) {
+      if (initializer.dims.length === 4) {
         // NCHW -> NHWC
         let nhwcData = new Float32Array(data.length);
         const N = initializer.dims[0];
@@ -307,6 +307,7 @@ class SqueezeNet {
           const kernelWidth = kernelShape.ints[1];
           inputs.push(this._addScalarInt32(kernelWidth));
           inputs.push(this._addScalarInt32(kernelHeight));
+          inputs.push(this._addScalarInt32(this._nn.FUSED_NONE));
 
           // Add outputs
           const output = node.output[0];
@@ -329,7 +330,7 @@ class SqueezeNet {
         } break;
         case 'Concat': {
           console.log(`  inputs: [${node.input}]`);
-          for (let i = 0; i < node.input; ++i) {
+          for (let i = 0; i < node.input.length; ++i) {
             inputs.push(this._getTensorIdByName(node.input[i]));
           }
           const attributes = node.attribute;
@@ -339,6 +340,7 @@ class SqueezeNet {
           console.log(`  axis: ${axis.i}]`);
           // C axis is 3 in NHWC layout
           const concatAxis = 3;
+          inputs.push(this._addScalarInt32(concatAxis));
 
           // Add output
           const output = node.output[0];
@@ -358,7 +360,7 @@ class SqueezeNet {
           opCode = this._nn.CONCATENATION;
         } break;
         case 'Dropout': {
-          console.log(`Skip Dropout: {node.input[0]} -> ${node.output[0]}`);
+          console.log(`Skip Dropout: ${node.input[0]} -> ${node.output[0]}`);
           this._tensorIds[node.output[0]] = this._tensorIds[node.input[0]];
         } break;
         case 'GlobalAveragePool': {
@@ -383,6 +385,7 @@ class SqueezeNet {
           const kernelWidth = inputWidth;
           inputs.push(this._addScalarInt32(inputWidth));
           inputs.push(this._addScalarInt32(inputHeight));
+          inputs.push(this._addScalarInt32(this._nn.FUSED_NONE));
 
           // Add outputs
           const output = node.output[0];

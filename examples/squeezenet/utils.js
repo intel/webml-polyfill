@@ -1,7 +1,7 @@
 const INPUT_TENSOR_SIZE = 224*224*3;
 const OUTPUT_TENSOR_SIZE = 1000;
 const MODEL_FILE = './model/model.onnx';
-const LABELS_FILE = './model/labels.txt';
+const LABELS_FILE = 'labels.json';
 
 class Utils {
   constructor() {
@@ -28,7 +28,7 @@ class Utils {
     if (!this.onnxModel) {
       result = await this.loadModelAndLabels(MODEL_FILE, LABELS_FILE);
       this.container.removeChild(progressContainer);
-      this.labels = result.text.split('\n');
+      this.labels = JSON.parse(result.text);
       console.log(`labels: ${this.labels}`);
       let err = onnx.ModelProto.verify(result.bytes);
       if (err) {
@@ -113,8 +113,9 @@ class Utils {
     const height = 224;
     const channels = 3;
     const imageChannels = 4; // RGBA
-    const mean = 127.5;
-    const std = 127.5;
+    // The RGB mean values are from
+    // https://github.com/caffe2/AICamera/blob/master/app/src/main/cpp/native-lib.cpp#L108
+    const mean = [122.67891434, 116.66876762, 104.00698793]; 
     if (canvas.width !== width || canvas.height !== height) {
       throw new Error(`canvas.width(${canvas.width}) or canvas.height(${canvas.height}) is not 224`);
     }
@@ -125,7 +126,7 @@ class Utils {
       for (let x = 0; x < width; ++x) {
         for (let c = 0; c < channels; ++c) {
           let value = pixels[y*width*imageChannels + x*imageChannels + c];
-          tensor[y*width*channels + x*channels + c] = (value - mean)/std;
+          tensor[y*width*channels + x*channels + c] = value - mean[c];
         }
       }
     }
