@@ -1,5 +1,7 @@
-function main() {
+function main(camera) {
   let utils = new Utils();
+  const videoElement = document.getElementById('video');
+  let streaming = false;
   const imageElement = document.getElementById('image');
   const inputElement = document.getElementById('input');
   const buttonEelement = document.getElementById('button');
@@ -21,8 +23,10 @@ function main() {
 
   function updateBackend() {
     if (currentBackend === '') {
-      buttonEelement.setAttribute('class', 'btn btn-primary');
-      inputElement.removeAttribute('disabled');
+      if (!camera) {
+        buttonEelement.setAttribute('class', 'btn btn-primary');
+        inputElement.removeAttribute('disabled');
+      }
     }
     currentBackend = utils.model._backend;
     if (getUrlParams('api_info') === 'true') {
@@ -71,24 +75,57 @@ function main() {
     }
   }
 
-  inputElement.addEventListener('change', (e) => {
-    let files = e.target.files;
-    if (files.length > 0) {
-      imageElement.src = URL.createObjectURL(files[0]);
+  if (!camera) {
+    inputElement.addEventListener('change', (e) => {
+      let files = e.target.files;
+      if (files.length > 0) {
+        imageElement.src = URL.createObjectURL(files[0]);
+      }
+    }, false);
+
+    imageElement.onload = function() {
+      utils.predict(imageElement);
     }
-  }, false);
 
-  imageElement.onload = function() {
-    utils.predict(imageElement);
+    utils.init().then(() => {
+      updateBackend();
+      utils.predict(imageElement);
+    }).catch((e) => {
+      console.warn(`Failed to init ${utils.model._backend}, try to use WASM`);
+      console.log(e);
+      showAlert(utils.model._backend);
+      changeBackend('WASM');
+    });
+  } else {
+    let stats = new Stats();
+    stats.dom.style.cssText = 'position:fixed;top:60px;left:10px;cursor:pointer;opacity:0.9;z-index:10000';
+    stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
+    document.body.appendChild(stats.dom);
+
+    navigator.mediaDevices.getUserMedia({audio: false, video: {facingMode: "environment"}}).then((stream) => {
+      video.srcObject = stream;
+      utils.init().then(() => {
+        updateBackend();
+        streaming = true;
+        startPredict();
+      }).catch((e) => {
+        console.warn(`Failed to init ${utils.model._backend}, try to use WASM`);
+        console.log(e);
+        showAlert(utils.model._backend);
+        changeBackend('WASM');
+      });
+    }).catch((error) => {
+      console.log('getUserMedia error: ' + error.name, error);
+    });
+
+    function startPredict() {
+      stats.begin();
+      utils.predict(videoElement).then(() => {
+        stats.end();
+        if (streaming) {
+          setTimeout(startPredict, 0);
+        }
+      });
+    }
   }
-
-  utils.init().then(() => {
-    updateBackend();
-    utils.predict(imageElement);
-  }).catch((e) => {
-    console.warn(`Failed to init ${utils.model._backend}, try to use WASM`);
-    console.log(e);
-    showAlert(utils.model._backend);
-    changeBackend('WASM');
-  });
 }

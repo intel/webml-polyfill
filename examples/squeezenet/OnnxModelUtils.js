@@ -89,7 +89,7 @@ function printOnnxModel(model) {
         }
       }
     }
-    console.log(`    data(${data.length}): [${data}]`);
+    //console.log(`    data(${data.length}): [${data}]`);
   }
   function printGraph(graph) {
     console.log(`name: ${graph.name}`);
