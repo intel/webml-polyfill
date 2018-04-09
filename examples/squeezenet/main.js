@@ -9,7 +9,21 @@ function main() {
   const webml = document.getElementById('webml');
   let currentBackend = '';
 
+  function showAlert(backend) {
+    let div = document.createElement('div');
+    div.setAttribute('class', 'alert alert-warning alert-dismissible fade show');
+    div.setAttribute('role', 'alert');
+    div.innerHTML = `<strong>Failed to setup ${backend} backend.</strong>`;
+    div.innerHTML += `<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>`;
+    let container = document.getElementById('container');
+    container.insertBefore(div, container.firstElementChild);
+  }
+
   function updateBackend() {
+    if (currentBackend === '') {
+      buttonEelement.setAttribute('class', 'btn btn-primary');
+      inputElement.removeAttribute('disabled');
+    }
     currentBackend = utils.model._backend;
     if (getUrlParams('api_info') === 'true') {
       backend.innerHTML = currentBackend === 'WebML' ? currentBackend + '/' + getNativeAPI() : currentBackend;
@@ -18,8 +32,8 @@ function main() {
     }
   }
 
-  function changeBackend(newBackend) {
-    if (currentBackend === newBackend) {
+  function changeBackend(newBackend, force) {
+    if (!force && currentBackend === newBackend) {
       return;
     }
     backend.innerHTML = 'Setting...';
@@ -28,7 +42,10 @@ function main() {
         updateBackend();
         utils.predict(imageElement);
       }).catch((e) => {
+        console.warn(`Failed to change backend ${newBackend}, switch back to ${currentBackend}`);
         console.log(e);
+        showAlert(newBackend);
+        changeBackend(currentBackend, true);
       });
     }, 10);
   }
@@ -68,7 +85,10 @@ function main() {
   utils.init().then(() => {
     updateBackend();
     utils.predict(imageElement);
-    buttonEelement.setAttribute('class', 'btn btn-primary');
-    inputElement.removeAttribute('disabled');
+  }).catch((e) => {
+    console.warn(`Failed to init ${utils.model._backend}, try to use WASM`);
+    console.log(e);
+    showAlert(utils.model._backend);
+    changeBackend('WASM');
   });
 }
