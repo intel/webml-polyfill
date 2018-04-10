@@ -2,3 +2,5 @@ node_modules/
 dist/
 examples/mobilenet/model/
 !examples/mobilenet/model/README.md
+examples/squeezenet/model/
+!examples/squeezenet/model/README.md
