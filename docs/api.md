@@ -157,7 +157,7 @@ model.addOperand(float32TensorType);
 // tensor2 is another a constant tensor, set its value from same ArrayBuffer object.
 let tensor2 = operandIndex++;
 model.addOperand(float32TensorType);
-model.setOperandValue(tensor2, new Float32Array(this.arrayBuffer_, TENSOR_SIZE * Float32Array.BYTES_PER_ELEMENT, TENSOR_SIZE));
+model.setOperandValue(tensor2, new Float32Array(arrayBuffer, TENSOR_SIZE * Float32Array.BYTES_PER_ELEMENT, TENSOR_SIZE));
 
 // tensor3 is another input tensor. Its value will be set before execution.
 let tensor3 = operandIndex++;
