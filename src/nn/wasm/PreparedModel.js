@@ -261,10 +261,11 @@ export default class PreparedModel {
           throw new Error('depthwiseConvFloat32 fails');
         }
       } break;
-      case OperationCode.AVERAGE_POOL_2D: {
+      case OperationCode.AVERAGE_POOL_2D:
+      case OperationCode.MAX_POOL_2D: {
         let inCount = inputs.length;
         if (inCount !== 7 && inCount !== 10) {
-          throw new Error('Invalid parameters number of AVERAGE_POOL_2D');
+          throw new Error(`Invalid parameters number of Pooling ${op}`);
         }
         allParametersPresent(inCount, 1);
         let i = 0;
@@ -307,14 +308,23 @@ export default class PreparedModel {
         if (!success) {
           throw new Error('genericPoolingPrepare fails');
         }
-        success = nn_ops.averagePoolFloat32(input.value, input.shape,
-                                            paddingLeft, paddingRight,
-                                            paddingTop, paddingBottom,
-                                            strideWidth, strideHeight,
-                                            filterWidth, filterHeight, activation,
-                                            output.value, output.shape);
+        if (op === OperationCode.AVERAGE_POOL_2D) {
+          success = nn_ops.averagePoolFloat32(input.value, input.shape,
+                                              paddingLeft, paddingRight,
+                                              paddingTop, paddingBottom,
+                                              strideWidth, strideHeight,
+                                              filterWidth, filterHeight, activation,
+                                              output.value, output.shape);
+        } else if (op === OperationCode.MAX_POOL_2D) {
+          success = nn_ops.maxPoolFloat32(input.value, input.shape,
+                                          paddingLeft, paddingRight,
+                                          paddingTop, paddingBottom,
+                                          strideWidth, strideHeight,
+                                          filterWidth, filterHeight, activation,
+                                          output.value, output.shape);
+        }
         if (!success) {
-          throw new Error('averagePoolFloat32 fails');
+          throw new Error(`Pooling ${op} fails`);
         }
       } break;
       case OperationCode.SOFTMAX: {
@@ -349,6 +359,31 @@ export default class PreparedModel {
         if (!success) {
           throw new Error('reshapeGeneric fails');
         }
+      } break;
+      case OperationCode.CONCATENATION: {
+        if (outputs.length < 1 || inputs.length < 2) {
+          throw new Error('Invalid inputs or outputs');
+        }
+        let numInputTensors = inputs.length - 1;
+        let axis = operands[inputs[numInputTensors]].value[0];
+        let output = operands[outputs[0]];
+        let inputShapes = new nn_ops.VectorShape;
+        let inputValues = new nn_ops.VectorPtr;
+        for (let i = 0; i < numInputTensors; ++i) {
+          let input = operands[inputs[i]];
+          inputShapes.push_back(input.shape);
+          inputValues.push_back(input.value);
+        }
+        success = nn_ops.concatenationPrepare(inputShapes, axis, output.shape);
+        if (!success) {
+          throw new Error('concatenationPrepare fails');
+        }
+        success = nn_ops.concatenationFloat32(inputValues, inputShapes, axis, output.value, output.shape);
+        if (!success) {
+          throw new Error('concatenationFloat32 fails');
+        }
+        inputShapes.delete();
+        inputValues.delete();
       } break;
       default: {
         throw new Error(`Operation ${op} is not supported`);
