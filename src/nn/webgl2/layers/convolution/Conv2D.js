@@ -46,16 +46,25 @@ export default class Conv2D extends Layer {
       this.strides = [strides, strides];
     }
 
-    if (padding === 'VALID' || padding === 'SAME') {
+    if (Array.isArray(padding)) {
+      if (padding.length !== 4) {
+        throw new Error('[Conv2D] Invalid padding.');
+        // if all numbers in padding are 0, use padding = 'VALID'
+      } else if (padding.every((x)=>!x)) {
+        this.padding = 'VALID';
+      } else {
+        this.padding = padding;
+      }
+    } else if (padding === 'VALID' || padding === 'SAME') {
       this.padding = padding;
     } else {
-      this.throwError('Invalid padding.');
+      throw new Error('[Conv2D] Invalid padding.');
     }
 
     if (data_format === 'NHWC' || data_format === 'NCHW') {
       this.dataFormat = data_format;
     } else {
-      this.throwError('Only NHWC and NCHW data formats are allowed.');
+      throw new Error('[Conv2D] Only NHWC and NCHW data formats are allowed.');
     }
 
     if (Array.isArray(dilation_rate)) {
@@ -68,7 +77,7 @@ export default class Conv2D extends Layer {
       (this.strides[0] !== 1 || this.strides[1] !== 1)
     ) {
       // Currently, specifying any dilation_rate value != 1 is incompatible with specifying any stride value != 1
-      this.throwError(`Incompatible combination of dilation_rate with strides.`);
+      throw new Error(`[Conv2D] Incompatible combination of dilation_rate with strides.`);
     }
 
     this.activation = activation;
@@ -120,30 +129,39 @@ export default class Conv2D extends Layer {
     const kernelHDilated = kernelH + (kernelH - 1) * (this.dilationRate[0] - 1);
     const kernelWDilated = kernelW + (kernelW - 1) * (this.dilationRate[1] - 1);
 
-    const outputRows =
+    if (Array.isArray(this.padding)) {
+      const outputRows = (inputRows - kernelHDilated + this.padding[0] + 
+                          this.padding[1] + this.strides[0]) / this.strides[0];
+      const outputCols = (inputCols - kernelWDilated + this.padding[2] + 
+                          this.padding[3] + this.strides[1]) / this.strides[1];
+      this.outputShape = [outputRows, outputCols, filter];
+      this.inputPadding = this.padding;
+      console.log()
+    } else {
+      const outputRows =
       this.padding === 'SAME'
         ? Math.floor((inputRows + this.strides[0] - 1) / this.strides[0])
         : Math.floor((inputRows - kernelHDilated + this.strides[0]) / this.strides[0]);
-    const outputCols =
-      this.padding === 'SAME'
-        ? Math.floor((inputCols + this.strides[1] - 1) / this.strides[1])
-        : Math.floor((inputCols - kernelWDilated + this.strides[1]) / this.strides[1]);
-    const outputChannels = filter
+      const outputCols =
+        this.padding === 'SAME'
+          ? Math.floor((inputCols + this.strides[1] - 1) / this.strides[1])
+          : Math.floor((inputCols - kernelWDilated + this.strides[1]) / this.strides[1]);
 
-    const paddingRow =
-      this.padding === 'SAME'
-        ? Math.max(0, Math.floor((outputRows - 1) * this.strides[0] + kernelHDilated - inputRows))
-        : 0;
-    const paddingCol =
-      this.padding === 'SAME'
-        ? Math.max(0, Math.floor((outputCols - 1) * this.strides[1] + kernelWDilated - inputCols))
-        : 0;
+      const paddingRow =
+        this.padding === 'SAME'
+          ? Math.max(0, Math.floor((outputRows - 1) * this.strides[0] + kernelHDilated - inputRows))
+          : 0;
+      const paddingCol =
+        this.padding === 'SAME'
+          ? Math.max(0, Math.floor((outputCols - 1) * this.strides[1] + kernelWDilated - inputCols))
+          : 0;
     const paddingRowBefore = Math.floor(paddingRow / 2);
     const paddingRowAfter = paddingRow - paddingRowBefore;
     const paddingColBefore = Math.floor(paddingCol / 2);
     const paddingColAfter = paddingCol - paddingColBefore;
-    this.outputShape = [outputRows, outputCols, outputChannels];
+    this.outputShape = [outputRows, outputCols, filter];
     this.inputPadding = [paddingRowBefore, paddingRowAfter, paddingColBefore, paddingColAfter];
+    }
   }
 
   /**
@@ -154,7 +172,7 @@ export default class Conv2D extends Layer {
    * @returns {Tensor}
    */
   _padInput(x, padValue = 0) {
-    if (this.padding === 'SAME') {
+    if (this.padding === 'SAME' || Array.isArray(this.padding)) {
       // Test all 0.
       let flag = false;
       this.inputPadding.forEach(pad => {
@@ -272,7 +290,7 @@ export default class Conv2D extends Layer {
     let indices = new Tensor(indicesForReshaped.data, indicesForReshaped.shape, Int32Array);
 
     // padding for border mode 'SAME'
-    if (this.padding === 'SAME') {
+    if (this.padding === 'SAME' || Array.isArray(this.padding)) {
       const [paddingRowBefore, paddingRowAfter, paddingColBefore, paddingColAfter] = this.inputPadding;
       inputRows = inputRows + paddingRowBefore + paddingRowAfter;
       inputCols = inputCols + paddingColBefore + paddingColAfter;
@@ -323,7 +341,7 @@ export default class Conv2D extends Layer {
    * @param {Tensor} x
    */
   call(x) {
-    let outputTextureShape
+    let outputTextureShape;
     if (x.is2DReshaped || x.is2DSquareReshaped) {
       this.inputShape = x.originalShape;
       this._calcOutputShape(this.inputShape);

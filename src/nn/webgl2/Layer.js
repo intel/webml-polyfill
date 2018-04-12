@@ -8,8 +8,9 @@ export default class Layer {
    */
   constructor(attrs = {}) {
     this.name = 'Layer';
-    this.params = [];
     this.weights = {};
+    this.inputs = attrs.inputs;
+    this.outputs = attrs.outputs;
   }
 
   /**
