@@ -210,7 +210,7 @@ export default class _Pool2D extends Layer {
     // console.log(`poolSize: ${poolSize}`)
     // console.log(`+isMaxPooling: ${+isMaxPooling}`)
 
-    if (input.textureSlices) {
+    if (x.textureSlices) {
       console.log('poolingFragmentsProgram')
       this.poolingFragmentsProgram = webgl2.createProgram(pool2DSliceShaderSource);      
       x.convertTextureSlicesToColStackTexture();
@@ -222,7 +222,7 @@ export default class _Pool2D extends Layer {
         supportSliceTexture: true
       });
     } else {
-      // console.log('poolingProgram')
+      console.log('poolingProgram')
       this.poolingProgram = webgl2.createProgram(pool2DShaderSource);
       webgl2.runProgram({
         program: this.poolingProgram,
