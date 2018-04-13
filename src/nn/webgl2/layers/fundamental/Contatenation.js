@@ -56,23 +56,71 @@ export default class Contatenation extends Layer {
       }
     }
 
-    if (!this.mergeProgram) {
-      const outputShape = this.output.textureSlices
-        ? this.output.textureSliceShape
-        : this.output.textureShape
-      const mergeProgramSource = contatenation(
-        inputs.length,
-        inputs.map(input => input.textureShape),
-        outputShape
-      );
-      this.mergeProgram = webgl2.createProgram(mergeProgramSource);
-    }
-    webgl2.runProgram({
-      program: this.mergeProgram,
-      output: this.output,
-      inputs: inputs.map((input, i) => ({ input, name: `inputs[${i}]` })),
-      supportSliceTexture: true
+
+    const gl = webgl2.context;
+    const textureOptions = webgl2.getTextureOptions(inputs[0].textureType, inputs[0].textureFormat)
+    const { textureTarget, textureInternalFormat, textureFormat, textureType } = textureOptions
+
+    // if (!this.colStackTexture) {
+    //   this.colStackTexture = gl.createTexture()
+    //   webgl2.toDelete.textures.push(this.colStackTexture);
+    //   gl.bindTexture(textureTarget, this.colStackTexture);
+
+    //   const numSlices = this.textureSlices.length;
+    //   this.colStackTextureShape = [
+    //     this.textureSliceShape[0],
+    //     this.textureSliceShape[1] * numSlices
+    //   ];
+
+    //   const shape = this.colStackTextureShape;
+    //   const data = new this.arrayType(shape[0] * shape[1]);
+    //   gl.texImage2D(textureTarget, 0, textureInternalFormat, shape[1], shape[0], 0, textureFormat, textureType, data);
+
+    //   // clamp to edge
+    //   gl.texParameteri(textureTarget, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    //   gl.texParameteri(textureTarget, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    //   // no interpolation
+    //   gl.texParameteri(textureTarget, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    //   gl.texParameteri(textureTarget, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    // } else {
+    //   gl.bindTexture(textureTarget, this.colStackTexture);
+    // }
+
+    gl.bindTexture(textureTarget, this.output.texture);
+    const framebuffer = gl.createFramebuffer();
+    gl.bindFramebuffer(gl.READ_FRAMEBUFFER, framebuffer);
+    inputs.forEach((input, k) => {
+      gl.framebufferTexture2D(gl.READ_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, input.texture, 0)
+      gl.copyTexSubImage2D(
+        textureTarget,
+        0,
+        k * input.textureShape[1],
+        0,
+        0,
+        0,
+        input.textureShape[1],
+        input.textureShape[0]
+      )
     });
+    gl.deleteFramebuffer(framebuffer);
+
+    // if (!this.mergeProgram) {
+    //   const outputShape = this.output.textureSlices
+    //     ? this.output.textureSliceShape
+    //     : this.output.textureShape
+    //   const mergeProgramSource = contatenation(
+    //     inputs.length,
+    //     inputs.map(input => input.textureShape),
+    //     outputShape
+    //   );
+    //   this.mergeProgram = webgl2.createProgram(mergeProgramSource);
+    // }
+    // webgl2.runProgram({
+    //   program: this.mergeProgram,
+    //   output: this.output,
+    //   inputs: inputs.map((input, i) => ({ input, name: `inputs[${i}]` })),
+    //   supportSliceTexture: true
+    // });
     return this.output;
   }
 }
