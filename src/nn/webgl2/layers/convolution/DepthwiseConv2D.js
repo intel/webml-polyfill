@@ -277,6 +277,7 @@ export default class DepthwiseConv2D extends Layer {
     }
     return this.wRowsMat;
   }
+
   /**
    * Creates a index mapping from the 2D-reshaped input tensor with associated 3D tensor shape to the representation
    * required prior to the matrix multiply. This allows us to work directly on the 2D tensor representations rather

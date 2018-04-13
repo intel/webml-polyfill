@@ -52,7 +52,7 @@ export default class Tensor {
     } else if (this.tensor.shape.length === 2) {
       shape = this.tensor.shape;
     } else {
-      throw new Error('Can not create WebGL2 texture.');
+      throw new Error('Can not create WebGL2 texture for shape length > 2.');
     }
 
     this.textureShape = shape;
@@ -200,10 +200,10 @@ export default class Tensor {
    */
   deleteColStackTexture() {
     if (this.colStackTexture) {
-      const gl = webgl2.context
-      gl.deleteTexture(this.colStackTexture)
-      delete this.colStackTexture
-      delete this.colStackTextureShape
+      const gl = webgl2.context;
+      gl.deleteTexture(this.colStackTexture);
+      delete this.colStackTexture;
+      delete this.colStackTextureShape;
     }
   }
 
