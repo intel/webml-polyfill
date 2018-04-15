@@ -29,16 +29,15 @@ export default class Input extends Layer {
       if (this.inputTensor.tensor.shape.length <= 2) {
         this.inputTensor.createGLTexture({ type: '2d', format: 'float', supportSliceTexture: true });
       } else if (this.inputTensor.tensor.shape.length > 2) {
-        // console.log(this.inputTensor.tensor.shape.length)
         this.inputTensor.reshapeTo2D();
         this.inputTensor.createGLTexture({ type: '2d', format: 'float', supportSliceTexture: true });
       } 
     } else {
       if (type !== this.inputTensor.arrayType) {
-        throw new Error('Invalid data type in InputLayer.');
+        this.throwError('Invalid data type in InputLayer.');
       }
       if (shape.reduce((i, j) => i * j) !== this.inputTensor.tensor.shape.reduce((i, j) => i * j)) {
-        throw new Error('Invalid data shape in InputLayer.');
+        this.throwError('Invalid data shape in InputLayer.');
       }
       this.inputTensor.replaceTensorData(data);
     }

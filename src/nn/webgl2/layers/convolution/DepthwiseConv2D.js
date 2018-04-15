@@ -5,8 +5,7 @@ import webgl2 from '../../WebGL2'
 import * as tensorUtils from '../../utils/tensorUtils'
 import ops from 'ndarray-ops'
 import { matMulDepthwiseShaderSource } from '../../webgl/fragmentShader/arithmetic/matMulDepthwise'
-import DepthwiseConv2DShaderSourceFunc from '../../webgl/fragmentShader/convolution/DepthwiseConv2D'
-import DepthwiseConv2DColStackShaderSourceFunc from '../../webgl/fragmentShader/convolution/DepthwiseConv2DColStack'
+import depthwiseConv2DShaderSourceFunc from '../../webgl/fragmentShader/convolution/depthwiseConv2D'
 
 /**
  * DepthwiseConv2D layer class
@@ -46,7 +45,16 @@ export default class DepthwiseConv2D extends Layer {
       this.strides = [strides, strides];
     }
 
-    if (padding === 'VALID' || padding === 'SAME') {
+    if (Array.isArray(padding)) {
+      if (padding.length !== 4) {
+        this.throwError('Invalid padding.');
+        // If all numbers in padding are 0, use padding = 'VALID'
+      } else if (padding.every((x)=>!x)) {
+        this.padding = 'VALID';
+      } else {
+        this.padding = padding;
+      }
+    } else if (padding === 'VALID' || padding === 'SAME') {
       this.padding = padding;
     } else {
       this.throwError('Invalid padding.');
@@ -95,13 +103,7 @@ export default class DepthwiseConv2D extends Layer {
     }
 
     super.setWeights(params, weightsArr, false);
-    if (inputChannels * kernelH * kernelW <= webgl2.MAX_TEXTURE_SIZE) {
-      this._w2row();
-    } else {
-      this._w2rowColStack();
-    }
-    
-    this.weights['kernel'] = this.wRowsMat;
+    this.weights['kernel'].tensor.shape = [kernelH * kernelW, inputChannels]
     this.weights['kernel'].createGLTexture({ type: '2d', format: 'float' });
     if (this.useBias) {
       this.weights['bias'].createGLTexture({ type: '2d', format: 'float' });
@@ -119,38 +121,49 @@ export default class DepthwiseConv2D extends Layer {
       return;
     }
 
-    const inputRows = inputShape[0];
-    const inputCols = inputShape[1];
+    const inputHeight = inputShape[0];
+    const inputWidth = inputShape[1];
+    const inputChannels = inputShape[2];
     const [filter, kernelH, kernelW] = this.kernelShape;
 
     // effective shape after filter dilation
     const kernelHDilated = kernelH + (kernelH - 1) * (this.dilationRate[0] - 1);
     const kernelWDilated = kernelW + (kernelW - 1) * (this.dilationRate[1] - 1);
 
-    const outputRows =
+    if (Array.isArray(this.padding)) {
+      const outputHeight = (inputHeight - kernelHDilated + this.padding[0] + 
+                          this.padding[1] + this.strides[0]) / this.strides[0];
+      const outputWidth = (inputWidth - kernelWDilated + this.padding[2] + 
+                          this.padding[3] + this.strides[1]) / this.strides[1];
+      this.outputShape = [outputHeight, outputWidth, inputChannels];
+      this.inputPadding = this.padding;
+      console.log()
+    } else {
+      const outputHeight =
       this.padding === 'SAME'
-        ? Math.floor((inputRows + this.strides[0] - 1) / this.strides[0])
-        : Math.floor((inputRows - kernelHDilated + this.strides[0]) / this.strides[0]);
-    const outputCols =
-      this.padding === 'SAME'
-        ? Math.floor((inputCols + this.strides[1] - 1) / this.strides[1])
-        : Math.floor((inputCols - kernelWDilated + this.strides[1]) / this.strides[1]);
-    const outputChannels = inputShape[2];
+        ? Math.floor((inputHeight + this.strides[0] - 1) / this.strides[0])
+        : Math.floor((inputHeight - kernelHDilated + this.strides[0]) / this.strides[0]);
+      const outputWidth =
+        this.padding === 'SAME'
+          ? Math.floor((inputWidth + this.strides[1] - 1) / this.strides[1])
+          : Math.floor((inputWidth - kernelWDilated + this.strides[1]) / this.strides[1]);
 
-    const paddingRow =
-      this.padding === 'SAME'
-        ? Math.max(0, Math.floor((outputRows - 1) * this.strides[0] + kernelHDilated - inputRows))
-        : 0;
-    const paddingCol =
-      this.padding === 'SAME'
-        ? Math.max(0, Math.floor((outputCols - 1) * this.strides[1] + kernelWDilated - inputCols))
-        : 0;
-    const paddingRowBefore = Math.floor(paddingRow / 2);
-    const paddingRowAfter = paddingRow - paddingRowBefore;
-    const paddingColBefore = Math.floor(paddingCol / 2);
-    const paddingColAfter = paddingCol - paddingColBefore;
-    this.outputShape = [outputRows, outputCols, outputChannels];
-    this.inputPadding = [paddingRowBefore, paddingRowAfter, paddingColBefore, paddingColAfter];
+      const paddingHeight =
+        this.padding === 'SAME'
+          ? Math.max(0, Math.floor((outputHeight - 1) * this.strides[0] + kernelHDilated - inputHeight))
+          : 0;
+      const paddingWidth =
+        this.padding === 'SAME'
+          ? Math.max(0, Math.floor((outputWidth - 1) * this.strides[1] + kernelWDilated - inputWidth))
+          : 0;
+          
+      const paddingHeightBefore = Math.floor(paddingHeight / 2);
+      const paddingHeightAfter = paddingHeight - paddingHeightBefore;
+      const paddingWidthBefore = Math.floor(paddingWidth / 2);
+      const paddingWidthAfter = paddingWidth - paddingWidthBefore;
+      this.outputShape = [outputHeight, outputWidth, inputChannels];
+      this.inputPadding = [paddingHeightBefore, paddingHeightAfter, paddingWidthBefore, paddingWidthAfter];
+    }
   }
 
   /**
@@ -161,29 +174,23 @@ export default class DepthwiseConv2D extends Layer {
    * @returns {Tensor}
    */
   _padInput(x, padValue = 0) {
-    if (this.padding === 'SAME') {
+    if (this.padding === 'SAME' || Array.isArray(this.padding)) {
       // Test all 0.
-      let flag = false;
-      this.inputPadding.forEach(pad => {
-        if (pad) {
-          flag = true;
-        }
-      });
-      if (!flag) {
+      if (this.inputPadding.every((x)=>!x)) {
         return x;
       }
-      const [inputRows, inputCols, inputChannels] = x.tensor.shape;
-      const [paddingRowBefore, paddingRowAfter, paddingColBefore, paddingColAfter] = this.inputPadding;
-      const newRows = inputRows + paddingRowBefore + paddingRowAfter;
-      const newCols = inputCols + paddingColBefore + paddingColAfter;
-      const _x = new Tensor([], [newRows, newCols, inputChannels]);
+      const [inputHeight, inputWidth, inputChannels] = x.tensor.shape;
+      const [paddingHeightBefore, paddingHeightAfter, paddingWidthBefore, paddingWidthAfter] = this.inputPadding;
+      const newHeight = inputHeight + paddingHeightBefore + paddingHeightAfter;
+      const newWidth = inputWidth + paddingWidthBefore + paddingWidthAfter;
+      const _x = new Tensor([], [newHeight, newWidth, inputChannels]);
       if (padValue !== 0) {
         ops.assigns(_x.tensor, padValue);
       }
       ops.assign(
         _x.tensor
-          .hi(inputRows + paddingRowBefore, inputCols + paddingColBefore, inputChannels)
-          .lo(paddingRowBefore, paddingColBefore, 0),
+          .hi(inputHeight + paddingHeightBefore, inputWidth + paddingWidthBefore, inputChannels)
+          .lo(paddingHeightBefore, paddingWidthBefore, 0),
         x.tensor
       );
       return _x;
@@ -198,12 +205,12 @@ export default class DepthwiseConv2D extends Layer {
    * @returns {Tensor}
    */
   _im2col(x) {
-    const [inputRows, inputCols, inputChannels] = x.tensor.shape;
+    const [inputHeight, inputWidth, inputChannels] = x.tensor.shape;
     const kernelH = this.kernelShape[1];
     const kernelW = this.kernelShape[2];
-    const outputRows = this.outputShape[0];
-    const outputCols = this.outputShape[1];
-    const nbPatches = outputRows * outputCols;
+    const outputHeight = this.outputShape[0];
+    const outputWidth = this.outputShape[1];
+    const nbPatches = outputHeight * outputWidth;
     const patchLen = inputChannels * kernelH * kernelW;
     const length = kernelH * kernelW;
 
@@ -217,8 +224,8 @@ export default class DepthwiseConv2D extends Layer {
 
     const patch = new Tensor([], [kernelH, kernelW, 1]);
     let offset = 0;
-    for (let i = 0, limit = inputRows - kernelHDilated; i <= limit; i += this.strides[0]) {
-      for (let j = 0, limit = inputCols - kernelWDilated; j <= limit; j += this.strides[1]) {
+    for (let i = 0, limit = inputHeight - kernelHDilated; i <= limit; i += this.strides[0]) {
+      for (let j = 0, limit = inputWidth - kernelWDilated; j <= limit; j += this.strides[1]) {
         for (let c = 0; c < inputChannels; ++c) {
           ops.assign(
             patch.tensor,
@@ -236,164 +243,52 @@ export default class DepthwiseConv2D extends Layer {
   }
 
   /**
-   * Convert filter weights to row matrix
-   *
-   * @returns {Tensor}
+   * Pre-compute index map for pooling function
    */
-  _w2row() {
-    const inputChannels = this.weights['kernel'].tensor.shape[3];
-    const [filter, kernelH, kernelW] = this.kernelShape;
-    const patchLen = kernelH * kernelW * inputChannels;
-    const length = kernelH * kernelW;
-
-    this.wRowsMat = new Tensor([], [filter, patchLen]);
-
-    const patch = new Tensor([], [kernelH, kernelW]);
-    const patchRaveled = new Tensor([], [patchLen]);
-    let offset = 0;
-    for (let c = 0; c < inputChannels; c++) {
-      ops.assign(patch.tensor, this.weights['kernel'].tensor.pick(0, null, null, c));
-      this.wRowsMat.tensor.data.set(patch.tensor.data, offset);
-      offset += length;
-    }
-    return this.wRowsMat;
-  }
-  
-  _w2rowColStack() {
-    const inputChannels = this.weights['kernel'].tensor.shape[3];
-    const [filter, kernelH, kernelW] = this.kernelShape;
-    const patchLen = kernelH * kernelW;
-    const length = kernelH * kernelW;
-
-    this.wRowsMat = new Tensor([], [filter * inputChannels, patchLen]);
-
-    const patch = new Tensor([], [kernelH, kernelW]);
-    const patchRaveled = new Tensor([], [patchLen]);
-    let offset = 0;
-    for (let c = 0; c < inputChannels; c++) {
-      ops.assign(patch.tensor, this.weights['kernel'].tensor.pick(0, null, null, c));
-      this.wRowsMat.tensor.data.set(patch.tensor.data, offset);
-      offset += length;
-    }
-    return this.wRowsMat;
-  }
-
-  /**
-   * Creates a index mapping from the 2D-reshaped input tensor with associated 3D tensor shape to the representation
-   * required prior to the matrix multiply. This allows us to work directly on the 2D tensor representations rather
-   * than needing to reshape to the 3D reprentation and calling im2col.
-   *
-   * @param {Object} indicesForReshaped
-   */
-  _createIndexMap(indicesForReshaped) {
+  _createIndexMap() {
     if (this.indexMap) {
       return;
     }
 
-    let [inputRows, inputCols, inputChannels] = this.inputShape;
-
-    let indices = new Tensor(indicesForReshaped.data, indicesForReshaped.shape, Int32Array);
-
-    // padding for border mode 'SAME'
-    if (this.padding === 'SAME') {
-      const [paddingRowBefore, paddingRowAfter, paddingColBefore, paddingColAfter] = this.inputPadding;
-      inputRows = inputRows + paddingRowBefore + paddingRowAfter;
-      inputCols = inputCols + paddingColBefore + paddingColAfter;
-      const padValue = -1;
-      indices = this._padInput(indices, padValue);
-    }
-
-    const kernelH = this.kernelShape[1];
-    const kernelW = this.kernelShape[2];
-    const outputRows = this.outputShape[0];
-    const outputCols = this.outputShape[1];
-    const nbPatches = outputRows * outputCols;
-    const patchLen = inputChannels * kernelH * kernelW;
-    const length = kernelH * kernelW;;
-
-    // effective shape after filter dilation
-    const kernelHDilated = kernelH + (kernelH - 1) * (this.dilationRate[0] - 1);
-    const kernelWDilated = kernelW + (kernelW - 1) * (this.dilationRate[1] - 1);
-
-    this.indexMap = new Tensor([], [nbPatches, patchLen], Int32Array);
-
-    const indicesPatch = new Tensor([], [kernelH, kernelW, 1]);
-    let offset = 0;
-    for (let i = 0, limit = inputRows - kernelHDilated; i <= limit; i += this.strides[0]) {
-      for (let j = 0, limit = inputCols - kernelWDilated; j <= limit; j += this.strides[1]) {
-        for (let c = 0; c < inputChannels; ++c) {
-          ops.assign(
-            indicesPatch.tensor,
-            indices.tensor
-              .hi(i + kernelHDilated, j + kernelWDilated, c + 1)
-              .lo(i, j, c)
-              .step(this.dilationRate[0], this.dilationRate[1], 1)
-          );
-          this.indexMap.tensor.data.set(indicesPatch.tensor.data, offset);
-          offset += length;
-        }
+    let [inputHeight, inputWidth, inputChannels] = this.inputShape;
+    let rowIndices = new Tensor([], [inputHeight, inputWidth]);
+    let index = 0;
+    for (let i = 0; i < inputHeight; i++) {
+      for (let j = 0; j < inputWidth; j++) {
+        rowIndices.tensor.set(i, j, index);
+        index += 1;
       }
     }
-    this.indexMap.createGLTexture({ type: '2d', format: 'int', supportSliceTexture: true });
-  }
 
-  /**
-   * Creates a index mapping from the 2D-reshaped input tensor with associated 3D tensor shape to the representation
-   * required prior to the matrix multiply. This allows us to work directly on the 2D tensor representations rather
-   * than needing to reshape to the 3D reprentation and calling im2col.
-   *
-   * @param {Object} indicesForReshaped
-   */
-  _createIndexMapColStack(indicesForReshaped) {
-    if (this.indexMap) {
-      return;
+    // padding
+    if (this.padding === 'SAME' || Array.isArray(this.padding)) {
+      const [paddingHeightBefore, paddingHeightAfter, paddingWidthBefore, paddingWidthAfter] = this.inputPadding;
+      inputHeight = inputHeight + paddingHeightBefore + paddingHeightAfter;
+      inputWidth = inputWidth + paddingWidthBefore + paddingWidthAfter;
+      const _rowIndices = new Tensor([], [inputHeight, inputWidth]);
+      ops.assigns(_rowIndices.tensor, -1);
+      ops.assign(
+        _rowIndices.tensor
+          .hi(this.inputShape[0] + paddingHeightBefore, this.inputShape[1] + paddingWidthBefore)
+          .lo(paddingHeightBefore, paddingWidthBefore),
+        rowIndices.tensor
+      );
+      rowIndices.tensor = _rowIndices.tensor;
     }
 
-    let [inputRows, inputCols, inputChannels] = this.inputShape;
+    const [filters, kernelHeight, kernelWidth] = this.kernelShape;
+    const outputHeight = this.outputShape[0];
+    const outputWidth = this.outputShape[1];
 
-    let indices = new Tensor(indicesForReshaped.data, indicesForReshaped.shape, Int32Array);
+    this.indexMap = new Tensor([], [outputHeight * outputWidth, kernelHeight * kernelWidth], Int32Array);
 
-    // padding for border mode 'SAME'
-    if (this.padding === 'SAME') {
-      const [paddingRowBefore, paddingRowAfter, paddingColBefore, paddingColAfter] = this.inputPadding;
-      inputRows = inputRows + paddingRowBefore + paddingRowAfter;
-      inputCols = inputCols + paddingColBefore + paddingColAfter;
-      const padValue = -1;
-      indices = this._padInput(indices, padValue);
-    }
-
-    const kernelH = this.kernelShape[1];
-    const kernelW = this.kernelShape[2];
-    const outputRows = this.outputShape[0];
-    const outputCols = this.outputShape[1];
-    const nbPatches = outputRows * outputCols * kernelH * kernelW;
-    const patchLen = inputChannels ;
-    const length = kernelH * kernelW;
-
-    // effective shape after filter dilation
-    const kernelHDilated = kernelH + (kernelH - 1) * (this.dilationRate[0] - 1);
-    const kernelWDilated = kernelW + (kernelW - 1) * (this.dilationRate[1] - 1);
-
-    this.indexMap = new Tensor([], [nbPatches, patchLen], Int32Array);
-    const indicesPatch = new Tensor([], [1, 1, inputChannels]);
+    const patchRow = new Tensor([], [kernelHeight, kernelWidth]);
     let offset = 0;
-    let cnt = 0;
-    for (let i = 0, limit = inputRows - kernelHDilated; i <= limit; i += this.strides[0]) {
-      for (let j = 0, limit = inputCols - kernelWDilated; j <= limit; j += this.strides[1]) {
-        for (let m = 0; m < kernelHDilated; ++m) {
-          for (let n = 0; n < kernelWDilated; ++n) {
-            ops.assign(
-              indicesPatch.tensor,
-              indices.tensor
-                .hi(i + m + 1, j + n + 1, inputChannels)
-                .lo(i + m, j + n, 0)
-            );
-            this.indexMap.tensor.data.set(indicesPatch.tensor.data, offset);
-            offset += inputChannels;
-
-          }
-        }
-        ++cnt;
+    for (let i = 0, limit = inputHeight - kernelHeight; i <= limit; i += this.strides[0]) {
+      for (let j = 0, limit = inputWidth - kernelWidth; j <= limit; j += this.strides[1]) {
+        ops.assign(patchRow.tensor, rowIndices.tensor.hi(i + kernelHeight, j + kernelWidth).lo(i, j));
+        this.indexMap.tensor.data.set(patchRow.tensor.data, offset);
+        offset += kernelHeight * kernelWidth;
       }
     }
     this.indexMap.createGLTexture({ type: '2d', format: 'int', supportSliceTexture: true });
@@ -407,18 +302,11 @@ export default class DepthwiseConv2D extends Layer {
   call(x) {
     const [filter, kernelH, kernelW] = this.kernelShape;
     let outputTextureShape;
-    if (x.is2DReshaped || x.is2DSquareReshaped) {
-      if (x.tensor.shape[1] * kernelH * kernelW <= webgl2.MAX_TEXTURE_SIZE) {
-        this.inputShape = x.originalShape;
-        this._calcOutputShape(this.inputShape);
-        this._createIndexMap(x.indicesForReshaped);
-        outputTextureShape = [this.indexMap.textureShape[0], this.outputShape[2]];
-      } else {
-        this.inputShape = x.originalShape;
-        this._calcOutputShape(this.inputShape);
-        this._createIndexMapColStack(x.indicesForReshaped);
-        outputTextureShape = [this.outputShape[0] * this.outputShape[1], this.outputShape[2]];
-      }
+    if (x.is2DReshaped) {
+      this.inputShape = x.originalShape;
+      this._calcOutputShape(this.inputShape);
+      this._createIndexMap(x.indicesForReshaped);
+      outputTextureShape = [this.outputShape[0] * this.outputShape[1], this.outputShape[2]];
     } else {
       this.inputShape = x.tensor.shape;
       this._calcOutputShape(this.inputShape);
@@ -444,72 +332,30 @@ export default class DepthwiseConv2D extends Layer {
       this.output.indicesForReshaped = tensorUtils.createIndicesFor2DReshaped(this.outputShape, false, -1);
     }
 
-    if (x.is2DReshaped || x.is2DSquareReshaped) {
-      if (x.tensor.shape[1] * kernelH * kernelW <= webgl2.MAX_TEXTURE_SIZE) {
-        // run conv2d program, which involves mapping the input using indexMap, and matrix multiply with weights
-        const hasFragments = Boolean(x.textureSlices);
-        if (hasFragments) {
-          x.convertTextureSlicesToColStackTexture();
-        }
-        if (!this.DepthwiseConv2DProgram) {
-          const DepthwiseConv2DShaderSource = DepthwiseConv2DShaderSourceFunc(
-            this.output.textureSliceShape ? this.output.textureSliceShape : this.output.textureShape,
-            x.textureSliceShape ? x.textureSliceShape : x.textureShape,
-            this.indexMap.textureSliceShape ? this.indexMap.textureSliceShape : this.indexMap.textureShape,
-            this.useBias,
-            hasFragments
-          );
-          this.DepthwiseConv2DProgram = webgl2.createProgram(DepthwiseConv2DShaderSource);
-        }
-        webgl2.runProgram({
-          program: this.DepthwiseConv2DProgram,
-          output: this.activation === 'NONE' ? this.output : this.outputPreactiv,
-          inputs: [
-            { input: x, name: 'x' },
-            { input: this.indexMap, name: 'indexMap' },
-            { input: this.weights['kernel'], name: 'kernel' },
-            ...(this.useBias ? [{ input: this.weights['bias'], name: 'bias' }] : [])
-          ],
-          supportSliceTexture: true
-        });
-        // if (hasFragments) {
-          // x.deleteColStackTexture();
-        // }
-      } else {
-        if (this.output.textureSliceShape) {
-          throw new Error('Texture is not large enough.');
-        }
-        const hasFragments = Boolean(x.textureSlices);
-        if (hasFragments) {
-          x.convertTextureSlicesToColStackTexture();
-        }
-
-        if (!this.DepthwiseConv2DProgram) {
-          const DepthwiseConv2DColStackShaderSource = DepthwiseConv2DColStackShaderSourceFunc(
-            this.output.textureShape,
-            x.textureSliceShape ? x.textureSliceShape : x.textureShape,
-            this.indexMap.textureShape,
-            this.useBias,
-            hasFragments
-          );
-          this.DepthwiseConv2DColStackProgram = webgl2.createProgram(DepthwiseConv2DColStackShaderSource);
-        }
-        webgl2.runProgram({
-          program: this.DepthwiseConv2DColStackProgram,
-          output: this.activation === 'NONE' ? this.output : this.outputPreactiv,
-          inputs: [
-            { input: x, name: 'x' },
-            { input: this.indexMap, name: 'indexMap' },
-            { input: this.weights['kernel'], name: 'kernel' },
-            ...(this.useBias ? [{ input: this.weights['bias'], name: 'bias' }] : [])
-          ],
-          supportSliceTexture: true
-        });
-        // if (hasFragments) {
-        //   x.deleteColStackTexture()
-        // }
+    if (x.is2DReshaped) {
+      const hasFragments = Boolean(x.textureSlices);
+      if (hasFragments) {
+        x.convertTextureSlicesToColStackTexture();
       }
-
+      if (!this.DepthwiseConv2DProgram) {
+        const DepthwiseConv2DColStackShaderSource = depthwiseConv2DShaderSourceFunc(
+          this.output.textureShape[1],
+          this.useBias,
+          hasFragments
+        );
+        this.DepthwiseConv2DColStackProgram = webgl2.createProgram(DepthwiseConv2DColStackShaderSource);
+      }
+      webgl2.runProgram({
+        program: this.DepthwiseConv2DColStackProgram,
+        output: this.activation === 'NONE' ? this.output : this.outputPreactiv,
+        inputs: [
+          { input: x, name: 'x' },
+          { input: this.indexMap, name: 'indexMap' },
+          { input: this.weights['kernel'], name: 'kernel' },
+          ...(this.useBias ? [{ input: this.weights['bias'], name: 'bias' }] : [])
+        ],
+        supportSliceTexture: true
+      });
     } else {
       // run matrix multiply on result of im2col
       const matMulInputs = [{ input: this.imColsMat, name: 'A' }, { input: this.weights['kernel'], name: 'B' }];
@@ -538,13 +384,11 @@ export default class DepthwiseConv2D extends Layer {
         supportSliceTexture: true
       });
     }
-    // this.output.transferFromGLTexture()
 
-    //   // convert back to channels_first ordering if necessary
-    //   if (this.dataFormat === 'NCHW') {
-    //     weightsArr[0].tensor = weightsArr[0].tensor.transpose(0, 3, 1, 2);
-    //   }
-    // }
+    // convert back to channels_first ordering if necessary
+    if (this.dataFormat === 'NCHW') {
+      weightsArr[0].tensor = weightsArr[0].tensor.transpose(0, 3, 1, 2);
+    }
     return this.output;
   }
 }

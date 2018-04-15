@@ -1,8 +1,3 @@
-import Layer from '../../Layer'
-import Tensor from '../../Tensor'
-// import * as activations from '../../webgl/fragmentShader/activation'
-import webgl2 from '../../WebGL2'
-
 import _Pool2D from './_Pool2D'
 
 /**
