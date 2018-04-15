@@ -4,8 +4,7 @@ import * as activations from '../../webgl/fragmentShader/activation'
 import webgl2 from '../../WebGL2'
 import * as tensorUtils from '../../utils/tensorUtils'
 import ops from 'ndarray-ops'
-import { pool2DShaderSource } from '../../webgl/fragmentShader/pooling/pool2D'
-import { pool2DSliceShaderSource } from '../../webgl/fragmentShader/pooling/pool2DSlice'
+import pool2DShaderSourceFunc from '../../webgl/fragmentShader/pooling/pool2D'
 
 /**
  * _Pool2D layer class
@@ -23,7 +22,7 @@ export default class _Pool2D extends Layer {
       padding = 'VALID', 
       data_format = 'NHWC',
       activation = 'NONE'
-    } = attrs
+    } = attrs;
 
     if (Array.isArray(kernel_size)) {
       this.kernelShape = kernel_size;
@@ -39,7 +38,7 @@ export default class _Pool2D extends Layer {
 
     if (Array.isArray(padding)) {
       if (padding.length !== 4) {
-        throw new Error('[Conv2D] Invalid padding.');
+        this.throwError('Invalid padding.');
         // if all numbers in padding are 0, use padding = 'VALID'
       } else if (padding.every((x)=>!x)) {
         this.padding = 'VALID';
@@ -49,13 +48,13 @@ export default class _Pool2D extends Layer {
     } else if (padding === 'VALID' || padding === 'SAME') {
       this.padding = padding;
     } else {
-      throw new Error('[Conv2D] Invalid padding.');
+      this.throwError('Invalid padding.');
     }
 
-    if (data_format === 'NHWC' || data_format === 'NCHW') {
+    if (data_format === 'NHWC') {
       this.dataFormat = data_format;
     } else {
-      throw new Error('[Conv2D] Only NHWC and NCHW data formats are allowed.');
+      this.throwError('Only NHWC data formats are allowed.');
     }
 
     this.activation = activation;
@@ -128,8 +127,8 @@ export default class _Pool2D extends Layer {
       }
     }
 
-    // padding for border mode 'SAME'
-    if (this.padding === 'SAME') {
+    // padding
+    if (this.padding === 'SAME' || Array.isArray(this.padding)) {
       const [paddingRowBefore, paddingRowAfter, paddingColBefore, paddingColAfter] = this.inputPadding;
       inputRows = inputRows + paddingRowBefore + paddingRowAfter;
       inputCols = inputCols + paddingColBefore + paddingColAfter;
@@ -159,9 +158,7 @@ export default class _Pool2D extends Layer {
         offset += nbRow * nbCol;
       }
     }
-
     this.poolIndexMap.createGLTexture({ type: '2d', format: 'int', supportSliceTexture: true });
-
   }
 
   /**
@@ -170,13 +167,12 @@ export default class _Pool2D extends Layer {
    * @param {Tensor} x
    */
   call(x) {
-    if (x.is2DReshaped || x.is2DSquareReshaped) {
+    if (x.is2DReshaped) {
       this.inputShape = x.originalShape;
       this._calcOutputShape(this.inputShape);
       this._createIndexMap();
     } else {
-      console.log('@@@@@@@@@@@@@!!!!!!!!!!!!!!!!!');
-      throw new Error('[Conv2D] Invalid input.');
+      this.throwError('Invalid input.');
     }
 
     // create output textures if doesn't already exist
@@ -200,38 +196,26 @@ export default class _Pool2D extends Layer {
     const poolSize = this.kernelShape[0] * this.kernelShape[1];
     // `true` if max pooling, `false` if average pooling
     const isMaxPooling = this.poolingFunc === 'max';
-
     const programUniforms = [
       { value: this.output.textureShape[1], type: 'int', name: 'channels' },
       { value: poolSize, type: 'int', name: 'poolSize' },
       { value: +isMaxPooling, type: 'bool', name: 'isMaxPooling' }
     ];
-    // console.log(`channels: ${this.output.textureShape[1]}`)
-    // console.log(`poolSize: ${poolSize}`)
-    // console.log(`+isMaxPooling: ${+isMaxPooling}`)
-
     if (x.textureSlices) {
-      console.log('poolingFragmentsProgram')
-      this.poolingFragmentsProgram = webgl2.createProgram(pool2DSliceShaderSource);      
       x.convertTextureSlicesToColStackTexture();
-      webgl2.runProgram({
-        program: this.poolingFragmentsProgram,
-        output: this.activation === 'NONE' ? this.output : this.outputPreactiv,
-        inputs: [{ input: x, name: 'x' }, { input: this.poolIndexMap, name: 'poolIndexMap' }],
-        uniforms: programUniforms,
-        supportSliceTexture: true
-      });
-    } else {
-      console.log('poolingProgram')
-      this.poolingProgram = webgl2.createProgram(pool2DShaderSource);
-      webgl2.runProgram({
-        program: this.poolingProgram,
-        output: this.activation === 'NONE' ? this.output : this.outputPreactiv,
-        inputs: [{ input: x, name: 'x' }, { input: this.poolIndexMap, name: 'poolIndexMap' }],
-        uniforms: programUniforms,
-        supportSliceTexture: true
-      });
     }
+
+    if (!this.poolingProgram) {
+      const pool2DShaderSource = pool2DShaderSourceFunc(x.textureSlices);
+      this.poolingProgram = webgl2.createProgram(pool2DShaderSource);
+    }
+    webgl2.runProgram({
+      program: this.poolingProgram,
+      output: this.activation === 'NONE' ? this.output : this.outputPreactiv,
+      inputs: [{ input: x, name: 'x' }, { input: this.poolIndexMap, name: 'poolIndexMap' }],
+      uniforms: programUniforms,
+      supportSliceTexture: true
+    });
 
     // Activation
     if (this.activation !== 'NONE') {
@@ -243,11 +227,6 @@ export default class _Pool2D extends Layer {
       });
     }
 
-    //   // convert back to channels_first ordering if necessary
-    //   if (this.dataFormat === 'NCHW') {
-    //     weightsArr[0].tensor = weightsArr[0].tensor.transpose(0, 3, 1, 2);
-    //   }
-    // }
     return this.output;
   }
 }

@@ -1,6 +1,14 @@
+/**
+ * Create GLSL program for TopClasses layer
+ *
+ * @param {number} numTopC
+ * @param {number} length
+ */
+
 export default function topClasses(numTopC, length) {
   const source = ` #version 300 es
   precision highp float;
+  precision highp sampler2D;
 
   in vec2 outTex;
   uniform sampler2D x;
@@ -62,7 +70,7 @@ export default function topClasses(numTopC, length) {
     } else {
       outColor = vec4(0.0);
     }
-  }`
-  return source
+  }`;
+  return source;
 }
   

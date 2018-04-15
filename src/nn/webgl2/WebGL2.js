@@ -13,7 +13,7 @@ class WebGL2 {
       buffers: [],
       shaders: [],
       programs: [],
-      Framebuffers: []
+      framebuffers: []
     };
 
     this.canvas = document.createElement('canvas');
@@ -29,7 +29,7 @@ class WebGL2 {
       this.MAX_TEXTURE_IMAGE_UNITS = gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS);
       this._loadVertexShader();
     } else {
-      console.log('Do not support WebGL2.');
+      console.log('[WebGL2] Do not support WebGL2.');
     }
   }
 
@@ -42,7 +42,7 @@ class WebGL2 {
     let vertexShader = gl.createShader(gl.VERTEX_SHADER);
     if (vertexShader == null) {
       this.deleteAll();
-      throw new Error('Unable to create vertex shader');
+      throw new Error('[WebGL2] Unable to create vertex shader');
     }
     this.toDelete.shaders.push(vertexShader);
 
@@ -52,7 +52,7 @@ class WebGL2 {
     let compiled = gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS);
     if (!compiled) {
       this.deleteAll();
-      throw new Error('Failed to compile vertex shader: ' + gl.getShaderInfoLog(vertexShader));
+      throw new Error('[WebGL2] Failed to compile vertex shader: ' + gl.getShaderInfoLog(vertexShader));
     }
 
     this._vertexShader = vertexShader;
@@ -69,13 +69,13 @@ class WebGL2 {
     let position = gl.getAttribLocation(program, 'position');
     if (position < 0) {
       this.deleteAll();
-      throw new Error('Failed to get position in vertexShaderSource');
+      throw new Error('[WebGL2] Failed to get position in vertexShaderSource');
     }
 
     let vertexPositionBuffer = gl.createBuffer();
     if (!vertexPositionBuffer) {
       this.deleteAll();
-      throw new Error('Failed to create the buffer object');
+      throw new Error('[WebGL2] Failed to create the buffer object');
     }
 
     gl.bindBuffer(gl.ARRAY_BUFFER, vertexPositionBuffer);
@@ -91,13 +91,13 @@ class WebGL2 {
     let texcoord = gl.getAttribLocation(program, 'texcoord');
     if (texcoord < 0) {
       this.deleteAll();
-      throw new Error('Failed to get texcoord in vertexShaderSource');
+      throw new Error('[WebGL2] Failed to get texcoord in vertexShaderSource');
     }
     
     let vertexTexcoordBuffer = gl.createBuffer();
     if (!vertexTexcoordBuffer) {
       this.deleteAll();
-      throw new Error('Failed to create the buffer object');
+      throw new Error('[WebGL2] Failed to create the buffer object');
     }
 
     gl.bindBuffer(gl.ARRAY_BUFFER, vertexTexcoordBuffer);
@@ -123,7 +123,7 @@ class WebGL2 {
     const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
     if (fragmentShader == null) {
       this.deleteAll();
-      throw new Error('Unable to create fragment shader');
+      throw new Error('[WebGL2] Unable to create fragment shader');
     }
     this.toDelete.shaders.push(fragmentShader);
 
@@ -133,13 +133,13 @@ class WebGL2 {
     let compiled = gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS);
     if (!compiled) {
       this.deleteAll();
-      throw new Error('Failed to compile fragment shader: ' + gl.getShaderInfoLog(fragmentShader));
+      throw new Error('[WebGL2] Failed to compile fragment shader: ' + gl.getShaderInfoLog(fragmentShader));
     }
 
     const program = gl.createProgram();
     if (!program) {
       this.deleteAll();
-      throw new Error('Unable to create program');
+      throw new Error('[WebGL2] Unable to create program');
     }
     this.toDelete.programs.push(program);
 
@@ -150,7 +150,7 @@ class WebGL2 {
     let linked = gl.getProgramParameter(program, gl.LINK_STATUS);
     if (!linked) {
       this.deleteAll();
-      throw new Error('Failed to link program: ' + gl.getProgramInfoLog(program));
+      throw new Error('[WebGL2] Failed to link program: ' + gl.getProgramInfoLog(program));
     }
 
     this._initVertexBuffers(program);
@@ -162,13 +162,14 @@ class WebGL2 {
    *
    * @param {WebGLProgram} options.program
    * @param {Tensor} options.output
-   * @param {Object[]} options.inputs
+   * @param {Object[]} options.inputs For example: [x, indexMap, kernel, bias]
    * @param {Object[]} options.uniforms
+   * @param {Boolean} supportSliceTexture
    */
   runProgram({ program, output, inputs, uniforms, supportSliceTexture = false }) {
-    if (!program) throw new Error('No program in WebGL2');
-    if (!output) throw new Error('no output');
-    if (!inputs) throw new Error('no inputs');
+    if (!program) throw new Error('[WebGL2] No program in WebGL2 runProgram');
+    if (!output) throw new Error('[WebGL2] No output in WebGL2 runProgram');
+    if (!inputs) throw new Error('[WebGL2] No inputs in WebGL2 runProgram');
 
     const gl = this.context;
 
@@ -179,18 +180,20 @@ class WebGL2 {
 
     if (output.textureSlices) {
       if (!supportSliceTexture) {
-        throw new Error('Program does not support texture fragments');
+        throw new Error('[WebGL2] Program does not support texture fragments');
       }
 
-      let inputsWithFragments = inputs.filter(
+      // Get inputs with slices such as indexMap, but not x(colStackTexture) or kernel/bias(no slices)
+      let inputsWithSlices = inputs.filter(
         obj => obj.input.textureSlices && !obj.input.colStackTexture
       );
-      let numFragments = output.textureSlices.length;
-      if (inputsWithFragments.some(obj => obj.input.textureSlices.length !== numFragments)) {
-        throw new Error('Number of texture fragments in inputs and output do not match');
+      let numSlices = output.textureSlices.length;
+      if (inputsWithSlices.some(obj => obj.input.textureSlices.length !== numSlices)) {
+        throw new Error('[WebGL2] Number of texture slices in inputs and output do not match');
       }
 
-      for (let k = 0; k < numFragments; k++) {
+      // For each k, run 1 slice
+      for (let k = 0; k < numSlices; k++) {
         this.bindOutputTexture(output.textureSlices[k], output.textureSliceShape);
         this._bindInputTextures(program, inputs, k);
         gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
@@ -259,8 +262,10 @@ class WebGL2 {
     const gl = this.context;
 
     gl.viewport(0, 0, shape[1], shape[0]);
-    this.framebuffer = this.framebuffer || gl.createFramebuffer();
-    this.toDelete.Framebuffers.push(this.framebuffer);
+    if (!this.framebuffer) {
+      this.framebuffer = gl.createFramebuffer();
+      this.toDelete.framebuffers.push(this.framebuffer);
+    }
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.framebuffer);
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, outputTexture, 0);
   }
@@ -272,18 +277,16 @@ class WebGL2 {
    * @returns {Float32Array}
    */
   readData(shape) {
-    const gl = this.context
+    const gl = this.context;
 
-    let buf = new ArrayBuffer(shape[0] * shape[1] * 4 * 4)
-    let view = new Float32Array(buf)
-    let startTime = performance.now();
-    gl.readPixels(0, 0, shape[1], shape[0], gl.RGBA, gl.FLOAT, view)
-    // console.log(`readpiexl time: ${(performance.now() - startTime).toFixed(2)} ms`)
-    let out = []
+    let buf = new ArrayBuffer(shape[0] * shape[1] * 4 * 4);
+    let view = new Float32Array(buf);
+    gl.readPixels(0, 0, shape[1], shape[0], gl.RGBA, gl.FLOAT, view);
+    let out = [];
     for (let i = 0; i < view.length; i += 4) {
-      out.push(view[i])
+      out.push(view[i]);
     }
-    return new Float32Array(out)
+    return new Float32Array(out);
   }
 
   /**
@@ -320,7 +323,7 @@ class WebGL2 {
   }
 
   /**
-   * Deletes all stored references to WebGL textures and buffers
+   * Deletes all stored references to WebGL textures, buffers, shaders, programs and framebuffers
    */
   deleteAll() {
     const gl = this.context;
@@ -329,14 +332,14 @@ class WebGL2 {
     this.toDelete.buffers.forEach(buffer => gl.deleteBuffer(buffer));
     this.toDelete.shaders.forEach(shader => gl.deleteShader(shader));
     this.toDelete.programs.forEach(program => gl.deleteProgram(program));
-    this.toDelete.Framebuffers.forEach(Framebuffer => gl.deleteFramebuffer(Framebuffer));
+    this.toDelete.framebuffers.forEach(Framebuffer => gl.deleteFramebuffer(Framebuffer));
 
     this.toDelete = { 
       textures: [], 
       buffers: [],
       shaders: [],
       programs: [],
-      Framebuffers: []
+      framebuffers: []
     };
   }
 }
@@ -344,4 +347,7 @@ class WebGL2 {
 const webgl2 = new WebGL2();
 // webgl2.MAX_TEXTURE_SIZE = 4096;
 // webgl2.MAX_TEXTURE_IMAGE_UNITS = 16;
+// console.log(`[WebGL2] MAX_TEXTURE_SIZE: ${webgl2.MAX_TEXTURE_SIZE}`)
+// console.log(`[WebGL2] MAX_TEXTURE_IMAGE_UNITS: ${webgl2.MAX_TEXTURE_IMAGE_UNITS}`)
+
 export default webgl2;

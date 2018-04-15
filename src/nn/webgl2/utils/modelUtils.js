@@ -222,13 +222,13 @@ function GetReshapeAttrs(nnOperands, inputs, outputs) {
 }
 
 /**
- * Get Contatenation attributes.
+ * Get Concatenation attributes.
  * 
  * @param {Object[]} nnOperands - An array of operands.
  * @param {number[]} inputs - [inputCode].
  * @param {number[]} outputs - [outputCode].
  */
-function GetContatenationAttrs(nnOperands, inputs, outputs) {
+function GetConcatenationAttrs(nnOperands, inputs, outputs) {
   let attrs = {
     inputs: inputs.slice(0, inputs.length-1),
     outputs: outputs,
@@ -245,7 +245,7 @@ export const OperationCodeToLayersMap = new Map([
   [OperationCode.AVERAGE_POOL_2D, layers.GlobalAveragePooling2D],
   [OperationCode.SOFTMAX, layers.Activation],
   [OperationCode.RESHAPE, layers.Reshape],
-  [OperationCode.CONCATENATION, layers.Contatenation]
+  [OperationCode.CONCATENATION, layers.Concatenation]
 ]);
 
 export const OperationCodeAttrsMap = new Map([
@@ -255,7 +255,7 @@ export const OperationCodeAttrsMap = new Map([
   [OperationCode.AVERAGE_POOL_2D, GetGlobalAveragePooling2DAttrs],
   [OperationCode.SOFTMAX, GetSoftmaxAttrs],
   [OperationCode.RESHAPE, GetReshapeAttrs],
-  [OperationCode.CONCATENATION, GetContatenationAttrs]
+  [OperationCode.CONCATENATION, GetConcatenationAttrs]
 ]);
 
 export const WebGL2SpecialLayers = {
@@ -263,30 +263,113 @@ export const WebGL2SpecialLayers = {
   TopClasses: layers.TopClasses
 };
 
+// webgl2 operation test
+
+// let inputShape = [100, 50, 3]
+// let inputShapeLen = inputShape.reduce((i, j) => i * j);
+// let inputValue = [];
+// for (let i =  0; i < inputShapeLen; ++i) {
+//   inputValue.push(1/10000);
+// }
+// let inputTensor = new Tensor(inputValue, inputShape, Float32Array);
+// inputTensor.reshapeTo2D();
+// inputTensor.createGLTexture({ type: '2d', format: 'float', supportSliceTexture: true });
 
 // let max = new layers.MaxPool2D({
 //   inputs: [0],
 //   outputs: [0],
 //   kernel_size: [3, 3],
-//   strides: [2, 2],
-//   padding: 'VALID'
+//   strides: [1, 1],
+//   padding: [1,1,1,1]
 // })
 
-// let input = new Tensor([
-//   0,1,2,4,5,
-//   0,1,2,4,5,
-//   3,4,5,6,3,
-//   3,4,5,6,2,
-//   6,7,8,9,1,
-//   0,1,2,4,5,
-//   0,1,2,4,5,
-//   3,4,5,6,3,
-//   3,4,5,6,2,
-//   6,7,8,9,1], [5, 5, 2]);
-// input.reshapeTo2D();
-// input.createGLTexture({ type: '2d', format: 'float', supportSliceTexture: true });
+// let kernelValue = [];
+// let kernelShape = [1, 3, 3, inputShape[2]];
+// let kernelValueLen = kernelShape.reduce((i, j) => i * j);
+// for (let i =  0; i < kernelValueLen; ++i) {
+//   kernelValue.push(i);
+// }
 
+// let biasValue = [];
+// let biasValueLen = kernelShape[0];
+// for (let i =  0; i < biasValueLen; ++i) {
+//   biasValue.push(i);
+// }
 
-// let output = max.call(input)
-// output.transferFromGLTexture();
-// console.log(output.tensor)
+// let use_bias = false;
+// let biasTensor = new Tensor(biasValue, [biasValueLen], Float32Array);
+// let kernelTensor = new Tensor(kernelValue, kernelShape, Float32Array);
+// let weights = [kernelTensor, ...(use_bias? [biasTensor] : [])];
+
+// let conv = new layers.Conv2D({
+//   inputs: [0],
+//   outputs: [0],
+//   filters: kernelShape[0],
+//   kernel_size: kernelShape.slice(1,3),
+//   strides: [1, 1],
+//   padding: 'VALID',
+//   activation: 'RELU',
+//   use_bias: use_bias,
+//   weights: weights
+// })
+
+// console.log(inputTensor)
+// let maxOutput = max.call(inputTensor);
+// maxOutput.transferFromGLTexture();
+// console.log('max', maxOutput.tensor)
+
+// let conOutput = conv.call(inputTensor);
+// conOutput.transferFromGLTexture();
+// console.log('conv', conOutput)
+
+// conOutput = conv.call(conOutput);
+// conOutput.transferFromGLTexture();
+// console.log('conv', conOutput)
+
+// let input1Shape = [100, 100, 2]
+// let input1ShapeLen = input1Shape.reduce((i, j) => i * j);
+// let input1Value = [];
+// for (let i =  0; i < input1ShapeLen; ++i) {
+//   input1Value.push(i/100);
+// }
+// let input1Tensor = new Tensor(input1Value, input1Shape, Float32Array);
+// input1Tensor.reshapeTo2D();
+// input1Tensor.createGLTexture({ type: '2d', format: 'float', supportSliceTexture: true });
+
+// let input2Shape = [100, 100, 2]
+// let input2ShapeLen = input2Shape.reduce((i, j) => i * j);
+// let input2Value = [];
+// for (let i =  0; i < input2ShapeLen; ++i) {
+//   input2Value.push(i/100);
+// }
+// let input2Tensor = new Tensor(input2Value, input2Shape, Float32Array);
+// input2Tensor.reshapeTo2D();
+// input2Tensor.createGLTexture({ type: '2d', format: 'float', supportSliceTexture: true });
+
+// let concate = new layers.Concatenation({
+//   inputs: [0],
+//   outputs: [0]
+// })
+
+// let output1 = concate.call([input1Tensor, input2Tensor]);
+// output1.transferFromGLTexture();
+// console.log('concate', output1)
+
+// let inputLayer1 = new layers.Input()
+// let inputLayer2 = new layers.Input()
+// let out1 = inputLayer1.call(input1Value, input1Shape, Float32Array)
+// let out2 = inputLayer2.call(input2Value, input2Shape, Float32Array)
+// let concatetest = new layers.Concatenation({
+//   inputs: [0],
+//   outputs: [0]
+// })
+
+// let output2 = concate.call([out1, out2]);
+// output2.transferFromGLTexture();
+// console.log('inputLayer concate', output2)
+
+// let output3 = new Tensor(output2.tensor.data, [100, 100, 4], Float32Array);
+// // output2.is2DReshaped = false;
+// let conOutput = conv.call(output2);
+// conOutput.transferFromGLTexture();
+// console.log('conv', conOutput)

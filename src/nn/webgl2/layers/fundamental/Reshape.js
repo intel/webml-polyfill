@@ -1,6 +1,4 @@
 import Layer from '../../Layer'
-import Tensor from '../../Tensor'
-import webgl2 from '../../WebGL2'
 
 /**
  * Reshape layer class
