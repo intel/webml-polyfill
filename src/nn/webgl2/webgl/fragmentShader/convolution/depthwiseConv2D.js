@@ -5,7 +5,7 @@
  * @param {boolean} useBias
  * @param {boolean} [hasFragments]
  */
-export default function DepthwiseConv2DDirect(inputChannels, useBias, hasSlices) {
+export default function depthwiseConv2D(inputChannels, useBias, hasSlices) {
   const addBias = useBias ? `sum += texelFetch(bias, ivec2(out_x, 0), 0).r;` : '';
 
   const adjustIndicesForSlices = hasSlices

@@ -337,16 +337,16 @@ export default class DepthwiseConv2D extends Layer {
       if (hasFragments) {
         x.convertTextureSlicesToColStackTexture();
       }
-      if (!this.DepthwiseConv2DProgram) {
-        const DepthwiseConv2DColStackShaderSource = depthwiseConv2DShaderSourceFunc(
+      if (!this.depthwiseConv2DProgram) {
+        const depthwiseConv2DShaderSource = depthwiseConv2DShaderSourceFunc(
           this.output.textureShape[1],
           this.useBias,
           hasFragments
         );
-        this.DepthwiseConv2DColStackProgram = webgl2.createProgram(DepthwiseConv2DColStackShaderSource);
+        this.depthwiseConv2DProgram = webgl2.createProgram(depthwiseConv2DShaderSource);
       }
       webgl2.runProgram({
-        program: this.DepthwiseConv2DColStackProgram,
+        program: this.depthwiseConv2DProgram,
         output: this.activation === 'NONE' ? this.output : this.outputPreactiv,
         inputs: [
           { input: x, name: 'x' },
