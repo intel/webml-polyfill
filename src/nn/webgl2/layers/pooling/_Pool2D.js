@@ -226,7 +226,6 @@ export default class _Pool2D extends Layer {
         supportSliceTexture: true
       });
     }
-
     return this.output;
   }
 }
