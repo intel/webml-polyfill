@@ -1,9 +1,7 @@
 import { globalPooling } from './globalPooling'
-import { pool2D } from './pool2D'
-import { pool2DSlice } from './pool2DSlice'
+import pool2D from './pool2D'
 
 export { 
   globalPooling,
-  pool2D,
-  pool2DSlice
+  pool2D
 }

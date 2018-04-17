@@ -17,7 +17,7 @@ export default class Activation extends Layer {
       activation = 'NONE'
     } = attrs;
     this.name = activation;
-    if (this.name !== 'NONE') {
+    if (this.name !== 'NONE' && !webgl2.activationProgram) {
       this.activationProgram = webgl2.createProgram(activations[this.name]);
     }
   }
@@ -38,7 +38,7 @@ export default class Activation extends Layer {
         output: this.output,
         inputs: [{ input: x, name: 'x' }],
         supportSliceTexture: true
-      })
+      });
       return this.output;
     } else {
       return x;

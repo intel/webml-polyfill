@@ -19,7 +19,7 @@ export default class Layer {
    * @param {string} message
    */
   throwError(message) {
-    throw new Error(`[${this.layerClass} layer: ${this.name || ''}] ${message}`);
+    throw new Error(`[Layer: ${this.name || ''}] ${message}`);
   }
 
   /**
@@ -30,10 +30,9 @@ export default class Layer {
    */
   setWeights(params, weightsArr, createGLTexture = true) {
     params.forEach((p, i) => {
-      this.weights[p] = weightsArr[i]
-
+      this.weights[p] = weightsArr[i];
       if (createGLTexture) {
-        this.weights[p].createGLTexture({ type: '2d', format: 'float' })
+        this.weights[p].createGLTexture({ type: '2d', format: 'float' });
       }
     })
   }
@@ -45,7 +44,7 @@ export default class Layer {
    * @returns {Tensor}
    */
   call(x) {
-    this.output = x
-    return this.output
+    this.output = x;
+    return this.output;
   }
 }
