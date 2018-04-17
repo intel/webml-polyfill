@@ -13,14 +13,14 @@ export default class Tensor {
    *
    * @param {(TypedArray|Array)} data
    * @param {number[]} shape
-   * @param {Object} [options]
+   * @param {Object} type
    */
   constructor(data, shape, type) {
     this.is1D = false;
     this.arrayType = type || Float32Array;
-    if (data && data.length && (data instanceof this.arrayType || data instanceof Array)) {
-      if (data.length && shape.length && data.length !== shape.reduce((a, b) => a * b, 1)) {
-        throw new Error('Tensor shape does not match the length of data.');
+    if (data && data.length && (data instanceof this.arrayType || Array.isArray(data))) {
+      if (data.length && shape.length && data.length !== shape.reduce((a, b) => a * b)) {
+        throw new Error('[Tensor] Tensor shape does not match the length of data.');
       }
       if (data instanceof this.arrayType) {
         this.tensor = ndarray(data, shape);
@@ -29,7 +29,7 @@ export default class Tensor {
       }
     } else if (!data.length && shape.length) {
       // Initialize tensor data with 0 when data is not given
-      this.tensor = ndarray(new this.arrayType(shape.reduce((a, b) => a * b, 1)), shape);
+      this.tensor = ndarray(new this.arrayType(shape.reduce((a, b) => a * b)), shape);
     } else {
       this.tensor = ndarray(new this.arrayType([]), []);
     }
@@ -45,14 +45,14 @@ export default class Tensor {
    * @param {boolean} [opts.supportSliceTexture]
    */
   createGLTexture({ type = '2d', format = 'float', supportSliceTexture = false }) {
-    let shape = []
+    let shape = [];
     if (this.tensor.shape.length === 1) {
       shape = [1, this.tensor.shape[0]];
       this.is1D = true;
     } else if (this.tensor.shape.length === 2) {
       shape = this.tensor.shape;
     } else {
-      throw new Error('Can not create WebGL2 texture for shape length > 2.');
+      throw new Error('[Tensor] Can not create WebGL2 texture for shape length > 2.');
     }
 
     this.textureShape = shape;
@@ -60,13 +60,20 @@ export default class Tensor {
     this.textureFormat = format;
 
     if (type === '2d') {
-      if (this.textureShape[0] > webgl2.MAX_TEXTURE_SIZE && supportSliceTexture) {
-        this._createTextureSlices();
+      if (this.textureShape[1] > webgl2.MAX_TEXTURE_SIZE) {
+        throw new Error(`[Tensor] Tensor shape[1] ${this.textureShape[1]} > MAX_TEXTURE_SIZE ${webgl2.MAX_TEXTURE_SIZE}`);
+      }
+      if (this.textureShape[0] > webgl2.MAX_TEXTURE_SIZE) {
+        if (supportSliceTexture) {
+          this._createTextureSlices();
+        } else {
+          throw new Error(`[Tensor] Tensor shape[0] ${this.textureShape[0]} > MAX_TEXTURE_SIZE ${webgl2.MAX_TEXTURE_SIZE}`);
+        }
       } else {
         this._create2DGLTexture();
       }
     } else {
-      throw new Error(`Invalid type: ${type}`);
+      throw new Error(`[Tensor] Invalid type: ${type}`);
     }
   }
 
@@ -110,6 +117,9 @@ export default class Tensor {
 
     const shape = this.textureSliceShape;
     const numSlices = Math.ceil(this.textureShape[0] / webgl2.MAX_TEXTURE_SIZE);
+    if (numSlices > webgl2.MAX_TEXTURE_IMAGE_UNITS) {
+      throw new Error(`[Tensor] numSlices ${numSlices} > MAX_TEXTURE_IMAGE_UNITS ${webgl2.MAX_TEXTURE_IMAGE_UNITS}`);
+    }
     let offset = 0;
 
     for (let k = 0; k < numSlices; k++) {
@@ -117,7 +127,7 @@ export default class Tensor {
       webgl2.toDelete.textures.push(texture);
       gl.bindTexture(textureTarget, texture);
 
-      // append 0s to last fragment
+      // append 0s to last slice
       let data;
       if (k === numSlices - 1) {
         data = new this.arrayType(shape[0] * shape[1]);
@@ -137,7 +147,7 @@ export default class Tensor {
       this.textureSlices.push(texture);
       offset += shape[0] * shape[1];
     }
-    // console.log(`Create Fragments: ${numSlices}`);
+    // console.log(`Create slices: ${numSlices}`);
   }
 
   /**
@@ -145,15 +155,15 @@ export default class Tensor {
    */
   convertTextureSlicesToColStackTexture() {
     if (!this.textureSlices || !this.textureSliceShape) {
-      throw new Error('No textureSlices available.');
+      throw new Error('[Tensor] No textureSlices available in convertTextureSlicesToColStackTexture method.');
     }
-
+    // console.log('[Tensor] convertTextureSlicesToColStackTexture');
     const gl = webgl2.context;
     const textureOptions = webgl2.getTextureOptions(this.textureType, this.textureFormat)
     const { textureTarget, textureInternalFormat, textureFormat, textureType } = textureOptions
 
     if (!this.colStackTexture) {
-      this.colStackTexture = gl.createTexture()
+      this.colStackTexture = gl.createTexture();
       webgl2.toDelete.textures.push(this.colStackTexture);
       gl.bindTexture(textureTarget, this.colStackTexture);
 
@@ -162,6 +172,9 @@ export default class Tensor {
         this.textureSliceShape[0],
         this.textureSliceShape[1] * numSlices
       ];
+      if (this.colStackTextureShape[1] > webgl2.MAX_TEXTURE_SIZE) {
+        throw new Error(`[Tensor] colStackTextureShape[1] ${this.colStackTextureShape[1]} > MAX_TEXTURE_SIZE ${webgl2.MAX_TEXTURE_SIZE}`);
+      }
 
       const shape = this.colStackTextureShape;
       const data = new this.arrayType(shape[0] * shape[1]);
@@ -177,8 +190,11 @@ export default class Tensor {
       gl.bindTexture(textureTarget, this.colStackTexture);
     }
 
-    const framebuffer = gl.createFramebuffer();
-    gl.bindFramebuffer(gl.READ_FRAMEBUFFER, framebuffer);
+    if (!webgl2.readFramebuffer) {
+      webgl2.readFramebuffer = gl.createFramebuffer();
+      webgl2.toDelete.framebuffers.push(webgl2.readFramebuffer);
+    }
+    gl.bindFramebuffer(gl.READ_FRAMEBUFFER, webgl2.readFramebuffer);
     this.textureSlices.forEach((texture, k) => {
       gl.framebufferTexture2D(gl.READ_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0)
       gl.copyTexSubImage2D(
@@ -192,11 +208,10 @@ export default class Tensor {
         this.textureSliceShape[0]
       )
     });
-    gl.deleteFramebuffer(framebuffer);
   }
 
   /**
-   * Removes colStackTexture
+   * Delete colStackTexture
    */
   deleteColStackTexture() {
     if (this.colStackTexture) {
@@ -208,7 +223,7 @@ export default class Tensor {
   }
 
   /**
-   * Deletes WebGLTexture
+   * Delete WebGLTexture
    */
   deleteGLTexture() {
     webgl2.toDelete.textures.forEach(texture => gl.deleteTexture(texture));
@@ -226,20 +241,18 @@ export default class Tensor {
     } else if (data && data.length && data instanceof Array) {
       this.tensor.data.set(new this.arrayType(data));
     } else {
-      throw new Error('Invalid input for replaceTensorData method.');
+      throw new Error('[Tensor] Invalid input for replaceTensorData method.');
     }
 
     if (this.texture) {
-      // console.log('inputTensor is texture');
       const gl = webgl2.context;
       const shape = this.textureShape;
       const textureOptions = webgl2.getTextureOptions(this.textureType, this.textureFormat);
       const { textureTarget, textureFormat, textureType } = textureOptions;
       
-      gl.bindTexture(textureTarget, this.texture)
-      gl.texSubImage2D(textureTarget, 0, 0, 0, shape[1], shape[0], textureFormat, textureType, data, 0)
+      gl.bindTexture(textureTarget, this.texture);
+      gl.texSubImage2D(textureTarget, 0, 0, 0, shape[1], shape[0], textureFormat, textureType, data, 0);
     } else if (this.textureSlices){
-      // console.log('inputTensor is textureSlices');
       const gl = webgl2.context;
       const textureOptions = webgl2.getTextureOptions(this.textureType, this.textureFormat);
       const { textureTarget, textureFormat, textureType } = textureOptions;
@@ -248,15 +261,15 @@ export default class Tensor {
       const slices = Math.ceil(data.length / length);
 
       if (this.textureSlices.length !== slices) {
-        throw new Error('Invalid data length in replaceTensor.');
+        throw new Error('[Tensor] Invalid data length in replaceTensorData method.');
       }
       this.textureSlices.forEach((texture, i) => {
         let oneSlice;
         if (i === slices - 1) {
-          let left = data.length % length;
+          let remainder = data.length % length;
           oneSlice = new this.arrayType(length);
           oneSlice.set(new this.arrayType(data.buffer, data.byteOffset + i * length * data.BYTES_PER_ELEMENT, 
-                                                      left === 0 ? length : left), 0);            
+                                          remainder === 0 ? length : remainder), 0);            
         } else {
           oneSlice = new this.arrayType(data.buffer, data.byteOffset + i * length * data.BYTES_PER_ELEMENT, length);
         }
@@ -276,28 +289,25 @@ export default class Tensor {
       for (let k = 0; k < this.textureSlices.length; k++) {
         // Transfer from textureSlices
         webgl2.bindOutputTexture(this.textureSlices[k], this.textureSliceShape);
-        const fragmentData = webgl2.readData(this.textureSliceShape);
-        // last fragment may need to be truncated
+        const sliceData = webgl2.readData(this.textureSliceShape);
+        // Last slice needs to be truncated
         if (k === this.textureSlices.length - 1) {
           const truncate = this.tensor.data.length - offset;
-          this.tensor.data.set(fragmentData.subarray(0, truncate), offset);
+          this.tensor.data.set(sliceData.subarray(0, truncate), offset);
         } else {
-          this.tensor.data.set(fragmentData, offset);
+          this.tensor.data.set(sliceData, offset);
         }
-        offset += fragmentData.length;
+        offset += sliceData.length;
       }
     } else {
       // Transfer from texture
       webgl2.bindOutputTexture(this.texture, this.textureShape);
       this.tensor = ndarray(new this.arrayType([]), this.textureShape);
-      // let startTime = performance.now();
       this.tensor.data = webgl2.readData(this.textureShape);
-      // console.log(`readData time: ${(performance.now() - startTime).toFixed(2)} ms`)
     }
 
     if (this.is1D && this.textureShape[0] === 1) {
       // collapse to 1D
-      // console.log(`collapse to 1D`)
       this.tensor = squeeze(this.tensor, [0]);
     }
   }
@@ -338,10 +348,10 @@ export default class Tensor {
    */
   reshapeFrom2D(axis = -1) {
     if (!this.is2DReshaped) {
-      throw new Error('[Tensor] not in reshaped 2D representation.');
+      throw new Error('[Tensor] Not in reshaped 2D representation.');
     }
     if (!this.originalShape) {
-      throw new Error('[Tensor] does not contain originalShape.');
+      throw new Error('[Tensor] Does not contain originalShape.');
     }
 
     if (axis < 0) {

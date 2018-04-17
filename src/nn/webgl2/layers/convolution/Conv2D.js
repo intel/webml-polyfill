@@ -48,8 +48,8 @@ export default class Conv2D extends Layer {
 
     if (Array.isArray(padding)) {
       if (padding.length !== 4) {
-        throw new Error('[Conv2D] Invalid padding.');
-        // if all numbers in padding are 0, use padding = 'VALID'
+        this.throwError('Invalid padding.');
+        // If all numbers in padding are 0, use padding = 'VALID'
       } else if (padding.every((x)=>!x)) {
         this.padding = 'VALID';
       } else {
@@ -58,13 +58,13 @@ export default class Conv2D extends Layer {
     } else if (padding === 'VALID' || padding === 'SAME') {
       this.padding = padding;
     } else {
-      throw new Error('[Conv2D] Invalid padding.');
+      this.throwError('Invalid padding.');
     }
 
     if (data_format === 'NHWC' || data_format === 'NCHW') {
       this.dataFormat = data_format;
     } else {
-      throw new Error('[Conv2D] Only NHWC and NCHW data formats are allowed.');
+      this.throwError('Only NHWC and NCHW data formats are allowed.');
     }
 
     if (Array.isArray(dilation_rate)) {
@@ -77,7 +77,7 @@ export default class Conv2D extends Layer {
       (this.strides[0] !== 1 || this.strides[1] !== 1)
     ) {
       // Currently, specifying any dilation_rate value != 1 is incompatible with specifying any stride value != 1
-      throw new Error(`[Conv2D] Incompatible combination of dilation_rate with strides.`);
+      this.throwError(`Incompatible combination of dilation_rate with strides.`);
     }
 
     this.activation = activation;
@@ -103,8 +103,10 @@ export default class Conv2D extends Layer {
     
     super.setWeights(params, weightsArr, false);
     this._w2row();
-    this.weights['kernel'] = this.wRowsMat
+    this.weights['kernel'] = this.wRowsMat;
     this.weights['kernel'].createGLTexture({ type: '2d', format: 'float' });
+    // console.log(`webgl2.MAX_TEXTURE_SIZE: ${webgl2.MAX_TEXTURE_SIZE}`)
+    // console.log(this.weights['kernel'])
     if (this.useBias) {
       this.weights['bias'].createGLTexture({ type: '2d', format: 'float' });
     }
@@ -121,8 +123,8 @@ export default class Conv2D extends Layer {
       return;
     }
 
-    const inputRows = inputShape[0];
-    const inputCols = inputShape[1];
+    const inputHeight = inputShape[0];
+    const inputWidth = inputShape[1];
     const [filter, kernelH, kernelW] = this.kernelShape;
 
     // effective shape after filter dilation
@@ -130,37 +132,38 @@ export default class Conv2D extends Layer {
     const kernelWDilated = kernelW + (kernelW - 1) * (this.dilationRate[1] - 1);
 
     if (Array.isArray(this.padding)) {
-      const outputRows = (inputRows - kernelHDilated + this.padding[0] + 
+      const outputHeight = (inputHeight - kernelHDilated + this.padding[0] + 
                           this.padding[1] + this.strides[0]) / this.strides[0];
-      const outputCols = (inputCols - kernelWDilated + this.padding[2] + 
+      const outputWidth = (inputWidth - kernelWDilated + this.padding[2] + 
                           this.padding[3] + this.strides[1]) / this.strides[1];
-      this.outputShape = [outputRows, outputCols, filter];
+      this.outputShape = [outputHeight, outputWidth, filter];
       this.inputPadding = this.padding;
       console.log()
     } else {
-      const outputRows =
+      const outputHeight =
       this.padding === 'SAME'
-        ? Math.floor((inputRows + this.strides[0] - 1) / this.strides[0])
-        : Math.floor((inputRows - kernelHDilated + this.strides[0]) / this.strides[0]);
-      const outputCols =
+        ? Math.floor((inputHeight + this.strides[0] - 1) / this.strides[0])
+        : Math.floor((inputHeight - kernelHDilated + this.strides[0]) / this.strides[0]);
+      const outputWidth =
         this.padding === 'SAME'
-          ? Math.floor((inputCols + this.strides[1] - 1) / this.strides[1])
-          : Math.floor((inputCols - kernelWDilated + this.strides[1]) / this.strides[1]);
+          ? Math.floor((inputWidth + this.strides[1] - 1) / this.strides[1])
+          : Math.floor((inputWidth - kernelWDilated + this.strides[1]) / this.strides[1]);
 
-      const paddingRow =
+      const paddingHeight =
         this.padding === 'SAME'
-          ? Math.max(0, Math.floor((outputRows - 1) * this.strides[0] + kernelHDilated - inputRows))
+          ? Math.max(0, Math.floor((outputHeight - 1) * this.strides[0] + kernelHDilated - inputHeight))
           : 0;
-      const paddingCol =
+      const paddingWidth =
         this.padding === 'SAME'
-          ? Math.max(0, Math.floor((outputCols - 1) * this.strides[1] + kernelWDilated - inputCols))
+          ? Math.max(0, Math.floor((outputWidth - 1) * this.strides[1] + kernelWDilated - inputWidth))
           : 0;
-    const paddingRowBefore = Math.floor(paddingRow / 2);
-    const paddingRowAfter = paddingRow - paddingRowBefore;
-    const paddingColBefore = Math.floor(paddingCol / 2);
-    const paddingColAfter = paddingCol - paddingColBefore;
-    this.outputShape = [outputRows, outputCols, filter];
-    this.inputPadding = [paddingRowBefore, paddingRowAfter, paddingColBefore, paddingColAfter];
+
+      const paddingHeightBefore = Math.floor(paddingHeight / 2);
+      const paddingHeightAfter = paddingHeight - paddingHeightBefore;
+      const paddingWidthBefore = Math.floor(paddingWidth / 2);
+      const paddingWidthAfter = paddingWidth - paddingWidthBefore;
+      this.outputShape = [outputHeight, outputWidth, filter];
+      this.inputPadding = [paddingHeightBefore, paddingHeightAfter, paddingWidthBefore, paddingWidthAfter];
     }
   }
 
@@ -174,27 +177,21 @@ export default class Conv2D extends Layer {
   _padInput(x, padValue = 0) {
     if (this.padding === 'SAME' || Array.isArray(this.padding)) {
       // Test all 0.
-      let flag = false;
-      this.inputPadding.forEach(pad => {
-        if (pad) {
-          flag = true;
-        }
-      });
-      if (!flag) {
+      if (this.inputPadding.every((x)=>!x)) {
         return x;
       }
-      const [inputRows, inputCols, inputChannels] = x.tensor.shape;
-      const [paddingRowBefore, paddingRowAfter, paddingColBefore, paddingColAfter] = this.inputPadding;
-      const newRows = inputRows + paddingRowBefore + paddingRowAfter;
-      const newCols = inputCols + paddingColBefore + paddingColAfter;
-      const _x = new Tensor([], [newRows, newCols, inputChannels]);
+      const [inputHeight, inputWidth, inputChannels] = x.tensor.shape;
+      const [paddingHeightBefore, paddingHeightAfter, paddingWidthBefore, paddingWidthAfter] = this.inputPadding;
+      const newHeight = inputHeight + paddingHeightBefore + paddingHeightAfter;
+      const newWidth = inputWidth + paddingWidthBefore + paddingWidthAfter;
+      const _x = new Tensor([], [newHeight, newWidth, inputChannels]);
       if (padValue !== 0) {
         ops.assigns(_x.tensor, padValue);
       }
       ops.assign(
         _x.tensor
-          .hi(inputRows + paddingRowBefore, inputCols + paddingColBefore, inputChannels)
-          .lo(paddingRowBefore, paddingColBefore, 0),
+          .hi(inputHeight + paddingHeightBefore, inputWidth + paddingWidthBefore, inputChannels)
+          .lo(paddingHeightBefore, paddingWidthBefore, 0),
         x.tensor
       );
       return _x;
@@ -209,12 +206,12 @@ export default class Conv2D extends Layer {
    * @returns {Tensor}
    */
   _im2col(x) {
-    const [inputRows, inputCols, inputChannels] = x.tensor.shape;
+    const [inputHeight, inputWidth, inputChannels] = x.tensor.shape;
     const kernelH = this.kernelShape[1];
     const kernelW = this.kernelShape[2];
-    const outputRows = this.outputShape[0];
-    const outputCols = this.outputShape[1];
-    const nbPatches = outputRows * outputCols;
+    const outputHeight = this.outputShape[0];
+    const outputWidth = this.outputShape[1];
+    const nbPatches = outputHeight * outputWidth;
     const patchLen = kernelH * kernelW * inputChannels;
 
     // effective shape after filter dilation
@@ -233,8 +230,8 @@ export default class Conv2D extends Layer {
 
     const patch = new Tensor([], [kernelH, kernelW, inputChannels]);
     let offset = 0;
-    for (let i = 0, limit = inputRows - kernelHDilated; i <= limit; i += this.strides[0]) {
-      for (let j = 0, limit = inputCols - kernelWDilated; j <= limit; j += this.strides[1]) {
+    for (let i = 0, limit = inputHeight - kernelHDilated; i <= limit; i += this.strides[0]) {
+      for (let j = 0, limit = inputWidth - kernelWDilated; j <= limit; j += this.strides[1]) {
         ops.assign(
           patch.tensor,
           x.tensor
@@ -285,30 +282,30 @@ export default class Conv2D extends Layer {
       return;
     }
 
-    let [inputRows, inputCols, inputChannels] = this.inputShape;
+    let [inputHeight, inputWidth, inputChannels] = this.inputShape;
 
     let indices = new Tensor(indicesForReshaped.data, indicesForReshaped.shape, Int32Array);
 
-    // padding for border mode 'SAME'
+    // padding
     if (this.padding === 'SAME' || Array.isArray(this.padding)) {
-      const [paddingRowBefore, paddingRowAfter, paddingColBefore, paddingColAfter] = this.inputPadding;
-      inputRows = inputRows + paddingRowBefore + paddingRowAfter;
-      inputCols = inputCols + paddingColBefore + paddingColAfter;
+      const [paddingHeightBefore, paddingHeightAfter, paddingWidthBefore, paddingWidthAfter] = this.inputPadding;
+      inputHeight = inputHeight + paddingHeightBefore + paddingHeightAfter;
+      inputWidth = inputWidth + paddingWidthBefore + paddingWidthAfter;
       const padValue = -1;
       indices = this._padInput(indices, padValue);
     }
 
     const kernelH = this.kernelShape[1];
     const kernelW = this.kernelShape[2];
-    const outputRows = this.outputShape[0];
-    const outputCols = this.outputShape[1];
-    const nbPatches = outputRows * outputCols;
+    const outputHeight = this.outputShape[0];
+    const outputWidth = this.outputShape[1];
+    const nbPatches = outputHeight * outputWidth;
     const patchLen = kernelH * kernelW * inputChannels;
 
     // effective shape after filter dilation
     const kernelHDilated = kernelH + (kernelH - 1) * (this.dilationRate[0] - 1);
     const kernelWDilated = kernelW + (kernelW - 1) * (this.dilationRate[1] - 1);
-
+    // console.log(nbPatches, patchLen);
     this.indexMap = new Tensor([], [nbPatches, patchLen], Int32Array);
 
     // if Pointwise Convolution
@@ -317,8 +314,8 @@ export default class Conv2D extends Layer {
     } else {
       const indicesPatch = new Tensor([], [kernelH, kernelW, inputChannels]);
       let offset = 0
-      for (let i = 0, limit = inputRows - kernelHDilated; i <= limit; i += this.strides[0]) {
-        for (let j = 0, limit = inputCols - kernelWDilated; j <= limit; j += this.strides[1]) {
+      for (let i = 0, limit = inputHeight - kernelHDilated; i <= limit; i += this.strides[0]) {
+        for (let j = 0, limit = inputWidth - kernelWDilated; j <= limit; j += this.strides[1]) {
           ops.assign(
             indicesPatch.tensor,
             indices.tensor
@@ -331,7 +328,6 @@ export default class Conv2D extends Layer {
         }
       }
     }
-
     this.indexMap.createGLTexture({ type: '2d', format: 'int', supportSliceTexture: true });
   }
 
@@ -342,18 +338,23 @@ export default class Conv2D extends Layer {
    */
   call(x) {
     let outputTextureShape;
-    if (x.is2DReshaped || x.is2DSquareReshaped) {
+    if (x.is2DReshaped) {
       this.inputShape = x.originalShape;
       this._calcOutputShape(this.inputShape);
       this._createIndexMap(x.indicesForReshaped);
       outputTextureShape = [this.indexMap.textureShape[0], this.weights['kernel'].textureShape[1]];
     } else {
-      console.log('@@@@@@@@@@@@@!!!!!!!!!!!!!!!!!');
+      // console.log('[Conv2D] x is not 2DReshaped!');
       this.inputShape = x.tensor.shape;
       this._calcOutputShape(this.inputShape);
       x = this._padInput(x);
       this._im2col(x);
-      this.imColsMat.createGLTexture({ type: '2d', format: 'float', supportSliceTexture: true });
+      if (!this.imColsMat.textureShape) {
+        this.imColsMat.createGLTexture({ type: '2d', format: 'float', supportSliceTexture: true });
+      } else {
+        this.imColsMat.replaceTensorData(this.imColsMat.tensor.data);
+      }
+      
       outputTextureShape = [this.imColsMat.textureShape[0], this.weights['kernel'].textureShape[1]];
     }
 
@@ -373,7 +374,7 @@ export default class Conv2D extends Layer {
       this.output.indicesForReshaped = tensorUtils.createIndicesFor2DReshaped(this.outputShape, false, -1);
     }
 
-    if (x.is2DReshaped || x.is2DSquareReshaped) {
+    if (x.is2DReshaped) {
       // run conv2d program, which involves mapping the input using indexMap, and matrix multiply with weights
       const hasFragments = Boolean(x.textureSlices);
       if (hasFragments) {
@@ -430,13 +431,11 @@ export default class Conv2D extends Layer {
         supportSliceTexture: true
       });
     }
-    // this.output.transferFromGLTexture()
 
-    //   // convert back to channels_first ordering if necessary
-    //   if (this.dataFormat === 'NCHW') {
-    //     weightsArr[0].tensor = weightsArr[0].tensor.transpose(0, 3, 1, 2);
-    //   }
-    // }
+    // convert back to channels_first ordering if necessary
+    if (this.dataFormat === 'NCHW') {
+      weightsArr[0].tensor = weightsArr[0].tensor.transpose(0, 3, 1, 2);
+    }
     return this.output;
   }
 }

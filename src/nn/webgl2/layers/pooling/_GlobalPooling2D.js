@@ -32,7 +32,7 @@ export default class _GlobalPooling2D extends Layer {
    * @returns {Tensor}
    */
   call(x) {
-    if (x.is2DReshaped || x.is2DSquareReshaped) {
+    if (x.is2DReshaped) {
       this.inputShape = x.originalShape;
     } else {
       // convert to HWC ordering
@@ -61,6 +61,6 @@ export default class _GlobalPooling2D extends Layer {
         { value: isMaxPooling, type: 'bool', name: 'isMaxPooling' }
       ]
     });
-    return this.output
+    return this.output;
   }
 }
