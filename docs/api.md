@@ -82,11 +82,9 @@ interface NeuralNetworkContext {
 dictionary OperandOptions {
   required long type;
   sequence<unsigned long> dimensions;
-
-  //scale: an non-negative floating point value
+  // scale: an non-negative floating point value
   float scale;
-
-  //zeroPoint: an integer, in range [0, 255]
+  // zeroPoint: an integer, in range [0, 255]
   long zeroPoint;
 };
 
