@@ -1,12 +1,3 @@
-let nnPolyfill, nnNative;
-if (navigator.ml.isPolyfill) {
-  nnNative = null;
-  nnPolyfill = navigator.ml.getNeuralNetworkContext();
-} else {
-  nnNative = navigator.ml.getNeuralNetworkContext();
-  nnPolyfill = navigator.ml_polyfill.getNeuralNetworkContext();
-}
-
 class SqueezeNet {
   constructor(onnxModel, backend) {
     this._onnxModel = onnxModel;
