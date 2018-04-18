@@ -1,12 +1,3 @@
-let nnPolyfill, nnNative;
-if (navigator.ml.isPolyfill) {
-  nnNative = null;
-  nnPolyfill = navigator.ml.getNeuralNetworkContext();
-} else {
-  nnNative = navigator.ml.getNeuralNetworkContext();
-  nnPolyfill = navigator.ml_polyfill.getNeuralNetworkContext();
-}
-
 class MobileNet {
   constructor(tfModel, backend) {
     this._tfModel = tfModel;

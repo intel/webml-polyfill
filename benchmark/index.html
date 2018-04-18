@@ -4,10 +4,15 @@
     <meta charset="utf-8">
     <title>WebML Benchmark</title>
     <script src="../dist/webml-polyfill.js"></script>
+    <script src="../examples/util/base.js"></script>
     <script src="../examples/mobilenet/flatbuffers/js/flatbuffers.js"></script>
     <script src="../examples/mobilenet/schema/schema_generated.js"></script>
     <script src="../examples/mobilenet/TfLiteModelUtils.js"></script>
     <script src="../examples/mobilenet/MobileNet.js"></script>
+    <script src="../examples/third_party/protobuf.min.js"></script>
+    <script src="../examples/squeezenet/onnx.js"></script>
+    <script src="../examples/squeezenet/OnnxModelUtils.js"></script>
+    <script src="../examples/squeezenet/SqueezeNet.js"></script>
     <script src="index.js"></script>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/css/bootstrap.min.css" integrity="sha384-Zug+QiDoJOrZ5t4lssLdxGhVrurbmBWopoEl+M6BdEfwnCJZtKxi1KgxUyJq13dy" crossorigin="anonymous">
     <style>
@@ -28,7 +33,7 @@
       h1, h4 {
         margin: 24px 0 0;
       }
-      h1 { 
+      h1 {
         font-size: 2.0em;
       }
       h4 {
@@ -50,6 +55,7 @@
             <h4>Model</h4>
             <select id="modelName">
               <option value="mobilenet" selected>MobileNet</option>
+              <option value="squeezenet">SqueezeNet</option>
             </select>
           </div>
           <div>
