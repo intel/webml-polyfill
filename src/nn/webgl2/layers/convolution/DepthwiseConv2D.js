@@ -93,13 +93,13 @@ export default class DepthwiseConv2D extends Layer {
    * @param {Tensor[]} weightsArr - array of weights which are instances of Tensor
    */
   _setWeights(weightsArr) {
-    const params = this.useBias ? ['kernel', 'bias'] : ['kernel'];
-    const inputChannels = weightsArr[0].tensor.shape[3];
-    const [filter, kernelH, kernelW] = this.kernelShape;
-    
     if (this.dataFormat === 'NCHW') {
       weightsArr[0].tensor = weightsArr[0].tensor.transpose(0, 2, 3, 1);
     }
+    
+    const params = this.useBias ? ['kernel', 'bias'] : ['kernel'];
+    const inputChannels = weightsArr[0].tensor.shape[3];
+    const [filter, kernelH, kernelW] = this.kernelShape;
 
     super.setWeights(params, weightsArr, false);
     this.weights['kernel'].tensor.shape = [kernelH * kernelW, inputChannels]
