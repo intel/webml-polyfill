@@ -7,7 +7,7 @@
  * @param {boolean} useBias
  * @param {boolean} [hasFragments]
  */
-export default function conv2d(outputShape, inputShape, indexMapShape, useBias, hasFragments) {
+export default function conv2d(outputShape, inputShape, indexMapShape, useBias, hasFragments, fuse) {
   const addBias = useBias ? `sum += texelFetch(bias, ivec2(out_x, 0), 0).r;` : '';
 
   const adjustIndicesForFragments = hasFragments
@@ -45,6 +45,7 @@ export default function conv2d(outputShape, inputShape, indexMapShape, useBias, 
     }
 
     ${addBias}
+    ${fuse}
     outColor = vec4(sum);
   }`;
   return source;

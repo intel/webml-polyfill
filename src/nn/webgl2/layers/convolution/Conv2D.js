@@ -4,8 +4,9 @@ import * as activations from '../../webgl/fragmentShader/activation'
 import webgl2 from '../../WebGL2'
 import * as tensorUtils from '../../utils/tensorUtils'
 import ops from 'ndarray-ops'
-import { matMulShaderSource } from '../../webgl/fragmentShader/arithmetic/matMul'
+import matMulShaderSourceFunc from '../../webgl/fragmentShader/arithmetic/matMul'
 import conv2dShaderSourceFunc from '../../webgl/fragmentShader/convolution/conv2d'
+import { fuseShaderSource } from '../../webgl/fragmentShader/activation/fuse'
 
 /**
  * Conv2D layer class
@@ -81,9 +82,7 @@ export default class Conv2D extends Layer {
     }
 
     this.activation = activation;
-    if (this.activation !== 'NONE') {
-      this.activationProgram = webgl2.createProgram(activations[this.activation]);
-    }
+    this.fuseActivation = fuseShaderSource[this.activation];
 
     this.useBias = use_bias;
     this._setWeights(weights);
@@ -359,13 +358,6 @@ export default class Conv2D extends Layer {
     }
 
     // create output textures if doesn't already exist
-    if (this.activation !== 'NONE' && !this.outputPreactiv) {
-      this.outputPreactiv = new Tensor([], outputTextureShape);
-      this.outputPreactiv.createGLTexture({ type: '2d', format: 'float', supportSliceTexture: true });
-      this.outputPreactiv.is2DReshaped = true;
-      this.outputPreactiv.originalShape = this.outputShape;
-      this.outputPreactiv.indicesForReshaped = tensorUtils.createIndicesFor2DReshaped(this.outputShape, false, -1);
-    }
     if (!this.output) {
       this.output = new Tensor([], outputTextureShape);
       this.output.createGLTexture({ type: '2d', format: 'float', supportSliceTexture: true });
@@ -386,13 +378,14 @@ export default class Conv2D extends Layer {
           x.textureSliceShape ? x.textureSliceShape : x.textureShape,
           this.indexMap.textureSliceShape ? this.indexMap.textureSliceShape : this.indexMap.textureShape,
           this.useBias,
-          hasFragments
+          hasFragments,
+          this.fuseActivation
         );
         this.conv2dProgram = webgl2.createProgram(conv2dProgramSource);
       }
       webgl2.runProgram({
         program: this.conv2dProgram,
-        output: this.activation === 'NONE' ? this.output : this.outputPreactiv,
+        output: this.output,
         inputs: [
           { input: x, name: 'x' },
           { input: this.indexMap, name: 'indexMap' },
@@ -401,9 +394,6 @@ export default class Conv2D extends Layer {
         ],
         supportSliceTexture: true
       });
-      // if (hasFragments) {
-        // x.deleteColStackTexture()
-      // }
     } else {
       // run matrix multiply on result of im2col
       const matMulInputs = [{ input: this.imColsMat, name: 'A' }, { input: this.weights['kernel'], name: 'B' }];
@@ -411,23 +401,13 @@ export default class Conv2D extends Layer {
         matMulInputs.push({ input: this.weights['bias'], name: 'C' });
       }
       if (!this.matMulProgram) {
-        this.matMulProgram = webgl2.createProgram(matMulShaderSource);
+        this.matMulProgram = webgl2.createProgram(matMulShaderSourceFunc(this.fuseActivation));
       }
       webgl2.runProgram({
         program: this.matMulProgram,
-        output: this.activation === 'NONE' ? this.output : this.outputPreactiv,
+        output: this.output,
         inputs: matMulInputs,
         uniforms: [{ value: this.useBias ? 1 : 0, type: 'bool', name: 'addC' }],
-        supportSliceTexture: true
-      });
-    }
-
-    // Activation
-    if (this.activation !== 'NONE') {
-      webgl2.runProgram({
-        program: this.activationProgram,
-        output: this.output,
-        inputs: [{ input: this.outputPreactiv, name: 'x' }],
         supportSliceTexture: true
       });
     }
