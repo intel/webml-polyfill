@@ -62,6 +62,13 @@ export default class Conv2D extends Layer {
       this.throwError('Invalid padding.');
     }
 
+    this.pointwise = false;
+    if (this.kernelShape[1] === 1 && this.kernelShape[2] === 1 && 
+        this.strides[0] === 1 && this.strides[1] === 1 &&
+        (padding === 'VALID' || padding === 'SAME')) {
+      this.pointwise = true;
+    }
+
     if (data_format === 'NHWC' || data_format === 'NCHW') {
       this.dataFormat = data_format;
     } else {
@@ -137,7 +144,7 @@ export default class Conv2D extends Layer {
                           this.padding[3] + this.strides[1]) / this.strides[1];
       this.outputShape = [outputHeight, outputWidth, filter];
       this.inputPadding = this.padding;
-      console.log()
+
     } else {
       const outputHeight =
       this.padding === 'SAME'
@@ -337,7 +344,12 @@ export default class Conv2D extends Layer {
    */
   call(x) {
     let outputTextureShape;
-    if (x.is2DReshaped) {
+    if (this.pointwise) {
+      // console.log('[Conv2D] use pointwise!');
+      this.inputShape = x.originalShape;
+      this.outputShape= [x.originalShape[0], x.originalShape[1], this.kernelShape[0]];
+      outputTextureShape = [this.outputShape[0] * this.outputShape[1], this.outputShape[2]];
+    } else if (x.is2DReshaped) {
       this.inputShape = x.originalShape;
       this._calcOutputShape(this.inputShape);
       this._createIndexMap(x.indicesForReshaped);
@@ -353,7 +365,6 @@ export default class Conv2D extends Layer {
       } else {
         this.imColsMat.replaceTensorData(this.imColsMat.tensor.data);
       }
-      
       outputTextureShape = [this.imColsMat.textureShape[0], this.weights['kernel'].textureShape[1]];
     }
 
@@ -366,7 +377,23 @@ export default class Conv2D extends Layer {
       this.output.indicesForReshaped = tensorUtils.createIndicesFor2DReshaped(this.outputShape, false, -1);
     }
 
-    if (x.is2DReshaped) {
+    if (this.pointwise) {
+      // run 1x1 pointwise conv
+      const matMulInputs = [{ input: x, name: 'A' }, { input: this.weights['kernel'], name: 'B' }];
+      if (this.useBias) {
+        matMulInputs.push({ input: this.weights['bias'], name: 'C' });
+      }
+      if (!this.matMulProgram) {
+        this.matMulProgram = webgl2.createProgram(matMulShaderSourceFunc(this.fuseActivation));
+      }
+      webgl2.runProgram({
+        program: this.matMulProgram,
+        output: this.output,
+        inputs: matMulInputs,
+        uniforms: [{ value: this.useBias ? 1 : 0, type: 'bool', name: 'addC' }],
+        supportSliceTexture: true
+      });
+    } else if (x.is2DReshaped) {
       // run conv2d program, which involves mapping the input using indexMap, and matrix multiply with weights
       const hasFragments = Boolean(x.textureSlices);
       if (hasFragments) {
