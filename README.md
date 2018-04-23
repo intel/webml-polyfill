@@ -33,3 +33,6 @@ Open browser and navigate to http://localhost:8080/test
 ```sh
 $ npm run watch
 ```
+
+# License
+This project is following [Apache License Version 2.0](./LICENSE_APACHE2).
