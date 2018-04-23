@@ -36,3 +36,5 @@ $ npm run watch
 
 # License
 This project is following [Apache License Version 2.0](./LICENSE_APACHE2).
+
+And all documents in [test/wpt/resources](./test/wpt/resources) are licensed by the [W3C 3-clause BSD License](./test/wpt/resources/LICENSE).
