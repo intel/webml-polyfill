@@ -56,9 +56,9 @@ export default class Model {
       let inputIndex = inputs[0].index;
       let outputBuffer = outputs[0].buffer;
       let outputIndex = outputs[0].index;
-      let operationStart = performance.now();
+      // let operationStart = performance.now();
       this._layers.forEach((layer, i) => {
-        let start = performance.now();
+        // let start = performance.now();
         if (i == 0) {
           if (this.supportInputLayer) {
             this._operands[inputIndex] = layer.call(inputBuffer, nnOperands[inputIndex].dimensions.slice(1,4), Float32Array);

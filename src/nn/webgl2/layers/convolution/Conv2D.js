@@ -144,7 +144,6 @@ export default class Conv2D extends Layer {
                           this.padding[3] + this.strides[1]) / this.strides[1];
       this.outputShape = [outputHeight, outputWidth, filter];
       this.inputPadding = this.padding;
-
     } else {
       const outputHeight =
       this.padding === 'SAME'
