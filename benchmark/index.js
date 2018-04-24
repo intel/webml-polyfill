@@ -1,8 +1,18 @@
 'use strict';
-const MOBILENET_INPUT_TENSOR_SIZE = 224 * 224 * 3;
-const MOBILENET_OUTPUT_TENSOR_SIZE = 1001;
-const MOBILENET_MODEL_FILE = '../examples/mobilenet/model/mobilenet_v1_1.0_224.tflite';
-const MOBILENET_LABELS_FILE = '../examples/mobilenet/model/labels.txt';
+const MODEL_DIC = {
+  mobilenet: {
+    inputTensorSize: 224 * 224 * 3,
+    outputTensorSize: 1001,
+    modelFile: '../examples/mobilenet/model/mobilenet_v1_1.0_224.tflite',
+    labelFile: '../examples/mobilenet/model/labels.txt'
+  },
+  squeezenet: {
+    inputTensorSize: 224 * 224 * 3,
+    outputTensorSize: 1000,
+    modelFile: '../examples/squeezenet/model/model.onnx',
+    labelFile: '../examples/squeezenet/labels.json'
+  }
+}
 let imageElement = null;
 let inputElement = null;
 let pickBtnEelement = null;
@@ -102,9 +112,9 @@ class WebMLJSBenchmark extends Benchmark {
     this.labels = null;
   }
   async loadModelAndLabels() {
-    let arrayBuffer = await this.loadUrl(MOBILENET_MODEL_FILE, true);
+    let arrayBuffer = await this.loadUrl(MODEL_DIC[this.configuration.modelName].modelFile, true);
     let bytes = new Uint8Array(arrayBuffer);
-    let text = await this.loadUrl(MOBILENET_LABELS_FILE);
+    let text = await this.loadUrl(MODEL_DIC[this.configuration.modelName].labelFile);
     return {
       bytes: bytes,
       text: text
@@ -134,20 +144,35 @@ class WebMLJSBenchmark extends Benchmark {
     const height = 224;
     const channels = 3;
     const imageChannels = 4; // RGBA
-    const mean = 127.5;
-    const std = 127.5;
-    this.inputTensor = new Float32Array(MOBILENET_INPUT_TENSOR_SIZE);
-    this.outputTensor = new Float32Array(MOBILENET_OUTPUT_TENSOR_SIZE);
+    this.inputTensor = new Float32Array(MODEL_DIC[this.configuration.modelName].inputTensorSize);
+    this.outputTensor = new Float32Array(MODEL_DIC[this.configuration.modelName].outputTensorSize);
     let canvasElement = document.getElementById('canvas');
     let canvasContext = canvasElement.getContext('2d');
     canvasContext.drawImage(imageElement, 0, 0, width, height);
     let pixels = canvasContext.getImageData(0, 0, width, height).data;
-    // NHWC layout
-    for (let y = 0; y < height; ++y) {
-      for (let x = 0; x < width; ++x) {
-        for (let c = 0; c < channels; ++c) {
-          let value = pixels[y * width * imageChannels + x * imageChannels + c];
-          this.inputTensor[y * width * channels + x * channels + c] = (value - mean) / std;
+    if (this.configuration.modelName === 'mobilenet') {
+      const meanMN = 127.5;
+      const stdMN = 127.5;
+      // NHWC layout
+      for (let y = 0; y < height; ++y) {
+        for (let x = 0; x < width; ++x) {
+          for (let c = 0; c < channels; ++c) {
+            let value = pixels[y * width * imageChannels + x * imageChannels + c];
+            this.inputTensor[y * width * channels + x * channels + c] = (value - meanMN) / stdMN;
+          }
+        }
+      }
+    } else if (this.configuration.modelName === 'squeezenet') {
+      // The RGB mean values are from
+      // https://github.com/caffe2/AICamera/blob/master/app/src/main/cpp/native-lib.cpp#L108
+      const meanSN = [122.67891434, 116.66876762, 104.00698793];
+      // NHWC layout
+      for (let y = 0; y < height; ++y) {
+        for (let x = 0; x < width; ++x) {
+          for (let c = 0; c < channels; ++c) {
+            let value = pixels[y * width * imageChannels + x * imageChannels + c];
+            this.inputTensor[y * width * channels + x * channels + c] = value - meanSN[c];
+          }
         }
       }
     }
@@ -155,13 +180,28 @@ class WebMLJSBenchmark extends Benchmark {
   async setupAsync() {
     this.setInputOutput();
     let result = await this.loadModelAndLabels();
-    this.labels = result.text.split('\n');
-    let flatBuffer = new flatbuffers.ByteBuffer(result.bytes);
-    let tfModel = tflite.Model.getRootAsModel(flatBuffer);
-    if (this.configuration.backend !== 'native') {
-      this.model = new MobileNet(tfModel, this.configuration.backend);
-    } else {
-      this.model = new MobileNet(tfModel);
+    let targetModel;
+    if (this.configuration.modelName === 'mobilenet') {
+      this.labels = result.text.split('\n');
+      let flatBuffer = new flatbuffers.ByteBuffer(result.bytes);
+      targetModel = tflite.Model.getRootAsModel(flatBuffer);
+      if (this.configuration.backend !== 'native') {
+        this.model = new MobileNet(targetModel, this.configuration.backend);
+      } else {
+        this.model = new MobileNet(targetModel);
+      }
+    } else if (this.configuration.modelName === 'squeezenet') {
+      this.labels = JSON.parse(result.text);
+      let err = onnx.ModelProto.verify(result.bytes);
+      if (err) {
+        throw new Error(`Invalid model ${err}`);
+      }
+      targetModel = onnx.ModelProto.decode(result.bytes);
+      if (this.configuration.backend !== 'native') {
+        this.model = new SqueezeNet(targetModel, this.configuration.backend);
+      } else {
+        this.model = new SqueezeNet(targetModel);
+      }
     }
     await this.model.createCompiledModel();
   }
@@ -216,7 +256,11 @@ async function run() {
     logger.groupEnd();
     logger.group('Configuration');
     Object.keys(configuration).forEach(key => {
-      logger.log(`${key.padStart(12)}: ${configuration[key]}`);
+      if (key === 'backend' && configuration[key] === 'native') {
+        logger.log(`${key.padStart(12)}: ${getNativeAPI()}`);
+      } else {
+        logger.log(`${key.padStart(12)}: ${configuration[key]}`);
+      }
     });
     logger.groupEnd();
     logger.group('Run');
@@ -254,7 +298,6 @@ document.addEventListener('DOMContentLoaded', () => {
     modelName: 'mobilenet',
     iteration: 0
   }];
-
   let webmlAPIConfigurations = [{
     framework: 'Web ML API',
     backend: 'native',
