@@ -61,18 +61,18 @@ function printTfLiteModel(model) {
   function printBuffer(buffer, i) {
     console.log(`\t buffer[${i}]: {data: ${buffer.data()}, length: ${buffer.dataLength()}}`);
   }
-  console.log(`version: ${model.version()}`);
-  console.log(`description: ${model.description()}`);
-  console.log(`operator_codes(${model.operatorCodesLength()}):`);
-  for (let i = 0; i < model.operatorCodesLength(); ++i) {
-    printOperatorCode(model.operatorCodes(i), i);
-  }
-  console.log(`subgraphs(${model.subgraphsLength()}):`);
-  for (let i = 0; i < model.subgraphsLength(); ++i) {
-    printSubgraph(model.subgraphs(i), i);
-  }
-  console.log(`buffers[${model.buffersLength()}]:`);
-  for (let i = 0; i < model.buffersLength(); ++i) {
-    printBuffer(model.buffers(i), i);
-  }
+  // console.log(`version: ${model.version()}`);
+  // console.log(`description: ${model.description()}`);
+  // console.log(`operator_codes(${model.operatorCodesLength()}):`);
+  // for (let i = 0; i < model.operatorCodesLength(); ++i) {
+  //   printOperatorCode(model.operatorCodes(i), i);
+  // }
+  // console.log(`subgraphs(${model.subgraphsLength()}):`);
+  // for (let i = 0; i < model.subgraphsLength(); ++i) {
+  //   printSubgraph(model.subgraphs(i), i);
+  // }
+  // console.log(`buffers[${model.buffersLength()}]:`);
+  // for (let i = 0; i < model.buffersLength(); ++i) {
+  //   printBuffer(model.buffers(i), i);
+  // }
 }
