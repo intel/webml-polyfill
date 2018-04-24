@@ -41,8 +41,7 @@ class Utils {
     result = await this.model.compute(this.inputTensor, this.outputTensor);
     let elapsed = performance.now() - start;
     console.log(`warmup time: ${elapsed.toFixed(2)} ms`);
-    console.log(this.outputTensor)
-    // this.initialized = true;
+    this.initialized = true;
   }
 
   async predict(imageSource) {
@@ -53,19 +52,20 @@ class Utils {
     this.prepareInputTensor(this.inputTensor, this.canvasElement);
     let start = performance.now();
     let result = await this.model.compute(this.inputTensor, this.outputTensor);
+    console.log(this.outputTensor)
     let elapsed = performance.now() - start;
-    let classes = this.getTopClasses(this.outputTensor, this.labels, 3);
+    // let classes = this.getTopClasses(this.outputTensor, this.labels, 3);
     console.log(`Inference time: ${elapsed.toFixed(2)} ms`);
-    let inferenceTimeElement = document.getElementById('inferenceTime');
-    inferenceTimeElement.innerHTML = `inference time: ${elapsed.toFixed(2)} ms`;
-    console.log(`Classes: `);
-    classes.forEach((c, i) => {
-      console.log(`\tlabel: ${c.label}, probability: ${c.prob}%`);
-      let labelElement = document.getElementById(`label${i}`);
-      let probElement = document.getElementById(`prob${i}`);
-      labelElement.innerHTML = `${c.label}`;
-      probElement.innerHTML = `${c.prob}%`;
-    });
+    // let inferenceTimeElement = document.getElementById('inferenceTime');
+    // inferenceTimeElement.innerHTML = `inference time: ${elapsed.toFixed(2)} ms`;
+    // console.log(`Classes: `);
+    // classes.forEach((c, i) => {
+    //   console.log(`\tlabel: ${c.label}, probability: ${c.prob}%`);
+    //   let labelElement = document.getElementById(`label${i}`);
+    //   let probElement = document.getElementById(`prob${i}`);
+    //   labelElement.innerHTML = `${c.label}`;
+    //   probElement.innerHTML = `${c.prob}%`;
+    // });
   }
 
   async loadModelAndLabels(modelUrl, labelsUrl) {
@@ -148,6 +148,134 @@ class Utils {
       classes.push(c);
     }
     return classes;
+  }
+
+  /**
+   * Decode out box coordinate
+   *
+   * @param {number[4]} offsets - An 4 element array of box shape offsets.
+   * @param {number[4]} anchorCord - An 4 element array of anchor coordinate.
+   */
+  box_decode(offsets, anchorCord) {
+    if (offsets.length !== 4 || anchorCord.length !== 4) {
+      throw new Error('[box_decode] Each input length should be 4!');
+    }
+    const [ycenter_a, xcenter_a, ha, wa] = anchorCord;
+    let [ty, tx, th, tw] = offsets;
+
+    // scale_factors = [y_scale, x_scale, height_scale, width_scale]
+    scale_factors = [10.0, 10.0, 5.0, 5.0];
+    ty /= scale_factors[0];
+    tx /= scale_factors[1];
+    th /= scale_factors[2];
+    tw /= scale_factors[3];
+
+    let w = Math.exp(tw) * wa;
+    let h = Math.exp(th) * ha;
+    let ycenter = ty * ha + ycenter_a;
+    let xcenter = tx * wa + xcenter_a;
+    let ymin = ycenter - h / 2;
+    let xmin = xcenter - w / 2;
+    let ymax = ycenter + h / 2;
+    let xmax = xcenter + w / 2;
+    return [ymin, xmin, ymax, xmax];
+  }
+
+  /**
+   * Get IOU(intersection-over-union) of 2 boxes
+   *
+   * @param {number[4]} boxCord1 - An 4 element array of box coordinate.
+   * @param {number[4]} boxCord2 - An 4 element array of box coordinate.
+   */
+  IOU(boxCord1, boxCord2) {
+    if (boxCord1.length !== 4 || boxCord2.length !== 4) {
+      throw new Error('[box_decode] Each input length should be 4!');
+    }
+
+    const [ymin1, xmin1, ymax1, xmax1] = boxCord1;
+    const [ymin2, xmin2, ymax2, xmax2] = boxCord2;
+    let minYmax = Math.min(ymax1, ymax2);
+    let maxYmin = Math.max(ymin1, ymin2);
+    let height = Math.max(0, minYmax - maxYmin);
+    let minXmax = Math.min(xmax1, xmax2);
+    let maxXmin = Math.max(xmin1, xmin2);
+    let width = Math.max(0, minXmax - maxXmin);
+    let intersection = height * width;
+    let area1 = (ymax1 - ymin1) * (xmax1 - xmin1);
+    let area2 = (ymax2 - ymin2) * (xmax2 - xmin2);
+    let areaSum = area1 + area2 - intersection
+    if (areaSum === 0) {
+      throw new Error('[IOU] areaSum can not be 0!');
+    }
+    let IOU = intersection / areaSum;
+    return IOU;
+  }
+
+  /**
+   * Generate anchors
+   *
+   */
+  anchors(options) {
+    const {
+      min_scale = 0.2,
+      max_scale = 0.95,
+      aspect_ratios = [1.0, 2.0, 0.5, 3.0, 0.3333],
+      base_anchor_size = [1.0, 1.0],
+      feature_map_shape_list = [[19, 19], [10, 10], [5, 5], [3, 3], [2, 2], [1, 1]],
+      interpolated_scale_aspect_ratio = 1.0,
+      reduce_boxes_in_lowest_layer=true
+    } = options;
+    const num_layers = feature_map_shape_list.length;
+    let box_specs_list = [];
+
+    let scales = [];
+    
+    for (let i = 0; i < num_layers; ++i) {
+      let scale = min_scale + (max_scale - min_scale) * i / (num_layers - 1);
+      scales.push(scale);
+    }
+    // console.log(scales)
+
+    scales.forEach((scale, i) => {
+      let scale_next = (i === scales.length - 1) ? 1.0 : scales[i + 1];
+      let layer_box_specs = [];
+      if (i === 0 && reduce_boxes_in_lowest_layer) {
+        layer_box_specs = [[0.1, 1.0], [scale, 2.0], [scale, 0.5]]
+      } else {
+        aspect_ratios.forEach((aspect_ratio, j) => {
+          layer_box_specs.push([scale, aspect_ratio])
+        });
+        if (interpolated_scale_aspect_ratio > 0.0) {
+          layer_box_specs.push([Math.sqrt(scale * scale_next),
+                                  interpolated_scale_aspect_ratio])
+        }
+      }
+      box_specs_list.push(layer_box_specs);
+    });
+
+    let anchors = [];
+    for (let i = 0; i < num_layers; ++i) {
+      const grid_height = feature_map_shape_list[i][0];
+      const grid_width = feature_map_shape_list[i][1];
+      let anchor_stride = [1.0 / grid_height, 1.0 / grid_width];
+      let anchor_offset = [anchor_stride[0] / 2, anchor_stride[1] / 2];
+
+      for (let h = 0; h < grid_height; ++h) {
+        for (let w = 0; w < grid_width; ++w) {
+          box_specs_list[i].forEach((layer_box_spec, j) => {
+            const [scale, aspect_ratio] = layer_box_spec;
+            let ratio_sqrt = Math.sqrt(aspect_ratio);
+            let y_center = h * anchor_stride[0] + anchor_offset[0];
+            let x_center = w * anchor_stride[1] + anchor_offset[1];
+            let height = scale / ratio_sqrt * base_anchor_size[0];
+            let width = scale * ratio_sqrt * base_anchor_size[0];
+            anchors.push([y_center, x_center, height, width])
+          });
+        }
+      }
+    }
+    console.log('box_specs_list', box_specs_list)
+    console.log('anchors', anchors)
   }
 }
 

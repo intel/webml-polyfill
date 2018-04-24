@@ -65,8 +65,12 @@ function main() {
 
   utils.init().then(() => {
     updateBackend();
-    // utils.predict(imageElement);
+    utils.predict(imageElement);
     button.setAttribute('class', 'btn btn-primary');
     input.removeAttribute('disabled');
   });
+
+  // console.log("!!!!!!!!!!!!!!!!!!!!!!!!!")
+  // console.log(utils.IOU([0.,0.,0.1,0.1], [0.05,0.05,0.9,0.9]))
+  // utils.anchors({});
 }

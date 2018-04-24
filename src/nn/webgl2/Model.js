@@ -92,11 +92,14 @@ export default class Model {
       // let operationTime = performance.now() - operationStart;
       // console.log(`Operation Time: ${operationTime.toFixed(2)} ms`);
       if (!this.supportTopClasses) {
-        this._operands[outputIndex].transferFromGLTexture();
-        // console.log(outputIndex, this._operands[outputIndex]);
+        for (let i = 0; i < outputs.length; ++i) {
+          outputBuffer = outputs[i].buffer;
+          outputIndex = outputs[i].index;
+          this._operands[outputIndex].transferFromGLTexture();
+          outputBuffer.set(this._operands[outputIndex].tensor.data);
+        }
         // let transferTime = performance.now() - operationStart - operationTime;
         // console.log(`Read data from GPU time: ${transferTime.toFixed(2)} ms`)
-        outputBuffer.set(this._operands[outputIndex].tensor.data);
       }
       resolve('execute success');
     });
