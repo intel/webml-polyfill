@@ -40,7 +40,6 @@ class MobileNet {
       options.useWebGL2 = true;
     }
     this._model = await this._nn.createModel(options);
-    console.log(this._model)
 
     this._addTensorOperands();
     this._addOpsAndParams();
@@ -52,21 +51,24 @@ class MobileNet {
     this._execution = await this._compilation.createExecution();
   }
 
-  async compute(inputTensor, outputTensor) {
+  async compute(inputTensor, outputBoxTensor, outputClassScoresTensor) {
+    // this._execution._inputs = [];
+    // this._execution._outputs = [];
     this._execution.setInput(0, inputTensor);
     let outH = [1083, 600, 150, 54, 24, 6];
     let boxLen = 4;
     let classLen = 91;
-    let offset = 0;
+    let boxOffset = 0;
+    let classOffset = 0;
     let boxTensor;
     let classTensor;
     for (let i = 0; i < 6; ++i) {
-      let mid = offset + outH[i] * boxLen;
-      boxTensor = outputTensor.subarray(offset, mid);
-      classTensor = outputTensor.subarray(mid, mid + outH[i] * classLen);
+      boxTensor = outputBoxTensor.subarray(boxOffset, boxOffset + boxLen * outH[i]);
+      classTensor = outputClassScoresTensor.subarray(classOffset, classOffset + classLen * outH[i]);
       this._execution.setOutput(i * 2, boxTensor);
       this._execution.setOutput(i * 2 + 1, classTensor);
-      offset += outH[i] * (boxLen + classLen);
+      boxOffset += boxLen * outH[i];
+      classOffset += classLen * outH[i];
     }
     
     let error = await this._execution.startCompute();
@@ -190,5 +192,8 @@ class MobileNet {
       }
       this._model.addOperation(opType, inputs, outputs);
     }
+    // if (this._backend === 'WebGL2') {
+    //   this._model.supportFeatureMapConcate = true;
+    // }
   }
 }
