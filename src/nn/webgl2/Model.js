@@ -16,7 +16,8 @@ export default class Model {
     this._operands = Array(model._operands.length);
     this._layers = [];
     this.supportInputLayer = true;
-    this.supportTopClasses = false; 
+    this.supportTopClasses = false;
+    this.supportFeatureMapConcate = false;
   }
 
   /**
@@ -37,6 +38,9 @@ export default class Model {
       if (this.supportTopClasses) {
         this._layers.push(new WebGL2SpecialLayers.TopClasses({ numTopClasses: 3 }));
       }
+      if (this.supportFeatureMapConcate) {
+        this._layers.push(new WebGL2SpecialLayers.FeatureMapConcate({}));
+      }
       // console.log(this._layers);
       resolve('compile success');
     });
@@ -52,10 +56,10 @@ export default class Model {
     return new Promise((resolve) => {
       let nnOperands = this._model._operands;
       let nnOperations = this._model._operations
-      let inputBuffer = inputs[0].buffer;
-      let inputIndex = inputs[0].index;
-      let outputBuffer = outputs[0].buffer;
-      let outputIndex = outputs[0].index;
+      let inputBuffer = inputs.get(0).buffer;
+      let inputIndex = inputs.get(0).index;
+      let outputBuffer = outputs.get(0).buffer;
+      let outputIndex = outputs.get(0).index;
       // let operationStart = performance.now();
       this._layers.forEach((layer, i) => {
         // let start = performance.now();
@@ -66,15 +70,24 @@ export default class Model {
             let inputTensor = new Tensor(inputBuffer, nnOperands[inputIndex].dimensions.slice(1,4));
             this._operands[layer.outputs[0]] = layer.call(inputTensor);
           }
-        } else if (this.supportTopClasses && i === this._layers.length - 1){
-          let outBufferAndIndex = layer.call(this._operands[outputIndex]);
-          // console.log(`outBufferAndIndex: ${outBufferAndIndex}`);
-          outputBuffer.fill(0);
-          let bufferLength = outBufferAndIndex.length / 2;
-          for (let k = 0; k < bufferLength; ++k) {
-            outputBuffer[outBufferAndIndex[k + bufferLength]] = outBufferAndIndex[k];
+        } else if (i === this._layers.length - 1 && (this.supportTopClasses || this.supportFeatureMapConcate)){
+          if (this.supportTopClasses) {
+            let outBufferAndIndex = layer.call(this._operands[outputIndex]);
+            // console.log(`outBufferAndIndex: ${outBufferAndIndex}`);
+            outputBuffer.fill(0);
+            let bufferLength = outBufferAndIndex.length / 2;
+            for (let k = 0; k < bufferLength; ++k) {
+              outputBuffer[outBufferAndIndex[k + bufferLength]] = outBufferAndIndex[k];
+            }
+            // console.log(`outputBuffer: ${outputBuffer}`);
+          } else if (this.supportFeatureMapConcate) {
+            let inputList = [];
+            for (let i = 0; i < outputs.size; ++i) {
+              outputIndex = outputs.get(i).index;
+              inputList.push(this._operands[outputIndex]);
+            }
+            layer.call(inputList, outputs);
           }
-          // console.log(`outputBuffer: ${outputBuffer}`);
         } else {
           if (layer.inputs.length === 1) {
             this._operands[layer.outputs[0]] = layer.call(this._operands[layer.inputs[0]]);
@@ -89,18 +102,18 @@ export default class Model {
         }
         // console.log(i, (performance.now() - start).toFixed(2), layer);
       });
-      // let operationTime = performance.now() - operationStart;
-      // console.log(`Operation Time: ${operationTime.toFixed(2)} ms`);
-      if (!this.supportTopClasses) {
-        for (let i = 0; i < outputs.length; ++i) {
-          outputBuffer = outputs[i].buffer;
-          outputIndex = outputs[i].index;
+      if (!this.supportTopClasses && !this.supportFeatureMapConcate) {
+        // let transferTime = performance.now() - operationStart - operationTime;
+        for (let i = 0; i < outputs.size; ++i) {
+          outputBuffer = outputs.get(i).buffer;
+          outputIndex = outputs.get(i).index;
           this._operands[outputIndex].transferFromGLTexture();
           outputBuffer.set(this._operands[outputIndex].tensor.data);
         }
-        // let transferTime = performance.now() - operationStart - operationTime;
         // console.log(`Read data from GPU time: ${transferTime.toFixed(2)} ms`)
       }
+      // let operationTime = performance.now() - operationStart;
+      // console.log(`WebGL2 execute time: ${operationTime.toFixed(2)} ms`);
       resolve('execute success');
     });
   }
