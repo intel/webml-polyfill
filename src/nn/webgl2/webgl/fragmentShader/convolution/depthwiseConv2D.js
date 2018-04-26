@@ -5,7 +5,7 @@
  * @param {boolean} useBias
  * @param {boolean} [hasFragments]
  */
-export default function depthwiseConv2D(inputChannels, useBias, hasSlices) {
+export default function depthwiseConv2D(inputChannels, useBias, hasSlices, fuse) {
   const addBias = useBias ? `sum += texelFetch(bias, ivec2(out_x, 0), 0).r;` : '';
 
   const adjustIndicesForSlices = hasSlices
@@ -43,6 +43,7 @@ export default function depthwiseConv2D(inputChannels, useBias, hasSlices) {
       }
     }
     ${addBias}
+    ${fuse}
     outColor = vec4(sum);
     // outColor = vec4(float(out_y));
   }`;
