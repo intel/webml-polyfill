@@ -4,8 +4,9 @@ import * as activations from '../../webgl/fragmentShader/activation'
 import webgl2 from '../../WebGL2'
 import * as tensorUtils from '../../utils/tensorUtils'
 import ops from 'ndarray-ops'
-import { matMulDepthwiseShaderSource } from '../../webgl/fragmentShader/arithmetic/matMulDepthwise'
+import matMulDepthwiseShaderSourceFunc from '../../webgl/fragmentShader/arithmetic/matMulDepthwise'
 import depthwiseConv2DShaderSourceFunc from '../../webgl/fragmentShader/convolution/depthwiseConv2D'
+import { fuseShaderSource } from '../../webgl/fragmentShader/activation/fuse'
 
 /**
  * DepthwiseConv2D layer class
@@ -80,9 +81,7 @@ export default class DepthwiseConv2D extends Layer {
     }
 
     this.activation = activation;
-    if (this.activation !== 'NONE') {
-      this.activationProgram = webgl2.createProgram(activations[this.activation]);
-    }
+    this.fuseActivation = fuseShaderSource[this.activation];
 
     this.useBias = use_bias;
     this._setWeights(weights);
@@ -94,13 +93,13 @@ export default class DepthwiseConv2D extends Layer {
    * @param {Tensor[]} weightsArr - array of weights which are instances of Tensor
    */
   _setWeights(weightsArr) {
-    const params = this.useBias ? ['kernel', 'bias'] : ['kernel'];
-    const inputChannels = weightsArr[0].tensor.shape[3];
-    const [filter, kernelH, kernelW] = this.kernelShape;
-    
     if (this.dataFormat === 'NCHW') {
       weightsArr[0].tensor = weightsArr[0].tensor.transpose(0, 2, 3, 1);
     }
+    
+    const params = this.useBias ? ['kernel', 'bias'] : ['kernel'];
+    const inputChannels = weightsArr[0].tensor.shape[3];
+    const [filter, kernelH, kernelW] = this.kernelShape;
 
     super.setWeights(params, weightsArr, false);
     this.weights['kernel'].tensor.shape = [kernelH * kernelW, inputChannels]
@@ -317,13 +316,6 @@ export default class DepthwiseConv2D extends Layer {
     }
 
     // create output textures if doesn't already exist
-    if (this.activation !== 'NONE' && !this.outputPreactiv) {
-      this.outputPreactiv = new Tensor([], outputTextureShape);
-      this.outputPreactiv.createGLTexture({ type: '2d', format: 'float', supportSliceTexture: true });
-      this.outputPreactiv.is2DReshaped = true;
-      this.outputPreactiv.originalShape = this.outputShape;
-      this.outputPreactiv.indicesForReshaped = tensorUtils.createIndicesFor2DReshaped(this.outputShape, false, -1);
-    }
     if (!this.output) {
       this.output = new Tensor([], outputTextureShape);
       this.output.createGLTexture({ type: '2d', format: 'float', supportSliceTexture: true });
@@ -341,13 +333,14 @@ export default class DepthwiseConv2D extends Layer {
         const depthwiseConv2DShaderSource = depthwiseConv2DShaderSourceFunc(
           this.output.textureShape[1],
           this.useBias,
-          hasFragments
+          hasFragments,
+          this.fuseActivation
         );
         this.depthwiseConv2DProgram = webgl2.createProgram(depthwiseConv2DShaderSource);
       }
       webgl2.runProgram({
         program: this.depthwiseConv2DProgram,
-        output: this.activation === 'NONE' ? this.output : this.outputPreactiv,
+        output: this.output,
         inputs: [
           { input: x, name: 'x' },
           { input: this.indexMap, name: 'indexMap' },
@@ -363,24 +356,14 @@ export default class DepthwiseConv2D extends Layer {
         matMulInputs.push({ input: this.weights['bias'], name: 'C' });
       }
       if (!this.matMulDepthwiseProgram) {
-        this.matMulDepthwiseProgram = webgl2.createProgram(matMulDepthwiseShaderSource);
+        this.matMulDepthwiseProgram = webgl2.createProgram(matMulDepthwiseShaderSourceFunc(this.fuseActivation));
       }
       webgl2.runProgram({
         program: this.matMulDepthwiseProgram,
-        output: this.activation === 'NONE' ? this.output : this.outputPreactiv,
+        output: this.output,
         inputs: matMulInputs,
         uniforms: [{ value: this.useBias ? 1 : 0, type: 'bool', name: 'addC' },
                    { value: outputTextureShape[1], type: 'int', name: 'inputChannels' }],
-        supportSliceTexture: true
-      });
-    }
-
-    // Activation
-    if (this.activation !== 'NONE') {
-      webgl2.runProgram({
-        program: this.activationProgram,
-        output: this.output,
-        inputs: [{ input: this.outputPreactiv, name: 'x' }],
         supportSliceTexture: true
       });
     }
