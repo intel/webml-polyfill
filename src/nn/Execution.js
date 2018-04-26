@@ -14,8 +14,8 @@ export default class Execution {
     }
     this._preparedModel = compilation._preparedModel;
     this._model = compilation._model;
-    this._inputs = [];
-    this._outputs = [];
+    this._inputs = new Map();
+    this._outputs = new Map();
   }
 
   /**
@@ -44,7 +44,7 @@ export default class Execution {
       index: inputIndex,
       buffer: buffer
     }
-    this._inputs.push(tensor);
+    this._inputs.set(index, tensor);
     return ResultCode.NO_ERROR;
   }
 
@@ -74,7 +74,7 @@ export default class Execution {
       index: outputIndex,
       buffer: buffer
     }
-    this._outputs.push(tensor);
+    this._outputs.set(index, tensor);
     return ResultCode.NO_ERROR;
   }
 
