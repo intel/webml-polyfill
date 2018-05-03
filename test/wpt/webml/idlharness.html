@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>Web ML Polyfill API IDL Tests</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../resources/WebIDLParser.js"></script>
+<script src="../resources/idlharness.js"></script>
+<script src="../../../dist/webml-polyfill.js"></script>
+<script>
+"use strict";
+promise_test(async () => {
+  const idl_array = new IdlArray();
+  const ml_idl = await fetch("../../../docs/webml.idl").then(r => r.text());
+  idl_array.add_untested_idls('interface Navigator {};');
+  idl_array.add_idls(ml_idl);
+  idl_array.add_objects({
+    Navigator: ['navigator'],
+    ML: ["navigator.ml"]
+  });
+  idl_array.test();
+}, "Test IDL implementation of Web ML Polyfill API");
+</script>
