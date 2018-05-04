@@ -51,13 +51,29 @@ class MobileNet {
     this._execution = await this._compilation.createExecution();
   }
 
+  /**
+   * See tensorflow ssd_mobilenet_v1 example for details:
+   * https://github.com/tensorflow/models/blob/master/research/object_detection/builders/model_builder.py
+   * https://github.com/tensorflow/models/blob/master/research/object_detection/samples/configs/ssd_mobilenet_v1_coco.config
+   */
   async compute(inputTensor, outputBoxTensor, outputClassScoresTensor) {
-    // this._execution._inputs = [];
-    // this._execution._outputs = [];
+   /**
+    * Object detection feature extractors usually are built by stacking two components:
+    * a base feature extractor such as mobilenet and a feature map generator.
+    * In our example, ssd_mobilenet use 2 feature maps('Conv2d_11_pointwise', 'Conv2d_13_pointwise') from mibilenet 
+    * and 4 feature maps generated from the base feature map('Conv2d_13_pointwise'). 
+    * The sizes of our 6 feature maps are [(19,19), (10,10), (5,5), (3.3), (2,2), (1,1)] 
+    * and each location of the feature map predicts 6 anchors, so the total number of output anchors is 
+    * 19^2*6 + 10^2*6 + 5^2*6 + 3^2*6 + 2^2*6 + 1^2*6 = 1083 + 600 + 150 + 54 + 24 + 6 = 1917.
+    * We use 4 offsets(ty tx th tw) relative to corresponding anchors to describe box position, 
+    * so the size of output box tensor is [1917, 4].
+    * We use 91 scores(1 for background and 90 for classes) to describe calss scores, 
+    * so the size of output class scores tensor is [1917, 91].  
+    */
     this._execution.setInput(0, inputTensor);
-    let outH = [1083, 600, 150, 54, 24, 6];
-    let boxLen = 4;
-    let classLen = 91;
+    const outH = [1083, 600, 150, 54, 24, 6];
+    const boxLen = 4;
+    const classLen = 91;
     let boxOffset = 0;
     let classOffset = 0;
     let boxTensor;
