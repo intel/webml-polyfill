@@ -42,7 +42,7 @@ class Utils {
       this.tfModel = tflite.Model.getRootAsModel(flatBuffer);
       // printTfLiteModel(this.tfModel);
     }
-    this.model = new MobileNet(this.tfModel, backend);
+    this.model = new SsdMobileNet(this.tfModel, backend);
     result = await this.model.createCompiledModel();
     console.log(`compilation result: ${result}`);
     let start = performance.now();
@@ -58,14 +58,14 @@ class Utils {
                                  this.canvasElement.width,
                                  this.canvasElement.height);
     // console.log('inputTensor1', this.inputTensor)
-      this.prepareInputTensor(this.inputTensor, this.canvasElement);
+    this.prepareInputTensor(this.inputTensor, this.canvasElement);
     // console.log('inputTensor2', this.inputTensor)
     let start = performance.now();
     let result = await this.model.compute(this.inputTensor, this.outputBoxTensor, this.outputClassScoresTensor);
     // console.log('outputBoxTensor', this.outputBoxTensor)
     // console.log('outputClassScoresTensor', this.outputClassScoresTensor)
     // let startDecode = performance.now();
-    this._outputTensorDecode();
+    this._decodeOutputBoxTensor();
     // console.log(`Decode time: ${(performance.now() - startDecode).toFixed(2)} ms`);
     // let startNMS = performance.now();
     let [boxesList, scoresList, classesList] = this._NMS({});
@@ -142,46 +142,34 @@ class Utils {
 
   /**
   * Decode out box coordinate
-  *
-  * @param {Float32Array[4]} offsets - An 4 element Float32Array of box shape offsets.
-  * @param {number[4]} anchorCord - An 4 element Array of anchor coordinate.
-  * @returns {number[4]} decodeBox - An 4 element Float32Array of box decode shape.
-  */
-  _box_decode(offsets, anchorCord) {
-    if (offsets.length !== 4 || anchorCord.length !== 4) {
-      throw new Error('[box_decode] Each input length should be 4!');
-    }
-    const [ycenter_a, xcenter_a, ha, wa] = anchorCord;
-    let [ty, tx, th, tw] = offsets;
-
-    // scale_factors = [y_scale, x_scale, height_scale, width_scale]
-    let scale_factors = [10.0, 10.0, 5.0, 5.0];
-    ty /= scale_factors[0];
-    tx /= scale_factors[1];
-    th /= scale_factors[2];
-    tw /= scale_factors[3];
-
-    let w = Math.exp(tw) * wa;
-    let h = Math.exp(th) * ha;
-    let ycenter = ty * ha + ycenter_a;
-    let xcenter = tx * wa + xcenter_a;
-    let ymin = ycenter - h / 2;
-    let xmin = xcenter - w / 2;
-    let ymax = ycenter + h / 2;
-    let xmax = xcenter + w / 2;
-    let decodeBox = [ymin, xmin, ymax, xmax];
-    return decodeBox;
-  }
-
-  /**
-  * Decode output tensor boxes
+  * See tensorflow ssd_mobilenet_v1 example for details:
+  * https://github.com/tensorflow/models/blob/master/research/object_detection/box_coders/faster_rcnn_box_coder.py
   * 
   */
-  _outputTensorDecode() {
+  _decodeOutputBoxTensor() {
+    if (this.outputBoxTensor.length % BOX_SIZE !== 0) {
+      throw new Error(`The length 0f outputTensorDecode should be the multiple of ${BOX_SIZE}!`);
+    }
+    
+    // scale_factors: [y_scale, x_scale, height_scale, width_scale]
+    const scale_factors = [10.0, 10.0, 5.0, 5.0];
     let boxOffset = 0;
+    let ty, tx, th, tw, w, h, ycenter, xcenter;
     for (let y = 0; y < NUM_BOXES; ++y) {
-      let outCord = this.outputBoxTensor.subarray(boxOffset, boxOffset + BOX_SIZE);
-      outCord.set(this._box_decode(outCord, this.anchors[y]));
+      const [ycenter_a, xcenter_a, ha, wa] = this.anchors[y]
+      ty = this.outputBoxTensor[boxOffset] / scale_factors[0];
+      tx = this.outputBoxTensor[boxOffset + 1] / scale_factors[1];
+      th = this.outputBoxTensor[boxOffset + 2] / scale_factors[2];
+      tw = this.outputBoxTensor[boxOffset + 3] / scale_factors[3];
+      w = Math.exp(tw) * wa;
+      h = Math.exp(th) * ha;
+      ycenter = ty * ha + ycenter_a;
+      xcenter = tx * wa + xcenter_a;
+      // Decoded box coordinate: [ymin, xmin, ymax, xmax]
+      this.outputBoxTensor[boxOffset] = ycenter - h / 2;
+      this.outputBoxTensor[boxOffset + 1] = xcenter - w / 2;
+      this.outputBoxTensor[boxOffset + 2] = ycenter + h / 2;
+      this.outputBoxTensor[boxOffset + 3] = xcenter + w / 2;
       boxOffset += BOX_SIZE;
     }
   }
@@ -219,7 +207,10 @@ class Utils {
 
   /**
   * Generate anchors
-  *
+  * See tensorflow ssd_mobilenet_v1 example for details:
+  * https://github.com/tensorflow/models/blob/master/research/object_detection/anchor_generators/multiple_grid_anchor_generator.py
+  * https://github.com/tensorflow/models/blob/master/research/object_detection/samples/configs/ssd_mobilenet_v1_coco.config
+  * 
   */
   _generateAnchors(options) {
   const {
@@ -260,7 +251,6 @@ class Utils {
   });
 
   let anchors = [];
-  let anchorCord4 = [];
   for (let i = 0; i < num_layers; ++i) {
     const grid_height = feature_map_shape_list[i][0];
     const grid_width = feature_map_shape_list[i][1];
@@ -277,139 +267,142 @@ class Utils {
           let height = scale / ratio_sqrt * base_anchor_size[0];
           let width = scale * ratio_sqrt * base_anchor_size[0];
           anchors.push([y_center, x_center, height, width]);
-          // anchorCord4.push([y_center - 0.5 * height, x_center - 0.5 * width, 
-          //                   y_center + 0.5 * height, x_center + 0.5 * width]);
         });
       }
     }
   }
   // console.log('box_specs_list', box_specs_list)
   // console.log('anchors', anchors)
-  // console.log('anchorCord4', anchorCord4)
   this.anchors = anchors;
   }
 
   /**
-  * NMS
+  * NMS(Non Max Suppression)
+  * See tensorflow ssd_mobilenet_v1 example for details:
+  * https://github.com/tensorflow/models/blob/master/research/object_detection/core/post_processing.py#L38
   *
   * @param {object} options - Some options.
   */
   _NMS(options) {
-  const {
-    score_threshold = 0.1, // 1e-8
-    iou_threshold = 0.6,
-    max_detections_per_class = 10, // 100
-    max_total_detections = 100 // 100
-  } = options;
+    // Using a little higher threshold and lower max detections can save inference time with little performance loss.
+    const {
+      score_threshold = 0.1, // 1e-8
+      iou_threshold = 0.6,
+      max_detections_per_class = 10, // 100
+      max_total_detections = 100
+    } = options;
 
-  let boxesList = [];
-  let scoresList = [];
-  let classesList = [];
-  
-  // Skip background 0
-  for (let x = 1; x < NUM_CLASSES; ++x) {
-    // let startNMS = performance.now();
-    let boxes = [];
-    let scores = [];
-    for (let y = 0; y < NUM_BOXES; ++y) {
-      let scoreIndex = y * NUM_CLASSES + x;
-      if (this.outputClassScoresTensor[scoreIndex] > score_threshold) {
-        let boxIndexStart = y * BOX_SIZE;
-        boxes.push(this.outputBoxTensor.subarray(boxIndexStart, boxIndexStart + BOX_SIZE));
-        scores.push(this.outputClassScoresTensor[scoreIndex]);
+    let boxesList = [];
+    let scoresList = [];
+    let classesList = [];
+    
+    // Skip background 0
+    for (let x = 1; x < NUM_CLASSES; ++x) {
+      // let startNMS = performance.now();
+      let boxes = [];
+      let scores = [];
+      for (let y = 0; y < NUM_BOXES; ++y) {
+        let scoreIndex = y * NUM_CLASSES + x;
+        if (this.outputClassScoresTensor[scoreIndex] > score_threshold) {
+          let boxIndexStart = y * BOX_SIZE;
+          boxes.push(this.outputBoxTensor.subarray(boxIndexStart, boxIndexStart + BOX_SIZE));
+          scores.push(this.outputClassScoresTensor[scoreIndex]);
+        }
       }
+      // console.log(`NMS time${x}: ${(performance.now() - startNMS).toFixed(2)} ms`);
+      let boxForClassi = [];
+      let scoreForClassi = [];
+      let classi = [];
+      // console.log('boxes', boxes);
+      // console.log('scores', scores);
+      while (scores.length !== 0 && scoreForClassi.length < max_detections_per_class) {
+        let max = 0;
+        let maxIndex = 0;
+        // Find max score
+        scores.forEach((score, j) => {
+          if (score > max) {
+            max = score;
+            maxIndex = j;
+          }
+        });
+        // Push and delete max
+        let maxBox = boxes[maxIndex];
+        boxForClassi.push(boxes.splice(maxIndex, 1)[0]);
+        scoreForClassi.push(scores.splice(maxIndex, 1)[0]);
+        classi.push(x);
+        let retainBoxes = []; 
+        let retainScores = [];
+        boxes.forEach((box, j) => {
+          if (this._IOU(box, maxBox) < iou_threshold) {
+            // Remain low IOU and delete high IOU
+            retainBoxes.push(boxes[j]);
+            retainScores.push(scores[j]);
+          }
+        });
+        boxes = retainBoxes;
+        scores = retainScores;
+      }
+      // console.log('boxForClassi', boxForClassi);
+      // console.log('scoreForClassi', scoreForClassi);
+      // console.log('classi', classi);
+      boxesList = boxesList.concat(boxForClassi);
+      scoresList = scoresList.concat(scoreForClassi);
+      classesList = classesList.concat(classi);
+      // console.log(`boxesList`, boxesList)
+      // console.log(`scoresList`, scoresList)
+      // console.log(`classesList`, classesList)
+      // console.log(`NMS time${x}: ${(performance.now() - startNMS).toFixed(2)} ms`);
     }
-    // console.log(`NMS time${x}: ${(performance.now() - startNMS).toFixed(2)} ms`);
-    let boxForClassi = [];
-    let scoreForClassi = [];
-    let classi = [];
-    // console.log('boxes', boxes);
-    // console.log('scores', scores);
-    while (scores.length !== 0 && scoreForClassi.length < max_detections_per_class) {
-      let max = 0;
-      let maxIndex = 0;
-      // Find max score
-      scores.forEach((score, j) => {
-        if (score > max) {
-          max = score;
-          maxIndex = j;
+
+    if (scoresList.length > max_total_detections) {
+      this.totalDetections = max_total_detections;
+      // quickSort get max_total detections
+      let low = 0;
+      let high = scoresList.length - 1;
+      while (low < high) {
+        let i = low;
+        let j = high;
+        let tmpScore = scoresList[i];
+        let tmpBox = boxesList[i];
+        let tmpClassi = classesList[i];
+        while (i < j) {
+          while (i < j && scoresList[j] < tmpScore) {
+            --j;
+          }
+          if (i < j) {
+            scoresList[i] = scoresList[j];
+            boxesList[i] = boxesList[j];
+            classesList[i] = classesList[j];
+            ++i;
+          }
+          while (i < j && scoresList[i] > tmpScore) {
+            ++i;
+          }
+          if (i < j) {
+            scoresList[j] = scoresList[i];
+            boxesList[j] = boxesList[i];
+            classesList[j] = classesList[i];
+            --j;
+          }
         }
-      });
-      // Push and delete max
-      let maxBox = boxes[maxIndex];
-      boxForClassi.push(boxes.splice(maxIndex, 1)[0]);
-      scoreForClassi.push(scores.splice(maxIndex, 1)[0]);
-      classi.push(x);
-      let retainBoxes = []; 
-      let retainScores = [];
-      boxes.forEach((box, j) => {
-        if (this._IOU(box, maxBox) < iou_threshold) {
-          // Remain low IOU and delete high IOU
-          retainBoxes.push(boxes[j]);
-          retainScores.push(scores[j]);
+        scoresList[i] = tmpScore;
+        boxesList[i] = tmpBox;
+        classesList[i] = tmpClassi;
+        if (i === max_total_detections) {
+          low = high;
+        } else if (i < max_total_detections) {
+          low = i + 1;
+        } else {
+          high = i - 1;
         }
-      });
-      boxes = retainBoxes;
-      scores = retainScores;
+      }
+    } else {
+      this.totalDetections = scoresList.length;
     }
-    // console.log('boxForClassi', boxForClassi);
-    // console.log('scoreForClassi', scoreForClassi);
-    // console.log('classi', classi);
-    boxesList = boxesList.concat(boxForClassi);
-    scoresList = scoresList.concat(scoreForClassi);
-    classesList = classesList.concat(classi);
     // console.log(`boxesList`, boxesList)
     // console.log(`scoresList`, scoresList)
     // console.log(`classesList`, classesList)
-    // console.log(`NMS time${x}: ${(performance.now() - startNMS).toFixed(2)} ms`);
-  }
-
-  if (scoresList.length > max_total_detections) {
-    // quickSort get max_total detections
-    let low = 0;
-    let high = scoresList.length - 1;
-    while (low < high) {
-      let i = low;
-      let j = high;
-      let tmpScore = scoresList[i];
-      let tmpBox = boxesList[i];
-      let tmpClassi = classesList[i];
-      while (i < j) {
-        while (i < j && scoresList[j] < tmpScore) {
-          --j;
-        }
-        if (i < j) {
-          scoresList[i] = scoresList[j];
-          boxesList[i] = boxesList[j];
-          classesList[i] = classesList[j];
-          ++i;
-        }
-        while (i < j && scoresList[i] > tmpScore) {
-          ++i;
-        }
-        if (i < j) {
-          scoresList[j] = scoresList[i];
-          boxesList[j] = boxesList[i];
-          classesList[i] = classesList[j];
-          --j;
-        }
-      }
-      scoresList[i] = tmpScore;
-      boxesList[i] = tmpBox;
-      classesList[i] = tmpClassi;
-      if (i === max_total_detections) {
-        low = high;
-      } else if (i < max_total_detections) {
-        low = i + 1;
-      } else {
-        high = i - 1;
-      }
-    }
-  }
-  // console.log(`boxesList`, boxesList)
-  // console.log(`scoresList`, scoresList)
-  // console.log(`classesList`, classesList)
-  return [boxesList, scoresList, classesList];
+    return [boxesList, scoresList, classesList];
   }
 
   /**
@@ -429,7 +422,7 @@ class Utils {
     ctx.drawImage(imageSource, 0, 0, 
                       this.canvasShowElement.width,
                       this.canvasShowElement.height);
-    for (let i = 0; i < boxesList.length; ++i) {
+    for (let i = 0; i < this.totalDetections; ++i) {
       // Skip background and blank
       let label = this.labels[classesList[i]];
       if (label !== '???') {
@@ -454,51 +447,4 @@ class Utils {
       }
     }
   }
-}
-
-function getOS() {
-  var userAgent = window.navigator.userAgent,
-      platform = window.navigator.platform,
-      macosPlatforms = ['Macintosh', 'MacIntel', 'MacPPC', 'Mac68K'],
-      windowsPlatforms = ['Win32', 'Win64', 'Windows', 'WinCE'],
-      iosPlatforms = ['iPhone', 'iPad', 'iPod'],
-      os = null;
-
-  if (macosPlatforms.indexOf(platform) !== -1) {
-    os = 'Mac OS';
-  } else if (iosPlatforms.indexOf(platform) !== -1) {
-    os = 'iOS';
-  } else if (windowsPlatforms.indexOf(platform) !== -1) {
-    os = 'Windows';
-  } else if (/Android/.test(userAgent)) {
-    os = 'Android';
-  } else if (!os && /Linux/.test(platform)) {
-    os = 'Linux';
-  }
-
-  return os;
-}
-
-function getNativeAPI() {
-  const apiMapping = {
-    'Mac OS': 'MPS',
-    'Android': 'NN',
-    'Windows': 'DirectML',
-    'Linux': 'N/A'
-  };
-
-  return apiMapping[getOS()];
-}
-
-function getUrlParams( prop ) {
-  var params = {};
-  var search = decodeURIComponent( window.location.href.slice( window.location.href.indexOf( '?' ) + 1 ) );
-  var definitions = search.split( '&' );
-
-  definitions.forEach( function( val, key ) {
-    var parts = val.split( '=', 2 );
-      params[ parts[ 0 ] ] = parts[ 1 ];
-  } );
-
-  return ( prop && prop in params ) ? params[ prop ] : params;
 }
