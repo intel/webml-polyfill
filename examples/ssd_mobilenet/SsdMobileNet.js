@@ -1,13 +1,4 @@
-let nnPolyfill, nnNative;
-if (navigator.ml.isPolyfill) {
-  nnNative = null;
-  nnPolyfill = navigator.ml.getNeuralNetworkContext();
-} else {
-  nnNative = navigator.ml.getNeuralNetworkContext();
-  nnPolyfill = navigator.ml_polyfill.getNeuralNetworkContext();
-}
-
-class MobileNet {
+class SsdMobileNet {
   constructor(tfModel, backend) {
     this._tfModel = tfModel;
     this._model = null;
@@ -60,11 +51,11 @@ class MobileNet {
    /**
     * Object detection feature extractors usually are built by stacking two components:
     * a base feature extractor such as mobilenet and a feature map generator.
-    * In our example, ssd_mobilenet use 2 feature maps('Conv2d_11_pointwise', 'Conv2d_13_pointwise') from mibilenet 
+    * In our example, ssd_mobilenet use 2 feature maps('Conv2d_11_pointwise', 'Conv2d_13_pointwise') from mobilenet 
     * and 4 feature maps generated from the base feature map('Conv2d_13_pointwise'). 
-    * The sizes of our 6 feature maps are [(19,19), (10,10), (5,5), (3.3), (2,2), (1,1)] 
+    * The sizes of our 6 feature maps are [(19,19), (10,10), (5,5), (3,3), (2,2), (1,1)] 
     * and each location of the feature map predicts 6 anchors, so the total number of output anchors is 
-    * 19^2*6 + 10^2*6 + 5^2*6 + 3^2*6 + 2^2*6 + 1^2*6 = 1083 + 600 + 150 + 54 + 24 + 6 = 1917.
+    * 19^2*3 + 10^2*6 + 5^2*6 + 3^2*6 + 2^2*6 + 1^2*6 = 1083 + 600 + 150 + 54 + 24 + 6 = 1917.
     * We use 4 offsets(ty tx th tw) relative to corresponding anchors to describe box position, 
     * so the size of output box tensor is [1917, 4].
     * We use 91 scores(1 for background and 90 for classes) to describe calss scores, 
