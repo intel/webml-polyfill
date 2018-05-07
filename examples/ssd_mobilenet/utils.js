@@ -418,7 +418,7 @@ class Utils {
       this.canvasShowElement.width = imageSource.videoWidth / imageSource.videoHeight * this.canvasShowElement.height;
     }
 
-    let colors = ['red', 'blue', 'green', 'yellow', 'purple', 'orange']
+    let colors = ['red', 'blue', 'green', 'yellowgreen', 'purple', 'orange'];
     ctx.drawImage(imageSource, 0, 0, 
                       this.canvasShowElement.width,
                       this.canvasShowElement.height);
@@ -438,12 +438,16 @@ class Utils {
         let prob = 1 / (1 + Math.exp(-scoresList[i]));
 
         ctx.strokeStyle = colors[classesList[i] % colors.length];
-        ctx.fillStyle = colors[(classesList[i] + 3) % colors.length];
+        ctx.fillStyle = colors[classesList[i] % colors.length];
+        ctx.lineWidth = 3;
         ctx.strokeRect(xmin, ymin, xmax - xmin, ymax - ymin);
+        ctx.font = "20px Arial";
+        let text = `${label}: ${prob.toFixed(2)}`;
+        let width = ctx.measureText(text).width;
+        ctx.fillRect(xmin - 2, ymin - parseInt(ctx.font, 10), width + 4, parseInt(ctx.font, 10));
+        ctx.fillStyle = "white";
         ctx.textAlign = 'start';
-        ctx.fillText(label, xmin, ymin - 3);
-        ctx.textAlign = 'start';
-        ctx.fillText(`Sigmoid score: ${prob.toFixed(2)}`, xmin, ymax + 10);
+        ctx.fillText(text, xmin, ymin - 3);
       }
     }
   }
