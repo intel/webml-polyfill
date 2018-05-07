@@ -260,7 +260,8 @@ export const OperationCodeAttrsMap = new Map([
 
 export const WebGL2SpecialLayers = {
   Input: layers.Input,
-  TopClasses: layers.TopClasses
+  TopClasses: layers.TopClasses,
+  FeatureMapConcate: layers.FeatureMapConcate
 };
 
 // webgl2 operation test

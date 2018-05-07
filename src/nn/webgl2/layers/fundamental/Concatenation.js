@@ -26,23 +26,23 @@ export default class Concatenation extends Layer {
    * @param {Tensor[]} inputs
    */
   call(inputs) {
-    // C axis is 3 in NHWC layout
-    // no mini-batch axis here, so we subtract 1 if given axis > 0
-    this.concatAxis = this.axis < 0 ? this.axis + inputs[0].originalShape.length: this.axis - 1;
-
-    inputs.forEach(input => {
-      if (!input.texture && !input.textureSlices) {
-        input.createGLTexture({ type: '2d', format: 'float', supportSliceTexture: true });
-      }
-    })
-
-    const outputTextureShape = inputs[0].textureShape.slice();
-    // _concatAxis = 1 for 2D Texture
-    let _concatAxis = 1;
-    // create output textures if doesn't already exist
-    outputTextureShape[_concatAxis] = inputs.map(input => input.textureShape[_concatAxis])
-                                            .reduce((i, j) => i + j);
     if (!this.output) {
+      // C axis is 3 in NHWC layout
+      // no mini-batch axis here, so we subtract 1 if given axis > 0
+      this.concatAxis = this.axis < 0 ? this.axis + inputs[0].originalShape.length: this.axis - 1;
+
+      inputs.forEach(input => {
+        if (!input.texture && !input.textureSlices) {
+          input.createGLTexture({ type: '2d', format: 'float', supportSliceTexture: true });
+        }
+      })
+
+      const outputTextureShape = inputs[0].textureShape.slice();
+      // _concatAxis = 1 for 2D Texture
+      let _concatAxis = 1;
+      // create output textures if doesn't already exist
+      outputTextureShape[_concatAxis] = inputs.map(input => input.textureShape[_concatAxis])
+                                              .reduce((i, j) => i + j);
       this.output = new Tensor([], outputTextureShape);
       this.output.createGLTexture({ type: '2d', format: 'float', supportSliceTexture: true });
       if (inputs[0].is1D) {
@@ -60,9 +60,13 @@ export default class Concatenation extends Layer {
     const textureOptions = webgl2.getTextureOptions(inputs[0].textureType, inputs[0].textureFormat);
     const { textureTarget, textureInternalFormat, textureFormat, textureType } = textureOptions;
 
+    if (!webgl2.concateFramebuffer) {
+      webgl2.concateFramebuffer = gl.createFramebuffer();
+      webgl2.toDelete.framebuffers.push(webgl2.concateFramebuffer);
+    }
+
     if (this.output.textureSlices) {
-      const framebuffer = gl.createFramebuffer();
-      gl.bindFramebuffer(gl.READ_FRAMEBUFFER, framebuffer);
+      gl.bindFramebuffer(gl.READ_FRAMEBUFFER, webgl2.concateFramebuffer);
       for (let i = 0; i < this.output.textureSlices.length; ++i) {
         gl.bindTexture(textureTarget, this.output.textureSlices[i]);
         inputs.forEach((input, k) => {
@@ -79,12 +83,10 @@ export default class Concatenation extends Layer {
           )
         });
       }
-      gl.deleteFramebuffer(framebuffer);
     } else {
       // console.log(`concate texture`)
       gl.bindTexture(textureTarget, this.output.texture);
-      const framebuffer = gl.createFramebuffer();
-      gl.bindFramebuffer(gl.READ_FRAMEBUFFER, framebuffer);
+      gl.bindFramebuffer(gl.READ_FRAMEBUFFER, webgl2.concateFramebuffer);
       inputs.forEach((input, k) => {
         gl.framebufferTexture2D(gl.READ_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, input.texture, 0)
         gl.copyTexSubImage2D(
@@ -98,7 +100,6 @@ export default class Concatenation extends Layer {
           input.textureShape[0]
         )
       });
-      gl.deleteFramebuffer(framebuffer);
     }
     return this.output;
   }
