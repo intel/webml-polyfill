@@ -23,16 +23,16 @@ class Logger {
   }
   log(message) {
     console.log(message);
-    this.$dom.textContent += `\n${'\t'.repeat(this.indent) + message}`;
+    this.$dom.innerHTML += `\n${'\t'.repeat(this.indent) + message}`;
   }
   error(err) {
     console.error(err);
-    this.$dom.textContent += `\n${'\t'.repeat(this.indent) + err.message}`;
+    this.$dom.innerHTML += `\n${'\t'.repeat(this.indent) + err.message}`;
   }
   group(name) {
     console.group(name);
     this.log('');
-    this.$dom.textContent += `\n${'\t'.repeat(this.indent) + name}`;
+    this.$dom.innerHTML += `\n${'\t'.repeat(this.indent) + name}`;
     this.indent++;
   }
   groupEnd() {
@@ -269,7 +269,7 @@ async function run() {
     let summary = await benchmark.runAsync(configuration);
     logger.groupEnd();
     logger.group('Result');
-    logger.log(`Elapsed Time: ${summary.mean.toFixed(2)}+-${summary.std.toFixed(2)}[ms]`);
+    logger.log(`Elapsed Time: <em style="color:green;font-weight:bolder;">${summary.mean.toFixed(2)}+-${summary.std.toFixed(2)}</em> [ms]`);
     logger.groupEnd();
   } catch (err) {
     logger.error(err);
