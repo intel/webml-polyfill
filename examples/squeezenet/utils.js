@@ -59,7 +59,7 @@ class Utils {
     let classes = this.getTopClasses(this.outputTensor, this.labels, 3);
     console.log(`Inference time: ${elapsed.toFixed(2)} ms`);
     let inferenceTimeElement = document.getElementById('inferenceTime');
-    inferenceTimeElement.innerHTML = `inference time: ${elapsed.toFixed(2)} ms`;
+    inferenceTimeElement.innerHTML = `inference time: <em style="color:green;font-weight:bloder;">${elapsed.toFixed(2)} </em>ms`;
     console.log(`Classes: `);
     classes.forEach((c, i) => {
       console.log(`\tlabel: ${c.label}, probability: ${c.prob}%`);
