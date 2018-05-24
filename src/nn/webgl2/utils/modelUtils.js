@@ -125,15 +125,15 @@ function GetDepthwiseConv2DAttrs (nnOperands, inputs, outputs) {
  * 
  * @param {Object[]} nnOperands - An array of operands.
  * @param {number[]} inputs - 
- *                             [inputCode, paddingCodeCode, strideX, strideY, 
+ *                             [inputCode, paddingCodeCode, strideWCode, strideHCode, 
  *                             kernelWidthCode, kernelHeightCode, fuseCode].
  *                             or
  *                             [inputCode, paddingWidthBeginCode, paddingWidthEndCode, 
- *                             paddingHeightBeginCode, paddingHeightEnd, strideX, strideY,
+ *                             paddingHeightBeginCode, paddingHeightEnd, strideWCode, strideHCode,
  *                             kernelWidthCode, kernelHeightCode, fuseCode].
  * @param {number[]} outputs - [outputCode].
  */
-function GetMaxPool2DAttrs(nnOperands, inputs, outputs) {
+function GetPool2DAttrs(nnOperands, inputs, outputs) {
   let padding;
   let strideHW;
   let kernelShapeHW;
@@ -141,7 +141,7 @@ function GetMaxPool2DAttrs(nnOperands, inputs, outputs) {
 
   if (inputs.length === 7) {
     padding = PaddingCodeMap.get(nnOperands[inputs[1]].value[0]);
-    strideHW = [nnOperands[inputs[2]].value[0], nnOperands[inputs[3]].value[0]];
+    strideHW = [nnOperands[inputs[3]].value[0], nnOperands[inputs[2]].value[0]];
     kernelShapeHW = [nnOperands[inputs[5]].value[0], nnOperands[inputs[4]].value[0]];
     activation = FuseCodeMap.get(nnOperands[inputs[6]].value[0]);
   } else if (inputs.length === 10) {
@@ -150,7 +150,7 @@ function GetMaxPool2DAttrs(nnOperands, inputs, outputs) {
     let pad3 = nnOperands[inputs[3]].value[0];
     let pad4 = nnOperands[inputs[4]].value[0];
     padding = [pad3, pad4, pad1, pad2];
-    strideHW = [nnOperands[inputs[5]].value[0], nnOperands[inputs[6]].value[0]];
+    strideHW = [nnOperands[inputs[6]].value[0], nnOperands[inputs[5]].value[0]];
     kernelShapeHW = [nnOperands[inputs[8]].value[0], nnOperands[inputs[7]].value[0]];
     activation = FuseCodeMap.get(nnOperands[inputs[9]].value[0]);
   } else {
@@ -164,24 +164,6 @@ function GetMaxPool2DAttrs(nnOperands, inputs, outputs) {
     strides: strideHW,
     padding: padding,
     activation: activation
-  };
-  // console.log(attrs);
-  return attrs;
-}
-
-/**
- * Get average pooling attributes.
- * 
- * @param {Object[]} nnOperands - An array of operands.
- * @param {number[]} inputs - [inputCode, paddingCodeCode, strideWCode, strideHCode, 
- *                             filterWidthCode, filterHeightCode, fuseCode].
- * @param {number[]} outputs - [outputCode].
- */
-function GetGlobalAveragePooling2DAttrs(nnOperands, inputs, outputs) {
-  let attrs = {
-    inputs: [inputs[0]],
-    outputs: outputs,
-    data_format: 'HWC'
   };
   // console.log(attrs);
   return attrs;
@@ -242,7 +224,7 @@ export const OperationCodeToLayersMap = new Map([
   [OperationCode.CONV_2D, layers.Conv2D],
   [OperationCode.DEPTHWISE_CONV_2D, layers.DepthwiseConv2D],
   [OperationCode.MAX_POOL_2D, layers.MaxPool2D],
-  [OperationCode.AVERAGE_POOL_2D, layers.GlobalAveragePooling2D],
+  [OperationCode.AVERAGE_POOL_2D, layers.AveragePool2D],
   [OperationCode.SOFTMAX, layers.Activation],
   [OperationCode.RESHAPE, layers.Reshape],
   [OperationCode.CONCATENATION, layers.Concatenation]
@@ -251,8 +233,8 @@ export const OperationCodeToLayersMap = new Map([
 export const OperationCodeAttrsMap = new Map([
   [OperationCode.CONV_2D, GetConv2DAttrs],
   [OperationCode.DEPTHWISE_CONV_2D, GetDepthwiseConv2DAttrs],
-  [OperationCode.MAX_POOL_2D, GetMaxPool2DAttrs],
-  [OperationCode.AVERAGE_POOL_2D, GetGlobalAveragePooling2DAttrs],
+  [OperationCode.MAX_POOL_2D, GetPool2DAttrs],
+  [OperationCode.AVERAGE_POOL_2D, GetPool2DAttrs],
   [OperationCode.SOFTMAX, GetSoftmaxAttrs],
   [OperationCode.RESHAPE, GetReshapeAttrs],
   [OperationCode.CONCATENATION, GetConcatenationAttrs]
