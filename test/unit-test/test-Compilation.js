@@ -13,7 +13,7 @@ describe('Compilation Test', function() {
 
   describe('#setPreference API', function() {
     it('check "setPreference" is a function', function() {
-      return nn.createModel().then((model)=>{
+      return nn.createModel(options).then((model)=>{
         let op = {type: nn.TENSOR_FLOAT32, dimensions: TENSOR_DIMENSIONS};
         model.addOperand(op);
         model.addOperand(op);
@@ -34,7 +34,7 @@ describe('Compilation Test', function() {
     });
 
     it('check return value is of "void" type', function() {
-      return nn.createModel().then((model)=>{
+      return nn.createModel(options).then((model)=>{
         let op = {type: nn.TENSOR_FLOAT32, dimensions: TENSOR_DIMENSIONS};
         model.addOperand(op);
         model.addOperand(op);
@@ -55,7 +55,7 @@ describe('Compilation Test', function() {
     });
 
     it('passing a parameter with value being in 0-2 is ok', function() {
-      return nn.createModel().then((model)=>{
+      return nn.createModel(options).then((model)=>{
         let op = {type: nn.TENSOR_FLOAT32, dimensions: TENSOR_DIMENSIONS};
         model.addOperand(op);
         model.addOperand(op);
@@ -78,7 +78,7 @@ describe('Compilation Test', function() {
     });
 
     it('raise error when passing a parameter with value being out of 0-2', function() {
-      return nn.createModel().then((model)=>{
+      return nn.createModel(options).then((model)=>{
         let op = {type: nn.TENSOR_FLOAT32, dimensions: TENSOR_DIMENSIONS};
         model.addOperand(op);
         model.addOperand(op);
@@ -101,7 +101,7 @@ describe('Compilation Test', function() {
     });
 
     it('raise error when passing a parameter with \'string\' type value', function() {
-      return nn.createModel().then((model)=>{
+      return nn.createModel(options).then((model)=>{
         let op = {type: nn.TENSOR_FLOAT32, dimensions: TENSOR_DIMENSIONS};
         model.addOperand(op);
         model.addOperand(op);
@@ -124,7 +124,7 @@ describe('Compilation Test', function() {
     });
 
     it('raise error when passing two parameters with values both being in 0-2', function() {
-      return nn.createModel().then((model)=>{
+      return nn.createModel(options).then((model)=>{
         let op = {type: nn.TENSOR_FLOAT32, dimensions: TENSOR_DIMENSIONS};
         model.addOperand(op);
         model.addOperand(op);
@@ -147,7 +147,7 @@ describe('Compilation Test', function() {
     });
 
     it('raise error when attempting to reset the preference of the finished compilation', function() {
-      return nn.createModel().then((model)=>{
+      return nn.createModel(options).then((model)=>{
         let op = {type: nn.TENSOR_FLOAT32, dimensions: TENSOR_DIMENSIONS};
         model.addOperand(op);
         model.addOperand(op);
@@ -174,7 +174,7 @@ describe('Compilation Test', function() {
 
   describe('#finish API', function() {
     it('check "finish" is a function', function() {
-      return nn.createModel().then((model)=>{
+      return nn.createModel(options).then((model)=>{
         let op = {type: nn.TENSOR_FLOAT32, dimensions: TENSOR_DIMENSIONS};
         model.addOperand(op);
         model.addOperand(op);
@@ -195,7 +195,7 @@ describe('Compilation Test', function() {
     });
 
     it('check return value is of "Promise<long>" type', function() {
-      return nn.createModel().then((model)=>{
+      return nn.createModel(options).then((model)=>{
         let op = {type: nn.TENSOR_FLOAT32, dimensions: TENSOR_DIMENSIONS};
         model.addOperand(op);
         model.addOperand(op);
@@ -222,7 +222,7 @@ describe('Compilation Test', function() {
     });
 
     it('raise error when passing a parameter', function() {
-      return nn.createModel().then((model)=>{
+      return nn.createModel(options).then((model)=>{
         let op = {type: nn.TENSOR_FLOAT32, dimensions: TENSOR_DIMENSIONS};
         model.addOperand(op);
         model.addOperand(op);
@@ -246,7 +246,7 @@ describe('Compilation Test', function() {
     });
 
     it('raise error when calling this function more than once, the function must only be called once', function() {
-      return nn.createModel().then((model)=>{
+      return nn.createModel(options).then((model)=>{
         let op = {type: nn.TENSOR_FLOAT32, dimensions: TENSOR_DIMENSIONS};
         model.addOperand(op);
         model.addOperand(op);
@@ -277,7 +277,7 @@ describe('Compilation Test', function() {
 
   describe('#createExecution API', function() {
     it('check "createExecution" is a function', function() {
-      return nn.createModel().then((model)=>{
+      return nn.createModel(options).then((model)=>{
         let op = {type: nn.TENSOR_FLOAT32, dimensions: TENSOR_DIMENSIONS};
         model.addOperand(op);
         model.addOperand(op);
@@ -301,7 +301,7 @@ describe('Compilation Test', function() {
     });
 
     it('raise error when passing a parameter', function() {
-      return nn.createModel().then((model)=>{
+      return nn.createModel(options).then((model)=>{
         let op = {type: nn.TENSOR_FLOAT32, dimensions: TENSOR_DIMENSIONS};
         model.addOperand(op);
         model.addOperand(op);
@@ -327,7 +327,7 @@ describe('Compilation Test', function() {
     });
 
     it('raise error when calling this function with compilation not being finished', function() {
-      return nn.createModel().then((model)=>{
+      return nn.createModel(options).then((model)=>{
         let op = {type: nn.TENSOR_FLOAT32, dimensions: TENSOR_DIMENSIONS};
         model.addOperand(op);
         model.addOperand(op);
