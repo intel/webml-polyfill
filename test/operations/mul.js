@@ -4,10 +4,10 @@ describe('Mul Test', function() {
   const nn = navigator.ml.getNeuralNetworkContext();
   const value0 = 0.4;
   const value1 = 0.5;
-    
+
   it('check result', async function() {
     let operandIndex = 0;
-    let model = await nn.createModel();
+    let model = await nn.createModel(options);
     const float32TensorType = {type: nn.TENSOR_FLOAT32, dimensions: TENSOR_DIMENSIONS};
     const tensorLength = product(float32TensorType.dimensions);
 
@@ -34,7 +34,7 @@ describe('Mul Test', function() {
     let compilation = await model.createCompilation();
 
     compilation.setPreference(nn.PREFER_FAST_SINGLE_ANSWER);
-    
+
     await compilation.finish();
 
     let execution = await compilation.createExecution();
