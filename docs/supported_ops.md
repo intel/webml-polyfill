@@ -7,3 +7,5 @@
 | DEPTHWISE_CONV_2D | yes | yes| yes | yes |
 | MAX_POOL_2D |  yes | yes| yes | yes |
 | MUL |  yes | no | yes | no|
+| RESHAPE |  yes | yes| yes | yes |
+| SOFTMAX |  yes | yes | yes | yes |

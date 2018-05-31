@@ -13,6 +13,9 @@
     <script src="../dist/webml-polyfill.js"></script>
     <script src="./utils.js"></script>
     <script>
+      window.onload = setOptions;
+    </script>
+    <script>
       mocha.setup('bdd');
     </script>
     <script src="./base/base.js"></script>
@@ -20,7 +23,17 @@
     <script src="./unit-test/test-Compilation.js"></script>
     <script src="./unit-test/test-Execution.js"></script>
     <script src="./operations/add.js"></script>
+    <script src="./operations/avg_pool_2d.js"></script>
+    <script src="./operations/concatenation_0.js"></script>
+    <script src="./operations/concatenation_1.js"></script>
+    <script src="./operations/concatenation_2.js"></script>
+    <script src="./operations/concatenation_3.js"></script>
+    <script src="./operations/concatenation_neg1.js"></script>
+    <script src="./operations/max_pool_2d.js"></script>
     <script src="./operations/mul.js"></script>
+    <script src="./operations/reshape.js"></script>
+    <script src="./operations/reshape_neg1.js"></script>
+    <script src="./operations/softmax.js"></script>
     <script>
       mocha.globals(['jQuery']);
       mocha.run();
