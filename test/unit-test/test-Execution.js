@@ -13,7 +13,7 @@ describe('Execution Test', function() {
 
   describe('#setInput API', function() {
     it('check "setInput" is a function', function() {
-      return nn.createModel().then((model)=>{
+      return nn.createModel(options).then((model)=>{
         let op = {type: nn.TENSOR_FLOAT32, dimensions: TENSOR_DIMENSIONS};
         model.addOperand(op);
         model.addOperand(op);
@@ -39,7 +39,7 @@ describe('Execution Test', function() {
     });
 
     it('check return value is of "void" type', function() {
-      return nn.createModel().then((model)=>{
+      return nn.createModel(options).then((model)=>{
         let op = {type: nn.TENSOR_FLOAT32, dimensions: TENSOR_DIMENSIONS};
         model.addOperand(op);
         model.addOperand(op);
@@ -67,7 +67,7 @@ describe('Execution Test', function() {
     });
 
     it.skip('raise error when the value being set to \'index\' is equal or greater than the size of inputs', function() {
-      return nn.createModel().then((model)=>{
+      return nn.createModel(options).then((model)=>{
         let op = {type: nn.TENSOR_FLOAT32, dimensions: TENSOR_DIMENSIONS};
         model.addOperand(op);
         model.addOperand(op);
@@ -97,7 +97,7 @@ describe('Execution Test', function() {
     });
 
     it('raise error when the input tensor type is \'TENSOR_FLOAT32\' and input data is not of \'Float32Arrary\' ', function() {
-      return nn.createModel().then((model)=>{
+      return nn.createModel(options).then((model)=>{
         let op = {type: nn.TENSOR_FLOAT32, dimensions: TENSOR_DIMENSIONS};
         model.addOperand(op);
         model.addOperand(op);
@@ -127,7 +127,7 @@ describe('Execution Test', function() {
     });
 
     it('raise error when the input tensor type is \'TENSOR_QUANT8_ASYMM\' and input data is not of \'Uint8Arrary\' ', function() {
-      return nn.createModel().then((model)=>{
+      return nn.createModel(options).then((model)=>{
         let op = {type: nn.TENSOR_FLOAT32, dimensions: TENSOR_DIMENSIONS, scale: 0, zeroPoint: 0};
         model.addOperand(op);
         model.addOperand(op);
@@ -157,7 +157,7 @@ describe('Execution Test', function() {
     });
 
     it('raise error when passing no parameter', function() {
-      return nn.createModel().then((model)=>{
+      return nn.createModel(options).then((model)=>{
         let op = {type: nn.TENSOR_FLOAT32, dimensions: TENSOR_DIMENSIONS};
         model.addOperand(op);
         model.addOperand(op);
@@ -185,7 +185,7 @@ describe('Execution Test', function() {
     });
 
     it('raise error when passing one parameter', function() {
-      return nn.createModel().then((model)=>{
+      return nn.createModel(options).then((model)=>{
         let op = {type: nn.TENSOR_FLOAT32, dimensions: TENSOR_DIMENSIONS};
         model.addOperand(op);
         model.addOperand(op);
@@ -213,7 +213,7 @@ describe('Execution Test', function() {
     });
 
     it('raise error when passing more than two parameters', function() {
-      return nn.createModel().then((model)=>{
+      return nn.createModel(options).then((model)=>{
         let op = {type: nn.TENSOR_FLOAT32, dimensions: TENSOR_DIMENSIONS};
         model.addOperand(op);
         model.addOperand(op);
@@ -243,7 +243,7 @@ describe('Execution Test', function() {
     });
 
     it('raise error when passing first parameter is of \'string\' type', function() {
-      return nn.createModel().then((model)=>{
+      return nn.createModel(options).then((model)=>{
         let op = {type: nn.TENSOR_FLOAT32, dimensions: TENSOR_DIMENSIONS};
         model.addOperand(op);
         model.addOperand(op);
@@ -273,7 +273,7 @@ describe('Execution Test', function() {
     });
 
     it('raise error when setting invalid data to second parameter', function() {
-      return nn.createModel().then((model)=>{
+      return nn.createModel(options).then((model)=>{
         let op = {type: nn.TENSOR_FLOAT32, dimensions: TENSOR_DIMENSIONS};
         model.addOperand(op);
         model.addOperand(op);
@@ -303,7 +303,7 @@ describe('Execution Test', function() {
 
   describe('#setOutput API', function() {
     it('check "setOutput" is a function', function() {
-      return nn.createModel().then((model)=>{
+      return nn.createModel(options).then((model)=>{
         let op = {type: nn.TENSOR_FLOAT32, dimensions: TENSOR_DIMENSIONS};
         model.addOperand(op);
         model.addOperand(op);
@@ -329,7 +329,7 @@ describe('Execution Test', function() {
     });
 
     it('check return value is of "void" type', function() {
-      return nn.createModel().then((model)=>{
+      return nn.createModel(options).then((model)=>{
         let op = {type: nn.TENSOR_FLOAT32, dimensions: TENSOR_DIMENSIONS};
         model.addOperand(op);
         model.addOperand(op);
@@ -356,7 +356,7 @@ describe('Execution Test', function() {
     });
 
     it.skip('raise error when the value being set to \'index\' is equal or greater than the size of outputs', function() {
-      return nn.createModel().then((model)=>{
+      return nn.createModel(options).then((model)=>{
         let op = {type: nn.TENSOR_FLOAT32, dimensions: TENSOR_DIMENSIONS};
         model.addOperand(op);
         model.addOperand(op);
@@ -386,7 +386,7 @@ describe('Execution Test', function() {
     });
 
     it('raise error when the output tensor type is \'TENSOR_FLOAT32\' and input data is not of \'Float32Arrary\' ', function() {
-      return nn.createModel().then((model)=>{
+      return nn.createModel(options).then((model)=>{
         let op = {type: nn.TENSOR_FLOAT32, dimensions: TENSOR_DIMENSIONS};
         model.addOperand(op);
         model.addOperand(op);
@@ -416,7 +416,7 @@ describe('Execution Test', function() {
     });
 
     it('raise error when the output tensor type is \'TENSOR_QUANT8_ASYMM\' and output data is not of \'Uint8Arrary\' ', function() {
-      return nn.createModel().then((model)=>{
+      return nn.createModel(options).then((model)=>{
         let op = {type: nn.TENSOR_FLOAT32, dimensions: TENSOR_DIMENSIONS, scale: 0, zeroPoint: 0};
         model.addOperand(op);
         model.addOperand(op);
@@ -446,7 +446,7 @@ describe('Execution Test', function() {
     });
 
     it('raise error when passing no parameter', function() {
-      return nn.createModel().then((model)=>{
+      return nn.createModel(options).then((model)=>{
         let op = {type: nn.TENSOR_FLOAT32, dimensions: TENSOR_DIMENSIONS};
         model.addOperand(op);
         model.addOperand(op);
@@ -474,7 +474,7 @@ describe('Execution Test', function() {
     });
 
     it('raise error when passing one parameter', function() {
-      return nn.createModel().then((model)=>{
+      return nn.createModel(options).then((model)=>{
         let op = {type: nn.TENSOR_FLOAT32, dimensions: TENSOR_DIMENSIONS};
         model.addOperand(op);
         model.addOperand(op);
@@ -502,7 +502,7 @@ describe('Execution Test', function() {
     });
 
     it('raise error when passing more than two parameters', function() {
-      return nn.createModel().then((model)=>{
+      return nn.createModel(options).then((model)=>{
         let op = {type: nn.TENSOR_FLOAT32, dimensions: TENSOR_DIMENSIONS};
         model.addOperand(op);
         model.addOperand(op);
@@ -532,7 +532,7 @@ describe('Execution Test', function() {
     });
 
     it('raise error when passing first parameter is of \'string\' type', function() {
-      return nn.createModel().then((model)=>{
+      return nn.createModel(options).then((model)=>{
         let op = {type: nn.TENSOR_FLOAT32, dimensions: TENSOR_DIMENSIONS};
         model.addOperand(op);
         model.addOperand(op);
@@ -562,7 +562,7 @@ describe('Execution Test', function() {
     });
 
     it('raise error when setting invalid data to second parameter', function() {
-      return nn.createModel().then((model)=>{
+      return nn.createModel(options).then((model)=>{
         let op = {type: nn.TENSOR_FLOAT32, dimensions: TENSOR_DIMENSIONS};
         model.addOperand(op);
         model.addOperand(op);
@@ -592,7 +592,7 @@ describe('Execution Test', function() {
 
   describe('#startCompute API', function() {
     it('check "startCompute" is a function', function() {
-      return nn.createModel().then((model)=>{
+      return nn.createModel(options).then((model)=>{
         let op = {type: nn.TENSOR_FLOAT32, dimensions: TENSOR_DIMENSIONS};
         model.addOperand(op);
         model.addOperand(op);
@@ -618,7 +618,7 @@ describe('Execution Test', function() {
     });
 
     it('check return value is of "void" type', function() {
-      return nn.createModel().then((model)=>{
+      return nn.createModel(options).then((model)=>{
         let op = {type: nn.TENSOR_FLOAT32, dimensions: TENSOR_DIMENSIONS};
         model.addOperand(op);
         model.addOperand(op);
@@ -648,7 +648,7 @@ describe('Execution Test', function() {
     });
 
     it('raise error when computing without inputs being ready', function() {
-      return nn.createModel().then((model)=>{
+      return nn.createModel(options).then((model)=>{
         let op = {type: nn.TENSOR_FLOAT32, dimensions: TENSOR_DIMENSIONS};
         model.addOperand(op);
         model.addOperand(op);
@@ -677,7 +677,7 @@ describe('Execution Test', function() {
     });
 
     it('raise error when computing without outputs being ready', function() {
-      return nn.createModel().then((model)=>{
+      return nn.createModel(options).then((model)=>{
         let op = {type: nn.TENSOR_FLOAT32, dimensions: TENSOR_DIMENSIONS};
         model.addOperand(op);
         model.addOperand(op);
@@ -708,7 +708,7 @@ describe('Execution Test', function() {
     });
 
     it('raise error when passing a parameter', function() {
-      return nn.createModel().then((model)=>{
+      return nn.createModel(options).then((model)=>{
         let op = {type: nn.TENSOR_FLOAT32, dimensions: TENSOR_DIMENSIONS};
         model.addOperand(op);
         model.addOperand(op);
