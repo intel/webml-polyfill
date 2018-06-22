@@ -288,7 +288,11 @@ class PoseNet{
                 inputs.push(this._addScalarInt32(paddingCode));
                 inputs.push(this._addScalarInt32(this._tfmodel[i].stride));
                 inputs.push(this._addScalarInt32(this._tfmodel[i].stride));
-                inputs.push(this._addScalarInt32(1));
+                if(this._tfmodel[i].rate !==1){
+                    inputs.push(this._addScalarInt32(this._tfmodel[i].rate));
+                } else {
+                    inputs.push(this._addScalarInt32(1));
+                }
                 let fuseCode = 3;
                 inputs.push(this._addScalarInt32(fuseCode));
                 let opType = this._nn.DEPTHWISE_CONV_2D;

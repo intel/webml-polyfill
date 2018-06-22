@@ -138,10 +138,10 @@ function valideResolution(input_dimension, outputStride){
     }
 }
 
-function prepareInputTensor(tensor, canvas, outputStride){
-    const width = 513;
-    const height = 513; 
-    const channels = 3;
+function prepareInputTensor(tensor, canvas, outputStride, img_dimension){
+    const width = img_dimension[0];
+    const height = img_dimension[1]; 
+    const channels = img_dimension[2];
     const imageChannels = 4;
     const mean = 127.5;
     const std = 127.5;
@@ -176,40 +176,176 @@ function argMax(array){
     return max;
 }
 
+
 function getKeypointIndex(array, dimension){
-    var size = dimension[0]*dimension[1];
-    var index = [];
-    for(var i = 0; i<17; i++){
-        var temp = array.subarray(i*size, (i+1)*size);
-        index.push(argMax(temp));
-        console.log(array[argMax(temp)]);
+    let new_array = [];
+    let index = [];
+    let confidenceScore = [];
+    for(let i = 0; i< 17; i++){
+        new_array.push(new Array(dimension[0]*dimension[1]));
     }
+    for(let i in array){
+        new_array[i%17][Math.floor(i/17)] = array[i];
+    }
+    for(let j in new_array){
+        index.push(argMax(new_array[j]));
+        confidenceScore.push(new_array[j][argMax(new_array[j])]);
+    }
+    return [index, confidenceScore];
+}
+
+
+function convertPosition(index, dimension){
+    let height = dimension[0];
+    let width = dimension[1];
+    let x = index%height;
+    let y = (Math.floor(index/height)) % width;
+    return [y, x];
+}
+
+function convertIndextoCoor(index, dimension){
+    [height, width, channel] = dimension;
+    let z = index%channel;
+    let x = Math.floor(index/channel)%width;
+    let y = Math.floor(index/(width*channel));
+    return [y, x, z];
+}
+
+function convertCoortoIndex(x, y, z, dimension){
+    let [height, width, channel] = dimension;
+    let index = Number(z) + Number(x*channel) + Number(y*width*channel);
     return index;
 }
 
-function convertPosition(index, dimension){
-    let width = dimension[0];
-    let height = dimension[1];
-    let x = index%width;
-    let y = (index/width) % height;
-    return [x, y];
-}
-
 function decodeSinglepose(heatmap, offset, dimension, outputStride){
-    var index = getKeypointIndex(sigmoid(heatmap),dimension);
-    console.log(index);
-    //console.log(offset);
-    for(var i in index){
-        var heatmap_x = convertPosition(Number(index[i]), dimension)[0];
-        var heatmap_y = convertPosition(Number(index[i]), dimension)[1];
-        var offset_y = offset[Number(index[i])+225*i];
-        var offset_x = offset[Number(index[i])+225*i+3825];
-        //console.log(offset_x);
-        var final_pos = [heatmap_y*outputStride+offset_y, heatmap_x*outputStride+offset_x];
-        console.log(final_pos);
+    let [index, confidenceScore] = getKeypointIndex(sigmoid(heatmap),dimension);
+    let final_res = [];
+    for(let i in index){
+        let res = {};
+        let heatmap_y = convertPosition(Number(index[i]), dimension)[0];
+        let heatmap_x = convertPosition(Number(index[i]), dimension)[1];
+        let offset_y = offset[Number(i)+Number(heatmap_x)*34+Number(heatmap_y*34*dimension[1])];
+        let offset_x = offset[Number(i)+17+Number(heatmap_x)*34+Number(heatmap_y*34*dimension[1])];
+        let final_pos = [heatmap_y*outputStride+offset_y, heatmap_x*outputStride+offset_x];
+        res["Position"] = final_pos;
+        res["Confidence Score"] = confidenceScore[i];
+        final_res.push(res);
     }
+    return final_res;
 }
 
+
+function squaredDistance(y1, x1, y2, x2) {
+    var dy = y2 - y1;
+    var dx = x2 - x1;
+    return dy * dy + dx * dx;
+}
+
+function withinNmsRadiusOfCorrespondingPoint(poses, squaredNmsRadius, _a, keypointId) {
+    var x = _a.x, y = _a.y;
+    return poses.some(function (_a) {
+        var keypoints = _a.keypoints;
+        var correspondingKeypoint = keypoints[keypointId].position;
+        return squaredDistance(y, x, correspondingKeypoint.y, correspondingKeypoint.x) <=
+            squaredNmsRadius;
+    });
+}
+
+function scoreIsMaximumInLocalWindow(keypointId, score, heatmapY, heatmapX, localMaximumRadius, scores, dimension) {
+    var height = dimension[0], width = dimension[1];
+    var localMaximum = true;
+    var yStart = Math.max(heatmapY - localMaximumRadius, 0);
+    var yEnd = Math.min(heatmapY + localMaximumRadius + 1, height);
+    for (var yCurrent = yStart; yCurrent < yEnd; ++yCurrent) {
+        var xStart = Math.max(heatmapX - localMaximumRadius, 0);
+        var xEnd = Math.min(heatmapX + localMaximumRadius + 1, width);
+        for (var xCurrent = xStart; xCurrent < xEnd; ++xCurrent) {
+            let index = convertCoortoIndex(xCurrent, yCurrent, keypointId, dimension);
+            if (scores[index] > score) {
+                localMaximum = false;
+                break;
+            }
+        }
+        if (!localMaximum) {
+            break;
+        }
+    }
+    return localMaximum;
+}
+
+
+function buildPartWithScoreQueue(scoreThreshold, localMaximumRadius, scores, dimension){
+    const height = dimension[0];
+    const width = dimension[1];
+    const numKeypoints = dimension[2];
+    let queue = new MaxHeap(height*width*numKeypoints, function(_a){
+        let score = _a.score;
+        return score;
+    });
+    for (var heatmapY = 0; heatmapY < height; ++heatmapY) {
+        for (var heatmapX = 0; heatmapX < width; ++heatmapX) {
+            for (var keypointId = 0; keypointId < numKeypoints; ++keypointId) {
+                let index = convertCoortoIndex(heatmapX, heatmapY, keypointId, dimension);
+                var score = scores[index];
+                // if (score < scoreThreshold) {
+                //     continue;
+                // }
+                if (scoreIsMaximumInLocalWindow(keypointId, score, heatmapY, heatmapX, localMaximumRadius, scores, dimension)) {
+                    queue.enqueue({ score: score, part: { heatmapY: heatmapY, heatmapX: heatmapX, id: keypointId } });
+                }
+            }
+        }
+    }
+    return queue;
+}
+
+function getImageCoords(part, outputStride, offsets, dimension){
+    dimension_offset = [];
+    dimension_offset.push(dimension[0]);
+    dimension_offset.push(dimension[1]);
+    dimension_offset.push(34);
+    var heatmapY = part.heatmapY, heatmapX = part.heatmapX, keypoint = part.id;
+    var index_y = convertCoortoIndex(heatmapX, heatmapY, keypoint, dimension_offset);
+    var index_x = index_y+17;
+    return {
+        x: part.heatmapX * outputStride + offsets[index_x],
+        y: part.heatmapY * outputStride + offsets[index_y]
+    };
+}
+
+function getInstanceScore(existingPoses, squaredNmsRadius, instanceKeypoints) {
+    var notOverlappedKeypointScores = instanceKeypoints.reduce(function (result, _a, keypointId) {
+        var position = _a.position, score = _a.score;
+        if (!withinNmsRadiusOfCorrespondingPoint(existingPoses, squaredNmsRadius, position, keypointId)) {
+            result += score;
+        }
+        return result;
+    }, 0.0);
+    return notOverlappedKeypointScores /= instanceKeypoints.length;
+}
+
+function decodeMultiPose(heatmap, offsets, displacement_fwd, displacement_bwd, 
+                        outputStride, maxPoseDectection, scoreThreshold, nmsRadius, dimension){
+    let poses = [];
+    var queue = buildPartWithScoreQueue(scoreThreshold, 1, sigmoid(heatmap), dimension);
+    let _root, keypoints, score;
+    const squaredNmsRadius = nmsRadius * nmsRadius;
+    let index = 0;
+    while(poses.length < maxPoseDectection && !queue.empty()){
+        _root = queue.dequeue();
+        rootImgCoord = getImageCoords(_root.part, outputStride, offsets, dimension);
+        if(withinNmsRadiusOfCorrespondingPoint(poses, squaredNmsRadius, rootImgCoord, _root.part.id)){
+            continue;
+        }
+        keypoints = decodePose(_root, heatmap, offsets, outputStride, displacement_fwd, displacement_bwd, dimension);
+        score = getInstanceScore(poses, squaredNmsRadius, keypoints);
+        poses.push({keypoints: keypoints, score: score});
+    }
+    console.log(poses);
+    // return poses;
+}   
+
+//console.log(toOutputStridedLayers(Architecture, 16));
 // let inputTensor = new Float32Array(INPUT_TENSOR_SIZE);
 // var canvas = document.getElementById("canvas");
 // var ctx = canvas.getContext("2d");
