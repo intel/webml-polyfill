@@ -1,0 +1,17 @@
+All files in src/nn/specs directory and src/test_generator.py come from
+https://android.googlesource.com/platform/frameworks/ml
+(commit: 4c7798d0ea258461404ec97c4d16ecea826cc373)
+with some modification below:
+
+1. Modify src/test_generator.py to generate CTS tests for Web ML API.
+
+Copyright 2017 The Android Open Source Project
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+     http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
