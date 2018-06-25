@@ -6,7 +6,7 @@ import sys
 name_file = "./slice.txt"
 
 with open(name_file) as file_names:
-  print "Open names file: " + name_file
+  print("Open names file: " + name_file)
 
   lines = file_names.readlines()
 
@@ -51,4 +51,4 @@ all_jsTest_file = open(output_all_jsTest, "a+")
 all_jsTest_file.write("});\n")
 all_jsTest_file.close()
 
-print "Generated all CTS tests in %s" % output_all_jsTest
+print("Generated all CTS tests in %s" % output_all_jsTest)
