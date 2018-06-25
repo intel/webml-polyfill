@@ -276,6 +276,10 @@ function scoreIsMaximumInLocalWindow(keypointId, score, heatmapY, heatmapX, loca
     return localMaximum;
 }
 
+function toHeatmapsize(dimension, outputStride){
+    var heatmapSize = [(dimension[0]-1)/outputStride+1, (dimension[1]-1)/outputStride+1, 17];
+    return heatmapSize;
+}
 
 function buildPartWithScoreQueue(scoreThreshold, localMaximumRadius, scores, dimension){
     const height = dimension[0];

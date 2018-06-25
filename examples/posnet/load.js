@@ -83,8 +83,9 @@ class Utils{
         this._maxDetection = document.getElementById('maxDetection').value;
 
         this.canvasElement_single = document.getElementById('canvas');
-        //this.canvasContext = this.canvasElement.getContext('2d');
+        this.canvasContext_single = this.canvasElement_single.getContext('2d');
         this.canvasElement_multi = document.getElementById('canvas_2');
+        this.canvasContext_multi = this.canvasElement_multi.getContext('2d');
         this._type = "Multiperson";
         this.initialized = false;
     }
@@ -113,8 +114,18 @@ class Utils{
         if(!this.initialized){
             return;
         }
-        imageSource.drawTo(this.canvasElement_single);
-        imageSource.drawTo(this.canvasElement_multi);
+        var x = await getInput(inputElement);
+        await loadImage(x, canvasContext_single);
+        await loadImage(x, canvasContext_multi);
+        var imageSize = [input_size[1], input_size[2], input_size[3]];
+        prepareInputTensor(this.inputTensor,canvas, this._outputStride, imageSize);
+        var result = await this.model.compute_multi(this.inputTensor, this.heatmapTensor, 
+                this.offsetTensor, this.displacement_fwd, this.displacement_bwd);
+        var poses = decodeMultiPose(this.heatmapTensor, this.offsetTensor, 
+                        this.displacement_fwd, this.displacement_bwd, 
+                        this._outputStride, this._maxDetection, this._minScore, 
+                        this._nmsRadius, toHeatmapsize(imageSize, this._outputStride));
+         
 
 
     }
