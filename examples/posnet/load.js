@@ -68,15 +68,25 @@ class Utils{
         this.displacement_bwd;
         this._version;
         this._outputStride;
-        this._type;
 
         this.inputTensor = new Float32Array(INPUT_TENSOR_SIZE);
         this.heatmapTensor = new Float32Array(HEATMAP_TENSOR_SIZE);
         this.offsetTensor = new Float32Array(OFFSET_TENSOR_SIZE);
-        //this.canvasElement = document.getElementById('canvas');
-        //this.canvasContext = this.canvasElement.getContext('2d');
-        this.initialized = false;
+        this.displacement_fwd = new Float32Array(DISPLACEMENT_FWD_SIZE);
+        this.displacement_bwd = new Float32Array(DISPLACEMENT_BWD_SIZE);
+        //single input
+        this._version = document.getElementById('modelversion').value;
+        this._outputStride= document.getElementById('outputStride').value;
+        this._minScore = document.getElementById('minpartConfidenceScore').value;
+        //multiple input
+        this._nmsRadius = document.getElementById('nmsRadius').value;
+        this._maxDetection = document.getElementById('maxDetection').value;
 
+        this.canvasElement_single = document.getElementById('canvas');
+        //this.canvasContext = this.canvasElement.getContext('2d');
+        this.canvasElement_multi = document.getElementById('canvas_2');
+        this._type = "Multiperson";
+        this.initialized = false;
     }
 
     async init(backend){
@@ -103,6 +113,9 @@ class Utils{
         if(!this.initialized){
             return;
         }
+        imageSource.drawTo(this.canvasElement_single);
+        imageSource.drawTo(this.canvasElement_multi);
+
 
     }
 

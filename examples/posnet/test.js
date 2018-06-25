@@ -146,6 +146,7 @@ function prepareInputTensor(tensor, canvas, outputStride, img_dimension){
     const mean = 127.5;
     const std = 127.5;
     let dimension = [1, canvas.width, canvas.height, 3];
+    console.log(dimension);
     valideResolution(dimension, outputStride);
     let context = canvas.getContext('2d');
     let pixels = context.getImageData(0, 0, width, height).data;
@@ -220,18 +221,20 @@ function convertCoortoIndex(x, y, z, dimension){
 function decodeSinglepose(heatmap, offset, dimension, outputStride){
     let [index, confidenceScore] = getKeypointIndex(sigmoid(heatmap),dimension);
     let final_res = [];
+    let total_score = 0; 
+    let poses = [];
     for(let i in index){
-        let res = {};
         let heatmap_y = convertPosition(Number(index[i]), dimension)[0];
         let heatmap_x = convertPosition(Number(index[i]), dimension)[1];
         let offset_y = offset[Number(i)+Number(heatmap_x)*34+Number(heatmap_y*34*dimension[1])];
         let offset_x = offset[Number(i)+17+Number(heatmap_x)*34+Number(heatmap_y*34*dimension[1])];
         let final_pos = [heatmap_y*outputStride+offset_y, heatmap_x*outputStride+offset_x];
-        res["Position"] = final_pos;
-        res["Confidence Score"] = confidenceScore[i];
-        final_res.push(res);
+        total_score += confidenceScore[i];
+        final_res.push({position: {y: final_pos[0], x: final_pos[1]}, 
+                    part: partNames[i], score: confidenceScore[i]});
     }
-    return final_res;
+    poses.push({keypoints: final_res, score: total_score/17});
+    return poses;
 }
 
 
@@ -341,8 +344,8 @@ function decodeMultiPose(heatmap, offsets, displacement_fwd, displacement_bwd,
         score = getInstanceScore(poses, squaredNmsRadius, keypoints);
         poses.push({keypoints: keypoints, score: score});
     }
-    console.log(poses);
-    // return poses;
+    //console.log(poses);
+    return poses;
 }   
 
 //console.log(toOutputStridedLayers(Architecture, 16));
