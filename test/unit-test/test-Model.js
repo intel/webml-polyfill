@@ -1,4 +1,4 @@
-describe('Model Test', function() {
+describe('Unit Test/Model Test', function() {
   const assert = chai.assert;
   const TENSOR_DIMENSIONS = [2, 2, 2, 2];
   let nn;
@@ -1334,7 +1334,7 @@ describe('Model Test', function() {
         model.addOperand({type: nn.INT32});
         model.setOperandValue(6, new Int32Array([nn.FUSED_NONE]));
         let RANK3_DIMENSIONS = [100, 7, 7];
-        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: RANK5_DIMENSION3});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: RANK3_DIMENSIONS});
         assert.throws(() => {
           model.addOperation(nn.AVERAGE_POOL_2D, [0, 1, 2, 3, 4, 5, 6], [7]);
         });
@@ -2826,7 +2826,7 @@ describe('Model Test', function() {
         model.addOperand({type: nn.INT32});
         model.setOperandValue(6, new Int32Array([nn.FUSED_NONE]));
         let RANK3_DIMENSIONS = [100, 7, 7];
-        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: RANK5_DIMENSION3});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: RANK3_DIMENSIONS});
         assert.throws(() => {
           model.addOperation(nn.MAX_POOL_2D, [0, 1, 2, 3, 4, 5, 6], [7]);
         });
