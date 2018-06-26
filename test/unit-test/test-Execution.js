@@ -1,4 +1,4 @@
-describe('Execution Test', function() {
+describe('Unit Test/Execution Test', function() {
   const assert = chai.assert;
   const TENSOR_DIMENSIONS = [2, 2, 2, 2];
   let nn;
