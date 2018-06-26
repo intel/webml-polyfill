@@ -64,8 +64,7 @@ class Utils{
         this.offsetTensor;
         this.displacement_fwd;
         this.displacement_bwd;
-        this._version;
-        this._outputStride;
+        this._version = 1.01;
 
         //single input
         this._version = document.getElementById('modelversion').value;
@@ -83,11 +82,10 @@ class Utils{
         this.canvasContext_multi = this.canvasElement_multi.getContext('2d');
         this._type = "Multiperson";
         this.initialized = false;
-        // console.log("outputStride: ", this._outputStride);
-        // console.log("version: ", this._version);
-        // console.log("_minScore: ", this._minScore);
-        // console.log("maxDetection: ", this._maxDetection);
-        // console.log("nmsRadius: ", this._nmsRadius);
+
+        if(this._outputStride.length == 0){
+            this._outputStride = 16;
+        }
 
         this.HEATMAP_TENSOR_SIZE = Product(toHeatmapsize(input_size, this._outputStride));
         this.OFFSET_TENSOR_SIZE = this.HEATMAP_TENSOR_SIZE*2;
@@ -134,21 +132,19 @@ class Utils{
         if(!this.initialized){
             return;
         }
-        console.log("start");
-        var x = await getInput(this._inputElement);
+        let x = await getInput(this._inputElement);
         await loadImage(x, this.canvasContext_single);
         await loadImage(x, this.canvasContext_multi);
-        var imageSize = [input_size[1], input_size[2], input_size[3]];
+        let imageSize = [input_size[1], input_size[2], input_size[3]];
         prepareInputTensor(this.inputTensor,this.canvasElement_multi, this._outputStride, imageSize);
-        var result = await this.model.compute_multi(this.inputTensor, this.heatmapTensor, 
+        let result = await this.model.compute_multi(this.inputTensor, this.heatmapTensor, 
                 this.offsetTensor, this.displacement_fwd, this.displacement_bwd);
-        var poses_multi = decodeMultiPose(this.heatmapTensor, this.offsetTensor, 
+        let poses_multi = decodeMultiPose(this.heatmapTensor, this.offsetTensor, 
                         this.displacement_fwd, this.displacement_bwd, 
                         this._outputStride, this._maxDetection, this._minScore, 
                         this._nmsRadius, toHeatmapsize(imageSize, this._outputStride));
-        var poses_single = decodeSinglepose(this.heatmapTensor, this.offsetTensor, 
+        let poses_single = decodeSinglepose(this.heatmapTensor, this.offsetTensor, 
                             toHeatmapsize(imageSize, this._outputStride), this._outputStride);
-        console.log(poses_multi);
         poses_single.forEach((pose)=>{
             if(pose.score>= this._minScore, this.canvasContext_single){
                 drawKeypoints(pose.keypoints, this._minScore, this.canvasContext_single);
@@ -165,13 +161,13 @@ class Utils{
     }
 
     async loadmanifest(url){
-        var address = url+"manifest.json";
+        let address = url+"manifest.json";
         return fetch(address)
         .then(function(response) {
             return response.json();
         })
         .then(function(myJson) {
-            var data = {};
+            let data = {};
             for(var i in myJson){
                 data[i] = myJson[i];
             } 
@@ -226,41 +222,6 @@ class Utils{
 
     
 
-
-
-
-
-// function Layer(blockId, stride, outputStride, convType, rate){
-//     this.blockId = blockId;
-//     this.stride = stride;
-//     this.outputStride = outputStride;
-//     this.convType = convType;
-//     this.rate = rate;
-// }
-
-// for(var j in mobileNet100Architecture){
-//     var layer = new Layer(j, mobileNet100Architecture[j][1], 16, mobileNet100Architecture[j][0], 1);
-//     if(layer.convType == 'conv2d'){
-//         manifestload(model(1.0)).then(function(mobilenet){
-            
-//         })
-//     }
-// }
-
-
-// var temp = manifestload(model(1.01));
-// temp.then(function(mobilenet){
-//     var blockid = 10;
-//     var name = "MobilenetV1/Conv2d_"+String(blockid)+"_depthwise/depthwise_weights";
-//     //console.log(mobilenet[name]["filename"]);
-//     var shape = mobilenet[name]["shape"];
-//     console.log(shape);
-//     var fileaddress = model(1.01)+mobilenet[name]["filename"];
-//     getvariable(fileaddress).then(function(data){
-//         const values = new Int32Array(data);
-//         console.log(values);
-//     })
-// });
 
 
 

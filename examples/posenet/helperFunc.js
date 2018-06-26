@@ -19,44 +19,44 @@ let Architecture = [
 async function getDimension_data(layername, version, blockId){
     let util = new Utils();
     if(layername=="conv2d"){
-        var manifest = await util.loadmanifest(util.getURL(version));
-        var layer = "MobilenetV1/Conv2d_"+String(blockId)+"/weights";
-        var layer_bias = "MobilenetV1/Conv2d_"+String(blockId)+"/biases";
-        var shape = manifest[layer]["shape"];
-        var shape_bias = manifest[layer_bias]["shape"];
-        var filename = manifest[layer]["filename"];
-        var filename_bias = manifest[layer_bias]["filename"];
-        var address = util.getURL(version)+filename;
-        var address_bias = util.getURL(version)+filename_bias;
-        var data = await util.getvariable(address, true);
-        var bia = await util.getvariable(address_bias, true);
+        let manifest = await util.loadmanifest(util.getURL(version));
+        let layer = "MobilenetV1/Conv2d_"+String(blockId)+"/weights";
+        let layer_bias = "MobilenetV1/Conv2d_"+String(blockId)+"/biases";
+        let shape = manifest[layer]["shape"];
+        let shape_bias = manifest[layer_bias]["shape"];
+        let filename = manifest[layer]["filename"];
+        let filename_bias = manifest[layer_bias]["filename"];
+        let address = util.getURL(version)+filename;
+        let address_bias = util.getURL(version)+filename_bias;
+        let data = await util.getvariable(address, true);
+        let bia = await util.getvariable(address_bias, true);
         const weights = new Float32Array(data);
         const bias = new Float32Array(bia);
         //console.log(weights);
         return [shape, weights, shape_bias, bias];
     }
     if(layername=="separableConv"){
-        var manifest = await util.loadmanifest(util.getURL(version));
-        var layer_1 = "MobilenetV1/Conv2d_"+String(blockId)+"_depthwise/depthwise_weights";
-        var layer_2 = "MobilenetV1/Conv2d_"+String(blockId)+"_pointwise/weights";
-        var layer_1_bias = "MobilenetV1/Conv2d_"+String(blockId)+"_depthwise/biases";
-        var layer_2_bias = "MobilenetV1/Conv2d_"+String(blockId)+"_pointwise/biases";
-        var shape = [];
-        var shape_bias = [];
-        var weights = [];
-        var bias = [];
+        let manifest = await util.loadmanifest(util.getURL(version));
+        let layer_1 = "MobilenetV1/Conv2d_"+String(blockId)+"_depthwise/depthwise_weights";
+        let layer_2 = "MobilenetV1/Conv2d_"+String(blockId)+"_pointwise/weights";
+        let layer_1_bias = "MobilenetV1/Conv2d_"+String(blockId)+"_depthwise/biases";
+        let layer_2_bias = "MobilenetV1/Conv2d_"+String(blockId)+"_pointwise/biases";
+        let shape = [];
+        let shape_bias = [];
+        let weights = [];
+        let bias = [];
         shape.push(manifest[layer_1]["shape"]);
         shape.push(manifest[layer_2]["shape"]);
         shape_bias.push(manifest[layer_1_bias]["shape"]);
         shape_bias.push(manifest[layer_2_bias]["shape"]);
-        var filename1 = manifest[layer_1]["filename"];
-        var filename2 = manifest[layer_2]["filename"];
-        var filename1_bias = manifest[layer_1_bias]["filename"];
-        var filename2_bias = manifest[layer_2_bias]["filename"];
-        var data_1 = await util.getvariable(util.getURL(version)+filename1, true);
-        var data_2 = await util.getvariable(util.getURL(version)+filename2, true);
-        var data_1_bias = await util.getvariable(util.getURL(version)+filename1_bias, true);
-        var data_2_bias = await util.getvariable(util.getURL(version)+filename2_bias, true);
+        let filename1 = manifest[layer_1]["filename"];
+        let filename2 = manifest[layer_2]["filename"];
+        let filename1_bias = manifest[layer_1_bias]["filename"];
+        let filename2_bias = manifest[layer_2_bias]["filename"];
+        let data_1 = await util.getvariable(util.getURL(version)+filename1, true);
+        let data_2 = await util.getvariable(util.getURL(version)+filename2, true);
+        let data_1_bias = await util.getvariable(util.getURL(version)+filename1_bias, true);
+        let data_2_bias = await util.getvariable(util.getURL(version)+filename2_bias, true);
         weights.push(new Float32Array(data_1));
         weights.push(new Float32Array(data_2));
         bias.push(new Float32Array(data_1_bias));
@@ -67,26 +67,26 @@ async function getDimension_data(layername, version, blockId){
 
 async function getOutputLayer(layername, version){
     let util = new Utils();
-    var manifest = await util.loadmanifest(util.getURL(version));
-    var shape;
-    var shape_bias;
-    var weights, bias;
+    let manifest = await util.loadmanifest(util.getURL(version));
+    let shape;
+    let shape_bias;
+    let weights, bias;
     shape = manifest["MobilenetV1/"+layername+"_2/weights"]["shape"];
     shape_bias = manifest["MobilenetV1/"+layername+"_2/biases"]["shape"];
-    var data = await util.getvariable(util.getURL(version)+manifest["MobilenetV1/"+layername+"_2/weights"]["filename"], true);
+    let data = await util.getvariable(util.getURL(version)+manifest["MobilenetV1/"+layername+"_2/weights"]["filename"], true);
     weights = new Float32Array(data);
-    var data_bias = await util.getvariable(util.getURL(version)+manifest["MobilenetV1/"+layername+"_2/biases"]["filename"], true);
+    let data_bias = await util.getvariable(util.getURL(version)+manifest["MobilenetV1/"+layername+"_2/biases"]["filename"], true);
     bias = new Float32Array(data_bias);
     return [shape, weights, shape_bias, bias];
 }
 
 //obtain desired size output
 function toOutputStridedLayers(convolutionDefinition, outputStride) {
-    var currentStride = 1;
-    var rate = 1;
+    let currentStride = 1;
+    let rate = 1;
     return convolutionDefinition.map(function (_a, blockId) {
-        var convType = _a[0], stride = _a[1];
-        var layerStride, layerRate;
+        let convType = _a[0], stride = _a[1];
+        let layerStride, layerRate;
         if (currentStride === outputStride) {
             layerStride = 1;
             layerRate = rate;
@@ -105,9 +105,9 @@ function toOutputStridedLayers(convolutionDefinition, outputStride) {
 }
 
 function resize(dimension){
-    var new_dimension = [];
+    let new_dimension = [];
     new_dimension.push(dimension[dimension.length-1])
-    for(var i =0; i<dimension.length-1; i++){
+    for(let i =0; i<dimension.length-1; i++){
         new_dimension.push(dimension[i]);
     }
     return new_dimension;
@@ -146,7 +146,6 @@ function prepareInputTensor(tensor, canvas, outputStride, img_dimension){
     const mean = 127.5;
     const std = 127.5;
     let dimension = [1, canvas.width, canvas.height, 3];
-    console.log(dimension);
     valideResolution(dimension, outputStride);
     let context = canvas.getContext('2d');
     let pixels = context.getImageData(0, 0, width, height).data;
@@ -161,7 +160,7 @@ function prepareInputTensor(tensor, canvas, outputStride, img_dimension){
 }
 
 function sigmoid(heatmap){
-    for(var i in heatmap){
+    for(let i in heatmap){
         heatmap[i] = 1/(1+Math.pow(Math.E, -heatmap[i]));
     }
     return heatmap;
@@ -169,7 +168,7 @@ function sigmoid(heatmap){
 
 function argMax(array){
     let max = 0;
-    for(var i in array){
+    for(let i in array){
         if(array[i]>array[max]){
             max = i;
         }
@@ -239,16 +238,16 @@ function decodeSinglepose(heatmap, offset, dimension, outputStride){
 
 
 function squaredDistance(y1, x1, y2, x2) {
-    var dy = y2 - y1;
-    var dx = x2 - x1;
+    let dy = y2 - y1;
+    let dx = x2 - x1;
     return dy * dy + dx * dx;
 }
 
 function withinNmsRadiusOfCorrespondingPoint(poses, squaredNmsRadius, _a, keypointId) {
-    var x = _a.x, y = _a.y;
+    let x = _a.x, y = _a.y;
     return poses.some(function (_a) {
-        var keypoints = _a.keypoints;
-        var correspondingKeypoint = keypoints[keypointId].position;
+        let keypoints = _a.keypoints;
+        let correspondingKeypoint = keypoints[keypointId].position;
         return squaredDistance(y, x, correspondingKeypoint.y, correspondingKeypoint.x) <=
             squaredNmsRadius;
     });
@@ -277,7 +276,7 @@ function scoreIsMaximumInLocalWindow(keypointId, score, heatmapY, heatmapX, loca
 }
 
 function toHeatmapsize(dimension, outputStride){
-    var heatmapSize;
+    let heatmapSize;
     if(dimension.length==3){
         heatmapSize = [(dimension[0]-1)/outputStride+1, (dimension[1]-1)/outputStride+1, 17];
     }
@@ -300,11 +299,11 @@ function buildPartWithScoreQueue(scoreThreshold, localMaximumRadius, scores, dim
         let score = _a.score;
         return score;
     });
-    for (var heatmapY = 0; heatmapY < height; ++heatmapY) {
-        for (var heatmapX = 0; heatmapX < width; ++heatmapX) {
-            for (var keypointId = 0; keypointId < numKeypoints; ++keypointId) {
+    for (let heatmapY = 0; heatmapY < height; ++heatmapY) {
+        for (let heatmapX = 0; heatmapX < width; ++heatmapX) {
+            for (let keypointId = 0; keypointId < numKeypoints; ++keypointId) {
                 let index = convertCoortoIndex(heatmapX, heatmapY, keypointId, dimension);
-                var score = scores[index];
+                let score = scores[index];
                 // if (score < scoreThreshold) {
                 //     continue;
                 // }
@@ -322,9 +321,9 @@ function getImageCoords(part, outputStride, offsets, dimension){
     dimension_offset.push(dimension[0]);
     dimension_offset.push(dimension[1]);
     dimension_offset.push(34);
-    var heatmapY = part.heatmapY, heatmapX = part.heatmapX, keypoint = part.id;
-    var index_y = convertCoortoIndex(heatmapX, heatmapY, keypoint, dimension_offset);
-    var index_x = index_y+17;
+    let heatmapY = part.heatmapY, heatmapX = part.heatmapX, keypoint = part.id;
+    let index_y = convertCoortoIndex(heatmapX, heatmapY, keypoint, dimension_offset);
+    let index_x = index_y+17;
     return {
         x: part.heatmapX * outputStride + offsets[index_x],
         y: part.heatmapY * outputStride + offsets[index_y]
@@ -332,8 +331,8 @@ function getImageCoords(part, outputStride, offsets, dimension){
 }
 
 function getInstanceScore(existingPoses, squaredNmsRadius, instanceKeypoints) {
-    var notOverlappedKeypointScores = instanceKeypoints.reduce(function (result, _a, keypointId) {
-        var position = _a.position, score = _a.score;
+    let notOverlappedKeypointScores = instanceKeypoints.reduce(function (result, _a, keypointId) {
+        let position = _a.position, score = _a.score;
         if (!withinNmsRadiusOfCorrespondingPoint(existingPoses, squaredNmsRadius, position, keypointId)) {
             result += score;
         }
@@ -345,7 +344,7 @@ function getInstanceScore(existingPoses, squaredNmsRadius, instanceKeypoints) {
 function decodeMultiPose(heatmap, offsets, displacement_fwd, displacement_bwd, 
                         outputStride, maxPoseDectection, scoreThreshold, nmsRadius, dimension){
     let poses = [];
-    var queue = buildPartWithScoreQueue(scoreThreshold, 1, sigmoid(heatmap), dimension);
+    let queue = buildPartWithScoreQueue(scoreThreshold, 1, sigmoid(heatmap), dimension);
     let _root, keypoints, score;
     const squaredNmsRadius = nmsRadius * nmsRadius;
     let index = 0;
@@ -363,44 +362,3 @@ function decodeMultiPose(heatmap, offsets, displacement_fwd, displacement_bwd,
     return poses;
 }   
 
-//console.log(toOutputStridedLayers(Architecture, 16));
-// let inputTensor = new Float32Array(INPUT_TENSOR_SIZE);
-// var canvas = document.getElementById("canvas");
-// var ctx = canvas.getContext("2d");
-// var img = new Image();
-// img.onload = function(){
-//     ctx.drawImage(img, 0, 0);
-//     let pixels = ctx.getImageData(0, 0, 225, 225);
-//     console.log(pixels);
-//     prepareInputTensor(inputTensor, canvas, 16);
-// };
-// img.src = 'people-img3.jpg';
-
-//prepareInputTensor(inputTensor, canvas, 16);
-
-
-// var x = resize([1, 1, 1024, 17]);
-// console.log(x);
-
-// getOutputLayer("offset", 1.01).then(function(data){
-//     console.log(data);
-//     var value = transpose_weights(data[1], data[0]);
-//     console.log(value);
-// });
-// async function test(){
-//     let util = new Utils();
-//     await getDimension_data("conv2d", 1.01, 0).then(function(data){
-//         console.log(data[1]);
-//         var new_data = transpose_weights(data[1], [3, 3, 3, 32]);
-//         console.log(new_data);
-//     });
-// }
-
-// transpose([1,1,1,1,1,1,1,1,1,1], [3, 3, 3, 32]);
-//console.log(resize([3, 3, 3, 32]));
-// var res = toOutputStridedLayers(Architecture, 16);
-// console.log(res);
-// getDimension_data("separableConv", 1.01, 2).then(function(data){
-//     console.log(data[2]);
-//     console.log(data[3]);
-// });

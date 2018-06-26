@@ -42,8 +42,6 @@ class PoseNet{
         this._model = await this._nn.createModel(options);
         await this._addTensorOperands();
         this._addOpsAndParams();
-        console.log(this._outputs);
-        console.log(this._model);
         
         await this._model.finish();
         this._compilation = await this._model.createCompilation();
@@ -80,11 +78,9 @@ class PoseNet{
     async _addTensorOperands(){
         let util = new Utils();
         this._tfmodel = toOutputStridedLayers(this._tfmodel, this._outputstride);
-        console.log(this._tfmodel);
         let dimension_out;
         let dimension_in = this._inputs;
-        for(var i in this._tfmodel){
-            console.log(i);
+        for(let i in this._tfmodel){
             let type = 3; //tensor float32
             let dimension = [];
             let weights = [];
@@ -125,7 +121,7 @@ class PoseNet{
                 this._model.addOperand({type:3, dimensions: dimension_out});
                 this._operandIndex++;
             }
-            for(var j in dimension){
+            for(let j in dimension){
                 let tensorId = this._operandIndex++;
                 let tensorType = {type: type, dimensions: dimension[j]};
                 this._shape.push(dimension[j]);
@@ -237,7 +233,7 @@ class PoseNet{
             output_dimension = [1, Math.floor((input_dimension[1]-shape[1]+0)/stride+1), Math.floor((input_dimension[2]-shape[2]+0)/stride+1), shape[0]];
         }
         
-        console.log(output_dimension);
+        //console.log(output_dimension);
         return output_dimension;
     }
 
@@ -259,7 +255,7 @@ class PoseNet{
     
     _addOpsAndParams(){
         let index = 0;
-        for(var i in this._tfmodel){
+        for(let i in this._tfmodel){
             if(this._tfmodel[i].convType=="conv2d"){
                 let opCode = 3; //conv
                 let inputs = [];
@@ -321,7 +317,7 @@ class PoseNet{
             let opCode = 3;
             let paddingCode = 1;
             let index = 5;
-            for(var i =0; i<4; i++){
+            for(let i =0; i<4; i++){
                 let inputs = [];
                 inputs.push(this._outputs[this._outputs.length-1]);
                 inputs.push(this._outputs[this._outputs.length-1]+index);
@@ -343,7 +339,7 @@ class PoseNet{
             let opCode = 3;
             let paddingCode =1;
             let index = 5;
-            for(var i =0; i<2; i++){
+            for(let i =0; i<2; i++){
                 let inputs = [];
                 inputs.push(this._outputs[this._outputs.length-1]);
                 inputs.push(this._outputs[this._outputs.length-1]+index);
@@ -365,5 +361,3 @@ class PoseNet{
 }
 
 
-
-//net._addinputoutput([32, 3, 3, 3]);
