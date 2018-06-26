@@ -277,9 +277,20 @@ function scoreIsMaximumInLocalWindow(keypointId, score, heatmapY, heatmapX, loca
 }
 
 function toHeatmapsize(dimension, outputStride){
-    var heatmapSize = [(dimension[0]-1)/outputStride+1, (dimension[1]-1)/outputStride+1, 17];
+    var heatmapSize;
+    if(dimension.length==3){
+        heatmapSize = [(dimension[0]-1)/outputStride+1, (dimension[1]-1)/outputStride+1, 17];
+    }
+    if(dimension.length==4){
+        heatmapSize = [(dimension[1]-1)/outputStride+1, (dimension[2]-1)/outputStride+1, 17]
+    }
     return heatmapSize;
 }
+
+function Product(array){
+    return array.reduce(function(a,b){return a*b;});
+}
+
 
 function buildPartWithScoreQueue(scoreThreshold, localMaximumRadius, scores, dimension){
     const height = dimension[0];

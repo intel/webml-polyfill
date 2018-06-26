@@ -75,35 +75,40 @@ function getInput(inputElement){
     return promise;
 }
 
-
-
-
 async function DrawSingleandMulti(){
-    var net = new PoseNet(Architecture, 'WebGL2', 1.01, 16, [1, 513, 513, 3], "Multiperson");
-    await net.createCompiledModel();
-    var canvas = document.getElementById("canvas");
-    var ctx = canvas.getContext("2d");
-    var inputElement = document.getElementById('image').files[0];
-    var reader = new FileReader();
-    var x = await getInput(inputElement);
-    await loadImage(x, ctx);
-    let inputTensor = new Float32Array(INPUT_TENSOR_SIZE);
-    let heatmapTensor = new Float32Array(HEATMAP_TENSOR_SIZE);
-    let offsetTensor = new Float32Array(OFFSET_TENSOR_SIZE);
-    let displacement_fwd = new Float32Array(DISPLACEMENT_FWD_SIZE);
-    let displacement_bwd = new Float32Array(DISPLACEMENT_BWD_SIZE);
-    prepareInputTensor(inputTensor,canvas, 16, [513, 513, 3]);
-    var result = await net.compute_multi(inputTensor, heatmapTensor, offsetTensor, displacement_fwd, displacement_bwd);
-    var poses = decodeMultiPose(heatmapTensor, offsetTensor, displacement_fwd, displacement_bwd, 
-                        16, 15, 0.5, 20, [33, 33, 17]); 
-    console.log(poses);
-    poses.forEach((pose)=>{
-        if(pose.score >= 0.5){
-            drawKeypoints(pose.keypoints, 0.5, ctx);
-            drawSkeleton(pose.keypoints, 0.5, ctx);
-        }
-    });
+    var util = new Utils();
+    await util.init('WebGL2');
+    await util.predict();
+
 }
+
+
+// async function DrawSingleandMulti(){
+//     var net = new PoseNet(Architecture, 'WebGL2', 1.01, 16, [1, 513, 513, 3], "Multiperson");
+//     await net.createCompiledModel();
+//     var canvas = document.getElementById("canvas");
+//     var ctx = canvas.getContext("2d");
+//     var inputElement = document.getElementById('image').files[0];
+//     var reader = new FileReader();
+//     var x = await getInput(inputElement);
+//     await loadImage(x, ctx);
+//     let inputTensor = new Float32Array(INPUT_TENSOR_SIZE);
+//     let heatmapTensor = new Float32Array(HEATMAP_TENSOR_SIZE);
+//     let offsetTensor = new Float32Array(OFFSET_TENSOR_SIZE);
+//     let displacement_fwd = new Float32Array(DISPLACEMENT_FWD_SIZE);
+//     let displacement_bwd = new Float32Array(DISPLACEMENT_BWD_SIZE);
+//     prepareInputTensor(inputTensor,canvas, 16, [513, 513, 3]);
+//     var result = await net.compute_multi(inputTensor, heatmapTensor, offsetTensor, displacement_fwd, displacement_bwd);
+//     var poses = decodeMultiPose(heatmapTensor, offsetTensor, displacement_fwd, displacement_bwd, 
+//                         16, 15, 0.5, 20, [33, 33, 17]); 
+//     console.log(poses);
+//     poses.forEach((pose)=>{
+//         if(pose.score >= 0.5){
+//             drawKeypoints(pose.keypoints, 0.5, ctx);
+//             drawSkeleton(pose.keypoints, 0.5, ctx);
+//         }
+//     });
+// }
 
 
 //test_multiple();
