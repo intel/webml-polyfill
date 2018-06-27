@@ -76,7 +76,6 @@ class PoseNet{
 
 
     async _addTensorOperands(){
-        let util = new Utils();
         this._tfmodel = toOutputStridedLayers(this._tfmodel, this._outputstride);
         let dimension_out;
         let dimension_in = this._inputs;

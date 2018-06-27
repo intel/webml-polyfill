@@ -133,6 +133,8 @@ class Utils{
             return;
         }
         let x = await getInput(this._inputElement);
+        this.canvasContext_single.clearRect(0, 0, this.canvasElement_single.width, this.canvasElement_single.height);
+        this.canvasContext_multi.clearRect(0, 0, this.canvasElement_multi.width, this.canvasElement_multi.height);
         await loadImage(x, this.canvasContext_single);
         await loadImage(x, this.canvasContext_multi);
         let imageSize = [input_size[1], input_size[2], input_size[3]];
