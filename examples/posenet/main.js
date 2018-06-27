@@ -44,8 +44,8 @@ async function test_multiple(){
     let canvas_single = document.getElementById("canvas");
     let ctx_single = canvas_single.getContext("2d");
     
-    await loadImage("download.png", ctx_multi);
-    await loadImage("download.png", ctx_single);
+    await loadImage("https://storage.googleapis.com/tfjs-models/assets/posenet/tennis_in_crowd.jpg", ctx_multi);
+    await loadImage("https://storage.googleapis.com/tfjs-models/assets/posenet/tennis_in_crowd.jpg", ctx_single);
     prepareInputTensor(inputTensor,canvas, 16, [513, 513, 3]);
     var start = performance.now();
     var result = await net.compute_multi(inputTensor, heatmapTensor, offsetTensor, displacement_fwd, displacement_bwd);
