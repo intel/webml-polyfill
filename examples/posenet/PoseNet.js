@@ -310,7 +310,6 @@ class PoseNet{
                 opType = this._nn.CONV_2D;
                 this._model.addOperation(opType, inputs_point, [outputs_point]);
             }
-            //this._model.addOperation(opType, inputs, outputs);
         }
 
         if(this._type === "Multiperson"){

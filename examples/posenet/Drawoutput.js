@@ -22,7 +22,7 @@ function eitherPointDoesntMeetConfidence(a, b, minConfidence) {
 
 function getAdjacentKeyPoints(keypoints, minConfidence) {
     return connectedPartIndeces.reduce(function (result, _a) {
-        var leftJoint = _a[0], rightJoint = _a[1];
+        let leftJoint = _a[0], rightJoint = _a[1];
         if (eitherPointDoesntMeetConfidence(keypoints[leftJoint].score, keypoints[rightJoint].score, minConfidence)) {
             return result;
         }

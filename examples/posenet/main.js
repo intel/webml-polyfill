@@ -1,28 +1,3 @@
-async function test_single(){
-    let net = new PoseNet(Architecture, 'WebGL2', 1.01, 16, [1, 513, 513, 3], "Singleperson");
-    await net.createCompiledModel();
-    
-    let inputTensor = new Float32Array(INPUT_TENSOR_SIZE);
-    let heatmapTensor = new Float32Array(HEATMAP_TENSOR_SIZE);
-    let offsetTensor = new Float32Array(OFFSET_TENSOR_SIZE);
-    let displacement_fwd = new Float32Array(DISPLACEMENT_FWD_SIZE);
-    let displacement_bwd = new Float32Array(DISPLACEMENT_BWD_SIZE);
-    let canvas = document.getElementById("canvas");
-    let ctx = canvas.getContext("2d");
-    await loadImage("download.png", ctx);
-    prepareInputTensor(inputTensor, canvas, 16, [513, 513, 3]);
-    var result = await net.compute_single(inputTensor, heatmapTensor, offsetTensor);
-    let final_pos = decodeSinglepose(heatmapTensor, offsetTensor, [33, 33, 17], 16);
-    final_pos.forEach((pose)=>{
-        if(pose.score >= 0.5){
-            drawKeypoints(pose.keypoints, 0.5, ctx);
-            drawSkeleton(pose.keypoints, 0.5, ctx);
-        }
-    });   
-}
-//test_single();
-
-
 const HEATMAP_TENSOR_SIZE = 33*33*17;
 const OFFSET_TENSOR_SIZE = 33*33*34;
 const DISPLACEMENT_FWD_SIZE = 33*33*32;
@@ -47,10 +22,10 @@ async function test_multiple(){
     await loadImage("https://storage.googleapis.com/tfjs-models/assets/posenet/tennis_in_crowd.jpg", ctx_multi);
     await loadImage("https://storage.googleapis.com/tfjs-models/assets/posenet/tennis_in_crowd.jpg", ctx_single);
     prepareInputTensor(inputTensor,canvas, 16, [513, 513, 3]);
-    var start = performance.now();
-    var result = await net.compute_multi(inputTensor, heatmapTensor, offsetTensor, displacement_fwd, displacement_bwd);
+    let start = performance.now();
+    let result = await net.compute_multi(inputTensor, heatmapTensor, offsetTensor, displacement_fwd, displacement_bwd);
     console.log("execution time: ", performance.now()-start);
-    var poses = decodeMultiPose(heatmapTensor, offsetTensor, displacement_fwd, displacement_bwd, 
+    let poses = decodeMultiPose(heatmapTensor, offsetTensor, displacement_fwd, displacement_bwd, 
                         16, 15, 0.5, 20, [33, 33, 17]); 
     poses.forEach((pose)=>{
         if(pose.score >= 0.5){
@@ -70,7 +45,7 @@ async function test_multiple(){
 
 test_multiple();
 function getInput(inputElement){
-    var reader = new FileReader();
+    let reader = new FileReader();
     const promise = new Promise((resolve, reject)=>{
         reader.onload = function(e){
             resolve(e.target.result);

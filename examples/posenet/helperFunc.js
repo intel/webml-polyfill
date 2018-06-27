@@ -32,7 +32,6 @@ async function getDimension_data(layername, version, blockId){
         let bia = await util.getvariable(address_bias, true);
         const weights = new Float32Array(data);
         const bias = new Float32Array(bia);
-        //console.log(weights);
         return [shape, weights, shape_bias, bias];
     }
     if(layername=="separableConv"){
@@ -254,14 +253,14 @@ function withinNmsRadiusOfCorrespondingPoint(poses, squaredNmsRadius, _a, keypoi
 }
 
 function scoreIsMaximumInLocalWindow(keypointId, score, heatmapY, heatmapX, localMaximumRadius, scores, dimension) {
-    var height = dimension[0], width = dimension[1];
-    var localMaximum = true;
-    var yStart = Math.max(heatmapY - localMaximumRadius, 0);
-    var yEnd = Math.min(heatmapY + localMaximumRadius + 1, height);
-    for (var yCurrent = yStart; yCurrent < yEnd; ++yCurrent) {
-        var xStart = Math.max(heatmapX - localMaximumRadius, 0);
-        var xEnd = Math.min(heatmapX + localMaximumRadius + 1, width);
-        for (var xCurrent = xStart; xCurrent < xEnd; ++xCurrent) {
+    let height = dimension[0], width = dimension[1];
+    let localMaximum = true;
+    let yStart = Math.max(heatmapY - localMaximumRadius, 0);
+    let yEnd = Math.min(heatmapY + localMaximumRadius + 1, height);
+    for (let yCurrent = yStart; yCurrent < yEnd; ++yCurrent) {
+        let xStart = Math.max(heatmapX - localMaximumRadius, 0);
+        let xEnd = Math.min(heatmapX + localMaximumRadius + 1, width);
+        for (let xCurrent = xStart; xCurrent < xEnd; ++xCurrent) {
             let index = convertCoortoIndex(xCurrent, yCurrent, keypointId, dimension);
             if (scores[index] > score) {
                 localMaximum = false;
@@ -358,7 +357,6 @@ function decodeMultiPose(heatmap, offsets, displacement_fwd, displacement_bwd,
         score = getInstanceScore(poses, squaredNmsRadius, keypoints);
         poses.push({keypoints: keypoints, score: score});
     }
-    //console.log(poses);
     return poses;
 }   
 

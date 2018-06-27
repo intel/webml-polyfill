@@ -38,7 +38,7 @@ var MaxHeap = (function () {
     };
     MaxHeap.prototype.sink = function (k) {
         while (2 * k <= this.numberOfElements) {
-            var j = 2 * k;
+            let j = 2 * k;
             if (j < this.numberOfElements && this.less(j, j + 1)) {
                 j++;
             }
@@ -56,7 +56,7 @@ var MaxHeap = (function () {
         return this.getValueAt(i) < this.getValueAt(j);
     };
     MaxHeap.prototype.exchange = function (i, j) {
-        var t = this.priorityQueue[i];
+        let t = this.priorityQueue[i];
         this.priorityQueue[i] = this.priorityQueue[j];
         this.priorityQueue[j] = t;
     };
