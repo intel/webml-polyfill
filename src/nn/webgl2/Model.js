@@ -64,10 +64,18 @@ export default class Model {
       this._layers.forEach((layer, i) => {
         // let start = performance.now();
         if (i == 0) {
-          if (this.supportInputLayer) {
-            this._operands[inputIndex] = layer.call(inputBuffer, nnOperands[inputIndex].dimensions.slice(1,4), Float32Array);
+          let shape = nnOperands[inputIndex].dimensions;
+          if (shape.length === 4 && shape[0] === 1) {
+            shape = shape.slice(1,4);
+          } else if (shape.length === 3) {
+            shape = shape;
           } else {
-            let inputTensor = new Tensor(inputBuffer, nnOperands[inputIndex].dimensions.slice(1,4));
+            throw new Error(`the shape ${shape} is not supported`);
+          }
+          if (this.supportInputLayer) {
+            this._operands[inputIndex] = layer.call(inputBuffer, shape, Float32Array);
+          } else {
+            let inputTensor = new Tensor(inputBuffer, shape);
             this._operands[layer.outputs[0]] = layer.call(inputTensor);
           }
         } else if (i === this._layers.length - 1 && (this.supportTopClasses || this.supportFeatureMapConcate)){
