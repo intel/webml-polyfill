@@ -99,10 +99,29 @@ function GetDepthwiseConv2DAttrs (nnOperands, inputs, outputs) {
   }
 
   let kernelTensor = new Tensor(kernel.value, kernel.dimensions, OperandCodeMap.get(kernel.type));
-  let strideHW = [nnOperands[inputs[5]].value[0], nnOperands[inputs[4]].value[0]];
-  let padding = PaddingCodeMap.get(nnOperands[inputs[3]].value[0]);
-  let depthMultiplier = nnOperands[inputs[6]].value[0];
-  let activation = FuseCodeMap.get(nnOperands[inputs[7]].value[0]);
+  let strideHW;
+  let padding;
+  let activation;
+  let depthMultiplier;
+  if (inputs.length === 8) {
+    padding = PaddingCodeMap.get(nnOperands[inputs[3]].value[0]);
+    strideHW = [nnOperands[inputs[5]].value[0], nnOperands[inputs[4]].value[0]];
+    depthMultiplier = nnOperands[inputs[6]].value[0];
+    activation = FuseCodeMap.get(nnOperands[inputs[7]].value[0]);
+  } else if (inputs.length === 11) {
+    let pad1 = nnOperands[inputs[3]].value[0];
+    let pad2 = nnOperands[inputs[4]].value[0];
+    let pad3 = nnOperands[inputs[5]].value[0];
+    let pad4 = nnOperands[inputs[6]].value[0];
+    padding = [pad3, pad4, pad1, pad2];
+    // console.log(padding)
+    strideHW = [nnOperands[inputs[8]].value[0], nnOperands[inputs[7]].value[0]];
+    depthMultiplier = nnOperands[inputs[9]].value[0];
+    activation = FuseCodeMap.get(nnOperands[inputs[10]].value[0]);
+  } else {
+    throw new Error(`[GetDepthwiseConv2DAttrs] Wrong inputs length: ${inputs.length}`);
+  }
+
   let weights = [kernelTensor, ...(use_bias? [biasTensor] : [])];
   let attrs = {
     inputs: [inputs[0]],
