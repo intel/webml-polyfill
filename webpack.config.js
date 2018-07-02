@@ -2,7 +2,7 @@ const path = require('path');
 const webpack = require('webpack')
 
 const config = {
-  entry: ['babel-polyfill', './src/WebMLPolyfill.js'],
+  entry: ['./src/WebMLPolyfill.js'],
   output: {
     filename: 'webml-polyfill.js',
     path: path.resolve(__dirname, 'dist')
