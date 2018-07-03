@@ -79,27 +79,28 @@ class PoseNet{
         this._tfmodel = toOutputStridedLayers(this._tfmodel, this._outputstride);
         let dimension_out;
         let dimension_in = this._inputs;
+        const type = this._nn.TENSOR_FLOAT32;
         for(let i in this._tfmodel){
-            let type = 3; //tensor float32
+            //const type = this._nn.TENSOR_FLOAT32;
             let dimension = [];
             let weights = [];
             let dimension_bias = [];
             let bias = [];
-            if(this._tfmodel[i]["convType"]=="conv2d"){
-                await getDimension_data("conv2d", this._version, i).then(function(data){
+            if(this._tfmodel[i]["convType"] === "conv2d"){
+                await getDimensionData("conv2d", this._version, i).then(function(data){
                     dimension.push(resize(data[0]));
                     weights.push(new Float32Array(transpose_weights(data[1], data[0])));
                     dimension_bias.push(data[2]);
                     bias.push(data[3]);
                 });
-                dimension_out = this._calculateoutput(dimension_in, dimension[0], this._tfmodel[i]["stride"], "conv2d");
+                dimension_out = this._calculateOutput(dimension_in, dimension[0], this._tfmodel[i]["stride"], "conv2d");
                 dimension_in = dimension_out;
                 this._outputs.push(this._operandIndex);
-                this._model.addOperand({type: 3, dimensions: dimension_out});
+                this._model.addOperand({type: type, dimensions: dimension_out});
                 this._operandIndex++;
             }
-            if(this._tfmodel[i]["convType"]=="separableConv"){
-                await getDimension_data("separableConv", this._version, i).then(function(data){
+            if(this._tfmodel[i]["convType"] === "separableConv"){
+                await getDimensionData("separableConv", this._version, i).then(function(data){
                     dimension.push(resize(data[0][0]));
                     dimension.push(resize(data[0][1]));
                     weights.push(new Float32Array(transpose_weights(data[1][0], data[0][0])));
@@ -109,15 +110,15 @@ class PoseNet{
                     bias.push(data[3][0]);
                     bias.push(data[3][1]);
                 });
-                dimension_out = this._calculateoutput(dimension_in, dimension[0], this._tfmodel[i]["stride"], "depthwise");
+                dimension_out = this._calculateOutput(dimension_in, dimension[0], this._tfmodel[i]["stride"], "depthwise");
                 dimension_in = dimension_out;
                 this._outputs.push(this._operandIndex);
-                this._model.addOperand({type:3, dimensions: dimension_out});
+                this._model.addOperand({type:type, dimensions: dimension_out});
                 this._operandIndex++;
-                dimension_out = this._calculateoutput(dimension_in, dimension[1], 1, "pointwise");
+                dimension_out = this._calculateOutput(dimension_in, dimension[1], 1, "pointwise");
                 dimension_in = dimension_out;
                 this._outputs.push(this._operandIndex);
-                this._model.addOperand({type:3, dimensions: dimension_out});
+                this._model.addOperand({type:type, dimensions: dimension_out});
                 this._operandIndex++;
             }
             for(let j in dimension){
@@ -138,8 +139,8 @@ class PoseNet{
         let value, value_bias;
         let shape_weights, shape_bias;
         await getOutputLayer("heatmap", this._version).then(function(data){
-            tensorType = {type: 3, dimensions: resize(data[0])};
-            tensorType_bias = {type: 3, dimensions: data[2]};
+            tensorType = {type: type, dimensions: resize(data[0])};
+            tensorType_bias = {type: type, dimensions: data[2]};
             value = new Float32Array(transpose_weights(data[1], data[0]));
             value_bias = data[3];
        }); 
@@ -152,8 +153,8 @@ class PoseNet{
         
         
         await getOutputLayer("offset", this._version).then(function(data){
-            tensorType = {type: 3, dimensions: resize(data[0])};
-            tensorType_bias = {type: 3, dimensions: data[2]};
+            tensorType = {type: type, dimensions: resize(data[0])};
+            tensorType_bias = {type: type, dimensions: data[2]};
             value = new Float32Array(transpose_weights(data[1], data[0]));
             value_bias = data[3];
        }); 
@@ -166,8 +167,8 @@ class PoseNet{
         
         if(this._type === "Multiperson"){       
             await getOutputLayer("displacement_fwd", this._version).then(function(data){
-                tensorType = {type: 3, dimensions: resize(data[0])};
-                tensorType_bias = {type: 3, dimensions: data[2]};
+                tensorType = {type: type, dimensions: resize(data[0])};
+                tensorType_bias = {type: type, dimensions: data[2]};
                 value = new Float32Array(transpose_weights(data[1], data[0]));
                 value_bias = data[3];
             }); 
@@ -179,8 +180,8 @@ class PoseNet{
             this._model.setOperandValue(tensorId, value_bias);
            
             await getOutputLayer("displacement_bwd", this._version).then(function(data){
-                tensorType = {type: 3, dimensions: resize(data[0])};
-                tensorType_bias = {type: 3, dimensions: data[2]};
+                tensorType = {type: type, dimensions: resize(data[0])};
+                tensorType_bias = {type: type, dimensions: data[2]};
                 value = new Float32Array(transpose_weights(data[1], data[0]));
                 value_bias = data[3];
             }); 
@@ -194,11 +195,11 @@ class PoseNet{
         
         //Set model input and output layer
         let heatmap_dimension = [1, (this._inputs[1]-1)/this._outputstride+1, (this._inputs[2]-1)/this._outputstride+1, 17];
-        let heatmap = {type: 3, dimensions: heatmap_dimension};
+        let heatmap = {type: type, dimensions: heatmap_dimension};
         let offset_dimension = [1, (this._inputs[1]-1)/this._outputstride+1, (this._inputs[2]-1)/this._outputstride+1, 34];
-        let offset = {type: 3, dimensions: offset_dimension};
+        let offset = {type: type, dimensions: offset_dimension};
 
-        let input = {type:3, dimensions: this._inputs};
+        let input = {type:type, dimensions: this._inputs};
         let tensorId_input = this._operandIndex++;
         this._model.addOperand(input);
         let tensorId_output = [];
@@ -206,11 +207,11 @@ class PoseNet{
         this._model.addOperand(heatmap);
         tensorId_output.push(this._operandIndex++);
         this._model.addOperand(offset);
-        if(this._type == "Multiperson"){
+        if(this._type === "Multiperson"){
             let displacement_fwd_dimension = [1, (this._inputs[1]-1)/this._outputstride+1, (this._inputs[2]-1)/this._outputstride+1, 32];
             let displacement_bwd_dimension = [1, (this._inputs[1]-1)/this._outputstride+1, (this._inputs[2]-1)/this._outputstride+1, 32];
-            let displacement_fwd = {type:3, dimensions:displacement_fwd_dimension};
-            let displacement_bwd = {type:3, dimensions:displacement_bwd_dimension};
+            let displacement_fwd = {type:type, dimensions:displacement_fwd_dimension};
+            let displacement_bwd = {type:type, dimensions:displacement_bwd_dimension};
             tensorId_output.push(this._operandIndex++);
             this._model.addOperand(displacement_fwd);
             tensorId_output.push(this._operandIndex++);
@@ -219,20 +220,21 @@ class PoseNet{
         this._model.identifyInputsAndOutputs([tensorId_input], tensorId_output);
     }
 
-    _calculateoutput(input_dimension, shape, stride, layer){
+    _calculateOutput(input_dimension, shape, stride, layer){
         var padding = 1;
         var output_dimension;
-        if(layer == "conv2d"){
-            output_dimension = [1, Math.floor((input_dimension[1]-shape[1]+2)/stride+1), Math.floor((input_dimension[2]-shape[2]+2)/stride+1), shape[0]];
+        if(layer === "conv2d"){
+            output_dimension = [1, Math.floor((input_dimension[1]-shape[1]+2)/stride+1), 
+                                Math.floor((input_dimension[2]-shape[2]+2)/stride+1), shape[0]];
         }
-        else if(layer == "depthwise"){
-            output_dimension = [1, Math.floor((input_dimension[1]-shape[1]+2)/stride+1), Math.floor((input_dimension[2]-shape[2]+2)/stride+1), input_dimension[3]];
+        else if(layer === "depthwise"){
+            output_dimension = [1, Math.floor((input_dimension[1]-shape[1]+2)/stride+1), 
+                                Math.floor((input_dimension[2]-shape[2]+2)/stride+1), input_dimension[3]];
         }
         else{
-            output_dimension = [1, Math.floor((input_dimension[1]-shape[1]+0)/stride+1), Math.floor((input_dimension[2]-shape[2]+0)/stride+1), shape[0]];
+            output_dimension = [1, Math.floor((input_dimension[1]-shape[1]+0)/stride+1), 
+                                Math.floor((input_dimension[2]-shape[2]+0)/stride+1), shape[0]];
         }
-        
-        //console.log(output_dimension);
         return output_dimension;
     }
 
@@ -256,7 +258,6 @@ class PoseNet{
         let index = 0;
         for(let i in this._tfmodel){
             if(this._tfmodel[i].convType=="conv2d"){
-                let opCode = 3; //conv
                 let inputs = [];
                 inputs.push(this._model._inputs[0]);
                 let outputs = this._outputs[index];
@@ -283,7 +284,7 @@ class PoseNet{
                 inputs.push(this._addScalarInt32(paddingCode));
                 inputs.push(this._addScalarInt32(this._tfmodel[i].stride));
                 inputs.push(this._addScalarInt32(this._tfmodel[i].stride));
-                if(this._tfmodel[i].rate !==1){
+                if(this._tfmodel[i].rate !== 1){
                     inputs.push(this._addScalarInt32(this._tfmodel[i].rate));
                 } else {
                     inputs.push(this._addScalarInt32(1));
@@ -312,10 +313,9 @@ class PoseNet{
         }
 
         if(this._type === "Multiperson"){
-            let opCode = 3;
             let paddingCode = 1;
             let index = 5;
-            for(let i =0; i<4; i++){
+            for(let i = 0; i<4; i++){
                 let inputs = [];
                 inputs.push(this._outputs[this._outputs.length-1]);
                 inputs.push(this._outputs[this._outputs.length-1]+index);
@@ -334,10 +334,9 @@ class PoseNet{
 
         }
         else{
-            let opCode = 3;
-            let paddingCode =1;
+            let paddingCode = 1;
             let index = 5;
-            for(let i =0; i<2; i++){
+            for(let i = 0; i<2; i++){
                 let inputs = [];
                 inputs.push(this._outputs[this._outputs.length-1]);
                 inputs.push(this._outputs[this._outputs.length-1]+index);

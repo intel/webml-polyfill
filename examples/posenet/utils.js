@@ -1,5 +1,23 @@
-const version = 1.01|1.0|0.75|0.5;
+/**
+ * @license
+ * Copyright 2018 Google Inc. All Rights Reserved.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licnses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * =============================================================================
+ */
 
+//Architecture = [layer name, stride]
+//conv2d: convolution layer
+//separableConv: depthwise convolution layer + pointwise convolution layer
 const mobileNet100Architecture = [
     ['conv2d', 2],
     ['separableConv', 1],
@@ -87,7 +105,7 @@ class Utils{
             this._outputStride = 16;
         }
 
-        this.HEATMAP_TENSOR_SIZE = Product(toHeatmapsize(input_size, this._outputStride));
+        this.HEATMAP_TENSOR_SIZE = product(toHeatmapsize(input_size, this._outputStride));
         this.OFFSET_TENSOR_SIZE = this.HEATMAP_TENSOR_SIZE*2;
         this.DISPLACEMENT_FWD_SIZE = this.HEATMAP_TENSOR_SIZE/17*32;
         this.DISPLACEMENT_BWD_SIZE = this.HEATMAP_TENSOR_SIZE/17*32;
@@ -107,7 +125,6 @@ class Utils{
             alert("Minimal Part Confidence Score must be in range (0,1).");
             return;
         }
-
         if(this._outputStride!=8 & this._outputStride!=16 & this._outputStride!=32){
             alert("OutputSride must be 8, 16 or 32");
             return;
@@ -162,22 +179,7 @@ class Utils{
         });
     }
 
-    async loadmanifest(url){
-        let address = url+"manifest.json";
-        return fetch(address)
-        .then(function(response) {
-            return response.json();
-        })
-        .then(function(myJson) {
-            let data = {};
-            for(var i in myJson){
-                data[i] = myJson[i];
-            } 
-            return data;
-        });
-    }
-
-    async getvariable(url, binary){
+    async getVariable(url, binary){
         return new Promise(function(resolve, reject){
             var xhr = new XMLHttpRequest();
             xhr.open("GET", url, true);
@@ -188,8 +190,7 @@ class Utils{
                 if(xhr.readyState == 4){
                     if(xhr.status == 200){
                         resolve(xhr.response);
-                    }
-                    else{
+                    }else{
                         reject(new Error('Failed to load ' + modelUrl + ' status: ' + request.status));
                     }
                 }
@@ -219,11 +220,5 @@ class Utils{
         }
         return address;
     }
-
 }
-
-    
-
-
-
 

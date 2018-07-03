@@ -1,6 +1,22 @@
+/**
+ * @license
+ * Copyright 2018 Google Inc. All Rights Reserved.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licnses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * =============================================================================
+ */
+ 
 const color = 'aqua';
 const lineWidth = 2;
-
 
 function loadImage(imagePath, ctx) {
   const image = new Image();
@@ -18,18 +34,18 @@ function loadImage(imagePath, ctx) {
 }
 
 function eitherPointDoesntMeetConfidence(a, b, minConfidence) {
-    return (a < minConfidence || b < minConfidence);
+  return (a < minConfidence || b < minConfidence);
 }
 
 function getAdjacentKeyPoints(keypoints, minConfidence) {
-    return connectedPartIndeces.reduce(function (result, _a) {
-        let leftJoint = _a[0], rightJoint = _a[1];
-        if (eitherPointDoesntMeetConfidence(keypoints[leftJoint].score, keypoints[rightJoint].score, minConfidence)) {
-            return result;
-        }
-        result.push([keypoints[leftJoint], keypoints[rightJoint]]);
-        return result;
-    }, []);
+  return connectedPartIndeces.reduce(function (result, _a) {
+      let leftJoint = _a[0], rightJoint = _a[1];
+      if (eitherPointDoesntMeetConfidence(keypoints[leftJoint].score, keypoints[rightJoint].score, minConfidence)) {
+          return result;
+      }
+      result.push([keypoints[leftJoint], keypoints[rightJoint]]);
+      return result;
+  }, []);
 }
 
 function toTuple({ y, x }) {

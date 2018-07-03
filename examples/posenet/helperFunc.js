@@ -1,25 +1,10 @@
-let Architecture = [
-    ['conv2d', 2],
-    ['separableConv', 1],
-    ['separableConv', 2],
-    ['separableConv', 1],
-    ['separableConv', 2],
-    ['separableConv', 1],
-    ['separableConv', 2],
-    ['separableConv', 1],
-    ['separableConv', 1],
-    ['separableConv', 1],
-    ['separableConv', 1],
-    ['separableConv', 1],
-    ['separableConv', 2],
-    ['separableConv', 1]
-];
-  
 
-async function getDimension_data(layername, version, blockId){
+
+async function getDimensionData(layername, version, blockId){
     let util = new Utils();
-    if(layername=="conv2d"){
-        let manifest = await util.loadmanifest(util.getURL(version));
+    if(layername =="conv2d"){
+        let manifest = await util.getVariable(util.getURL(version)+"manifest.json", false);
+        manifest = JSON.parse(manifest);
         let layer = "MobilenetV1/Conv2d_"+String(blockId)+"/weights";
         let layer_bias = "MobilenetV1/Conv2d_"+String(blockId)+"/biases";
         let shape = manifest[layer]["shape"];
@@ -28,14 +13,15 @@ async function getDimension_data(layername, version, blockId){
         let filename_bias = manifest[layer_bias]["filename"];
         let address = util.getURL(version)+filename;
         let address_bias = util.getURL(version)+filename_bias;
-        let data = await util.getvariable(address, true);
-        let bia = await util.getvariable(address_bias, true);
+        let data = await util.getVariable(address, true);
+        let bia = await util.getVariable(address_bias, true);
         const weights = new Float32Array(data);
         const bias = new Float32Array(bia);
         return [shape, weights, shape_bias, bias];
     }
-    if(layername=="separableConv"){
-        let manifest = await util.loadmanifest(util.getURL(version));
+    if(layername =="separableConv"){
+        let manifest = await util.getVariable(util.getURL(version)+"manifest.json", false);
+        manifest = JSON.parse(manifest);
         let layer_1 = "MobilenetV1/Conv2d_"+String(blockId)+"_depthwise/depthwise_weights";
         let layer_2 = "MobilenetV1/Conv2d_"+String(blockId)+"_pointwise/weights";
         let layer_1_bias = "MobilenetV1/Conv2d_"+String(blockId)+"_depthwise/biases";
@@ -52,10 +38,10 @@ async function getDimension_data(layername, version, blockId){
         let filename2 = manifest[layer_2]["filename"];
         let filename1_bias = manifest[layer_1_bias]["filename"];
         let filename2_bias = manifest[layer_2_bias]["filename"];
-        let data_1 = await util.getvariable(util.getURL(version)+filename1, true);
-        let data_2 = await util.getvariable(util.getURL(version)+filename2, true);
-        let data_1_bias = await util.getvariable(util.getURL(version)+filename1_bias, true);
-        let data_2_bias = await util.getvariable(util.getURL(version)+filename2_bias, true);
+        let data_1 = await util.getVariable(util.getURL(version)+filename1, true);
+        let data_2 = await util.getVariable(util.getURL(version)+filename2, true);
+        let data_1_bias = await util.getVariable(util.getURL(version)+filename1_bias, true);
+        let data_2_bias = await util.getVariable(util.getURL(version)+filename2_bias, true);
         weights.push(new Float32Array(data_1));
         weights.push(new Float32Array(data_2));
         bias.push(new Float32Array(data_1_bias));
@@ -64,17 +50,19 @@ async function getDimension_data(layername, version, blockId){
     }
 }
 
+
 async function getOutputLayer(layername, version){
     let util = new Utils();
-    let manifest = await util.loadmanifest(util.getURL(version));
+    let manifest = await util.getVariable(util.getURL(version)+"manifest.json", false);
+    manifest = JSON.parse(manifest);
     let shape;
     let shape_bias;
     let weights, bias;
     shape = manifest["MobilenetV1/"+layername+"_2/weights"]["shape"];
     shape_bias = manifest["MobilenetV1/"+layername+"_2/biases"]["shape"];
-    let data = await util.getvariable(util.getURL(version)+manifest["MobilenetV1/"+layername+"_2/weights"]["filename"], true);
+    let data = await util.getVariable(util.getURL(version)+manifest["MobilenetV1/"+layername+"_2/weights"]["filename"], true);
     weights = new Float32Array(data);
-    let data_bias = await util.getvariable(util.getURL(version)+manifest["MobilenetV1/"+layername+"_2/biases"]["filename"], true);
+    let data_bias = await util.getVariable(util.getURL(version)+manifest["MobilenetV1/"+layername+"_2/biases"]["filename"], true);
     bias = new Float32Array(data_bias);
     return [shape, weights, shape_bias, bias];
 }
@@ -114,7 +102,7 @@ function resize(dimension){
 
 function transpose_weights(weights, dimension){
     let product = dimension.reduce(function(a,b){return a*b});
-    let new_weights = new Array(product);
+    let new_weights = new Float32Array(product);
     let [H, W, C, N] = dimension;
     for(let h =0; h<H; h++){
         for(let w =0; w<W; w++){
@@ -192,6 +180,7 @@ function getKeypointIndex(array, dimension){
     }
     return [index, confidenceScore];
 }
+
 
 
 function convertPosition(index, dimension){
@@ -285,7 +274,7 @@ function toHeatmapsize(dimension, outputStride){
     return heatmapSize;
 }
 
-function Product(array){
+function product(array){
     return array.reduce(function(a,b){return a*b;});
 }
 
@@ -340,8 +329,8 @@ function getInstanceScore(existingPoses, squaredNmsRadius, instanceKeypoints) {
     return notOverlappedKeypointScores /= instanceKeypoints.length;
 }
 
-function decodeMultiPose(heatmap, offsets, displacement_fwd, displacement_bwd, 
-                        outputStride, maxPoseDectection, scoreThreshold, nmsRadius, dimension){
+function decodeMultiPose(heatmap, offsets, displacement_fwd, displacement_bwd, outputStride, 
+                         maxPoseDectection, scoreThreshold, nmsRadius, dimension){
     let poses = [];
     let queue = buildPartWithScoreQueue(scoreThreshold, 1, sigmoid(heatmap), dimension);
     let _root, keypoints, score;

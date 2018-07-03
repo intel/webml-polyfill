@@ -4,7 +4,7 @@ const DISPLACEMENT_FWD_SIZE = 33*33*32;
 const DISPLACEMENT_BWD_SIZE = 33*33*32;
 
 async function test_multiple(){
-    var net = new PoseNet(Architecture, 'WebGL2', 1.01, 16, [1, 513, 513, 3], "Multiperson");
+    var net = new PoseNet(mobileNet100Architecture, 'WebGL2', 1.01, 16, [1, 513, 513, 3], "Multiperson");
     await net.createCompiledModel();
 
     let inputTensor = new Float32Array(INPUT_TENSOR_SIZE);
