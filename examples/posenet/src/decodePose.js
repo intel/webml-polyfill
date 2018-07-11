@@ -15,19 +15,19 @@
  * =============================================================================
  */
  
-var partNames = [
+const partNames = [
     'nose', 'leftEye', 'rightEye', 'leftEar', 'rightEar', 'leftShoulder',
     'rightShoulder', 'leftElbow', 'rightElbow', 'leftWrist', 'rightWrist',
     'leftHip', 'rightHip', 'leftKnee', 'rightKnee', 'leftAnkle', 'rightAnkle'
 ];
 
-var NUM_KEYPOINTS = partNames.length;
+const NUM_KEYPOINTS = partNames.length;
 var partIds = partNames.reduce(function (result, jointName, i) {
     result[jointName] = i;
     return result;
 }, {});
 
-var connectedPartNames = [
+const connectedPartNames = [
     ['leftHip', 'leftShoulder'], ['leftElbow', 'leftShoulder'],
     ['leftElbow', 'leftWrist'], ['leftHip', 'leftKnee'],
     ['leftKnee', 'leftAnkle'], ['rightHip', 'rightShoulder'],
@@ -41,7 +41,7 @@ var connectedPartIndeces = connectedPartNames.map(function (_a) {
     return ([partIds[jointNameA], partIds[jointNameB]]);
 });
 
-var poseChain = [
+const poseChain = [
     ['nose', 'leftEye'], ['leftEye', 'leftEar'], ['nose', 'rightEye'],
     ['rightEye', 'rightEar'], ['nose', 'leftShoulder'],
     ['leftShoulder', 'leftElbow'], ['leftElbow', 'leftWrist'],
@@ -90,7 +90,7 @@ function addVectors(a, b) {
 
 function getDisplacement(index, displacements){
 	var displacement_y = displacements[index];
-	var displacement_x = displacements[index+16];
+	var displacement_x = displacements[index + 16];
 	return{
 		y: displacement_y,
 		x: displacement_x
@@ -99,7 +99,7 @@ function getDisplacement(index, displacements){
 
 function getOffset(index, offsets){
 	var offset_y = offsets[index];
-	var offset_x = offsets[index+17];
+	var offset_x = offsets[index + 17];
 	return{
 		y: offset_y,
 		x: offset_x

@@ -81,7 +81,6 @@ class PoseNet{
         let dimension_in = this._inputs;
         const type = this._nn.TENSOR_FLOAT32;
         for(let i in this._tfmodel){
-            //const type = this._nn.TENSOR_FLOAT32;
             let dimension = [];
             let weights = [];
             let dimension_bias = [];

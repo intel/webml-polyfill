@@ -72,7 +72,6 @@ class Utils{
         //multiple input
         this._nmsRadius = document.getElementById('nmsRadius').value;
         this._maxDetection = document.getElementById('maxDetection').value;
-        //image Source
         
         this.canvas = document.getElementById('canvas');
         this.ctx = this.canvas.getContext('2d');
@@ -125,22 +124,6 @@ class Utils{
         this.initialized = true;
     }
 
-    scaleImage(){
-        let scale = this.scaleWidth/videoWidth;
-        let pixel = this.ctx.getImageData(0, 0, videoWidth, videoHeight);
-        this.scaleCanvas.width = this.scaleWidth;
-        this.scaleCanvas.height = this.scaleHeight;
-        this.scaleCanvas.setAttribute("width", this.scaleWidth);
-        this.scaleCanvas.setAttribute("height", this.scaleHeight);
-        var destImg = this.scaleCtx.createImageData(this.scaleWidth, this.scaleHeight);
-        const promise = new Promise((resolve, reject)=>{
-            bilinear(pixel, destImg, scale);
-            this.scaleCtx.putImageData(destImg, 0, 0);
-            resolve(destImg.data);
-        });
-        return promise;
-    }
-
     async predict(){
         if(!this.initialized){
             return;
@@ -158,7 +141,7 @@ class Utils{
                         this._nmsRadius, toHeatmapsize(imageSize, this._outputStride));   
             poses_multi.forEach((pose)=>{
                 scalePose(pose, videoWidth/this.scaleWidth);
-                if(pose.score>= this._minScore){
+                if(pose.score >= this._minScore){
                     drawKeypoints(pose.keypoints, this._minScore, this.ctx);
                     drawSkeleton(pose.keypoints, this._minScore, this.ctx);
                 }
@@ -169,11 +152,27 @@ class Utils{
                             toHeatmapsize(imageSize, this._outputStride), this._outputStride);     
             poses_single.forEach((pose)=>{
                 scalePose(pose, videoWidth/this.scaleWidth);
-                if(pose.score>= this._minScore){
+                if(pose.score >= this._minScore){
                     drawKeypoints(pose.keypoints, this._minScore, this.ctx);
                     drawSkeleton(pose.keypoints, this._minScore, this.ctx);
                 }
             });
         }
+    }
+
+    scaleImage(){
+        let scale = this.scaleWidth/videoWidth;
+        let pixel = this.ctx.getImageData(0, 0, videoWidth, videoHeight);
+        this.scaleCanvas.width = this.scaleWidth;
+        this.scaleCanvas.height = this.scaleHeight;
+        this.scaleCanvas.setAttribute("width", this.scaleWidth);
+        this.scaleCanvas.setAttribute("height", this.scaleHeight);
+        let destImg = this.scaleCtx.createImageData(this.scaleWidth, this.scaleHeight);
+        const promise = new Promise((resolve, reject)=>{
+            bilinear(pixel, destImg, scale);
+            this.scaleCtx.putImageData(destImg, 0, 0);
+            resolve(destImg.data);
+        });
+        return promise;
     }
 }

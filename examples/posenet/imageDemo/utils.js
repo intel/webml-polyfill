@@ -86,7 +86,7 @@ class Utils{
 
         //single input
         this._version = document.getElementById('modelversion').value;
-        this._outputStride= document.getElementById('outputStride').value;
+        this._outputStride = document.getElementById('outputStride').value;
         this._minScore = document.getElementById('minpartConfidenceScore').value;
         //multiple input
         this._nmsRadius = document.getElementById('nmsRadius').value;
@@ -100,10 +100,6 @@ class Utils{
         this.canvasContext_multi = this.canvasElement_multi.getContext('2d');
         this._type = "Multiperson";
         this.initialized = false;
-
-        if(this._outputStride.length == 0){
-            this._outputStride = 16;
-        }
 
         this.HEATMAP_TENSOR_SIZE = product(toHeatmapsize(input_size, this._outputStride));
         this.OFFSET_TENSOR_SIZE = this.HEATMAP_TENSOR_SIZE*2;
@@ -173,14 +169,14 @@ class Utils{
         let poses_single = decodeSinglepose(this.heatmapTensor, this.offsetTensor, 
                             toHeatmapsize(imageSize, this._outputStride), this._outputStride);
         poses_single.forEach((pose)=>{
-            if(pose.score>= this._minScore){
+            if(pose.score >= this._minScore){
                 drawKeypoints(pose.keypoints, this._minScore, this.canvasContext_single);
                 drawSkeleton(pose.keypoints, this._minScore, this.canvasContext_single);
             }
         });
 
         poses_multi.forEach((pose)=>{
-            if(pose.score>= this._minScore){
+            if(pose.score >= this._minScore){
                 drawKeypoints(pose.keypoints, this._minScore, this.canvasContext_multi);
                 drawSkeleton(pose.keypoints, this._minScore, this.canvasContext_multi);
             }

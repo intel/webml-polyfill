@@ -20,6 +20,7 @@
 function half(k) {
     return Math.floor(k / 2);
 }
+
 var MaxHeap = (function () {
     function MaxHeap(maxSize, getElementValue) {
         this.priorityQueue = new Array(maxSize);

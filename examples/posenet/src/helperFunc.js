@@ -159,7 +159,7 @@ function transpose_weights(weights, dimension){
 function valideResolution(input_dimension, outputStride){
     let width = input_dimension[1];
     let height = input_dimension[2];
-    if((width-1)%outputStride!=0){
+    if((width-1) % outputStride != 0){
         throw new Error("invalid resolution");
     }
 }
@@ -195,7 +195,7 @@ function sigmoid(heatmap){
 function argMax(array){
     let max = 0;
     for(let i in array){
-        if(array[i]>array[max]){
+        if(array[i] > array[max]){
             max = i;
         }
     }
@@ -226,7 +226,7 @@ function convertPosition(index, dimension){
     let height = dimension[0];
     let width = dimension[1];
     let x = index%height;
-    let y = (Math.floor(index/height)) % width;
+    let y = (Math.floor(index/height))%width;
     return [y, x];
 }
 
@@ -240,7 +240,7 @@ function convertIndextoCoor(index, dimension){
 
 function convertCoortoIndex(x, y, z, dimension){
     let [height, width, channel] = dimension;
-    let index = Number(z) + Number(x*channel) + Number(y*width*channel);
+    let index = Number(z)+Number(x*channel)+Number(y*width*channel);
     return index;
 }
 
@@ -304,10 +304,10 @@ function scoreIsMaximumInLocalWindow(keypointId, score, heatmapY, heatmapX, loca
 
 function toHeatmapsize(dimension, outputStride){
     let heatmapSize;
-    if(dimension.length==3){
+    if(dimension.length == 3){
         heatmapSize = [(dimension[0]-1)/outputStride+1, (dimension[1]-1)/outputStride+1, 17];
     }
-    if(dimension.length==4){
+    if(dimension.length == 4){
         heatmapSize = [(dimension[1]-1)/outputStride+1, (dimension[2]-1)/outputStride+1, 17]
     }
     return heatmapSize;
