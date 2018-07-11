@@ -62,7 +62,9 @@ class Utils{
         this.displacement_bwd;
         this._version;
 
+        this._type = "Multiperson";
         //single input
+        this._isMultiple = document.getElementById('type');
         this._version = document.getElementById('modelversion').value;
         this._outputStride= document.getElementById('outputStride').value;
         this._minScore = document.getElementById('minpartConfidenceScore').value;
@@ -76,7 +78,6 @@ class Utils{
         this.ctx = this.canvas.getContext('2d');
         this.scaleCanvas = document.getElementById('canvas_2');
         this.scaleCtx = this.scaleCanvas.getContext('2d');
-        this._type = "Multiperson";
         this.initialized = false;
 
         this.scaleWidth = getValidResolution(this._scaleFactor, videoWidth, this._outputStride);
@@ -144,30 +145,35 @@ class Utils{
         if(!this.initialized){
             return;
         }
+        let predictType = this._isMultiple.options[this._isMultiple.selectedIndex].text;
         let imageSize = [this.scaleWidth, this.scaleHeight, 3];
         let scaleData = await this.scaleImage();
         prepareInputTensor(this.inputTensor,this.scaleCanvas, this._outputStride, imageSize);
         let result = await this.model.compute_multi(this.inputTensor, this.heatmapTensor, 
                 this.offsetTensor, this.displacement_fwd, this.displacement_bwd);
-        let poses_multi = decodeMultiPose(this.heatmapTensor, this.offsetTensor, 
+        if(predictType == "Multiple Person"){
+            let poses_multi = decodeMultiPose(this.heatmapTensor, this.offsetTensor, 
                         this.displacement_fwd, this.displacement_bwd, 
                         this._outputStride, this._maxDetection, this._minScore, 
-                        this._nmsRadius, toHeatmapsize(imageSize, this._outputStride));
-        let poses_single = decodeSinglepose(this.heatmapTensor, this.offsetTensor, 
-                            toHeatmapsize(imageSize, this._outputStride), this._outputStride);
-        // poses_single.forEach((pose)=>{
-        //     if(pose.score>= this._minScore, this.canvasContext_single){
-        //         drawKeypoints(pose.keypoints, this._minScore, this.canvasContext_single);
-        //         drawSkeleton(pose.keypoints, this._minScore, this.canvasContext_single);
-        //     }
-        // });
-
-        poses_multi.forEach((pose)=>{
-            scalePose(pose, videoWidth/this.scaleWidth);
-            if(pose.score>= this._minScore){
-                drawKeypoints(pose.keypoints, this._minScore, this.canvas);
-                drawSkeleton(pose.keypoints, this._minScore, this.canvas);
-            }
-        });
+                        this._nmsRadius, toHeatmapsize(imageSize, this._outputStride));   
+            poses_multi.forEach((pose)=>{
+                scalePose(pose, videoWidth/this.scaleWidth);
+                if(pose.score>= this._minScore){
+                    drawKeypoints(pose.keypoints, this._minScore, this.ctx);
+                    drawSkeleton(pose.keypoints, this._minScore, this.ctx);
+                }
+            });
+        }
+        else{
+            let poses_single = decodeSinglepose(this.heatmapTensor, this.offsetTensor, 
+                            toHeatmapsize(imageSize, this._outputStride), this._outputStride);     
+            poses_single.forEach((pose)=>{
+                scalePose(pose, videoWidth/this.scaleWidth);
+                if(pose.score>= this._minScore){
+                    drawKeypoints(pose.keypoints, this._minScore, this.ctx);
+                    drawSkeleton(pose.keypoints, this._minScore, this.ctx);
+                }
+            });
+        }
     }
 }

@@ -153,7 +153,7 @@ class Utils{
         this.canvasContext_single.clearRect(0, 0, this.canvasElement_single.width, this.canvasElement_single.height);
         this.canvasContext_multi.clearRect(0, 0, this.canvasElement_multi.width, this.canvasElement_multi.height);
         if(this._inputElement!=undefined){
-            let x = await getInput(this._inputElement);
+            let x = await this.getInput(this._inputElement);
             await loadImage(x, this.canvasContext_single);
             await loadImage(x, this.canvasContext_multi);
         }else{
@@ -173,7 +173,7 @@ class Utils{
         let poses_single = decodeSinglepose(this.heatmapTensor, this.offsetTensor, 
                             toHeatmapsize(imageSize, this._outputStride), this._outputStride);
         poses_single.forEach((pose)=>{
-            if(pose.score>= this._minScore, this.canvasContext_single){
+            if(pose.score>= this._minScore){
                 drawKeypoints(pose.keypoints, this._minScore, this.canvasContext_single);
                 drawSkeleton(pose.keypoints, this._minScore, this.canvasContext_single);
             }
@@ -185,5 +185,16 @@ class Utils{
                 drawSkeleton(pose.keypoints, this._minScore, this.canvasContext_multi);
             }
         });
+    }
+
+    getInput(inputElement){
+        let reader = new FileReader();
+        const promise = new Promise((resolve, reject)=>{
+            reader.onload = function(e){
+                resolve(e.target.result);
+            }
+            reader.readAsDataURL(inputElement);
+        });
+        return promise;
     }
 }

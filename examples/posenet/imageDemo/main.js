@@ -1,14 +1,3 @@
-function getInput(inputElement){
-    let reader = new FileReader();
-    const promise = new Promise((resolve, reject)=>{
-        reader.onload = function(e){
-            resolve(e.target.result);
-        }
-        reader.readAsDataURL(inputElement);
-    });
-    return promise;
-}
-
 async function DrawSingleandMulti(){
     let util = new Utils();
     let e = document.getElementById("backend");
