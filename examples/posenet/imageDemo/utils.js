@@ -149,15 +149,23 @@ class Utils{
         if(!this.initialized){
             return;
         }
-        let x = await getInput(this._inputElement);
+
         this.canvasContext_single.clearRect(0, 0, this.canvasElement_single.width, this.canvasElement_single.height);
         this.canvasContext_multi.clearRect(0, 0, this.canvasElement_multi.width, this.canvasElement_multi.height);
-        await loadImage(x, this.canvasContext_single);
-        await loadImage(x, this.canvasContext_multi);
+        if(this._inputElement!=undefined){
+            let x = await getInput(this._inputElement);
+            await loadImage(x, this.canvasContext_single);
+            await loadImage(x, this.canvasContext_multi);
+        }else{
+            await loadImage("https://storage.googleapis.com/tfjs-models/assets/posenet/tennis_in_crowd.jpg", this.canvasContext_multi);
+            await loadImage("https://storage.googleapis.com/tfjs-models/assets/posenet/tennis_in_crowd.jpg", this.canvasContext_single);
+        }
         let imageSize = [input_size[1], input_size[2], input_size[3]];
         prepareInputTensor(this.inputTensor,this.canvasElement_multi, this._outputStride, imageSize);
+        let start = performance.now();
         let result = await this.model.compute_multi(this.inputTensor, this.heatmapTensor, 
                 this.offsetTensor, this.displacement_fwd, this.displacement_bwd);
+        console.log("execution time: ", performance.now()-start);
         let poses_multi = decodeMultiPose(this.heatmapTensor, this.offsetTensor, 
                         this.displacement_fwd, this.displacement_bwd, 
                         this._outputStride, this._maxDetection, this._minScore, 
@@ -178,47 +186,4 @@ class Utils{
             }
         });
     }
-
-    async getVariable(url, binary){
-        return new Promise(function(resolve, reject){
-            var xhr = new XMLHttpRequest();
-            xhr.open("GET", url, true);
-            if(binary){
-                xhr.responseType = 'arraybuffer';
-            }
-            xhr.onload = function(ev){
-                if(xhr.readyState == 4){
-                    if(xhr.status == 200){
-                        resolve(xhr.response);
-                    }else{
-                        reject(new Error('Failed to load ' + modelUrl + ' status: ' + request.status));
-                    }
-                }
-            };
-            xhr.send();
-        });
-    }
-
-
-    getURL(version){
-        let address;
-        switch(version){
-            case 1.01:
-                address = 'https://storage.googleapis.com/tfjs-models/weights/posenet/mobilenet_v1_101/';
-                break;
-            case 1.0:
-                address = 'https://storage.googleapis.com/tfjs-models/weights/posenet/mobilenet_v1_100/';
-                break;
-            case 0.75:
-                address = 'https://storage.googleapis.com/tfjs-models/weights/posenet/mobilenet_v1_075/';
-                break;
-            case 0.5:
-                address = 'https://storage.googleapis.com/tfjs-models/weights/posenet/mobilenet_v1_050/';
-                break;
-            default:
-                console.log("It must be 1.01, 1.0, 0.75 or 0.5");
-        }
-        return address;
-    }
 }
-

@@ -100,7 +100,8 @@ class PoseNet{
                 this._operandIndex++;
             }
             if(this._tfmodel[i]["convType"] === "separableConv"){
-                await getDimensionData("separableConv", this._version, i).then(function(data){
+                let data = await getDimensionData("separableConv", this._version, i);
+                if(this._tfmodel[i].rate == 1){
                     dimension.push(resize(data[0][0]));
                     dimension.push(resize(data[0][1]));
                     weights.push(new Float32Array(transpose_weights(data[1][0], data[0][0])));
@@ -109,8 +110,25 @@ class PoseNet{
                     dimension_bias.push(data[2][1]);
                     bias.push(data[3][0]);
                     bias.push(data[3][1]);
-                });
-                dimension_out = this._calculateOutput(dimension_in, dimension[0], this._tfmodel[i]["stride"], "depthwise");
+                }else{
+                    let dilationData = dilationWeights(new Float32Array(transpose_weights(data[1][0], data[0][0])), 
+                                                        resize(data[0][0]), this._tfmodel[i].rate);
+                    dimension.push(dilationData[0]);
+                    dimension.push(resize(data[0][1]));
+                    weights.push(dilationData[1]);
+                    weights.push(new Float32Array(transpose_weights(data[1][1], data[0][1])));
+                    dimension_bias.push(data[2][0]);
+                    dimension_bias.push(data[2][1]);
+                    bias.push(data[3][0]);
+                    bias.push(data[3][1]);
+                }
+
+                if(this._tfmodel[i].rate == 1){
+                    dimension_out = this._calculateOutput(dimension_in, dimension[0], this._tfmodel[i]["stride"], "depthwise");
+                }
+                else{
+                    dimension_out = this._calculateOutput(dimension_in, resize(data[0][0]), this._tfmodel[i]["stride"], "depthwise");
+                }
                 dimension_in = dimension_out;
                 this._outputs.push(this._operandIndex);
                 this._model.addOperand({type:type, dimensions: dimension_out});
@@ -284,11 +302,7 @@ class PoseNet{
                 inputs.push(this._addScalarInt32(paddingCode));
                 inputs.push(this._addScalarInt32(this._tfmodel[i].stride));
                 inputs.push(this._addScalarInt32(this._tfmodel[i].stride));
-                if(this._tfmodel[i].rate !== 1){
-                    inputs.push(this._addScalarInt32(this._tfmodel[i].rate));
-                } else {
-                    inputs.push(this._addScalarInt32(1));
-                }
+                inputs.push(this._addScalarInt32(1));
                 let fuseCode = 3;
                 inputs.push(this._addScalarInt32(fuseCode));
                 let opType = this._nn.DEPTHWISE_CONV_2D;
@@ -350,7 +364,6 @@ class PoseNet{
                 inputs.push(this._addScalarInt32(fuseCode));
                 let opType = this._nn.CONV_2D;
                 let outputs = this._model._outputs[i];
-                console.log(inputs);
                 this._model.addOperation(opType, inputs, [outputs]);
             }
         }

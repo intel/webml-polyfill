@@ -1,0 +1,52 @@
+<html>
+    <head> 
+        <title> PoseNet Image Demo</title>
+
+    </head>
+
+    <body>
+        <div class = parameter>
+            <h4>Parameter</h4>
+            Backend:
+            <select id = "backend">
+                <option value = "webgl">WebGL</option>
+                <option value = "webml">WebML</option>
+                <option value = "wasm">WASM</option>
+                <option selected = "selected">WebGL</option>
+            </select>
+           
+            <form>
+                Output Stride(8/16/32):<br>
+                <input type = "number" id = "outputStride" value="16"><br>
+                Minimal Part Confidence Score(0, 1):<br>
+                <input type = "number" id= "minpartConfidenceScore" value = "0.5"><br>
+                Model(0.5/0.75/1.0/1.01): <br>
+                <input type = "number" id= "modelversion" value="1.01"><br>
+                nmsRadius: <br>
+                <input type = "number" id= "nmsRadius" value="20"><br>
+                maxDetection: <br>
+                <input type = "number" id = "maxDetection" value="15"><br>
+                <input type = "file" id = "image" accept="image/*"><br>
+                <input type= "button" value="Submit" onclick="DrawSingleandMulti()" />
+            </form>
+        </div>
+
+        <div class = "single">
+            <h4>Single Pose Estimation</h4>
+            <canvas id = "canvas" width = "513" height = "513"></canvas>
+        </div>
+        <div class = "Multiple">
+            <h4>Multiple Poses Estimation</h4>
+            <canvas id = "canvas_2" width = "513" height = "513"></canvas>
+        </div>
+            <script src="../webml-polyfill/dist/webml-polyfill.js"></script>
+            <script src="../webml-polyfill/examples/util/base.js"></script>
+            <script src= "utils.js"></script>
+            <script src = "../src/helperFunc.js"></script>
+            <script src = "../src/PoseNet.js"></script>
+            <script src = "../src/MaxHeap.js"></script>
+            <script src = "../src/decodePose.js"></script>
+            <script src = "../src/DrawOutputs.js"></script>
+            <script src = "main.js"></script>  
+    </body>
+</html>

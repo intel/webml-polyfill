@@ -1,0 +1,51 @@
+<html>
+	<head>
+		<title>PoseNet - Camera Feed Demo</title>
+	</head>
+
+	<body>
+		<div class = parameter>
+            <h4>Parameter</h4>
+            Backend:
+            <select id = "backend">
+                <option value = "webgl">WebGL</option>
+                <option value = "webml">WebML</option>
+                <option value = "wasm">WASM</option>
+                <option selected = "selected">WebGL</option>
+            </select>
+           
+            <form>
+                Output Stride(8/16/32):<br>
+                <input type = "number" id = "outputStride" value="16"><br>
+                Image Scale Factor(0, 1):<br>
+                <input type = "number" id = "scaleFactor" value = "0.5"><br>
+                Minimal Part Confidence Score(0, 1):<br>
+                <input type = "number" id= "minpartConfidenceScore" value="0.5"><br>
+                Model(0.5/0.75/1.0/1.01): <br>
+                <input type = "number" id= "modelversion" value = "1.01"><br>
+                nmsRadius: <br>
+                <input type = "number" id= "nmsRadius" value = "20"><br>
+                maxDetection: <br>
+                <input type = "number" id = "maxDetection" value="15"><br>
+                <input type= "button" value="Submit" onclick="predictResult()" />
+            </form>
+        </div>
+		
+		<div class = camera>
+			<h4> Camera Demo</h4>
+			<video hidden id = "video" width = "500" height = "500" autoplay></video>
+        	<canvas id="canvas" width = "500" height = "500"/></canvas>
+        	<canvas id="canvas_2"/></canvas>
+    	</div>
+    	<script src = "../webml-polyfill/examples/third_party/stats.min.js"></script>
+    	<script src = "../webml-polyfill/dist/webml-polyfill.js"></script>
+        <script src = "../webml-polyfill/examples/util/base.js"></script>
+    	<script src = "utilCamera.js"></script>
+        <script src = "../src/helperFunc.js"></script>
+        <script src = "../src/PoseNet.js"></script>
+        <script src = "../src/MaxHeap.js"></script>
+        <script src = "../src/decodePose.js"></script>
+        <script src = "../src/DrawOutputs.js"></script>
+    	<script src = "camera.js"></script>
+	</body>
+</html>

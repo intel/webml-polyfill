@@ -24,7 +24,6 @@ function loadImage(imagePath, ctx) {
     image.crossOrigin = '';
     image.onload = () => {
     	ctx.drawImage(image, 0, 0);
-      console.log("image width: ", image.width);
       resolve(image);
     };
   });
