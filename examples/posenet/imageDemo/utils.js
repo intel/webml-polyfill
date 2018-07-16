@@ -82,7 +82,7 @@ class Utils{
         this.offsetTensor;
         this.displacement_fwd;
         this.displacement_bwd;
-        this._version = 1.01;
+        this._version;
 
         //single input
         this._version = document.getElementById('modelversion').value;
@@ -91,8 +91,6 @@ class Utils{
         //multiple input
         this._nmsRadius = document.getElementById('nmsRadius').value;
         this._maxDetection = document.getElementById('maxDetection').value;
-        //image Source
-        this._inputElement = document.getElementById('image').files[0];
         
         this.canvasElement_single = document.getElementById('canvas');
         this.canvasContext_single = this.canvasElement_single.getContext('2d');
@@ -141,23 +139,12 @@ class Utils{
         this.initialized = true;
     }
 
-    async predict(){
+    async predict(imgElement){
         if(!this.initialized){
             return;
         }
-
-        this.canvasContext_single.clearRect(0, 0, this.canvasElement_single.width, this.canvasElement_single.height);
-        this.canvasContext_multi.clearRect(0, 0, this.canvasElement_multi.width, this.canvasElement_multi.height);
-        if(this._inputElement!=undefined){
-            let x = await this.getInput(this._inputElement);
-            await loadImage(x, this.canvasContext_single);
-            await loadImage(x, this.canvasContext_multi);
-        }else{
-            await loadImage("https://storage.googleapis.com/tfjs-models/assets/posenet/tennis_in_crowd.jpg", this.canvasContext_multi);
-            await loadImage("https://storage.googleapis.com/tfjs-models/assets/posenet/tennis_in_crowd.jpg", this.canvasContext_single);
-        }
         let imageSize = [input_size[1], input_size[2], input_size[3]];
-        prepareInputTensor(this.inputTensor,this.canvasElement_multi, this._outputStride, imageSize);
+        prepareInputTensor(this.inputTensor,imgElement, this._outputStride, imageSize);
         let start = performance.now();
         let result = await this.model.compute_multi(this.inputTensor, this.heatmapTensor, 
                 this.offsetTensor, this.displacement_fwd, this.displacement_bwd);
@@ -183,14 +170,4 @@ class Utils{
         });
     }
 
-    getInput(inputElement){
-        let reader = new FileReader();
-        const promise = new Promise((resolve, reject)=>{
-            reader.onload = function(e){
-                resolve(e.target.result);
-            }
-            reader.readAsDataURL(inputElement);
-        });
-        return promise;
-    }
 }

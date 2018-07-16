@@ -8,8 +8,7 @@
         <div class = parameter>
             <h4>Parameter</h4>
             Backend:
-            <select id = "backend">
-                <option value = "webgl">WebGL</option>
+            <select onchange = "DrawSingleandMulti();" id = "backend">
                 <option value = "webml">WebML</option>
                 <option value = "wasm">WASM</option>
                 <option selected = "selected">WebGL</option>
@@ -17,16 +16,16 @@
            
             <form>
                 Output Stride(8/16/32):<br>
-                <input type = "number" id = "outputStride" value="16"><br>
+                <input onchange = "DrawSingleandMulti();" type = "number" id = "outputStride" value="16"><br>
                 Minimal Part Confidence Score(0, 1):<br>
-                <input type = "number" id= "minpartConfidenceScore" value = "0.5"><br>
+                <input onchange = "DrawSingleandMulti();" type = "number" id= "minpartConfidenceScore" value = "0.5"><br>
                 Model(0.5/0.75/1.0/1.01): <br>
-                <input type = "number" id= "modelversion" value="1.01"><br>
+                <input onchange = "DrawSingleandMulti();" type = "number" id= "modelversion" value="1.01"><br>
                 nmsRadius: <br>
-                <input type = "number" id= "nmsRadius" value="20"><br>
+                <input onchange = "DrawSingleandMulti();" type = "number" id= "nmsRadius" value="20"><br>
                 maxDetection: <br>
-                <input type = "number" id = "maxDetection" value="15"><br>
-                <input type = "file" id = "image" accept="image/*"><br>
+                <input onchange = "DrawSingleandMulti();" type = "number" id = "maxDetection" value="15"><br>
+                <input onchange = "changeImage();" type = "file" id = "image" accept="image/*"><br>
                 <input type= "button" value="Submit" onclick="DrawSingleandMulti()" />
             </form>
         </div>

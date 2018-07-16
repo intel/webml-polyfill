@@ -1,3 +1,14 @@
+function getInput(inputElement){
+    let reader = new FileReader();
+    const promise = new Promise((resolve, reject)=>{
+        reader.onload = function(e){
+            resolve(e.target.result);
+        }
+        reader.readAsDataURL(inputElement);
+    });
+    return promise;
+}
+
 function getURL(version){
     let address;
     switch(version){
