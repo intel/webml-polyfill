@@ -148,7 +148,11 @@ class Utils{
         let start = performance.now();
         let result = await this.model.compute_multi(this.inputTensor, this.heatmapTensor, 
                 this.offsetTensor, this.displacement_fwd, this.displacement_bwd);
-        console.log("execution time: ", performance.now()-start);
+        console.log("execution time: ", performance.now()-start);        
+    }
+
+    drawOutput(){    
+        let imageSize = [input_size[1], input_size[2], input_size[3]];
         let poses_multi = decodeMultiPose(this.heatmapTensor, this.offsetTensor, 
                         this.displacement_fwd, this.displacement_bwd, 
                         this._outputStride, this._maxDetection, this._minScore, 
@@ -169,5 +173,4 @@ class Utils{
             }
         });
     }
-
 }
