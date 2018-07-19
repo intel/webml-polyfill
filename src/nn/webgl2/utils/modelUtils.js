@@ -199,6 +199,7 @@ function GetSoftmaxAttrs(nnOperands, inputs, outputs) {
   let attrs = {
     inputs: [inputs[0]],
     outputs: outputs,
+    beta: nnOperands[inputs[1]].value[0],
     activation: 'softmax'
   };
   // console.log(attrs);

@@ -18,7 +18,11 @@ export default class Activation extends Layer {
     } = attrs;
     this.name = activation;
     if (this.name !== 'NONE' && !webgl2.activationProgram) {
-      this.activationProgram = webgl2.createProgram(activations[this.name]);
+      if (this.name === 'softmax') {
+        this.activationProgram = webgl2.createProgram(activations['softmax'](attrs.beta));
+      } else {
+        this.activationProgram = webgl2.createProgram(activations[this.name]);
+      }
     }
   }
 
