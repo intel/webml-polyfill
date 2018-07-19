@@ -1,3 +1,20 @@
+/**
+ * @license
+ * Copyright 2018 Google Inc. All Rights Reserved.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licnses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * =============================================================================
+ */
+
 function getInput(inputElement){
     let reader = new FileReader();
     const promise = new Promise((resolve, reject)=>{
@@ -30,6 +47,7 @@ function getURL(version){
     return address;
 }
 
+//Obtain weights data and bias data
 async function getVariable(url, binary){
     return new Promise(function(resolve, reject){
         var xhr = new XMLHttpRequest();
@@ -141,15 +159,12 @@ function toOutputStridedLayers(convolutionDefinition, outputStride) {
     });
 }
 
+//weights dimension: HWCN -> NHWC
 function resize(dimension){
-    let new_dimension = [];
-    new_dimension.push(dimension[dimension.length-1])
-    for(let i =0; i<dimension.length-1; i++){
-        new_dimension.push(dimension[i]);
-    }
-    return new_dimension;
+    return [dimension[3], dimension[0], dimension[1], dimension[2]];
 }
 
+//HWCN -> NHWC
 function transpose_weights(weights, dimension){
     let product = dimension.reduce(function(a,b){return a*b});
     let new_weights = new Float32Array(product);
@@ -187,12 +202,12 @@ function prepareInputTensor(tensor, canvas, outputStride, img_dimension){
     let context = canvas.getContext('2d');
     let pixels = context.getImageData(0, 0, width, height).data;
     for (let y = 0; y < height; ++y) {
-      for (let x = 0; x < width; ++x) {
-        for (let c = 0; c < channels; ++c) {
-          let value = pixels[y*width*imageChannels + x*imageChannels + c];
-          tensor[y*width*channels + x*channels + c] = (value - mean)/std;
+        for (let x = 0; x < width; ++x) {
+            for (let c = 0; c < channels; ++c) {
+                let value = pixels[y*width*imageChannels + x*imageChannels + c];
+                tensor[y*width*channels + x*channels + c] = (value - mean)/std;
+            }
         }
-      }
     }   
 }
 
@@ -202,6 +217,8 @@ function sigmoid(heatmap){
     }
     return heatmap;
 }
+
+
 
 function argMax(array){
     let max = 0;
@@ -268,7 +285,7 @@ function decodeSinglepose(heatmap, offset, dimension, outputStride){
         let final_pos = [heatmap_y*outputStride+offset_y, heatmap_x*outputStride+offset_x];
         total_score += confidenceScore[i];
         final_res.push({position: {y: final_pos[0], x: final_pos[1]}, 
-                    part: partNames[i], score: confidenceScore[i]});
+                        part: partNames[i], score: confidenceScore[i]});
     }
     poses.push({keypoints: final_res, score: total_score/17});
     return poses;
@@ -412,9 +429,9 @@ function dilationWeights(weights, dimension, rate){
     let dilationweights = new Float32Array(dimension[0]*dilation_w*dilation_h*dimension[3]);
     dilationweights.fill(0);
     let dimension_dilation = [dimension[0], dilation_h, dilation_w, dimension[3]];
-    for(let h = 0; h<dilation_h; h+=rate){
-        for(let w = 0; w<dilation_w; w+=rate){
-            for(let c = 0; c<dimension[3]; c++){
+    for(let h = 0; h < dilation_h; h += rate){
+        for(let w = 0; w < dilation_w; w += rate){
+            for(let c = 0; c < dimension[3]; c++){
                 let index_dilation = convert4D(0, h, w, c, dimension_dilation);
                 let index_origin = convert4D(0, h/rate, w/rate, c, dimension);
                 dilationweights[index_dilation] = weights[index_origin];
@@ -469,19 +486,19 @@ function bilinear(srcImg, destImg, scale) {
           
             // I let the r, g, b, a on purpose for debugging
             r = inner(srcImg.data[idxS00], srcImg.data[idxS10],
-                srcImg.data[idxS01], srcImg.data[idxS11], dx, dy);
+                      srcImg.data[idxS01], srcImg.data[idxS11], dx, dy);
             destImg.data[idxD] = r;
 
             g = inner(srcImg.data[idxS00+1], srcImg.data[idxS10+1],
-                srcImg.data[idxS01+1], srcImg.data[idxS11+1], dx, dy);
+                      srcImg.data[idxS01+1], srcImg.data[idxS11+1], dx, dy);
             destImg.data[idxD+1] = g;
 
             b = inner(srcImg.data[idxS00+2], srcImg.data[idxS10+2],
-                srcImg.data[idxS01+2], srcImg.data[idxS11+2], dx, dy);
+                      srcImg.data[idxS01+2], srcImg.data[idxS11+2], dx, dy);
             destImg.data[idxD+2] = b;
 
             a = inner(srcImg.data[idxS00+3], srcImg.data[idxS10+3],
-                srcImg.data[idxS01+3], srcImg.data[idxS11+3], dx, dy);
+                      srcImg.data[idxS01+3], srcImg.data[idxS11+3], dx, dy);
             destImg.data[idxD+3] = a;
         }
     }

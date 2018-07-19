@@ -99,7 +99,6 @@ class Utils{
     async init(backend){
         this.initialized = false;
         let result;
-        let variable;
         if(this._minScore<0 | this._minScore>1){
             alert("Minimal Part Confidence Score must be in range (0,1).");
             return;
@@ -135,11 +134,11 @@ class Utils{
         let result = await this.model.compute_multi(this.inputTensor, this.heatmapTensor, 
                 this.offsetTensor, this.displacement_fwd, this.displacement_bwd);
         if(predictType == "Multiple Person"){
-            let poses_multi = decodeMultiPose(this.heatmapTensor, this.offsetTensor, 
-                        this.displacement_fwd, this.displacement_bwd, 
-                        this._outputStride, this._maxDetection, this._minScore, 
-                        this._nmsRadius, toHeatmapsize(imageSize, this._outputStride));   
-            poses_multi.forEach((pose)=>{
+            let posesMulti = decodeMultiPose(this.heatmapTensor, this.offsetTensor, 
+                                             this.displacement_fwd, this.displacement_bwd, 
+                                             this._outputStride, this._maxDetection, this._minScore, 
+                                             this._nmsRadius, toHeatmapsize(imageSize, this._outputStride));   
+            posesMulti.forEach((pose)=>{
                 scalePose(pose, videoWidth/this.scaleWidth);
                 if(pose.score >= this._minScore){
                     drawKeypoints(pose.keypoints, this._minScore, this.ctx);
@@ -148,9 +147,10 @@ class Utils{
             });
         }
         else{
-            let poses_single = decodeSinglepose(this.heatmapTensor, this.offsetTensor, 
-                            toHeatmapsize(imageSize, this._outputStride), this._outputStride);     
-            poses_single.forEach((pose)=>{
+            let poseSingle = decodeSinglepose(this.heatmapTensor, this.offsetTensor, 
+                                              toHeatmapsize(imageSize, this._outputStride), 
+                                              this._outputStride);     
+            poseSingle.forEach((pose)=>{
                 scalePose(pose, videoWidth/this.scaleWidth);
                 if(pose.score >= this._minScore){
                     drawKeypoints(pose.keypoints, this._minScore, this.ctx);

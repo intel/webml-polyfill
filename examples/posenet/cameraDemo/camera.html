@@ -22,18 +22,17 @@
            
             <form>
                 Output Stride(8/16/32):<br>
-                <input type = "number" id = "outputStride" value="16"><br>
+                <input onchange = "main();" type = "number" id = "outputStride" value="16"><br>
                 Image Scale Factor(0, 1):<br>
-                <input type = "number" id = "scaleFactor" value = "0.5"><br>
+                <input onchange = "main();" type = "number" id = "scaleFactor" value = "0.5"><br>
                 Minimal Part Confidence Score(0, 1):<br>
-                <input type = "number" id= "minpartConfidenceScore" value="0.5"><br>
+                <input onchange = "main();" type = "number" id= "minpartConfidenceScore" value="0.5"><br>
                 Model(0.5/0.75/1.0/1.01): <br>
-                <input type = "number" id= "modelversion" value = "1.01"><br>
+                <input onchange = "main();" type = "number" id= "modelversion" value = "1.01"><br>
                 nmsRadius: <br>
-                <input type = "number" id= "nmsRadius" value = "20"><br>
+                <input onchange = "main();" type = "number" id= "nmsRadius" value = "20"><br>
                 maxDetection: <br>
-                <input type = "number" id = "maxDetection" value="15"><br>
-                <input type= "button" value="Submit" onclick="main()" />
+                <input  onchange = "main();" type = "number" id = "maxDetection" value="15"><br>
             </form>
         </div>
 		

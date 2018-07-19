@@ -15,7 +15,7 @@
  * =============================================================================
  */
 
-//Architecture = [layer name, stride]
+//mobileNetArchitecture = [layer name, stride]
 //conv2d: convolution layer
 //separableConv: depthwise convolution layer + pointwise convolution layer
 const mobileNet100Architecture = [
@@ -77,13 +77,6 @@ class Utils{
     constructor(){
         this.tfmodel;
         this.model;
-        this.inputTensor;
-        this.heatmapTensor;
-        this.offsetTensor;
-        this.displacement_fwd;
-        this.displacement_bwd;
-        this._version;
-
         //single input
         this._version = document.getElementById('modelversion').value;
         this._outputStride = document.getElementById('outputStride').value;
@@ -109,12 +102,12 @@ class Utils{
         this.offsetTensor = new Float32Array(this.OFFSET_TENSOR_SIZE);
         this.displacement_fwd = new Float32Array(this.DISPLACEMENT_FWD_SIZE);
         this.displacement_bwd = new Float32Array(this.DISPLACEMENT_BWD_SIZE);
+
     }
 
     async init(backend){
         this.initialized = false;
         let result;
-        let variable;
         if(this._minScore<0 | this._minScore>1){
             alert("Minimal Part Confidence Score must be in range (0,1).");
             return;
@@ -132,9 +125,12 @@ class Utils{
             ]);
             this.tfmodel = ModelArch.get(Number(this._version));
         }
+        
         this.model = new PoseNet(this.tfmodel, backend, Number(this._version), 
-                        Number(this._outputStride), input_size, this._type);
+                    Number(this._outputStride), input_size, this._type);
+        
         result = await this.model.createCompiledModel();
+
         console.log('compilation result: ${result}');
         this.initialized = true;
     }

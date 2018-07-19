@@ -2,8 +2,8 @@ async function main(){
 	const video = document.getElementById('video');
 	const canvas = document.getElementById('canvas');
 	const ctx = canvas.getContext('2d');
-	let stats = new Stats();
-	let util = new Utils();
+	const stats = new Stats();
+	const util = new Utils();
 	let streaming  = false;
 	
 	if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -18,9 +18,9 @@ async function main(){
 	const stream = await navigator.mediaDevices.getUserMedia({
 		'audio': false,
 		'video':{
-			facingMode: 'user',
-			width: mobile? undefined: videoWidth,
-			height: mobile? undefined : videoHeight,
+				facingMode: 'user',
+				width: mobile? undefined: videoWidth,
+				height: mobile? undefined : videoHeight,
 		},
 	});
 

@@ -1,4 +1,3 @@
-
 class PoseNet{
     constructor(tfmodel, backend, version, outputstride, input, type){
         this._tfmodel = tfmodel;
@@ -40,6 +39,7 @@ class PoseNet{
             options.useWebGL2 = true;
         }
         this._model = await this._nn.createModel(options);
+        
         await this._addTensorOperands();
         this._addOpsAndParams();
         

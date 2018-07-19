@@ -1,16 +1,19 @@
-let util = new Utils();
-let canvasSingle = document.getElementById('canvas');
-let ctxSingle = canvasSingle.getContext('2d');
-let canvasMulti = document.getElementById('canvas_2');
-let ctxMulti = canvasMulti.getContext('2d');
-let initialized = false;
-async function DrawSingleandMulti(){
+const util = new Utils();
+const canvasSingle = document.getElementById('canvas');
+const ctxSingle = canvasSingle.getContext('2d');
+const canvasMulti = document.getElementById('canvas_2');
+const ctxMulti = canvasMulti.getContext('2d');
+async function drawSingleandMulti(){
     let e = document.getElementById("backend");
     let backend = e.options[e.selectedIndex].text;
     switch(backend){
         case "WebGL":
             if (nnPolyfill.supportWebGL2){
-                await util.init('WebGL2');
+                util.init('WebGL2').then(()=>{
+                    drawResult();
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('main').style.display = 'block';
+                });
             }
             else{
                 throw new Error("Do not support WebGL");
@@ -18,7 +21,11 @@ async function DrawSingleandMulti(){
             break;
         case "WASM":
             if (nnPolyfill.supportWasm){
-                await util.init('WASM');
+                await util.init('WASM').then(()=>{
+                    drawResult();
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('main').style.display = 'block';
+                });
             }
             else{
                 throw new Error("Do not support WASM");
@@ -26,7 +33,11 @@ async function DrawSingleandMulti(){
             break;
         case "WebML":
             if(nnNative){
-                await util.init('WebML');
+                await util.init('WebML').then(()=>{
+                    drawResult();
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('main').style.display = 'block';
+                });
             }
             else{
                 throw new Error("Do not support WebML");
@@ -35,27 +46,20 @@ async function DrawSingleandMulti(){
         default:
             break;
     }
-    if(initialized === false){
-        ctxSingle.clearRect(0, 0, canvasSingle.width, canvasSingle.height);
-        ctxMulti.clearRect(0, 0, canvasMulti.width, canvasMulti.height);
-        await loadImage("https://storage.googleapis.com/tfjs-models/assets/posenet/tennis_in_crowd.jpg", ctxSingle);
-        await loadImage("https://storage.googleapis.com/tfjs-models/assets/posenet/tennis_in_crowd.jpg", ctxMulti);
-        initialized = true;
-    }
-    await util.predict(canvasSingle);
-    util.drawOutput();
 }
 
-DrawSingleandMulti();
-
 async function updateParameter(){
-    let _inputElement = document.getElementById('image').files[0];
     let minScore = document.getElementById('minpartConfidenceScore').value;
     let nmsRadius = document.getElementById('nmsRadius').value;
     let maxDetection = document.getElementById('maxDetection').value;
     util._minScore = minScore;
     util._nmsRadius = nmsRadius;
     util._maxDetection = maxDetection;
+    drawResult();
+}
+
+async function drawResult(){
+    let _inputElement = document.getElementById('image').files[0];
     if(_inputElement!=undefined){
         ctxSingle.clearRect(0, 0, canvasSingle.width, canvasSingle.height);
         ctxMulti.clearRect(0, 0, canvasMulti.width, canvasMulti.height);
@@ -73,5 +77,9 @@ async function updateParameter(){
         util.drawOutput();
     }
 }
+
+
+
+
 
 

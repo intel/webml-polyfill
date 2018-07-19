@@ -9,6 +9,9 @@
     </head>
 
     <body>
+        <div id = "loading">
+            Loading the model...
+        </div>
         <div class = parameter>
             <h4>Parameter</h4>
             Backend:
@@ -32,14 +35,15 @@
                 <input onchange = "updateParameter();" type = "file" id = "image" accept="image/*"><br>
             </form>
         </div>
-
-        <div class = "Single">
-            <h4>Single Pose Estimation</h4>
-            <canvas id = "canvas" width = "513" height = "513"></canvas>
-        </div>
-        <div class = "Multiple">
-            <h4>Multiple Poses Estimation</h4>
-            <canvas id = "canvas_2" width = "513" height = "513"></canvas>
+        <div id = 'main'>
+            <div class = "Single">
+                <h4>Single Pose Estimation</h4>
+                <canvas id = "canvas" width = "513" height = "513"></canvas>
+            </div>
+            <div class = "Multiple">
+                <h4>Multiple Poses Estimation</h4>
+                <canvas id = "canvas_2" width = "513" height = "513"></canvas>
+            </div>
         </div>
             <script src = "../../../dist/webml-polyfill.js"></script>
             <script src = "../../util/base.js"></script>
@@ -50,5 +54,8 @@
             <script src = "../src/decodePose.js"></script>
             <script src = "../src/DrawOutputs.js"></script>
             <script src = "main.js"></script>  
+            <script>
+                drawSingleandMulti();
+            </script>
     </body>
 </html>
