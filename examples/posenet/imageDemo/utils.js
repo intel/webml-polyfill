@@ -19,54 +19,54 @@
 //conv2d: convolution layer
 //separableConv: depthwise convolution layer + pointwise convolution layer
 const mobileNet100Architecture = [
-    ['conv2d', 2],
-    ['separableConv', 1],
-    ['separableConv', 2],
-    ['separableConv', 1],
-    ['separableConv', 2],
-    ['separableConv', 1],
-    ['separableConv', 2],
-    ['separableConv', 1],
-    ['separableConv', 1],
-    ['separableConv', 1],
-    ['separableConv', 1],
-    ['separableConv', 1],
-    ['separableConv', 2],
-    ['separableConv', 1]
+  ['conv2d', 2],
+  ['separableConv', 1],
+  ['separableConv', 2],
+  ['separableConv', 1],
+  ['separableConv', 2],
+  ['separableConv', 1],
+  ['separableConv', 2],
+  ['separableConv', 1],
+  ['separableConv', 1],
+  ['separableConv', 1],
+  ['separableConv', 1],
+  ['separableConv', 1],
+  ['separableConv', 2],
+  ['separableConv', 1]
 ]
 
 const mobileNet75Architecture = [
-    ['conv2d', 2],
-    ['separableConv', 1],
-    ['separableConv', 2],
-    ['separableConv', 1],
-    ['separableConv', 2],
-    ['separableConv', 1],
-    ['separableConv', 2],
-    ['separableConv', 1],
-    ['separableConv', 1],
-    ['separableConv', 1],
-    ['separableConv', 1],
-    ['separableConv', 1],
-    ['separableConv', 1],
-    ['separableConv', 1]
+  ['conv2d', 2],
+  ['separableConv', 1],
+  ['separableConv', 2],
+  ['separableConv', 1],
+  ['separableConv', 2],
+  ['separableConv', 1],
+  ['separableConv', 2],
+  ['separableConv', 1],
+  ['separableConv', 1],
+  ['separableConv', 1],
+  ['separableConv', 1],
+  ['separableConv', 1],
+  ['separableConv', 1],
+  ['separableConv', 1]
 ]
 
 const mobileNet50Architecture = [
-    ['conv2d', 2],
-    ['separableConv', 1],
-    ['separableConv', 2],
-    ['separableConv', 1],
-    ['separableConv', 2],
-    ['separableConv', 1],
-    ['separableConv', 2],
-    ['separableConv', 1],
-    ['separableConv', 1],
-    ['separableConv', 1],
-    ['separableConv', 1],
-    ['separableConv', 1],
-    ['separableConv', 1],
-    ['separableConv', 1]
+  ['conv2d', 2],
+  ['separableConv', 1],
+  ['separableConv', 2],
+  ['separableConv', 1],
+  ['separableConv', 2],
+  ['separableConv', 1],
+  ['separableConv', 2],
+  ['separableConv', 1],
+  ['separableConv', 1],
+  ['separableConv', 1],
+  ['separableConv', 1],
+  ['separableConv', 1],
+  ['separableConv', 1],
+  ['separableConv', 1]
 ]
 
 const INPUT_TENSOR_SIZE = 513*513*3;
@@ -74,99 +74,97 @@ const input_size = [1, 513, 513, 3];
 
 
 class Utils{
-    constructor(){
-        this.tfmodel;
-        this.model;
-        //single input
-        this._version = document.getElementById('modelversion').value;
-        this._outputStride = document.getElementById('outputStride').value;
-        this._minScore = document.getElementById('minpartConfidenceScore').value;
-        //multiple input
-        this._nmsRadius = document.getElementById('nmsRadius').value;
-        this._maxDetection = document.getElementById('maxDetection').value;
-        
-        this.canvasElement_single = document.getElementById('canvas');
-        this.canvasContext_single = this.canvasElement_single.getContext('2d');
-        this.canvasElement_multi = document.getElementById('canvas_2');
-        this.canvasContext_multi = this.canvasElement_multi.getContext('2d');
-        this._type = "Multiperson";
-        this.initialized = false;
+  constructor(){
+    this.tfmodel;
+    this.model;
+    //single input
+    this._version = document.getElementById('modelversion').value;
+    this._outputStride = document.getElementById('outputStride').value;
+    this._minScore = document.getElementById('minpartConfidenceScore').value;
+    //multiple input
+    this._nmsRadius = document.getElementById('nmsRadius').value;
+    this._maxDetection = document.getElementById('maxDetection').value;
+    
+    this.canvasElement_single = document.getElementById('canvas');
+    this.canvasContext_single = this.canvasElement_single.getContext('2d');
+    this.canvasElement_multi = document.getElementById('canvas_2');
+    this.canvasContext_multi = this.canvasElement_multi.getContext('2d');
+    this._type = "Multiperson";
+    this.initialized = false;
 
-        this.HEATMAP_TENSOR_SIZE = product(toHeatmapsize(input_size, this._outputStride));
-        this.OFFSET_TENSOR_SIZE = this.HEATMAP_TENSOR_SIZE*2;
-        this.DISPLACEMENT_FWD_SIZE = this.HEATMAP_TENSOR_SIZE/17*32;
-        this.DISPLACEMENT_BWD_SIZE = this.HEATMAP_TENSOR_SIZE/17*32;
+    this.HEATMAP_TENSOR_SIZE = product(toHeatmapsize(input_size, this._outputStride));
+    this.OFFSET_TENSOR_SIZE = this.HEATMAP_TENSOR_SIZE*2;
+    this.DISPLACEMENT_FWD_SIZE = this.HEATMAP_TENSOR_SIZE/17*32;
+    this.DISPLACEMENT_BWD_SIZE = this.HEATMAP_TENSOR_SIZE/17*32;
 
-        this.inputTensor = new Float32Array(INPUT_TENSOR_SIZE);
-        this.heatmapTensor = new Float32Array(this.HEATMAP_TENSOR_SIZE);
-        this.offsetTensor = new Float32Array(this.OFFSET_TENSOR_SIZE);
-        this.displacement_fwd = new Float32Array(this.DISPLACEMENT_FWD_SIZE);
-        this.displacement_bwd = new Float32Array(this.DISPLACEMENT_BWD_SIZE);
+    this.inputTensor = new Float32Array(INPUT_TENSOR_SIZE);
+    this.heatmapTensor = new Float32Array(this.HEATMAP_TENSOR_SIZE);
+    this.offsetTensor = new Float32Array(this.OFFSET_TENSOR_SIZE);
+    this.displacement_fwd = new Float32Array(this.DISPLACEMENT_FWD_SIZE);
+    this.displacement_bwd = new Float32Array(this.DISPLACEMENT_BWD_SIZE);
+  }
 
+  async init(backend){
+    this.initialized = false;
+    let result;
+    if(this._minScore<0 | this._minScore>1){
+      alert("Minimal Part Confidence Score must be in range (0,1).");
+      return;
     }
-
-    async init(backend){
-        this.initialized = false;
-        let result;
-        if(this._minScore<0 | this._minScore>1){
-            alert("Minimal Part Confidence Score must be in range (0,1).");
-            return;
-        }
-        if(this._outputStride!=8 & this._outputStride!=16 & this._outputStride!=32){
-            alert("OutputSride must be 8, 16 or 32");
-            return;
-        }
-        if(!this.tfmodel){
-            var ModelArch = new Map([
-                [0.5, mobileNet50Architecture],
-                [0.75, mobileNet75Architecture],
-                [1.0, mobileNet100Architecture],
-                [1.01, mobileNet100Architecture],
-            ]);
-            this.tfmodel = ModelArch.get(Number(this._version));
-        }
-        
-        this.model = new PoseNet(this.tfmodel, backend, Number(this._version), 
-                    Number(this._outputStride), input_size, this._type);
-        
-        result = await this.model.createCompiledModel();
-
-        console.log('compilation result: ${result}');
-        this.initialized = true;
+    if(this._outputStride!=8 & this._outputStride!=16 & this._outputStride!=32){
+      alert("OutputSride must be 8, 16 or 32");
+      return;
     }
+    if(!this.tfmodel){
+      var ModelArch = new Map([
+        [0.5, mobileNet50Architecture],
+        [0.75, mobileNet75Architecture],
+        [1.0, mobileNet100Architecture],
+        [1.01, mobileNet100Architecture],
+      ]);
+      this.tfmodel = ModelArch.get(Number(this._version));
+    }   
+    this.model = new PoseNet(this.tfmodel, backend, Number(this._version), 
+                						 Number(this._outputStride), input_size, this._type);   
+    result = await this.model.createCompiledModel();
+    console.log('compilation result: ${result}');
+    this.initialized = true;
+  }
 
-    async predict(imgElement){
-        if(!this.initialized){
-            return;
-        }
-        let imageSize = [input_size[1], input_size[2], input_size[3]];
-        prepareInputTensor(this.inputTensor,imgElement, this._outputStride, imageSize);
-        let start = performance.now();
-        let result = await this.model.compute_multi(this.inputTensor, this.heatmapTensor, 
-                this.offsetTensor, this.displacement_fwd, this.displacement_bwd);
-        console.log("execution time: ", performance.now()-start);        
+  async predict(imgElement){
+    if(!this.initialized){
+      return;
     }
+    let imageSize = [input_size[1], input_size[2], input_size[3]];
+    prepareInputTensor(this.inputTensor,imgElement, this._outputStride, imageSize);
+    let start = performance.now();
+    let result = await this.model.compute_multi(this.inputTensor, this.heatmapTensor, 
+            																		this.offsetTensor, this.displacement_fwd, 
+            																		this.displacement_bwd);
+    console.log("execution time: ", performance.now()-start);        
+  }
 
-    drawOutput(){    
-        let imageSize = [input_size[1], input_size[2], input_size[3]];
-        let poses_multi = decodeMultiPose(this.heatmapTensor, this.offsetTensor, 
-                        this.displacement_fwd, this.displacement_bwd, 
-                        this._outputStride, this._maxDetection, this._minScore, 
-                        this._nmsRadius, toHeatmapsize(imageSize, this._outputStride));
-        let poses_single = decodeSinglepose(this.heatmapTensor, this.offsetTensor, 
-                            toHeatmapsize(imageSize, this._outputStride), this._outputStride);
-        poses_single.forEach((pose)=>{
-            if(pose.score >= this._minScore){
-                drawKeypoints(pose.keypoints, this._minScore, this.canvasContext_single);
-                drawSkeleton(pose.keypoints, this._minScore, this.canvasContext_single);
-            }
-        });
+  drawOutput(){    
+    let imageSize = [input_size[1], input_size[2], input_size[3]];
+    let poses_multi = decodeMultiPose(this.heatmapTensor, this.offsetTensor, 
+                    									this.displacement_fwd, this.displacement_bwd, 
+                    									this._outputStride, this._maxDetection, this._minScore, 
+                    									this._nmsRadius, toHeatmapsize(imageSize, this._outputStride));
+    let poses_single = decodeSinglepose(this.heatmapTensor, this.offsetTensor, 
+                        								toHeatmapsize(imageSize, this._outputStride), 
+                        								this._outputStride);
+    poses_single.forEach((pose)=>{
+      if(pose.score >= this._minScore){
+        drawKeypoints(pose.keypoints, this._minScore, this.canvasContext_single);
+        drawSkeleton(pose.keypoints, this._minScore, this.canvasContext_single);
+      }
+    });
 
-        poses_multi.forEach((pose)=>{
-            if(pose.score >= this._minScore){
-                drawKeypoints(pose.keypoints, this._minScore, this.canvasContext_multi);
-                drawSkeleton(pose.keypoints, this._minScore, this.canvasContext_multi);
-            }
-        });
-    }
+    poses_multi.forEach((pose)=>{
+      if(pose.score >= this._minScore){
+        drawKeypoints(pose.keypoints, this._minScore, this.canvasContext_multi);
+        drawSkeleton(pose.keypoints, this._minScore, this.canvasContext_multi);
+      }
+    });
+  }
 }

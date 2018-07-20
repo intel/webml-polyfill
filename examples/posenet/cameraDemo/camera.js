@@ -32,7 +32,7 @@ async function main(){
 				util.init('WebGL2').then(()=>{
 					predict();
 					document.getElementById('loading').style.display = 'none';
-                    document.getElementById('camera').style.display = 'block';
+          document.getElementById('camera').style.display = 'block';
 				});
 			}
 			else{
@@ -44,7 +44,7 @@ async function main(){
 				util.init('WASM').then(()=>{
 					predict();
 					document.getElementById('loading').style.display = 'none';
-                    document.getElementById('camera').style.display = 'block';
+          document.getElementById('camera').style.display = 'block';
 				});
 			}
 			else{
