@@ -3,7 +3,7 @@ describe('CTS', function() {
   const nn = navigator.ml.getNeuralNetworkContext();
 
   it('check result for Conv float example', async function() {
-    let model = await nn.createModel();
+    let model = await nn.createModel(options);
     let operandIndex = 0;
 
     let op1_value = [1.0, 1.0, 1.0, 1.0, 0.5, 1.0, 1.0, 1.0, 1.0];
