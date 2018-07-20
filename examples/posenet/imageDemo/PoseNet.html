@@ -15,7 +15,7 @@
         <div class = parameter>
             <h4>Parameter</h4>
             Backend:
-            <select onchange = "DrawSingleandMulti();" id = "backend">
+            <select onchange = "drawSingleandMulti();" id = "backend">
                 <option value = "webml">WebML</option>
                 <option value = "wasm">WASM</option>
                 <option selected = "selected">WebGL</option>
@@ -23,11 +23,11 @@
            
             <form>
                 Output Stride(8/16/32):<br>
-                <input onchange = "DrawSingleandMulti();" type = "number" id = "outputStride" value="16"><br>
+                <input onchange = "drawSingleandMulti();" type = "number" id = "outputStride" value="16"><br>
                 Minimal Part Confidence Score(0, 1):<br>
                 <input onchange = "updateParameter();" type = "number" id= "minpartConfidenceScore" value = "0.5"><br>
                 Model(0.5/0.75/1.0/1.01): <br>
-                <input onchange = "DrawSingleandMulti();" type = "number" id= "modelversion" value="1.01"><br>
+                <input onchange = "drawSingleandMulti();" type = "number" id= "modelversion" value="1.01"><br>
                 nmsRadius: <br>
                 <input onchange = "updateParameter();" type = "number" id= "nmsRadius" value="20"><br>
                 maxDetection: <br>

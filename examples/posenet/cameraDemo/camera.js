@@ -31,6 +31,8 @@ async function main(){
 			if (nnPolyfill.supportWebGL2){
 				util.init('WebGL2').then(()=>{
 					predict();
+					document.getElementById('loading').style.display = 'none';
+                    document.getElementById('camera').style.display = 'block';
 				});
 			}
 			else{
@@ -41,6 +43,8 @@ async function main(){
 			if (nnPolyfill.supportWasm){
 				util.init('WASM').then(()=>{
 					predict();
+					document.getElementById('loading').style.display = 'none';
+                    document.getElementById('camera').style.display = 'block';
 				});
 			}
 			else{
@@ -51,6 +55,8 @@ async function main(){
 			if(nnNative){
 				util.init('WebML').then(()=>{
 					predict();
+					document.getElementById('loading').style.display = 'none';
+					document.getElementById('camera').style.display = 'block';
 				});
 			}
 			else{
@@ -90,7 +96,7 @@ async function main(){
 		util.predict();
 		stats.end();
 		if(streaming){
-			setTimeout(predict, 0);
+			setTimeout(predict, 100);
 		}
 	}
 }

@@ -4,10 +4,13 @@
 	</head>
 
 	<body>
+        <div id = "loading">
+            Loading the model...
+        </div>
 		<div class = parameter>
             <h4>Parameter</h4>
             Backend:
-            <select id = "backend">
+            <select onchange = "main();" id = "backend">
                 <option value = "webml">WebML</option>
                 <option value = "wasm">WASM</option>
                 <option selected = "selected">WebGL</option>
@@ -15,7 +18,7 @@
             <br>
             <br>
             Type:
-            <select id = "type">
+            <select onchange = "main();" id = "type">
                 <option value = "Single">Single Person</option>
                 <option selected = "selected">Multiple Person</option>
             </select>
@@ -36,11 +39,11 @@
             </form>
         </div>
 		
-		<div class = camera>
+		<div id = "camera">
 			<h4> Camera Demo</h4>
-			<video hidden id = "video" width = "500" height = "500" autoplay></video>
         	<canvas id="canvas" width = "500" height = "500"/></canvas>
         	<canvas hidden id="canvas_2"/></canvas>
+            <video  hidden id = "video" width = "500" height = "500" autoplay></video>
     	</div>
         
     	<script src = "../../third_party/stats.min.js"></script>

@@ -123,10 +123,14 @@ class PoseNet{
                 }
 
                 if(this._tfmodel[i].rate == 1){
-                    dimension_out = this._calculateOutput(dimension_in, dimension[0], this._tfmodel[i]["stride"], "depthwise");
+                    dimension_out = this._calculateOutput(dimension_in, dimension[0], 
+                                                          this._tfmodel[i]["stride"], 
+                                                          "depthwise");
                 }
                 else{
-                    dimension_out = this._calculateOutput(dimension_in, resize(data[0][0]), this._tfmodel[i]["stride"], "depthwise");
+                    dimension_out = this._calculateOutput(dimension_in, resize(data[0][0]), 
+                                                          this._tfmodel[i]["stride"], 
+                                                          "depthwise");
                 }
                 dimension_in = dimension_out;
                 this._outputs.push(this._operandIndex);

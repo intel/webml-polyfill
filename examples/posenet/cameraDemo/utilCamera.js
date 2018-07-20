@@ -132,7 +132,8 @@ class Utils{
         let scaleData = await this.scaleImage();
         prepareInputTensor(this.inputTensor,this.scaleCanvas, this._outputStride, imageSize);
         let result = await this.model.compute_multi(this.inputTensor, this.heatmapTensor, 
-                this.offsetTensor, this.displacement_fwd, this.displacement_bwd);
+                                                    this.offsetTensor, this.displacement_fwd, 
+                                                    this.displacement_bwd);
         if(predictType == "Multiple Person"){
             let posesMulti = decodeMultiPose(this.heatmapTensor, this.offsetTensor, 
                                              this.displacement_fwd, this.displacement_bwd, 
