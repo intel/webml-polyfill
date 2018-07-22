@@ -3,7 +3,7 @@ describe('CTS', function() {
   const nn = navigator.ml.getNeuralNetworkContext();
 
   it('check result for Softmax float example/1', async function() {
-    let model = await nn.createModel();
+    let model = await nn.createModel(options);
     let operandIndex = 0;
 
     let input_value = [1.0, 2.0, 10.0, 20.0];
