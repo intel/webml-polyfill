@@ -3,7 +3,7 @@ describe('CTS', function() {
   const nn = navigator.ml.getNeuralNetworkContext();
 
   it('check result for Depthwise conv2d float large 2 weights as inputs example', async function() {
-    let model = await nn.createModel();
+    let model = await nn.createModel(options);
     let operandIndex = 0;
 
     let op1_value = [10, 21, 100, 10, 22, 200, 10, 23, 300, 10, 24, 400];
