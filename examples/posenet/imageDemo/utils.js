@@ -124,8 +124,7 @@ class Utils{
       ]);
       this.tfmodel = ModelArch.get(Number(this._version));
     }   
-    this.model = new PoseNet(this.tfmodel, backend, Number(this._version), 
-                						 Number(this._outputStride), input_size, this._type);   
+    this.model = new PoseNet(this.tfmodel, backend, Number(this._version), Number(this._outputStride), input_size, this._type);   
     result = await this.model.createCompiledModel();
     console.log('compilation result: ${result}');
     this.initialized = true;
@@ -139,20 +138,20 @@ class Utils{
     prepareInputTensor(this.inputTensor,imgElement, this._outputStride, imageSize);
     let start = performance.now();
     let result = await this.model.compute_multi(this.inputTensor, this.heatmapTensor, 
-            																		this.offsetTensor, this.displacement_fwd, 
-            																		this.displacement_bwd);
+						this.offsetTensor, this.displacement_fwd, 
+          					this.displacement_bwd);
     console.log("execution time: ", performance.now()-start);        
   }
 
   drawOutput(){    
     let imageSize = [input_size[1], input_size[2], input_size[3]];
     let poses_multi = decodeMultiPose(this.heatmapTensor, this.offsetTensor, 
-                    									this.displacement_fwd, this.displacement_bwd, 
-                    									this._outputStride, this._maxDetection, this._minScore, 
-                    									this._nmsRadius, toHeatmapsize(imageSize, this._outputStride));
+                    		      this.displacement_fwd, this.displacement_bwd, 
+                    		      this._outputStride, this._maxDetection, this._minScore, 
+                    		      this._nmsRadius, toHeatmapsize(imageSize, this._outputStride));
     let poses_single = decodeSinglepose(this.heatmapTensor, this.offsetTensor, 
-                        								toHeatmapsize(imageSize, this._outputStride), 
-                        								this._outputStride);
+                        		toHeatmapsize(imageSize, this._outputStride), 
+                        		this._outputStride);
     poses_single.forEach((pose)=>{
       if(pose.score >= this._minScore){
         drawKeypoints(pose.keypoints, this._minScore, this.canvasContext_single);
