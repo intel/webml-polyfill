@@ -190,7 +190,7 @@ class MobileNet {
           opType = this._nn.RESHAPE;
         } break;
         default: {
-          throw new Error(`operator type ${opcode} is not supported.`);
+          throw new Error(`operator type ${opCode} is not supported.`);
         }
       }
       this._model.addOperation(opType, inputs, outputs);
