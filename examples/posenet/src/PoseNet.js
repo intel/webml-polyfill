@@ -1,17 +1,18 @@
 class PoseNet{
-  constructor(tfmodel, backend, version, outputstride, input, type){
-    this._tfmodel = tfmodel;
+  constructor(modelArch, backend, version, outputStride, inputShape, type){
+    this._modelArch = modelArch;
     this._model = null;
     this._compilation;
     this._execution;
     this._tensorIds = [];
     this._operandIndex = 0;
     this._version = version;
-    this._outputstride = outputstride;
-    this._inputs = input;
-    this._shape = [];
-    this._outputs = [];
+    this._outputStride = outputStride;
+    this._inputShape = inputShape;
+    this._outputLayer = [];
     this._type = type;
+    this._inputTensorId;
+    this._outputTensorId;
     if (typeof backend !== 'undefined') {
       this._backend = backend;
     } 
@@ -39,10 +40,7 @@ class PoseNet{
       options.useWebGL2 = true;
     }
     this._model = await this._nn.createModel(options);
-    
     await this._addTensorOperands();
-    this._addOpsAndParams();
-    
     await this._model.finish();
     this._compilation = await this._model.createCompilation();
     this._compilation.setPreference(this._nn.PREFER_FAST_SINGLE_ANSWER);
@@ -50,7 +48,7 @@ class PoseNet{
     this._execution = await this._compilation.createExecution();
   }
 
-  async compute_single(inputTensor, heatmapTensor, offsetTensor){
+  async computeSinglePose(inputTensor, heatmapTensor, offsetTensor){
     this._execution.setInput(0, inputTensor);
     this._execution.setOutput(0, heatmapTensor);
     this._execution.setOutput(1, offsetTensor);
@@ -61,12 +59,12 @@ class PoseNet{
     return 'success';
   }
 
-  async compute_multi(inputTensor, heatmapTensor, offsetTensor, displacement_fwd, displacement_bwd){
+  async computeMultiPose(inputTensor, heatmapTensor, offsetTensor, displacementFwd, displacementBwd){
     this._execution.setInput(0, inputTensor);
     this._execution.setOutput(0, heatmapTensor);
     this._execution.setOutput(1, offsetTensor);
-    this._execution.setOutput(2, displacement_fwd);
-    this._execution.setOutput(3, displacement_bwd);
+    this._execution.setOutput(2, displacementFwd);
+    this._execution.setOutput(3, displacementBwd);
     let error = await this._execution.startCompute();
     if(error){
       return error;
@@ -76,184 +74,295 @@ class PoseNet{
 
 
   async _addTensorOperands(){
-    this._tfmodel = toOutputStridedLayers(this._tfmodel, this._outputstride);
-    let dimension_out;
-    let dimension_in = this._inputs;
+    /**
+    * Set model input and output layer
+    * Output: 
+    * Single Person: heatmap, offset
+    * Multi Person: heatmap, offset, forward displacement, backward displacement
+    */ 
+    this._modelArch = toOutputStridedLayers(this._modelArch, this._outputStride);
+    let dimensionOut;
+    let dimensionIn = this._inputShape;
     const type = this._nn.TENSOR_FLOAT32;
-    for(let i in this._tfmodel){
-      let dimension = [];
-      let weights = [];
-      let dimension_bias = [];
-      let bias = [];
-      if(this._tfmodel[i]["convType"] === "conv2d"){
-        await getDimensionData("conv2d", this._version, i).then(function(data){
-          dimension.push(resize(data[0]));
-          weights.push(new Float32Array(transpose_weights(data[1], data[0])));
-          dimension_bias.push(data[2]);
-          bias.push(data[3]);
-        });
-        dimension_out = this._calculateOutput(dimension_in, dimension[0], this._tfmodel[i]["stride"], "conv2d");
-        dimension_in = dimension_out;
-        this._outputs.push(this._operandIndex);
-        this._model.addOperand({type: type, dimensions: dimension_out});
-        this._operandIndex++;
-      }
-      if(this._tfmodel[i]["convType"] === "separableConv"){
-        let data = await getDimensionData("separableConv", this._version, i);
-        if(this._tfmodel[i].rate == 1){
-          dimension.push(resize(data[0][0]));
-          dimension.push(resize(data[0][1]));
-          weights.push(new Float32Array(transpose_weights(data[1][0], data[0][0])));
-          weights.push(new Float32Array(transpose_weights(data[1][1], data[0][1])));
-          dimension_bias.push(data[2][0]);
-          dimension_bias.push(data[2][1]);
-          bias.push(data[3][0]);
-          bias.push(data[3][1]);
-        }else{
-          let dilationData = dilationWeights(new Float32Array(transpose_weights(data[1][0], data[0][0])), 
-                                              resize(data[0][0]), this._tfmodel[i].rate);
-          dimension.push(dilationData[0]);
-          dimension.push(resize(data[0][1]));
-          weights.push(dilationData[1]);
-          weights.push(new Float32Array(transpose_weights(data[1][1], data[0][1])));
-          dimension_bias.push(data[2][0]);
-          dimension_bias.push(data[2][1]);
-          bias.push(data[3][0]);
-          bias.push(data[3][1]);
-        }
-
-        if(this._tfmodel[i].rate == 1){
-          dimension_out = this._calculateOutput(dimension_in, dimension[0], 
-                                                this._tfmodel[i]["stride"], 
-                                                "depthwise");
-        }
-        else{
-          dimension_out = this._calculateOutput(dimension_in, resize(data[0][0]), 
-                                                this._tfmodel[i]["stride"], 
-                                                "depthwise");
-        }
-        dimension_in = dimension_out;
-        this._outputs.push(this._operandIndex);
-        this._model.addOperand({type:type, dimensions: dimension_out});
-        this._operandIndex++;
-        dimension_out = this._calculateOutput(dimension_in, dimension[1], 1, "pointwise");
-        dimension_in = dimension_out;
-        this._outputs.push(this._operandIndex);
-        this._model.addOperand({type:type, dimensions: dimension_out});
-        this._operandIndex++;
-      }
-      for(let j in dimension){
-        let tensorId = this._operandIndex++;
-        let tensorType = {type: type, dimensions: dimension[j]};
-        this._shape.push(dimension[j]);
-        this._model.addOperand(tensorType);
-        this._model.setOperandValue(tensorId, weights[j]);
-        tensorId = this._operandIndex++;
-        let tensorType_bias = {type: type, dimensions: dimension_bias[j]};
-        this._model.addOperand(tensorType_bias);
-        this._model.setOperandValue(tensorId, bias[j]);
-      }      
-    }
-    //insert output layer
-    let tensorType, tensorType_bias;
-    let value, value_bias;
-    let shape_weights, shape_bias;
-    await getOutputLayer("heatmap", this._version).then(function(data){
-      tensorType = {type: type, dimensions: resize(data[0])};
-      tensorType_bias = {type: type, dimensions: data[2]};
-      value = new Float32Array(transpose_weights(data[1], data[0]));
-      value_bias = data[3];
-   }); 
-    let tensorId = this._operandIndex++;
-    this._model.addOperand(tensorType);
-    this._model.setOperandValue(tensorId, value);
-    tensorId = this._operandIndex++;
-    this._model.addOperand(tensorType_bias);
-    this._model.setOperandValue(tensorId, value_bias);
- 
-    await getOutputLayer("offset", this._version).then(function(data){
-      tensorType = {type: type, dimensions: resize(data[0])};
-      tensorType_bias = {type: type, dimensions: data[2]};
-      value = new Float32Array(transpose_weights(data[1], data[0]));
-      value_bias = data[3];
-   }); 
-    tensorId = this._operandIndex++;
-    this._model.addOperand(tensorType);
-    this._model.setOperandValue(tensorId, value);
-    tensorId = this._operandIndex++;
-    this._model.addOperand(tensorType_bias);
-    this._model.setOperandValue(tensorId, value_bias);
-    
-    if(this._type === "Multiperson"){       
-      await getOutputLayer("displacement_fwd", this._version).then(function(data){
-        tensorType = {type: type, dimensions: resize(data[0])};
-        tensorType_bias = {type: type, dimensions: data[2]};
-        value = new Float32Array(transpose_weights(data[1], data[0]));
-        value_bias = data[3];
-      }); 
-      tensorId = this._operandIndex++;
-      this._model.addOperand(tensorType);
-      this._model.setOperandValue(tensorId, value);
-      tensorId = this._operandIndex++;
-      this._model.addOperand(tensorType_bias);
-      this._model.setOperandValue(tensorId, value_bias);
-     
-      await getOutputLayer("displacement_bwd", this._version).then(function(data){
-        tensorType = {type: type, dimensions: resize(data[0])};
-        tensorType_bias = {type: type, dimensions: data[2]};
-        value = new Float32Array(transpose_weights(data[1], data[0]));
-        value_bias = data[3];
-      }); 
-      tensorId = this._operandIndex++;
-      this._model.addOperand(tensorType);
-      this._model.setOperandValue(tensorId, value);
-      tensorId = this._operandIndex++;
-      this._model.addOperand(tensorType_bias);
-      this._model.setOperandValue(tensorId, value_bias);
-    }
-    
-    //Set model input and output layer
-    let heatmap_dimension = [1, (this._inputs[1]-1)/this._outputstride+1, (this._inputs[2]-1)/this._outputstride+1, 17];
-    let heatmap = {type: type, dimensions: heatmap_dimension};
-    let offset_dimension = [1, (this._inputs[1]-1)/this._outputstride+1, (this._inputs[2]-1)/this._outputstride+1, 34];
-    let offset = {type: type, dimensions: offset_dimension};
-    let input = {type:type, dimensions: this._inputs};
-    let tensorId_input = this._operandIndex++;
+    const heatmapDimension = [1, (this._inputShape[1]-1)/this._outputStride+1, (this._inputShape[2]-1)/this._outputStride+1, 17];
+    const heatmap = {type: type, dimensions: heatmapDimension};
+    const offsetDimension = [1, (this._inputShape[1]-1)/this._outputStride+1, (this._inputShape[2]-1)/this._outputStride+1, 34];
+    const offset = {type: type, dimensions: offsetDimension};
+    let input = {type:type, dimensions: this._inputShape};
+    this._inputTensorId = this._operandIndex++;
     this._model.addOperand(input);
-    let tensorId_output = [];
-    tensorId_output.push(this._operandIndex++);
+    this._outputTensorId = [];
+    this._outputTensorId.push(this._operandIndex++);
     this._model.addOperand(heatmap);
-    tensorId_output.push(this._operandIndex++);
+    this._outputTensorId.push(this._operandIndex++);
     this._model.addOperand(offset);
     if(this._type === "Multiperson"){
-      let displacement_fwd_dimension = [1, (this._inputs[1]-1)/this._outputstride+1, (this._inputs[2]-1)/this._outputstride+1, 32];
-      let displacement_bwd_dimension = [1, (this._inputs[1]-1)/this._outputstride+1, (this._inputs[2]-1)/this._outputstride+1, 32];
-      let displacement_fwd = {type:type, dimensions:displacement_fwd_dimension};
-      let displacement_bwd = {type:type, dimensions:displacement_bwd_dimension};
-      tensorId_output.push(this._operandIndex++);
+      const displacement_fwd_dimension = [1, (this._inputShape[1]-1)/this._outputStride+1, (this._inputShape[2]-1)/this._outputStride+1, 32];
+      const displacement_bwd_dimension = [1, (this._inputShape[1]-1)/this._outputStride+1, (this._inputShape[2]-1)/this._outputStride+1, 32];
+      const displacement_fwd = {type:type, dimensions:displacement_fwd_dimension};
+      const displacement_bwd = {type:type, dimensions:displacement_bwd_dimension};
+      this._outputTensorId.push(this._operandIndex++);
       this._model.addOperand(displacement_fwd);
-      tensorId_output.push(this._operandIndex++);
+      this._outputTensorId.push(this._operandIndex++);
       this._model.addOperand(displacement_bwd);
     }
-    this._model.identifyInputsAndOutputs([tensorId_input], tensorId_output);
+    this._model.identifyInputsAndOutputs([this._inputTensorId], this._outputTensorId);
+
+    // add operands and operation for every layer of Mobilenet
+    let outputLayerIndex = 0; 
+    for(let i in this._modelArch){
+      let dimensionWeights = [];
+      let weights = [];
+      let dimensionBias = [];
+      let bias = [];
+      let inputs = [];
+      if(this._modelArch[i]["convType"] === "conv2d"){
+      	if(i == 0){
+      	  inputs.push(this._inputTensorId);
+      	}
+      	else{
+      	  inputs.push(this._outputLayer[outputLayerIndex]);
+      	  outputLayerIndex++;
+      	}
+	  
+	/** 
+	* data = { 
+	*          shapeWeights,
+	*          weights,
+	*          shapeBias,
+	*          bias
+	*        }
+	*/
+        const data = await getDimensionData("conv2d", this._version, i);
+        dimensionWeights.push(reshape(data.shapeWeights));
+        weights.push(new Float32Array(transposeWeights(data.weights, data.shapeWeights)));
+        dimensionBias.push(data.shapeBias);
+        bias.push(data.bias);
+        dimensionOut = this._calculateOutput(dimensionIn, dimensionWeights[0],
+					     this._modelArch[i]["stride"], "conv2d");
+        dimensionIn = dimensionOut;
+        this._outputLayer.push(this._operandIndex);
+        this._model.addOperand({type: type, dimensions: dimensionOut});
+        this._operandIndex++;
+      }
+      // separableConv = [Depthwise Convolution, Pointwise Convolution]
+      if(this._modelArch[i]["convType"] === "separableConv"){
+      	if(i == 0){
+      	  inputs.push(this._inputTensorId);
+      	}
+      	else{
+      	  inputs.push(this._outputLayer[outputLayerIndex]);
+      	  outputLayerIndex++;
+      	}
+        const data = await getDimensionData("separableConv", this._version, i);
+        // regular depthwise convolution
+        if(this._modelArch[i].rate == 1){
+          dimensionWeights.push(reshape(data.shapeWeights[0]));
+          dimensionWeights.push(reshape(data.shapeWeights[1]));
+          weights.push(new Float32Array(transposeWeights(data.weights[0], data.shapeWeights[0])));
+          weights.push(new Float32Array(transposeWeights(data.weights[1], data.shapeWeights[1])));
+          dimensionBias.push(data.shapeBias[0]);
+          dimensionBias.push(data.shapeBias[1]);
+          bias.push(data.bias[0]);
+          bias.push(data.bias[1]);
+          dimensionOut = this._calculateOutput(dimensionIn, dimensionWeights[0], 
+                                      	       this._modelArch[i]["stride"], "depthwise");
+        }
+        // dilated depthwise convoluton
+        else{
+          const dilationData = dilationWeights(new Float32Array(transposeWeights(data.weights[0], data.shapeWeights[0])),
+					       reshape(data.shapeWeights[0]), this._modelArch[i].rate);
+          dimensionWeights.push(dilationData.dimension);
+          dimensionWeights.push(reshape(data.shapeWeights[1]));
+          weights.push(dilationData.dilationWeights);
+          weights.push(new Float32Array(transposeWeights(data.weights[1], data.shapeWeights[1])));
+          dimensionBias.push(data.shapeBias[0]);
+          dimensionBias.push(data.shapeBias[1]);
+          bias.push(data.bias[0]);
+          bias.push(data.bias[1]);
+          dimensionOut = this._calculateOutput(dimensionIn, reshape(data.shapeWeights[0]), 
+					       this._modelArch[i]["stride"], "depthwise");
+        }
+        dimensionIn = dimensionOut;
+        this._outputLayer.push(this._operandIndex);
+        this._model.addOperand({type:type, dimensions: dimensionOut});
+        this._operandIndex++;
+        dimensionOut = this._calculateOutput(dimensionIn, dimensionWeights[1], 1, "pointwise");
+        dimensionIn = dimensionOut;
+        this._outputLayer.push(this._operandIndex);
+        this._model.addOperand({type:type, dimensions: dimensionOut});
+        this._operandIndex++;
+      }
+      for(let j in dimensionWeights){
+        let tensorId = this._operandIndex++;
+        let tensorTypeWeights = {type: type, dimensions: dimensionWeights[j]};
+        this._model.addOperand(tensorTypeWeights);
+        this._model.setOperandValue(tensorId, weights[j]);
+        inputs.push(tensorId);
+        tensorId = this._operandIndex++;
+        let tensorTypeBias = {type: type, dimensions: dimensionBias[j]};
+        this._model.addOperand(tensorTypeBias);
+        this._model.setOperandValue(tensorId, bias[j]);
+        inputs.push(tensorId);
+        if(this._modelArch[i].convType=="conv2d"){
+	  let outputs = this._outputLayer[outputLayerIndex];
+	  const paddingCode = this._nn.PADDING_SAME;
+	  const fuseCode = this._nn.FUSED_RELU6;
+	  inputs.push(this._addScalarInt32(paddingCode));
+	  inputs.push(this._addScalarInt32(this._modelArch[i].stride));
+	  inputs.push(this._addScalarInt32(this._modelArch[i].stride));
+	  inputs.push(this._addScalarInt32(fuseCode));
+	  const opType = this._nn.CONV_2D;
+	  this._model.addOperation(opType, inputs, [outputs]);
+      	}
+      	else if(this._modelArch[i].convType == "separableConv"){
+	  const paddingCode = this._nn.PADDING_SAME;
+	  const fuseCode = this._nn.FUSED_RELU6;
+      	  if(j == 0){
+      	    const opType = this._nn.DEPTHWISE_CONV_2D;
+      	    const multiplier = 1;
+      	    let outputs = this._outputLayer[outputLayerIndex];
+      	    inputs.push(this._addScalarInt32(paddingCode));
+    	    inputs.push(this._addScalarInt32(this._modelArch[i].stride));
+    	    inputs.push(this._addScalarInt32(this._modelArch[i].stride));
+    	    inputs.push(this._addScalarInt32(multiplier));
+    	    inputs.push(this._addScalarInt32(fuseCode));
+      	    this._model.addOperation(opType, inputs, [outputs]);
+      	    inputs = [];
+      	  }
+      	  else{
+      	    const stride = 1;
+      	    inputs.unshift(this._outputLayer[outputLayerIndex]);
+      	    outputLayerIndex++;
+      	    const opType = this._nn.CONV_2D;
+      	    let outputs = this._outputLayer[outputLayerIndex];
+      	    inputs.push(this._addScalarInt32(paddingCode));
+    	    inputs.push(this._addScalarInt32(stride));
+	    inputs.push(this._addScalarInt32(stride));
+    	    inputs.push(this._addScalarInt32(fuseCode));
+      	    this._model.addOperation(opType, inputs, [outputs]);
+      	  }
+      	}
+      }    
+    }
+
+    // add operation and operands for output layer
+    let tensorTypeWeights, tensorTypeBias;
+    let valueWeights, valueBias;
+    // add operands for heatmap layer
+    let inputs = [];
+    const stride = 1;
+    inputs.push(this._outputLayer[this._outputLayer.length-1]);
+    let data = await getDimensionData("heatmap", this._version, 0);
+    tensorTypeWeights = {type: type, dimensions: reshape(data.shapeWeights)};
+    tensorTypeBias = {type: type, dimensions: data.shapeBias};
+    valueWeights = new Float32Array(transposeWeights(data.weights, data.shapeWeights));
+    valueBias = data.bias;
+    let tensorId = this._operandIndex++;
+    this._model.addOperand(tensorTypeWeights);
+    this._model.setOperandValue(tensorId, valueWeights);
+    inputs.push(tensorId);
+    tensorId = this._operandIndex++;
+    this._model.addOperand(tensorTypeBias);
+    this._model.setOperandValue(tensorId, valueBias);
+    inputs.push(tensorId);
+    inputs.push(this._addScalarInt32(this._nn.PADDING_SAME));
+    inputs.push(this._addScalarInt32(stride));
+    inputs.push(this._addScalarInt32(stride));
+    inputs.push(this._addScalarInt32(this._nn.FUSED_NONE));
+    let outputs = this._outputTensorId[0];
+    this._model.addOperation(this._nn.CONV_2D, inputs, [outputs]);
+
+    // add operands for offset layer
+    inputs = [];
+    inputs.push(this._outputLayer[this._outputLayer.length-1]);
+    data = await getDimensionData("offset", this._version, 0)
+    tensorTypeWeights = {type: type, dimensions: reshape(data.shapeWeights)};
+    tensorTypeBias = {type: type, dimensions: data.shapeBias};
+    valueWeights = new Float32Array(transposeWeights(data.weights, data.shapeWeights));
+    valueBias = data.bias;
+
+    tensorId = this._operandIndex++;
+    this._model.addOperand(tensorTypeWeights);
+    this._model.setOperandValue(tensorId, valueWeights);
+    inputs.push(tensorId);
+    tensorId = this._operandIndex++;
+    this._model.addOperand(tensorTypeBias);
+    this._model.setOperandValue(tensorId, valueBias);
+    inputs.push(tensorId);
+    inputs.push(this._addScalarInt32(this._nn.PADDING_SAME));
+    inputs.push(this._addScalarInt32(stride));
+    inputs.push(this._addScalarInt32(stride));
+    inputs.push(this._addScalarInt32(this._nn.FUSED_NONE));
+    outputs = this._outputTensorId[1];
+    this._model.addOperation(this._nn.CONV_2D, inputs, [outputs]);
+    
+    if(this._type === "Multiperson"){  
+      // add operands for forward displacement layer
+      inputs = [];
+      inputs.push(this._outputLayer[this._outputLayer.length-1]);  
+      data = await getDimensionData("displacement_fwd", this._version, 0)
+      tensorTypeWeights = {type: type, dimensions: reshape(data.shapeWeights)};
+      tensorTypeBias = {type: type, dimensions: data.shapeBias};
+      valueWeights = new Float32Array(transposeWeights(data.weights, data.shapeWeights));
+      valueBias = data.bias;
+
+      tensorId = this._operandIndex++;
+      this._model.addOperand(tensorTypeWeights);
+      this._model.setOperandValue(tensorId, valueWeights);
+      inputs.push(tensorId);
+      tensorId = this._operandIndex++;
+      this._model.addOperand(tensorTypeBias);
+      this._model.setOperandValue(tensorId, valueBias);
+      inputs.push(tensorId);
+      inputs.push(this._addScalarInt32(this._nn.PADDING_SAME));
+      inputs.push(this._addScalarInt32(stride));
+      inputs.push(this._addScalarInt32(stride));
+      inputs.push(this._addScalarInt32(this._nn.FUSED_NONE));
+      outputs = this._outputTensorId[2];
+      this._model.addOperation(this._nn.CONV_2D, inputs, [outputs]);
+     
+      // add operands for backward displacement layer     
+      inputs = [];
+      inputs.push(this._outputLayer[this._outputLayer.length-1]);  
+      data = await getDimensionData("displacement_bwd", this._version, 0)
+      tensorTypeWeights = {type: type, dimensions: reshape(data.shapeWeights)};
+      tensorTypeBias = {type: type, dimensions: data.shapeBias};
+      valueWeights = new Float32Array(transposeWeights(data.weights, data.shapeWeights));
+      valueBias = data.bias;
+
+      tensorId = this._operandIndex++;
+      this._model.addOperand(tensorTypeWeights);
+      this._model.setOperandValue(tensorId, valueWeights);
+      inputs.push(tensorId);
+      tensorId = this._operandIndex++;
+      this._model.addOperand(tensorTypeBias);
+      this._model.setOperandValue(tensorId, valueBias);
+      inputs.push(tensorId);
+      inputs.push(this._addScalarInt32(this._nn.PADDING_SAME));
+      inputs.push(this._addScalarInt32(stride));
+      inputs.push(this._addScalarInt32(stride));
+      inputs.push(this._addScalarInt32(this._nn.FUSED_NONE));
+      outputs = this._outputTensorId[3];
+      this._model.addOperation(this._nn.CONV_2D, inputs, [outputs]);
+    }
   }
 
-  _calculateOutput(input_dimension, shape, stride, layer){
-    var padding = 1;
-    var output_dimension;
+  _calculateOutput(inputDimension, shape, stride, layer){
+    let outputDimension;
     if(layer === "conv2d"){
-      output_dimension = [1, Math.floor((input_dimension[1]-shape[1]+2)/stride+1), 
-                          Math.floor((input_dimension[2]-shape[2]+2)/stride+1), shape[0]];
+      outputDimension = [1, Math.floor((inputDimension[1]-shape[1]+2)/stride+1), 
+			 Math.floor((inputDimension[2]-shape[2]+2)/stride+1), shape[0]];
     }
     else if(layer === "depthwise"){
-      output_dimension = [1, Math.floor((input_dimension[1]-shape[1]+2)/stride+1), 
-                          Math.floor((input_dimension[2]-shape[2]+2)/stride+1), input_dimension[3]];
+      outputDimension = [1, Math.floor((inputDimension[1]-shape[1]+2)/stride+1), 
+			 Math.floor((inputDimension[2]-shape[2]+2)/stride+1), inputDimension[3]];
     }
     else{
-      output_dimension = [1, Math.floor((input_dimension[1]-shape[1]+0)/stride+1), 
-                          Math.floor((input_dimension[2]-shape[2]+0)/stride+1), shape[0]];
+      outputDimension = [1, Math.floor((inputDimension[1]-shape[1]+0)/stride+1), 
+			 Math.floor((inputDimension[2]-shape[2]+0)/stride+1), shape[0]];
     }
-    return output_dimension;
+    return outputDimension;
   }
 
 
@@ -263,109 +372,6 @@ class PoseNet{
     this._model.addOperand(scalarInt32Type);
     this._model.setOperandValue(index, new Int32Array([value]));
     return index;
-  }
-  _addScalarFloat32(value) {
-    const scalarInt32Type = {type: this._nn.FLOAT32};
-    let index = this._operandIndex++;
-    this._model.addOperand(scalarInt32Type);
-    this._model.setOperandValue(index, new Float32Array([value]));
-    return index;
-	}
-  
-  _addOpsAndParams(){
-    let index = 0;
-    for(let i in this._tfmodel){
-      if(this._tfmodel[i].convType=="conv2d"){
-        let inputs = [];
-        inputs.push(this._model._inputs[0]);
-        let outputs = this._outputs[index];
-        let paddingCode = 1;
-        inputs.push(outputs+1);
-        inputs.push(outputs+2);
-        inputs.push(this._addScalarInt32(paddingCode));
-        inputs.push(this._addScalarInt32(this._tfmodel[i].stride));
-        inputs.push(this._addScalarInt32(this._tfmodel[i].stride));
-        let fuseCode = 3; //relu6 activition function
-        inputs.push(this._addScalarInt32(fuseCode));
-        let opType = this._nn.CONV_2D;
-        this._model.addOperation(opType, inputs, [outputs]);
-      }		
-      else if(this._tfmodel[i].convType == "separableConv"){
-        //depthwise conv
-        let inputs = [];
-        inputs.push(this._outputs[index]);
-        index++;
-        let outputs = this._outputs[index];
-        let paddingCode = 1; //SAME
-        inputs.push(outputs+2);
-        inputs.push(outputs+3);
-        inputs.push(this._addScalarInt32(paddingCode));
-        inputs.push(this._addScalarInt32(this._tfmodel[i].stride));
-        inputs.push(this._addScalarInt32(this._tfmodel[i].stride));
-        inputs.push(this._addScalarInt32(1));
-        let fuseCode = 3;
-        inputs.push(this._addScalarInt32(fuseCode));
-        let opType = this._nn.DEPTHWISE_CONV_2D;
-        this._model.addOperation(opType, inputs, [outputs]);
-
-        //pointwise conv
-        let inputs_point = [];
-        inputs_point.push(this._outputs[index]);
-        index++;
-        let outputs_point = this._outputs[index];
-        paddingCode = 1;
-        inputs_point.push(outputs_point+3);
-        inputs_point.push(outputs_point+4);
-        inputs_point.push(this._addScalarInt32(paddingCode));
-        inputs_point.push(this._addScalarInt32(1));
-        inputs_point.push(this._addScalarInt32(1));
-        fuseCode = 3;
-        inputs_point.push(this._addScalarInt32(fuseCode));
-        opType = this._nn.CONV_2D;
-        this._model.addOperation(opType, inputs_point, [outputs_point]);
-      }
-    }	
-
-    if(this._type === "Multiperson"){
-      let paddingCode = 1;
-      let index = 5;
-      for(let i = 0; i<4; i++){
-        let inputs = [];
-        inputs.push(this._outputs[this._outputs.length-1]);
-        inputs.push(this._outputs[this._outputs.length-1]+index);
-        index++;
-        inputs.push(this._outputs[this._outputs.length-1]+index); 
-        index++;
-        inputs.push(this._addScalarInt32(paddingCode));
-        inputs.push(this._addScalarInt32(1));
-        inputs.push(this._addScalarInt32(1));
-        let fuseCode = 0;
-        inputs.push(this._addScalarInt32(fuseCode));
-        let opType = this._nn.CONV_2D;
-        let outputs = this._model._outputs[i];
-        this._model.addOperation(opType, inputs, [outputs]);
-      }
-    }
-    else{
-      let paddingCode = 1;
-      let index = 5;
-      for(let i = 0; i<2; i++){
-        let inputs = [];
-        inputs.push(this._outputs[this._outputs.length-1]);
-        inputs.push(this._outputs[this._outputs.length-1]+index);
-        index++;
-        inputs.push(this._outputs[this._outputs.length-1]+index); 
-        index++;
-        inputs.push(this._addScalarInt32(paddingCode));
-        inputs.push(this._addScalarInt32(1));
-        inputs.push(this._addScalarInt32(1));
-        let fuseCode = 0;
-        inputs.push(this._addScalarInt32(fuseCode));
-        let opType = this._nn.CONV_2D;
-        let outputs = this._model._outputs[i];
-        this._model.addOperation(opType, inputs, [outputs]);
-      }
-    }
   }
 }
 

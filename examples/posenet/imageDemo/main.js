@@ -43,7 +43,7 @@ async function drawSingleandMulti(){
         throw new Error("Do not support WebML");
       }
       break;
-  	default:
+    default:
       break;
   }
 }
@@ -77,9 +77,3 @@ async function drawResult(){
     util.drawOutput();
   }
 }
-
-
-
-
-
-

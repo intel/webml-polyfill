@@ -63,13 +63,13 @@ class Utils{
     this._version;
 
     this._type = "Multiperson";
-    //single input
+    // single input
     this._isMultiple = document.getElementById('type');
     this._version = document.getElementById('modelversion').value;
     this._outputStride= document.getElementById('outputStride').value;
     this._minScore = document.getElementById('minpartConfidenceScore').value;
     this._scaleFactor = document.getElementById('scaleFactor').value;
-    //multiple input
+    // multiple input
     this._nmsRadius = document.getElementById('nmsRadius').value;
     this._maxDetection = document.getElementById('maxDetection').value;
     
@@ -117,7 +117,7 @@ class Utils{
       this.tfmodel = ModelArch.get(Number(this._version));
     }
     this.model = new PoseNet(this.tfmodel, backend, Number(this._version), 
-                    				 Number(this._outputStride), this.inputSize, this._type);
+                    	     Number(this._outputStride), this.inputSize, this._type);
     result = await this.model.createCompiledModel();
     console.log('compilation result: ${result}');
     this.initialized = true;
@@ -131,9 +131,9 @@ class Utils{
     let imageSize = [this.scaleWidth, this.scaleHeight, 3];
     let scaleData = await this.scaleImage();
     prepareInputTensor(this.inputTensor,this.scaleCanvas, this._outputStride, imageSize);
-    let result = await this.model.compute_multi(this.inputTensor, this.heatmapTensor, 
-                                                this.offsetTensor, this.displacement_fwd, 
-                                                this.displacement_bwd);
+    let result = await this.model.computeMultiPose(this.inputTensor, this.heatmapTensor, 
+                                                   this.offsetTensor, this.displacement_fwd, 
+                                                   this.displacement_bwd);
     if(predictType == "Multiple Person"){
       let posesMulti = decodeMultiPose(this.heatmapTensor, this.offsetTensor, 
                                        this.displacement_fwd, this.displacement_bwd, 
@@ -146,7 +146,7 @@ class Utils{
           drawSkeleton(pose.keypoints, this._minScore, this.ctx);
         }
       });
-  	}
+    }
     else{
       let poseSingle = decodeSinglepose(this.heatmapTensor, this.offsetTensor, 
                                         toHeatmapsize(imageSize, this._outputStride), 
@@ -154,7 +154,7 @@ class Utils{
       poseSingle.forEach((pose)=>{
         scalePose(pose, videoWidth/this.scaleWidth);
         if(pose.score >= this._minScore){
-        	drawKeypoints(pose.keypoints, this._minScore, this.ctx);
+          drawKeypoints(pose.keypoints, this._minScore, this.ctx);
           drawSkeleton(pose.keypoints, this._minScore, this.ctx);
         }
       });

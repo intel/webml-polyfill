@@ -47,7 +47,7 @@ function getURL(version){
   return address;
 }
 
-//Obtain weights data and bias data
+// Obtain weights data and bias data
 async function getVariable(url, binary){
   return new Promise(function(resolve, reject){
     var xhr = new XMLHttpRequest();
@@ -73,69 +73,66 @@ async function getDimensionData(layername, version, blockId){
   if(layername =="conv2d"){
     let manifest = await getVariable(getURL(version)+"manifest.json", false);
     manifest = JSON.parse(manifest);
-    let layer = "MobilenetV1/Conv2d_"+String(blockId)+"/weights";
-    let layer_bias = "MobilenetV1/Conv2d_"+String(blockId)+"/biases";
-    let shape = manifest[layer]["shape"];
-    let shape_bias = manifest[layer_bias]["shape"];
-    let filename = manifest[layer]["filename"];
-    let filename_bias = manifest[layer_bias]["filename"];
-    let address = getURL(version)+filename;
-    let address_bias = getURL(version)+filename_bias;
-    let data = await getVariable(address, true);
-    let bia = await getVariable(address_bias, true);
-    const weights = new Float32Array(data);
-    const bias = new Float32Array(bia);
-    return [shape, weights, shape_bias, bias];
+    let layerWeights = "MobilenetV1/Conv2d_"+String(blockId)+"/weights";
+    let layerBias = "MobilenetV1/Conv2d_"+String(blockId)+"/biases";
+    let shapeWeights = manifest[layerWeights]["shape"];
+    let shapeBias = manifest[layerBias]["shape"];
+    let filenameWeights = manifest[layerWeights]["filename"];
+    let filenameBias = manifest[layerBias]["filename"];
+    let addressWeights = getURL(version)+filenameWeights;
+    let addressBias = getURL(version)+filenameBias;
+    let weights = await getVariable(addressWeights, true);
+    let bias = await getVariable(addressBias, true);
+    weights = new Float32Array(weights);
+    bias = new Float32Array(bias);
+    return {shapeWeights: shapeWeights, weights: weights, shapeBias: shapeBias, bias: bias};
   }
-  if(layername =="separableConv"){
+  else if(layername =="separableConv"){
     let manifest = await getVariable(getURL(version)+"manifest.json", false);
     manifest = JSON.parse(manifest);
-    let layer_1 = "MobilenetV1/Conv2d_"+String(blockId)+"_depthwise/depthwise_weights";
-    let layer_2 = "MobilenetV1/Conv2d_"+String(blockId)+"_pointwise/weights";
-    let layer_1_bias = "MobilenetV1/Conv2d_"+String(blockId)+"_depthwise/biases";
-    let layer_2_bias = "MobilenetV1/Conv2d_"+String(blockId)+"_pointwise/biases";
-    let shape = [];
-    let shape_bias = [];
+    let layerDepthWeights = "MobilenetV1/Conv2d_"+String(blockId)+"_depthwise/depthwise_weights";
+    let layerPointWeights = "MobilenetV1/Conv2d_"+String(blockId)+"_pointwise/weights";
+    let layerDepthBias = "MobilenetV1/Conv2d_"+String(blockId)+"_depthwise/biases";
+    let layerPointBias = "MobilenetV1/Conv2d_"+String(blockId)+"_pointwise/biases";
+    let shapeWeights = [];
+    let shapeBias = [];
     let weights = [];
     let bias = [];
-    shape.push(manifest[layer_1]["shape"]);
-    shape.push(manifest[layer_2]["shape"]);
-    shape_bias.push(manifest[layer_1_bias]["shape"]);
-    shape_bias.push(manifest[layer_2_bias]["shape"]);
-    let filename1 = manifest[layer_1]["filename"];
-    let filename2 = manifest[layer_2]["filename"];
-    let filename1_bias = manifest[layer_1_bias]["filename"];
-    let filename2_bias = manifest[layer_2_bias]["filename"];
-    let data_1 = await getVariable(getURL(version)+filename1, true);
-    let data_2 = await getVariable(getURL(version)+filename2, true);
-    let data_1_bias = await getVariable(getURL(version)+filename1_bias, true);
-    let data_2_bias = await getVariable(getURL(version)+filename2_bias, true);
-    weights.push(new Float32Array(data_1));
-    weights.push(new Float32Array(data_2));
-    bias.push(new Float32Array(data_1_bias));
-    bias.push(new Float32Array(data_2_bias));
-    return [shape, weights, shape_bias, bias];
+    shapeWeights.push(manifest[layerDepthWeights]["shape"]);
+    shapeWeights.push(manifest[layerPointWeights]["shape"]);
+    shapeBias.push(manifest[layerDepthBias]["shape"]);
+    shapeBias.push(manifest[layerPointBias]["shape"]);
+    let fileDepthWeights = manifest[layerDepthWeights]["filename"];
+    let filePointWeights = manifest[layerPointWeights]["filename"];
+    let fileDepthBias = manifest[layerDepthBias]["filename"];
+    let filePointBias = manifest[layerPointBias]["filename"];
+    let depthWeights = await getVariable(getURL(version)+fileDepthWeights, true);
+    let pointWeights = await getVariable(getURL(version)+filePointWeights, true);
+    let depthBias = await getVariable(getURL(version)+fileDepthBias, true);
+    let pointBias = await getVariable(getURL(version)+filePointBias, true);
+    weights.push(new Float32Array(depthWeights));
+    weights.push(new Float32Array(pointWeights));
+    bias.push(new Float32Array(depthBias));
+    bias.push(new Float32Array(pointBias));
+    return {shapeWeights: shapeWeights, weights: weights, shapeBias: shapeBias, bias: bias};
+  }
+  else{
+    let manifest = await getVariable(getURL(version)+"manifest.json", false);
+    manifest = JSON.parse(manifest);
+    let shapeWeights;
+    let shapeBias;
+    shapeWeights = manifest["MobilenetV1/"+layername+"_2/weights"]["shape"];
+    shapeBias = manifest["MobilenetV1/"+layername+"_2/biases"]["shape"];
+    let weights = await getVariable(getURL(version)+manifest["MobilenetV1/"+layername+"_2/weights"]["filename"], true);
+    let bias = await getVariable(getURL(version)+manifest["MobilenetV1/"+layername+"_2/biases"]["filename"], true);
+    weights = new Float32Array(weights);
+    bias = new Float32Array(bias);
+    return {shapeWeights: shapeWeights, weights: weights, shapeBias: shapeBias, bias: bias};
   }
 }
 
 
-async function getOutputLayer(layername, version){
-  let manifest = await getVariable(getURL(version)+"manifest.json", false);
-  manifest = JSON.parse(manifest);
-  let shape;
-  let shape_bias;
-  let weights, bias;
-  shape = manifest["MobilenetV1/"+layername+"_2/weights"]["shape"];
-  shape_bias = manifest["MobilenetV1/"+layername+"_2/biases"]["shape"];
-  let data = await getVariable(getURL(version)+manifest["MobilenetV1/"+layername+"_2/weights"]["filename"], true);
-  weights = new Float32Array(data);
-  let data_bias = await getVariable(getURL(version)+manifest["MobilenetV1/"+layername+"_2/biases"]["filename"], true);
-  bias = new Float32Array(data_bias);
-  return [shape, weights, shape_bias, bias];
-}
-
-
-//obtain desired size output
+// obtain desired size output
 function toOutputStridedLayers(convolutionDefinition, outputStride) {
   let currentStride = 1;
   let rate = 1;
@@ -159,41 +156,41 @@ function toOutputStridedLayers(convolutionDefinition, outputStride) {
   });
 }
 
-//weights dimension: HWCN -> NHWC
-function resize(dimension){
+// weights dimension: HWCN -> NHWC
+function reshape(dimension){
   return [dimension[3], dimension[0], dimension[1], dimension[2]];
 }
 
-//HWCN -> NHWC
-function transpose_weights(weights, dimension){
+// HWCN -> NHWC
+function transposeWeights(weights, dimension){
   let product = dimension.reduce(function(a,b){return a*b});
-  let new_weights = new Float32Array(product);
+  let newWeights = new Float32Array(product);
   let [H, W, C, N] = dimension;
   for(let h =0; h<H; h++){
     for(let w =0; w<W; w++){
       for(let c = 0; c<C; c++){
         for(let n =0; n<N; n++){
-          new_weights[c + w*C + h*W*C + n*H*W*C] = 
+          newWeights[c + w*C + h*W*C + n*H*W*C] = 
               weights[n + c*N + w*C*N + h*W*C*N];
         }
       }
     }
   }
-  return new_weights;
+  return newWeights;
 }
 
-function valideResolution(input_dimension, outputStride){
-  let width = input_dimension[1];
-  let height = input_dimension[2];
+function valideResolution(inputDimension, outputStride){
+  let width = inputDimension[1];
+  let height = inputDimension[2];
   if((width-1) % outputStride != 0){
     throw new Error("invalid resolution");
   }
 }
 
-function prepareInputTensor(tensor, canvas, outputStride, img_dimension){
-  const width = img_dimension[0];
-  const height = img_dimension[1]; 
-  const channels = img_dimension[2];
+function prepareInputTensor(tensor, canvas, outputStride, imgDimension){
+  const width = imgDimension[0];
+  const height = imgDimension[1]; 
+  const channels = imgDimension[2];
   const imageChannels = 4;
   const mean = 127.5;
   const std = 127.5;
@@ -232,18 +229,18 @@ function argMax(array){
 
 
 function getKeypointIndex(array, dimension){
-  let new_array = [];
+  let newArray = [];
   let index = [];
   let confidenceScore = [];
   for(let i = 0; i< 17; i++){
-    new_array.push(new Array(dimension[0]*dimension[1]));
+    newArray.push(new Array(dimension[0]*dimension[1]));
   }
   for(let i in array){
-    new_array[i%17][Math.floor(i/17)] = array[i];
+    newArray[i%17][Math.floor(i/17)] = array[i];
   }
-  for(let j in new_array){
-    index.push(argMax(new_array[j]));
-    confidenceScore.push(new_array[j][argMax(new_array[j])]);
+  for(let j in newArray){
+    index.push(argMax(newArray[j]));
+    confidenceScore.push(newArray[j][argMax(newArray[j])]);
   }
   return [index, confidenceScore];
 }
@@ -274,20 +271,20 @@ function convertCoortoIndex(x, y, z, dimension){
 
 function decodeSinglepose(heatmap, offset, dimension, outputStride){
   let [index, confidenceScore] = getKeypointIndex(sigmoid(heatmap),dimension);
-  let final_res = [];
-  let total_score = 0; 
+  let finalRes = [];
+  let totalScore = 0; 
   let poses = [];
   for(let i in index){
-    let heatmap_y = convertPosition(Number(index[i]), dimension)[0];
-    let heatmap_x = convertPosition(Number(index[i]), dimension)[1];
-    let offset_y = offset[Number(i)+Number(heatmap_x)*34+Number(heatmap_y*34*dimension[1])];
-    let offset_x = offset[Number(i)+17+Number(heatmap_x)*34+Number(heatmap_y*34*dimension[1])];
-    let final_pos = [heatmap_y*outputStride+offset_y, heatmap_x*outputStride+offset_x];
-    total_score += confidenceScore[i];
-    final_res.push({position: {y: final_pos[0], x: final_pos[1]}, 
-                    part: partNames[i], score: confidenceScore[i]});
+    let heatmapY = convertPosition(Number(index[i]), dimension)[0];
+    let heatmapX = convertPosition(Number(index[i]), dimension)[1];
+    let offsetY = offset[Number(i)+Number(heatmapX)*34+Number(heatmapY*34*dimension[1])];
+    let offsetX = offset[Number(i)+17+Number(heatmapX)*34+Number(heatmapY*34*dimension[1])];
+    let finalPos = [heatmapY*outputStride+offsetY, heatmapX*outputStride+offsetX];
+    totalScore += confidenceScore[i];
+    finalRes.push({position: {y: finalPos[0], x: finalPos[1]}, 
+                   part: partNames[i], score: confidenceScore[i]});
   }
-  poses.push({keypoints: final_res, score: total_score/17});
+  poses.push({keypoints: finalRes, score: totalScore/17});
   return poses;
 }
 
@@ -372,16 +369,16 @@ function buildPartWithScoreQueue(scoreThreshold, localMaximumRadius, scores, dim
 }
 
 function getImageCoords(part, outputStride, offsets, dimension){
-  dimension_offset = [];
-  dimension_offset.push(dimension[0]);
-  dimension_offset.push(dimension[1]);
-  dimension_offset.push(34);
+  let dimensionOffset = [];
+  dimensionOffset.push(dimension[0]);
+  dimensionOffset.push(dimension[1]);
+  dimensionOffset.push(34);
   let heatmapY = part.heatmapY, heatmapX = part.heatmapX, keypoint = part.id;
-  let index_y = convertCoortoIndex(heatmapX, heatmapY, keypoint, dimension_offset);
-  let index_x = index_y+17;
+  let indexY = convertCoortoIndex(heatmapX, heatmapY, keypoint, dimensionOffset);
+  let indexX = indexY+17;
   return {
-    x: part.heatmapX * outputStride + offsets[index_x],
-    y: part.heatmapY * outputStride + offsets[index_y]
+    x: part.heatmapX * outputStride + offsets[indexX],
+    y: part.heatmapY * outputStride + offsets[indexY]
   };
 }
 
@@ -424,21 +421,21 @@ function convert4D(n, h, w, c, dimension){
 
 
 function dilationWeights(weights, dimension, rate){
-  let dilation_w = dimension[2]*rate-rate+1;
-  let dilation_h = dimension[1]*rate-rate+1;
-  let dilationweights = new Float32Array(dimension[0]*dilation_w*dilation_h*dimension[3]);
-  dilationweights.fill(0);
-  let dimension_dilation = [dimension[0], dilation_h, dilation_w, dimension[3]];
-  for(let h = 0; h < dilation_h; h += rate){
-    for(let w = 0; w < dilation_w; w += rate){
+  let dilationW = dimension[2]*rate-rate+1;
+  let dilationH = dimension[1]*rate-rate+1;
+  let dilationWeights = new Float32Array(dimension[0]*dilationW*dilationH*dimension[3]);
+  dilationWeights.fill(0);
+  let dimensionDilation = [dimension[0], dilationH, dilationW, dimension[3]];
+  for(let h = 0; h < dilationH; h += rate){
+    for(let w = 0; w < dilationW; w += rate){
       for(let c = 0; c < dimension[3]; c++){
-        let index_dilation = convert4D(0, h, w, c, dimension_dilation);
-        let index_origin = convert4D(0, h/rate, w/rate, c, dimension);
-        dilationweights[index_dilation] = weights[index_origin];
+        let indexDilation = convert4D(0, h, w, c, dimensionDilation);
+        let indexOrigin = convert4D(0, h/rate, w/rate, c, dimension);
+        dilationWeights[indexDilation] = weights[indexOrigin];
       }
     }
   }
-  return [dimension_dilation, dilationweights];
+  return {dimension: dimensionDilation, dilationWeights: dilationWeights}
 }
 
 
@@ -484,7 +481,6 @@ function bilinear(srcImg, destImg, scale) {
       // overall coordinates to unit square
       dx = ixv - ix0; dy = iyv - iy0;
     
-      // I let the r, g, b, a on purpose for debugging
       r = inner(srcImg.data[idxS00], srcImg.data[idxS10],
                 srcImg.data[idxS01], srcImg.data[idxS11], dx, dy);
       destImg.data[idxD] = r;

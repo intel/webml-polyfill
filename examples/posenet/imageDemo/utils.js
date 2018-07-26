@@ -15,9 +15,9 @@
  * =============================================================================
  */
 
-//mobileNetArchitecture = [layer name, stride]
-//conv2d: convolution layer
-//separableConv: depthwise convolution layer + pointwise convolution layer
+// mobileNetArchitecture = [layer name, stride]
+// conv2d: convolution layer
+// separableConv: depthwise convolution layer + pointwise convolution layer
 const mobileNet100Architecture = [
   ['conv2d', 2],
   ['separableConv', 1],
@@ -77,18 +77,18 @@ class Utils{
   constructor(){
     this.tfmodel;
     this.model;
-    //single input
+    // single input
     this._version = document.getElementById('modelversion').value;
     this._outputStride = document.getElementById('outputStride').value;
     this._minScore = document.getElementById('minpartConfidenceScore').value;
-    //multiple input
+    // multiple input
     this._nmsRadius = document.getElementById('nmsRadius').value;
     this._maxDetection = document.getElementById('maxDetection').value;
     
-    this.canvasElement_single = document.getElementById('canvas');
-    this.canvasContext_single = this.canvasElement_single.getContext('2d');
-    this.canvasElement_multi = document.getElementById('canvas_2');
-    this.canvasContext_multi = this.canvasElement_multi.getContext('2d');
+    this.canvasElementSingle = document.getElementById('canvas');
+    this.canvasContextSingle = this.canvasElementSingle.getContext('2d');
+    this.canvasElementMulti = document.getElementById('canvas_2');
+    this.canvasContextMulti = this.canvasElementMulti.getContext('2d');
     this._type = "Multiperson";
     this.initialized = false;
 
@@ -137,32 +137,32 @@ class Utils{
     let imageSize = [input_size[1], input_size[2], input_size[3]];
     prepareInputTensor(this.inputTensor,imgElement, this._outputStride, imageSize);
     let start = performance.now();
-    let result = await this.model.compute_multi(this.inputTensor, this.heatmapTensor, 
-						this.offsetTensor, this.displacement_fwd, 
-          					this.displacement_bwd);
+    let result = await this.model.computeMultiPose(this.inputTensor, this.heatmapTensor, 
+						   this.offsetTensor, this.displacement_fwd, 
+          					   this.displacement_bwd);
     console.log("execution time: ", performance.now()-start);        
   }
 
   drawOutput(){    
     let imageSize = [input_size[1], input_size[2], input_size[3]];
-    let poses_multi = decodeMultiPose(this.heatmapTensor, this.offsetTensor, 
-                    		      this.displacement_fwd, this.displacement_bwd, 
-                    		      this._outputStride, this._maxDetection, this._minScore, 
-                    		      this._nmsRadius, toHeatmapsize(imageSize, this._outputStride));
-    let poses_single = decodeSinglepose(this.heatmapTensor, this.offsetTensor, 
-                        		toHeatmapsize(imageSize, this._outputStride), 
-                        		this._outputStride);
-    poses_single.forEach((pose)=>{
+    let multiPose = decodeMultiPose(this.heatmapTensor, this.offsetTensor, 
+                    		    this.displacement_fwd, this.displacement_bwd, 
+                    		    this._outputStride, this._maxDetection, this._minScore, 
+                    		    this._nmsRadius, toHeatmapsize(imageSize, this._outputStride));
+    let singlePose = decodeSinglepose(this.heatmapTensor, this.offsetTensor, 
+				      toHeatmapsize(imageSize, this._outputStride), 
+                        	      this._outputStride);
+    singlePose.forEach((pose)=>{
       if(pose.score >= this._minScore){
-        drawKeypoints(pose.keypoints, this._minScore, this.canvasContext_single);
-        drawSkeleton(pose.keypoints, this._minScore, this.canvasContext_single);
+        drawKeypoints(pose.keypoints, this._minScore, this.canvasContextSingle);
+        drawSkeleton(pose.keypoints, this._minScore, this.canvasContextSingle);
       }
     });
 
-    poses_multi.forEach((pose)=>{
+    multiPose.forEach((pose)=>{
       if(pose.score >= this._minScore){
-        drawKeypoints(pose.keypoints, this._minScore, this.canvasContext_multi);
-        drawSkeleton(pose.keypoints, this._minScore, this.canvasContext_multi);
+        drawKeypoints(pose.keypoints, this._minScore, this.canvasContextMulti);
+        drawSkeleton(pose.keypoints, this._minScore, this.canvasContextMulti);
       }
     });
   }

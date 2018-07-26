@@ -89,38 +89,38 @@ function addVectors(a, b) {
 }
 
 function getDisplacement(index, displacements){
-  var displacement_y = displacements[index];
-  var displacement_x = displacements[index + 16];
+  var displacementY = displacements[index];
+  var displacementX = displacements[index + 16];
   return{
-    y: displacement_y,
-    x: displacement_x
+    y: displacementY,
+    x: displacementX
   };
 }
 
 function getOffset(index, offsets){
-  var offset_y = offsets[index];
-  var offset_x = offsets[index + 17];
+  var offsetY = offsets[index];
+  var offsetX = offsets[index + 17];
   return{
-    y: offset_y,
-    x: offset_x
+    y: offsetY,
+    x: offsetX
   };
 }
 
 function traverseToTargetKeypoint(edgeId, sourceKeypoint, targetKeypointId, scores, offsets, outputStride, displacements, dimension){
-  var dimension_displace = [dimension[0], dimension[1], 32];
-  var dimension_offset = [dimension[0], dimension[1], 34];
+  var dimensionDisplace = [dimension[0], dimension[1], 32];
+  var dimensionOffset = [dimension[0], dimension[1], 34];
   var height = dimension[0], width = dimension[1];
   var sourceKeypointIndeces = decode(sourceKeypoint.position, outputStride, height, width);
-  var index_disp = convertCoortoIndex(sourceKeypointIndeces.x, sourceKeypointIndeces.y, edgeId, dimension_displace);
-  var displacement = getDisplacement(index_disp, displacements);
+  var indexDisp = convertCoortoIndex(sourceKeypointIndeces.x, sourceKeypointIndeces.y, edgeId, dimensionDisplace);
+  var displacement = getDisplacement(indexDisp, displacements);
   var displacedPoint = addVectors(sourceKeypoint.position, displacement);
   var displacedPointIndeces = decode(displacedPoint, outputStride, height, width);
-  var index_off = convertCoortoIndex(displacedPointIndeces.x, displacedPointIndeces.y, targetKeypointId, dimension_offset);
-  var offsetPoint = getOffset(index_off, offsets);
+  var indexOffet = convertCoortoIndex(displacedPointIndeces.x, displacedPointIndeces.y, targetKeypointId, dimensionOffset);
+  var offsetPoint = getOffset(indexOffet, offsets);
   var targetKeypoint = addVectors(displacedPoint, {x: offsetPoint.x, y: offsetPoint.y});
   var targetKeypointIndeces = decode(targetKeypoint, outputStride, height, width);
-  var index_heatmap = convertCoortoIndex(targetKeypointIndeces.x, targetKeypointIndeces.y, targetKeypointId, dimension);
-  var score = scores[index_heatmap];
+  var indexHeatmap = convertCoortoIndex(targetKeypointIndeces.x, targetKeypointIndeces.y, targetKeypointId, dimension);
+  var score = scores[indexHeatmap];
   return{position: targetKeypoint, part: partNames[targetKeypointId], score: score};
 }
 
