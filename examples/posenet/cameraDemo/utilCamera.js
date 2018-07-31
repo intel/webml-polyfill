@@ -64,14 +64,14 @@ class Utils{
 
     this._type = "Multiperson";
     // single input
-    this._isMultiple = document.getElementById('type');
-    this._version = document.getElementById('modelversion').value;
-    this._outputStride= document.getElementById('outputStride').value;
-    this._minScore = document.getElementById('minpartConfidenceScore').value;
-    this._scaleFactor = document.getElementById('scaleFactor').value;
+    this._isMultiple = guiState.algorithm;
+    this._version = guiState.input.model;
+    this._outputStride= guiState.input.outputStride;
+    this._minScore = guiState.input.scoreThreshold;
+    this._scaleFactor = guiState.input.imageScaleFactor;
     // multiple input
-    this._nmsRadius = document.getElementById('nmsRadius').value;
-    this._maxDetection = document.getElementById('maxDetection').value;
+    this._nmsRadius = guiState.multiPoseDetection.nmsRadius;
+    this._maxDetection = guiState.multiPoseDetection.maxDetections;
     
     this.canvas = document.getElementById('canvas');
     this.ctx = this.canvas.getContext('2d');
@@ -109,15 +109,15 @@ class Utils{
     }
     if(!this.tfmodel){
       var ModelArch = new Map([
-        [0.5, mobileNet50Architecture],
+        [0.50, mobileNet50Architecture],
         [0.75, mobileNet75Architecture],
-        [1.0, mobileNet100Architecture],
+        [1.00, mobileNet100Architecture],
         [1.01, mobileNet100Architecture],
       ]);
       this.tfmodel = ModelArch.get(Number(this._version));
     }
     this.model = new PoseNet(this.tfmodel, backend, Number(this._version), 
-                    	     Number(this._outputStride), this.inputSize, this._type);
+                             Number(this._outputStride), this.inputSize, this._type);
     result = await this.model.createCompiledModel();
     console.log('compilation result: ${result}');
     this.initialized = true;
@@ -127,14 +127,13 @@ class Utils{
     if(!this.initialized){
       return;
     }
-    let predictType = this._isMultiple.options[this._isMultiple.selectedIndex].text;
     let imageSize = [this.scaleWidth, this.scaleHeight, 3];
     let scaleData = await this.scaleImage();
     prepareInputTensor(this.inputTensor,this.scaleCanvas, this._outputStride, imageSize);
     let result = await this.model.computeMultiPose(this.inputTensor, this.heatmapTensor, 
                                                    this.offsetTensor, this.displacement_fwd, 
                                                    this.displacement_bwd);
-    if(predictType == "Multiple Person"){
+    if(this._isMultiple == "multi-pose"){
       let posesMulti = decodeMultiPose(this.heatmapTensor, this.offsetTensor, 
                                        this.displacement_fwd, this.displacement_bwd, 
                                        this._outputStride, this._maxDetection, this._minScore, 
@@ -162,7 +161,7 @@ class Utils{
   }
 
   scaleImage(){
-    let scale = this.scaleWidth/videoWidth;
+    const scale = this.scaleWidth/videoWidth;
     let pixel = this.ctx.getImageData(0, 0, videoWidth, videoHeight);
     this.scaleCanvas.width = this.scaleWidth;
     this.scaleCanvas.height = this.scaleHeight;

@@ -49,12 +49,9 @@ async function drawSingleandMulti(){
 }
 
 async function updateParameter(){
-  let minScore = document.getElementById('minpartConfidenceScore').value;
-  let nmsRadius = document.getElementById('nmsRadius').value;
-  let maxDetection = document.getElementById('maxDetection').value;
-  util._minScore = minScore;
-  util._nmsRadius = nmsRadius;
-  util._maxDetection = maxDetection;
+  util._minScore = guiState.scoreThreshold;
+  util._nmsRadius = guiState.nmsRadius;
+  util._maxDetection = guiState.maxDetection;
   drawResult();
 }
 
@@ -66,14 +63,14 @@ async function drawResult(){
     let x = await getInput(_inputElement);
     await loadImage(x, ctxSingle);
     await loadImage(x, ctxMulti);
-    await util.predict(canvasSingle);
+    await util.predict(canvasMulti);
     util.drawOutput();
   }else{
     ctxSingle.clearRect(0, 0, canvasSingle.width, canvasSingle.height);
     ctxMulti.clearRect(0, 0, canvasMulti.width, canvasMulti.height);
     await loadImage("https://storage.googleapis.com/tfjs-models/assets/posenet/tennis_in_crowd.jpg", ctxSingle);
     await loadImage("https://storage.googleapis.com/tfjs-models/assets/posenet/tennis_in_crowd.jpg", ctxMulti);
-    await util.predict(canvasSingle);
+    await util.predict(canvasMulti);
     util.drawOutput();
   }
 }

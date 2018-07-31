@@ -131,16 +131,16 @@ function decodePose(root, scores, offsets, outputStride, displacementsFwd, displ
   var rootPart = root.part, rootScore = root.score;
   var rootPoint = getImageCoords(rootPart, outputStride, offsets, dimension);
   instanceKeypoints[rootPart.id] = {
-      score: rootScore,
-      part: partNames[rootPart.id],
-      position: rootPoint
+    score: rootScore,
+    part: partNames[rootPart.id],
+    position: rootPoint
   };
   for(var edge = numEdges-1; edge >=0; --edge){
     var sourceKeypointId = parentToChildEdges[edge];
     var targetKeypointId = childToParentEdges[edge];
     if(instanceKeypoints[sourceKeypointId] && !instanceKeypoints[targetKeypointId]){
-	instanceKeypoints[targetKeypointId] = traverseToTargetKeypoint(edge, instanceKeypoints[sourceKeypointId], targetKeypointId, 
-								       scores, offsets, outputStride, displacementsBwd, dimension);
+      instanceKeypoints[targetKeypointId] = traverseToTargetKeypoint(edge, instanceKeypoints[sourceKeypointId], targetKeypointId, 
+                                                                     scores, offsets, outputStride, displacementsBwd, dimension);
     }
   }
 
@@ -148,8 +148,8 @@ function decodePose(root, scores, offsets, outputStride, displacementsFwd, displ
     var sourceKeypointId = childToParentEdges[edge];
     var targetKeypointId = parentToChildEdges[edge];
     if(instanceKeypoints[sourceKeypointId] && !instanceKeypoints[targetKeypointId]){
-	instanceKeypoints[targetKeypointId] = traverseToTargetKeypoint(edge, instanceKeypoints[sourceKeypointId], targetKeypointId, 
-								       scores, offsets, outputStride, displacementsFwd, dimension);
+      instanceKeypoints[targetKeypointId] = traverseToTargetKeypoint(edge, instanceKeypoints[sourceKeypointId], targetKeypointId, 
+                                                                     scores, offsets, outputStride, displacementsFwd, dimension);
     }
   }
     return instanceKeypoints;

@@ -1,61 +1,81 @@
-<html>
-    <head> 
-        <title> PoseNet Image Demo</title>
-        <style>
-            .Single,.Multiple {
-                display: inline-block;
-            }
-        </style>
-    </head>
+<!doctype html>
+<html lang = "en">
+  <head> 
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title> PoseNet Image Demo</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <style>
+      #gui{
+        position: relative;
+        top: 100px;
+      }
+      .main{
+        position: absolute;
+        left: 50px;
+        top: 100px;
+        right: 0px;
+      }
+      .col{
+        position: relative;
+        top: 20px;
+      }
+      .Single,.Multiple {
+        display: inline-block;
+      }
+    </style>
+  </head>
 
-    <body>
-        <div id = "loading">
-            Loading the model...
-        </div>
-        <div class = parameter>
-            <h4>Parameter</h4>
-            Backend:
-            <select onchange = "drawSingleandMulti();" id = "backend">
-                <option value = "webml">WebML</option>
-                <option value = "wasm">WASM</option>
-                <option selected = "selected">WebGL</option>
-            </select>
-           
-            <form>
-                Output Stride(8/16/32):<br>
-                <input onchange = "drawSingleandMulti();" type = "number" id = "outputStride" value="16"><br>
-                Minimal Part Confidence Score(0, 1):<br>
-                <input onchange = "updateParameter();" type = "number" id= "minpartConfidenceScore" value = "0.5"><br>
-                Model(0.5/0.75/1.0/1.01): <br>
-                <input onchange = "drawSingleandMulti();" type = "number" id= "modelversion" value="1.01"><br>
-                nmsRadius: <br>
-                <input onchange = "updateParameter();" type = "number" id= "nmsRadius" value="20"><br>
-                maxDetection: <br>
-                <input onchange = "updateParameter();" type = "number" id = "maxDetection" value="15"><br>
-                <input onchange = "updateParameter();" type = "file" id = "image" accept="image/*"><br>
-            </form>
-        </div>
-        <div id = 'main'>
-            <div class = "Single">
-                <h4>Single Pose Estimation</h4>
-                <canvas id = "canvas" width = "513" height = "513"></canvas>
-            </div>
-            <div class = "Multiple">
-                <h4>Multiple Poses Estimation</h4>
-                <canvas id = "canvas_2" width = "513" height = "513"></canvas>
-            </div>
-        </div>
-            <script src = "../../../dist/webml-polyfill.js"></script>
-            <script src = "../../util/base.js"></script>
-            <script src = "utils.js"></script>
-            <script src = "../src/helperFunc.js"></script>
-            <script src = "../src/PoseNet.js"></script>
-            <script src = "../src/MaxHeap.js"></script>
-            <script src = "../src/decodePose.js"></script>
-            <script src = "../src/DrawOutputs.js"></script>
-            <script src = "main.js"></script>  
-            <script>
-                drawSingleandMulti();
-            </script>
-    </body>
+  <body>
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark" style="width:100%">
+      <span class="navbar-brand mb-0 h1">WebML PoseNet Demo</span>
+      <div class="btn-group">
+	<select onchange = "drawSingleandMulti();" id = "backend" class="btn btn-success dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          <option value = "webml">WebML</option>
+          <option value = "wasm">WASM</option>
+          <option selected = "selected">WebGL</option>
+	</select>
+      </div>
+    </nav>
+
+    <div id = "loading">
+      Loading the model...
+    </div>
+        
+    <div class = "main" id = "main">
+      <div class = "Single">
+        <h4>Single Pose Estimation</h4>
+        <canvas id = "canvas" width = "513" height = "513"></canvas>
+      </div>
+      <div class = "Multiple">
+        <h4>Multiple Poses Estimation</h4>
+        <canvas id = "canvas_2" width = "513" height = "513"></canvas>
+      </div>
+
+      <div class ="col" align="center">
+        <label id="button" class="btn btn-primary disabled">
+          Pick Image <input hidden onchange = "updateParameter();" type="file" id="image" accept="image/*" >
+        </label>
+      </div>
+    </div>
+    <canvas hidden id = "scaleImage"></canvas>
+    
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+    <script type="text/javascript" src="../src/dat.gui.js"></script>
+    <script src = "../../../dist/webml-polyfill.js"></script>
+    <script src = "../../util/base.js"></script>
+    <script src = "utils.js"></script>
+    <script src = "../src/helperFunc.js"></script>
+    <script src = "../src/PoseNet.js"></script>
+    <script src = "../src/MaxHeap.js"></script>
+    <script src = "../src/decodePose.js"></script>
+    <script src = "../src/DrawOutputs.js"></script>
+    <script src = "gui.js"></script>
+    <script src = "main.js"></script>  
+    <script>
+      drawSingleandMulti();
+    </script>
+  </body>
 </html>

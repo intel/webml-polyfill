@@ -1,60 +1,52 @@
-<html>
-	<head>
-		<title>PoseNet - Camera Feed Demo</title>
-	</head>
-
-	<body>
-        <div id = "loading">
-            Loading the model...
-        </div>
-		<div class = parameter>
-            <h4>Parameter</h4>
-            Backend:
-            <select onchange = "main();" id = "backend">
-                <option value = "webml">WebML</option>
-                <option value = "wasm">WASM</option>
-                <option selected = "selected">WebGL</option>
-            </select>
-            <br>
-            <br>
-            Type:
-            <select onchange = "main();" id = "type">
-                <option value = "Single">Single Person</option>
-                <option selected = "selected">Multiple Person</option>
-            </select>
-           
-            <form>
-                Output Stride(8/16/32):<br>
-                <input onchange = "main();" type = "number" id = "outputStride" value="16"><br>
-                Image Scale Factor(0, 1):<br>
-                <input onchange = "main();" type = "number" id = "scaleFactor" value = "0.5"><br>
-                Minimal Part Confidence Score(0, 1):<br>
-                <input onchange = "main();" type = "number" id= "minpartConfidenceScore" value="0.5"><br>
-                Model(0.5/0.75/1.0/1.01): <br>
-                <input onchange = "main();" type = "number" id= "modelversion" value = "1.01"><br>
-                nmsRadius: <br>
-                <input onchange = "main();" type = "number" id= "nmsRadius" value = "20"><br>
-                maxDetection: <br>
-                <input  onchange = "main();" type = "number" id = "maxDetection" value="15"><br>
-            </form>
-        </div>
-		
-		<div id = "camera">
-			<h4> Camera Demo</h4>
-        	<canvas id="canvas" width = "500" height = "500"/></canvas>
-        	<canvas hidden id="canvas_2"/></canvas>
-            <video  hidden id = "video" width = "500" height = "500" autoplay></video>
-    	</div>
-        
-    	<script src = "../../third_party/stats.min.js"></script>
-    	<script src = "../../../dist/webml-polyfill.js"></script>
-        <script src = "../../util/base.js"></script>
-    	<script src = "utilCamera.js"></script>
-        <script src = "../src/helperFunc.js"></script>
-        <script src = "../src/PoseNet.js"></script>
-        <script src = "../src/MaxHeap.js"></script>
-        <script src = "../src/decodePose.js"></script>
-        <script src = "../src/DrawOutputs.js"></script>
-    	<script src = "camera.js"></script>
-	</body>
+<!doctype html>
+<html lang = "en">
+  <head>
+    <meta charset = "utf-8">
+    <meta name = "viewport" content = "width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>PoseNet - Camera Feed Demo</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <style>
+      #gui{
+        position: relative;
+        top: 100px;
+      }
+    </style>
+  </head>
+	
+  <body>
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark" style="width:100%">
+      <span class="navbar-brand mb-0 h1">WebML PoseNet Camera Demo</span>
+      <div class="btn-group">
+	<select onchange = "main();" id = "backend" class="btn btn-success dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+	  <option value = "webml">WebML</option>
+	  <option value = "wasm">WASM</option>
+	  <option selected = "selected">WebGL</option>
+	</select>
+      </div>
+    </nav>
+    <div id = "loading">
+      Loading the model...
+    </div>	
+    <div id = "camera" align="center">
+      <h4> Camera Demo</h4>
+      <canvas id="canvas" width = "500" height = "500"></canvas>
+      <canvas hidden id="canvas_2"></canvas>
+      <video  hidden id = "video" width = "500" height = "500" autoplay></video>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+    <script src = "../../third_party/stats.min.js"></script>
+    <script src = "../../../dist/webml-polyfill.js"></script>
+    <script src = "../../util/base.js"></script>
+    <script src = "utilCamera.js"></script>
+    <script src = "../src/helperFunc.js"></script>
+    <script src = "../src/PoseNet.js"></script>
+    <script src = "../src/MaxHeap.js"></script>
+    <script src = "../src/decodePose.js"></script>
+    <script src = "../src/DrawOutputs.js"></script>
+    <script src = "../src/dat.gui.js"></script>
+    <script src = "cameraGui.js"></script>
+    <script src = "camera.js"></script>   
+</body>
 </html>

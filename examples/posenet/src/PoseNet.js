@@ -15,12 +15,10 @@ class PoseNet{
     this._outputTensorId;
     if (typeof backend !== 'undefined') {
       this._backend = backend;
-    } 
-    else {
+    } else {
       if (nnNative) {
         this._backend = 'WebML';
-      } 
-      else {
+      } else {
         this._backend = 'WASM';
       }
     }
@@ -29,14 +27,13 @@ class PoseNet{
         throw Error('Fails to initialize neural network context');
       }
       this._nn = nnNative;
-    }
-    else if (this._backend === 'WASM' || this._backend === 'WebGL2') {
+    } else if (this._backend === 'WASM' || this._backend === 'WebGL2') {
       this._nn = nnPolyfill;
     }
   }
   async createCompiledModel(){
     let options = {};
-    if(this._backend === 'WebGL2'){
+    if (this._backend === 'WebGL2') {
       options.useWebGL2 = true;
     }
     this._model = await this._nn.createModel(options);
@@ -53,7 +50,7 @@ class PoseNet{
     this._execution.setOutput(0, heatmapTensor);
     this._execution.setOutput(1, offsetTensor);
     let error = await this._execution.startCompute();
-    if(error){
+    if (error) {
       return error;
     }
     return 'success';
@@ -66,7 +63,7 @@ class PoseNet{
     this._execution.setOutput(2, displacementFwd);
     this._execution.setOutput(3, displacementBwd);
     let error = await this._execution.startCompute();
-    if(error){
+    if (error) {
       return error;
     }
     return 'success';
@@ -96,7 +93,7 @@ class PoseNet{
     this._model.addOperand(heatmap);
     this._outputTensorId.push(this._operandIndex++);
     this._model.addOperand(offset);
-    if(this._type === "Multiperson"){
+    if (this._type === "Multiperson") {
       const displacement_fwd_dimension = [1, (this._inputShape[1]-1)/this._outputStride+1, (this._inputShape[2]-1)/this._outputStride+1, 32];
       const displacement_bwd_dimension = [1, (this._inputShape[1]-1)/this._outputStride+1, (this._inputShape[2]-1)/this._outputStride+1, 32];
       const displacement_fwd = {type:type, dimensions:displacement_fwd_dimension};
@@ -110,21 +107,19 @@ class PoseNet{
 
     // add operands and operation for every layer of Mobilenet
     let outputLayerIndex = 0; 
-    for(let i in this._modelArch){
+    for (let i in this._modelArch) {
       let dimensionWeights = [];
       let weights = [];
       let dimensionBias = [];
       let bias = [];
       let inputs = [];
-      if(this._modelArch[i]["convType"] === "conv2d"){
-      	if(i == 0){
-      	  inputs.push(this._inputTensorId);
-      	}
-      	else{
-      	  inputs.push(this._outputLayer[outputLayerIndex]);
-      	  outputLayerIndex++;
-      	}
-	  
+      if (this._modelArch[i]["convType"] === "conv2d") {
+        if (i == 0) {
+          inputs.push(this._inputTensorId);
+        } else {
+          inputs.push(this._outputLayer[outputLayerIndex]);
+          outputLayerIndex++;
+        }	  
 	/** 
 	* data = { 
 	*          shapeWeights,
@@ -139,24 +134,23 @@ class PoseNet{
         dimensionBias.push(data.shapeBias);
         bias.push(data.bias);
         dimensionOut = this._calculateOutput(dimensionIn, dimensionWeights[0],
-					     this._modelArch[i]["stride"], "conv2d");
+                                             this._modelArch[i]["stride"], "conv2d");
         dimensionIn = dimensionOut;
         this._outputLayer.push(this._operandIndex);
         this._model.addOperand({type: type, dimensions: dimensionOut});
         this._operandIndex++;
       }
       // separableConv = [Depthwise Convolution, Pointwise Convolution]
-      if(this._modelArch[i]["convType"] === "separableConv"){
-      	if(i == 0){
-      	  inputs.push(this._inputTensorId);
-      	}
-      	else{
-      	  inputs.push(this._outputLayer[outputLayerIndex]);
-      	  outputLayerIndex++;
-      	}
+      if (this._modelArch[i]["convType"] === "separableConv") {
+        if (i == 0) {
+          inputs.push(this._inputTensorId);
+        } else {
+          inputs.push(this._outputLayer[outputLayerIndex]);
+          outputLayerIndex++;
+        }
         const data = await getDimensionData("separableConv", this._version, i);
         // regular depthwise convolution
-        if(this._modelArch[i].rate == 1){
+        if (this._modelArch[i].rate == 1) {
           dimensionWeights.push(reshape(data.shapeWeights[0]));
           dimensionWeights.push(reshape(data.shapeWeights[1]));
           weights.push(new Float32Array(transposeWeights(data.weights[0], data.shapeWeights[0])));
@@ -166,12 +160,12 @@ class PoseNet{
           bias.push(data.bias[0]);
           bias.push(data.bias[1]);
           dimensionOut = this._calculateOutput(dimensionIn, dimensionWeights[0], 
-                                      	       this._modelArch[i]["stride"], "depthwise");
+                                               this._modelArch[i]["stride"], "depthwise");
         }
         // dilated depthwise convoluton
-        else{
+        else {
           const dilationData = dilationWeights(new Float32Array(transposeWeights(data.weights[0], data.shapeWeights[0])),
-					       reshape(data.shapeWeights[0]), this._modelArch[i].rate);
+                                               reshape(data.shapeWeights[0]), this._modelArch[i].rate);
           dimensionWeights.push(dilationData.dimension);
           dimensionWeights.push(reshape(data.shapeWeights[1]));
           weights.push(dilationData.dilationWeights);
@@ -181,7 +175,7 @@ class PoseNet{
           bias.push(data.bias[0]);
           bias.push(data.bias[1]);
           dimensionOut = this._calculateOutput(dimensionIn, reshape(data.shapeWeights[0]), 
-					       this._modelArch[i]["stride"], "depthwise");
+                                               this._modelArch[i]["stride"], "depthwise");
         }
         dimensionIn = dimensionOut;
         this._outputLayer.push(this._operandIndex);
@@ -193,7 +187,7 @@ class PoseNet{
         this._model.addOperand({type:type, dimensions: dimensionOut});
         this._operandIndex++;
       }
-      for(let j in dimensionWeights){
+      for (let j in dimensionWeights) {
         let tensorId = this._operandIndex++;
         let tensorTypeWeights = {type: type, dimensions: dimensionWeights[j]};
         this._model.addOperand(tensorTypeWeights);
@@ -204,45 +198,43 @@ class PoseNet{
         this._model.addOperand(tensorTypeBias);
         this._model.setOperandValue(tensorId, bias[j]);
         inputs.push(tensorId);
-        if(this._modelArch[i].convType=="conv2d"){
-	  let outputs = this._outputLayer[outputLayerIndex];
-	  const paddingCode = this._nn.PADDING_SAME;
-	  const fuseCode = this._nn.FUSED_RELU6;
-	  inputs.push(this._addScalarInt32(paddingCode));
-	  inputs.push(this._addScalarInt32(this._modelArch[i].stride));
-	  inputs.push(this._addScalarInt32(this._modelArch[i].stride));
-	  inputs.push(this._addScalarInt32(fuseCode));
-	  const opType = this._nn.CONV_2D;
-	  this._model.addOperation(opType, inputs, [outputs]);
-      	}
-      	else if(this._modelArch[i].convType == "separableConv"){
-	  const paddingCode = this._nn.PADDING_SAME;
-	  const fuseCode = this._nn.FUSED_RELU6;
-      	  if(j == 0){
-      	    const opType = this._nn.DEPTHWISE_CONV_2D;
-      	    const multiplier = 1;
-      	    let outputs = this._outputLayer[outputLayerIndex];
-      	    inputs.push(this._addScalarInt32(paddingCode));
-    	    inputs.push(this._addScalarInt32(this._modelArch[i].stride));
-    	    inputs.push(this._addScalarInt32(this._modelArch[i].stride));
-    	    inputs.push(this._addScalarInt32(multiplier));
-    	    inputs.push(this._addScalarInt32(fuseCode));
-      	    this._model.addOperation(opType, inputs, [outputs]);
-      	    inputs = [];
-      	  }
-      	  else{
-      	    const stride = 1;
-      	    inputs.unshift(this._outputLayer[outputLayerIndex]);
-      	    outputLayerIndex++;
-      	    const opType = this._nn.CONV_2D;
-      	    let outputs = this._outputLayer[outputLayerIndex];
-      	    inputs.push(this._addScalarInt32(paddingCode));
-    	    inputs.push(this._addScalarInt32(stride));
-	    inputs.push(this._addScalarInt32(stride));
-    	    inputs.push(this._addScalarInt32(fuseCode));
-      	    this._model.addOperation(opType, inputs, [outputs]);
-      	  }
-      	}
+        if (this._modelArch[i].convType === "conv2d") {
+          let outputs = this._outputLayer[outputLayerIndex];
+          const paddingCode = this._nn.PADDING_SAME;
+          const fuseCode = this._nn.FUSED_RELU6;
+          inputs.push(this._addScalarInt32(paddingCode));
+          inputs.push(this._addScalarInt32(this._modelArch[i].stride));
+          inputs.push(this._addScalarInt32(this._modelArch[i].stride));
+          inputs.push(this._addScalarInt32(fuseCode));
+          const opType = this._nn.CONV_2D;
+          this._model.addOperation(opType, inputs, [outputs]);
+        } else if (this._modelArch[i].convType === "separableConv") {
+          const paddingCode = this._nn.PADDING_SAME;
+          const fuseCode = this._nn.FUSED_RELU6;
+          if (j == 0) {
+            const opType = this._nn.DEPTHWISE_CONV_2D;
+            const multiplier = 1;
+            let outputs = this._outputLayer[outputLayerIndex];
+            inputs.push(this._addScalarInt32(paddingCode));
+            inputs.push(this._addScalarInt32(this._modelArch[i].stride));
+            inputs.push(this._addScalarInt32(this._modelArch[i].stride));
+            inputs.push(this._addScalarInt32(multiplier));
+            inputs.push(this._addScalarInt32(fuseCode));
+            this._model.addOperation(opType, inputs, [outputs]);
+            inputs = [];
+          } else {
+            const stride = 1;
+            inputs.unshift(this._outputLayer[outputLayerIndex]);
+            outputLayerIndex++;
+            const opType = this._nn.CONV_2D;
+            let outputs = this._outputLayer[outputLayerIndex];
+            inputs.push(this._addScalarInt32(paddingCode));
+            inputs.push(this._addScalarInt32(stride));
+            inputs.push(this._addScalarInt32(stride));
+            inputs.push(this._addScalarInt32(fuseCode));
+            this._model.addOperation(opType, inputs, [outputs]);
+          }
+        }
       }    
     }
 
@@ -297,7 +289,7 @@ class PoseNet{
     outputs = this._outputTensorId[1];
     this._model.addOperation(this._nn.CONV_2D, inputs, [outputs]);
     
-    if(this._type === "Multiperson"){  
+    if (this._type === "Multiperson") {  
       // add operands for forward displacement layer
       inputs = [];
       inputs.push(this._outputLayer[this._outputLayer.length-1]);  
@@ -350,17 +342,15 @@ class PoseNet{
 
   _calculateOutput(inputDimension, shape, stride, layer){
     let outputDimension;
-    if(layer === "conv2d"){
+    if (layer === "conv2d") {
       outputDimension = [1, Math.floor((inputDimension[1]-shape[1]+2)/stride+1), 
-			 Math.floor((inputDimension[2]-shape[2]+2)/stride+1), shape[0]];
-    }
-    else if(layer === "depthwise"){
+                         Math.floor((inputDimension[2]-shape[2]+2)/stride+1), shape[0]];
+    } else if (layer === "depthwise") {
       outputDimension = [1, Math.floor((inputDimension[1]-shape[1]+2)/stride+1), 
-			 Math.floor((inputDimension[2]-shape[2]+2)/stride+1), inputDimension[3]];
-    }
-    else{
+                         Math.floor((inputDimension[2]-shape[2]+2)/stride+1), inputDimension[3]];
+    } else {
       outputDimension = [1, Math.floor((inputDimension[1]-shape[1]+0)/stride+1), 
-			 Math.floor((inputDimension[2]-shape[2]+0)/stride+1), shape[0]];
+                         Math.floor((inputDimension[2]-shape[2]+0)/stride+1), shape[0]];
     }
     return outputDimension;
   }

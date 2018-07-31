@@ -301,7 +301,7 @@ function withinNmsRadiusOfCorrespondingPoint(poses, squaredNmsRadius, _a, keypoi
     let keypoints = _a.keypoints;
     let correspondingKeypoint = keypoints[keypointId].position;
     return squaredDistance(y, x, correspondingKeypoint.y, correspondingKeypoint.x) <=
-        squaredNmsRadius;
+      squaredNmsRadius;
   });
 }
 
@@ -321,7 +321,7 @@ function scoreIsMaximumInLocalWindow(keypointId, score, heatmapY, heatmapX, loca
       }
     }
     if (!localMaximum) {
-    	break;
+      break;
     }
   }
   return localMaximum;
@@ -330,7 +330,7 @@ function scoreIsMaximumInLocalWindow(keypointId, score, heatmapY, heatmapX, loca
 function toHeatmapsize(dimension, outputStride){
   let heatmapSize;
   if(dimension.length == 3){
-  	heatmapSize = [(dimension[0]-1)/outputStride+1, (dimension[1]-1)/outputStride+1, 17];
+    heatmapSize = [(dimension[0]-1)/outputStride+1, (dimension[1]-1)/outputStride+1, 17];
   }
   if(dimension.length == 4){
     heatmapSize = [(dimension[1]-1)/outputStride+1, (dimension[2]-1)/outputStride+1, 17]
