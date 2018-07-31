@@ -65,9 +65,9 @@ export default class Model {
         // let start = performance.now();
         if (i == 0) {
           let shape = nnOperands[inputIndex].dimensions;
-          if (shape.length === 4 && shape[0] === 1) {
+          if (shape.length === 4 ) {
             shape = shape.slice(1,4);
-          } else if (shape.length === 3) {
+          } else if (shape.length === 3||2) {
             shape = shape;
           } else {
             throw new Error(`the shape ${shape} is not supported`);
