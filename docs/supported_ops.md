@@ -1,5 +1,5 @@
 | Op Type | WASM | WebGL2 | NNAPI | MPS | BNNS
-|----|------|--------|-------|-----|
+|----|------|--------|-------|-----|-----|
 | ADD | yes | no | yes | no| no
 | AVERAGE_POOL_2D | yes | yes| yes | yes | yes
 | CONCATENATION | yes | yes| yes | yes | no
