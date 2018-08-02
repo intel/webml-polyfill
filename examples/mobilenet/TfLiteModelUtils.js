@@ -24,6 +24,11 @@ function printTfLiteModel(model) {
     console.log(`\t\t operators[${i}]: `);
     console.log(`\t\t\t {opcode: ${op}, inputs: [${operator.inputsArray()}], outputs: [${operator.outputsArray()}], `)
     switch(op) {
+      case 'ADD': {
+        let options = operator.builtinOptions(new tflite.AddOptions());
+        console.log(`\t\t\t  builtin_options: {` +
+          `fused_activation_function: ${ActivationFunctionTypes[options.fusedActivationFunction()]}}}`);
+      } break;
       case 'CONV_2D': {
         let options = operator.builtinOptions(new tflite.Conv2DOptions());
         console.log(`\t\t\t  builtin_options: {` +
