@@ -151,8 +151,6 @@ export default class Model {
             let MutiInputs = [];
             layer.inputs.forEach(input => {
               if (!(this._operands[input] instanceof Tensor)){
-                console.log(nnOperands[input].value.slice(6, 12));
-                console.log(nnOperands[input].dimensions.slice(1, 4));
                 let input_shape = nnOperands[input].dimensions;
                 if (input_shape.length === 4){
                   input_shape = input_shape.slice(1, 4);
@@ -162,12 +160,10 @@ export default class Model {
                   throw new Error(`the shape ${shape} is not supported`);
                 }
                 let input_size = input_shape.reduce((accumulator, currentValue) => accumulator * currentValue);
-                console.log(input_size * num);
                 this._operands[input]=new Tensor(nnOperands[input].value.slice(input_size * num, input_size * (num + 1)) , input_shape);
                 if ( typeof(nnOperands[input].value[input_size * (num + 1)]) === "undefined"){
                   last = true;
                 }
-                console.log(this._operands[input]);
               }
               if (!this._operands[input].texture && !this._operands[input].textureSlices) {
                 if (this._operands[input].tensor.shape.length <= 2) {
