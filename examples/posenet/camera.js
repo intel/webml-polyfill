@@ -4,7 +4,6 @@ async function main(){
   const ctx = canvas.getContext('2d');
   const scaleCanvas = document.getElementById('canvas_2');
   const scaleCtx = scaleCanvas.getContext('2d');
-  const stats = new Stats();
   const util = new Utils();
   const videoWidth = 500;
   const videoHeight = 500;
@@ -15,6 +14,7 @@ async function main(){
     throw new Error(
       'Browser API navigator.mediaDevices.getUserMedia not available');
   }
+  let stats = new Stats();
   stats.dom.style.cssText = 'position:fixed;top:60px;right:10px;cursor:pointer;opacity:0.9;z-index:10000';
   stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
   document.body.appendChild(stats.dom);
@@ -96,7 +96,7 @@ async function main(){
   }
   
   async function predict(){
-    stats.begin();
+  	stats.begin();
     const videoElement = await loadVideo();
     await util.predict(scaleCanvas, ctx, inputSize);
     if(isMultiple == "multi-pose"){
