@@ -27,9 +27,9 @@ export default class DepthwiseConv2D extends Layer {
       kernel_size = [3, 3],
       strides = [1, 1],
       padding = 'VALID',
+      depthMultiplier = 1,
       data_format = 'NHWC',
       dilation_rate = [1, 1],
-      depthMultiplier = 1,
       activation = 'NONE',
       use_bias = true,
       weights = []
@@ -69,11 +69,7 @@ export default class DepthwiseConv2D extends Layer {
     }
 
     if (Array.isArray(dilation_rate)) {
-      if (depthMultiplier !== 1) {
-        this.dilationRate = dilation_rate.map(i => i * depthMultiplier);
-      } else {
-        this.dilationRate = dilation_rate;
-      }
+      this.dilationRate = dilation_rate;
     } else {
       this.dilationRate = [dilation_rate, dilation_rate];
     }
@@ -85,6 +81,7 @@ export default class DepthwiseConv2D extends Layer {
       this.throwError(`Incompatible combination of dilation_rate with strides.`);
     }
 
+    this.depthMultiplier = depthMultiplier;
     this.activation = activation;
     this.fuseActivation = fuseShaderSource[this.activation];
 
@@ -139,9 +136,8 @@ export default class DepthwiseConv2D extends Layer {
                           this.padding[1] + this.strides[0]) / this.strides[0];
       const outputWidth = (inputWidth - kernelWDilated + this.padding[2] + 
                           this.padding[3] + this.strides[1]) / this.strides[1];
-      this.outputShape = [outputHeight, outputWidth, inputChannels];
+      this.outputShape = [outputHeight, outputWidth, this.weights['kernel'].tensor.shape[1]];
       this.inputPadding = this.padding;
-      console.log()
     } else {
       const outputHeight =
       this.padding === 'SAME'
@@ -165,7 +161,7 @@ export default class DepthwiseConv2D extends Layer {
       const paddingHeightAfter = paddingHeight - paddingHeightBefore;
       const paddingWidthBefore = Math.floor(paddingWidth / 2);
       const paddingWidthAfter = paddingWidth - paddingWidthBefore;
-      this.outputShape = [outputHeight, outputWidth, inputChannels];
+      this.outputShape = [outputHeight, outputWidth, this.weights['kernel'].tensor.shape[1]];
       this.inputPadding = [paddingHeightBefore, paddingHeightAfter, paddingWidthBefore, paddingWidthAfter];
     }
   }
@@ -284,27 +280,15 @@ export default class DepthwiseConv2D extends Layer {
     const outputHeight = this.outputShape[0];
     const outputWidth = this.outputShape[1];
 
-    // effective shape after filter dilation
-    //add dilation 
-    const kernelHDilated = kernelHeight + (kernelHeight - 1) * (this.dilationRate[0] - 1);
-    const kernelWDilated = kernelWidth + (kernelWidth - 1) * (this.dilationRate[1] - 1);
-    const patchLen = kernelHeight * kernelWidth;
-
     this.indexMap = new Tensor([], [outputHeight * outputWidth, kernelHeight * kernelWidth], Int32Array);
 
     const patchRow = new Tensor([], [kernelHeight, kernelWidth]);
     let offset = 0;
-    for (let i = 0, limit = inputHeight - kernelHDilated; i <= limit; i += this.strides[0]) {
-      for (let j = 0, limit = inputWidth - kernelWDilated; j <= limit; j += this.strides[1]) {
-        ops.assign(
-          patchRow.tensor, 
-          rowIndices.tensor
-            .hi(i + kernelHDilated, j + kernelWDilated)
-            .lo(i, j)
-            .step(this.dilationRate[0], this.dilationRate[1])
-          );
+    for (let i = 0, limit = inputHeight - kernelHeight; i <= limit; i += this.strides[0]) {
+      for (let j = 0, limit = inputWidth - kernelWidth; j <= limit; j += this.strides[1]) {
+        ops.assign(patchRow.tensor, rowIndices.tensor.hi(i + kernelHeight, j + kernelWidth).lo(i, j));
         this.indexMap.tensor.data.set(patchRow.tensor.data, offset);
-        offset += patchLen;
+        offset += kernelHeight * kernelWidth;
       }
     }
     this.indexMap.createGLTexture({ type: '2d', format: 'int', supportSliceTexture: true });
@@ -321,7 +305,7 @@ export default class DepthwiseConv2D extends Layer {
     if (x.is2DReshaped) {
       this.inputShape = x.originalShape;
       this._calcOutputShape(this.inputShape);
-      this._createIndexMap(x.indicesForReshaped);
+      this._createIndexMap();
       outputTextureShape = [this.outputShape[0] * this.outputShape[1], this.outputShape[2]];
     } else {
       this.inputShape = x.tensor.shape;
@@ -348,7 +332,9 @@ export default class DepthwiseConv2D extends Layer {
       }
       if (!this.depthwiseConv2DProgram) {
         const depthwiseConv2DShaderSource = depthwiseConv2DShaderSourceFunc(
+          this.inputShape[2],
           this.output.textureShape[1],
+          this.depthMultiplier,
           this.useBias,
           hasFragments,
           this.fuseActivation
@@ -380,7 +366,9 @@ export default class DepthwiseConv2D extends Layer {
         output: this.output,
         inputs: matMulInputs,
         uniforms: [{ value: this.useBias ? 1 : 0, type: 'bool', name: 'addC' },
-                   { value: outputTextureShape[1], type: 'int', name: 'inputChannels' }],
+                   { value: this.inputShape[2], type: 'int', name: 'inputChannels' },
+                   { value: outputTextureShape[1], type: 'int', name: 'outputChannels' },
+                   { value: this.depthMultiplier, type: 'int', name: 'depthMultiplier' }],
         supportSliceTexture: true
       });
     }

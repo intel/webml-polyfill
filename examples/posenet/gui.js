@@ -3,7 +3,7 @@ function setupGui(){
   guiState = {
     model: 1.01,
     outputStride: 16,
-    scaleFactor: 0.5,
+    scaleFactor: 1.0,
     scoreThreshold: 0.5,
     multiPoseDetection: {
       nmsRadius: 20.0,
@@ -22,7 +22,7 @@ function setupGui(){
     util._outputStride = guiState.outputStride;
     drawSingleandMulti();
   });
-  gui.add(guiState, 'scaleFactor', 0.0, 1.0).onChange((scaleFactor)=>{
+  gui.add(guiState, 'scaleFactor', ).onChange((scaleFactor)=>{
     guiState.scaleFactor = scaleFactor;
     util._scaleFactor = guiState.scaleFactor;
     drawSingleandMulti();
@@ -35,8 +35,8 @@ function setupGui(){
   const multiPoseDetection = gui.addFolder('Multi Pose Estimation');
   multiPoseDetection.open();
   multiPoseDetection.add(guiState.multiPoseDetection, 'nmsRadius', 0.0, 40.0).onChange((nmsRadius)=>{
-    guiState.nmsRadius = nmsRadius;
-    util._nmsRadius = guiState.nmsRadius;
+    guiState.multiPoseDetection.nmsRadius = nmsRadius;
+    util._nmsRadius = guiState.multiPoseDetection.nmsRadius;
     drawResult();
   });
   multiPoseDetection.add(guiState.multiPoseDetection, 'maxDetections')
@@ -44,12 +44,10 @@ function setupGui(){
     .max(20)
     .step(1)
     .onChange((maxDetections)=>{
-      guiState.maxDetections = maxDetections;
-      util._maxDetection = guiState.maxDetections;
+      guiState.multiPoseDetection.maxDetections = maxDetections;
+      util._maxDetection = guiState.multiPoseDetection.maxDetections;
       drawResult();
     });
 }
 
 setupGui();
-
-

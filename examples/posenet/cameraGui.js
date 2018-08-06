@@ -2,12 +2,10 @@ let guiState;
 function setupGui(){
   guiState = {
     algorithm: 'multi-pose',
-    input: {
-      model: 0.75,
-      outputStride: 16,
-      imageScaleFactor: 0.5,
-      scoreThreshold: 0.5,
-    },
+    model: 1.01,
+    outputStride: 16,
+    scaleFactor: 0.5,
+    scoreThreshold: 0.5,
     multiPoseDetection: {
       maxDetections: 5,
       nmsRadius: 30.0,
@@ -20,22 +18,20 @@ function setupGui(){
     guiState.algorithm = algorithm;
     main();
   });
-  const input = gui.addFolder('Input');
-  input.open();
-  input.add(guiState.input, 'model', [0.50, 0.75, 1.00, 1.01]).onChange((model)=>{
-    guiState.input.model = model;
+  gui.add(guiState, 'model', [0.50, 0.75, 1.00, 1.01]).onChange((model)=>{
+    guiState.model = model;
     main();
   });
-  input.add(guiState.input, 'outputStride', [8, 16, 32]).onChange((outputStride)=>{
-    guiState.input.outputStride = outputStride;
+  gui.add(guiState, 'outputStride', [8, 16, 32]).onChange((outputStride)=>{
+    guiState.outputStride = outputStride;
     main();
   });
-  input.add(guiState.input, 'imageScaleFactor', 0.1, 1.0).onChange((scaleFactor)=>{
-    guiState.input.imageScaleFactor = scaleFactor;
+  gui.add(guiState, 'scaleFactor', 0.1, 1.0).onChange((scaleFactor)=>{
+    guiState.scaleFactor = scaleFactor;
     main();
   });
-  input.add(guiState.input, 'scoreThreshold', 0.0, 1.0).onChange((scoreThreshold)=>{
-    guiState.input.scoreThreshold = scoreThreshold;
+  gui.add(guiState, 'scoreThreshold', 0.0, 1.0).onChange((scoreThreshold)=>{
+    guiState.scoreThreshold = scoreThreshold;
     main();
   });
   const multiPoseDetection = gui.addFolder('Multi Pose Estimation');

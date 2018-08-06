@@ -42,13 +42,13 @@ function getURL(version){
       address = 'https://storage.googleapis.com/tfjs-models/weights/posenet/mobilenet_v1_050/';
       break;
     default:
-      console.log("It must be 1.01, 1.0, 0.75 or 0.5");
+      throw new Error("It must be 1.01, 1.0, 0.75 or 0.5");
   }
   return address;
 }
 
 // Obtain weights data and bias data
-async function getVariable(url, binary){
+async function fetchDataByUrl(url, binary){
   return new Promise(function(resolve, reject){
     var xhr = new XMLHttpRequest();
     xhr.open("GET", url, true);
@@ -68,11 +68,8 @@ async function getVariable(url, binary){
   });
 }
 
-
-async function getDimensionData(layername, version, blockId){
+async function getDimensionData(layername, version, blockId, manifest, cacheMap){
   if(layername =="conv2d"){
-    let manifest = await getVariable(getURL(version)+"manifest.json", false);
-    manifest = JSON.parse(manifest);
     let layerWeights = "MobilenetV1/Conv2d_"+String(blockId)+"/weights";
     let layerBias = "MobilenetV1/Conv2d_"+String(blockId)+"/biases";
     let shapeWeights = manifest[layerWeights]["shape"];
@@ -81,15 +78,13 @@ async function getDimensionData(layername, version, blockId){
     let filenameBias = manifest[layerBias]["filename"];
     let addressWeights = getURL(version)+filenameWeights;
     let addressBias = getURL(version)+filenameBias;
-    let weights = await getVariable(addressWeights, true);
-    let bias = await getVariable(addressBias, true);
+    let weights = await loadCache(addressWeights, cacheMap);
+    let bias = await loadCache(addressBias, cacheMap);
     weights = new Float32Array(weights);
     bias = new Float32Array(bias);
     return {shapeWeights: shapeWeights, weights: weights, shapeBias: shapeBias, bias: bias};
   }
   else if(layername =="separableConv"){
-    let manifest = await getVariable(getURL(version)+"manifest.json", false);
-    manifest = JSON.parse(manifest);
     let layerDepthWeights = "MobilenetV1/Conv2d_"+String(blockId)+"_depthwise/depthwise_weights";
     let layerPointWeights = "MobilenetV1/Conv2d_"+String(blockId)+"_pointwise/weights";
     let layerDepthBias = "MobilenetV1/Conv2d_"+String(blockId)+"_depthwise/biases";
@@ -106,10 +101,10 @@ async function getDimensionData(layername, version, blockId){
     let filePointWeights = manifest[layerPointWeights]["filename"];
     let fileDepthBias = manifest[layerDepthBias]["filename"];
     let filePointBias = manifest[layerPointBias]["filename"];
-    let depthWeights = await getVariable(getURL(version)+fileDepthWeights, true);
-    let pointWeights = await getVariable(getURL(version)+filePointWeights, true);
-    let depthBias = await getVariable(getURL(version)+fileDepthBias, true);
-    let pointBias = await getVariable(getURL(version)+filePointBias, true);
+    let depthWeights = await loadCache(getURL(version)+fileDepthWeights, cacheMap);
+    let pointWeights = await loadCache(getURL(version)+filePointWeights, cacheMap);
+    let depthBias = await loadCache(getURL(version)+fileDepthBias, cacheMap);
+    let pointBias = await loadCache(getURL(version)+filePointBias, cacheMap);
     weights.push(new Float32Array(depthWeights));
     weights.push(new Float32Array(pointWeights));
     bias.push(new Float32Array(depthBias));
@@ -117,20 +112,28 @@ async function getDimensionData(layername, version, blockId){
     return {shapeWeights: shapeWeights, weights: weights, shapeBias: shapeBias, bias: bias};
   }
   else{
-    let manifest = await getVariable(getURL(version)+"manifest.json", false);
-    manifest = JSON.parse(manifest);
     let shapeWeights;
     let shapeBias;
     shapeWeights = manifest["MobilenetV1/"+layername+"_2/weights"]["shape"];
     shapeBias = manifest["MobilenetV1/"+layername+"_2/biases"]["shape"];
-    let weights = await getVariable(getURL(version)+manifest["MobilenetV1/"+layername+"_2/weights"]["filename"], true);
-    let bias = await getVariable(getURL(version)+manifest["MobilenetV1/"+layername+"_2/biases"]["filename"], true);
+    let weights = await loadCache(getURL(version)+manifest["MobilenetV1/"+layername+"_2/weights"]["filename"], cacheMap);
+    let bias = await loadCache(getURL(version)+manifest["MobilenetV1/"+layername+"_2/biases"]["filename"], cacheMap);
     weights = new Float32Array(weights);
     bias = new Float32Array(bias);
     return {shapeWeights: shapeWeights, weights: weights, shapeBias: shapeBias, bias: bias};
   }
 }
 
+async function loadCache(address, cacheMap){
+  let results;
+  if(cacheMap.get(address) == undefined){
+    results = await fetchDataByUrl(address, true);
+    cacheMap.set(address, results);
+  } else {
+    results = cacheMap.get(address); 
+  }
+  return results;
+}
 
 // obtain desired size output
 function toOutputStridedLayers(convolutionDefinition, outputStride) {
@@ -209,13 +212,12 @@ function prepareInputTensor(tensor, canvas, outputStride, imgDimension){
 }
 
 function sigmoid(heatmap){
+  let heatmapScore = [];
   for(let i in heatmap){
-    heatmap[i] = 1/(1+Math.pow(Math.E, -heatmap[i]));
+    heatmapScore.push(1/(1+Math.pow(Math.E, -heatmap[i])));
   }
-  return heatmap;
+  return heatmapScore;
 }
-
-
 
 function argMax(array){
   let max = 0;
@@ -226,7 +228,6 @@ function argMax(array){
   }
   return max;
 }
-
 
 function getKeypointIndex(array, dimension){
   let newArray = [];
@@ -244,8 +245,6 @@ function getKeypointIndex(array, dimension){
   }
   return [index, confidenceScore];
 }
-
-
 
 function convertPosition(index, dimension){
   let height = dimension[0];
@@ -288,7 +287,6 @@ function decodeSinglepose(heatmap, offset, dimension, outputStride){
   return poses;
 }
 
-
 function squaredDistance(y1, x1, y2, x2) {
   let dy = y2 - y1;
   let dx = x2 - x1;
@@ -300,8 +298,7 @@ function withinNmsRadiusOfCorrespondingPoint(poses, squaredNmsRadius, _a, keypoi
   return poses.some(function (_a) {
     let keypoints = _a.keypoints;
     let correspondingKeypoint = keypoints[keypointId].position;
-    return squaredDistance(y, x, correspondingKeypoint.y, correspondingKeypoint.x) <=
-      squaredNmsRadius;
+    return squaredDistance(y, x, correspondingKeypoint.y, correspondingKeypoint.x) <= squaredNmsRadius;
   });
 }
 
@@ -341,7 +338,6 @@ function toHeatmapsize(dimension, outputStride){
 function product(array){
   return array.reduce(function(a,b){return a*b;});
 }
-
 
 function buildPartWithScoreQueue(scoreThreshold, localMaximumRadius, scores, dimension){
   const height = dimension[0];
@@ -393,7 +389,7 @@ function getInstanceScore(existingPoses, squaredNmsRadius, instanceKeypoints) {
   return notOverlappedKeypointScores /= instanceKeypoints.length;
 }
 
-function decodeMultiPose(heatmap, offsets, displacement_fwd, displacement_bwd, outputStride, 
+function decodeMultiPose(heatmap, offsets, displacementFwd, displacementBwd, outputStride, 
                          maxPoseDectection, scoreThreshold, nmsRadius, dimension){
   let poses = [];
   let queue = buildPartWithScoreQueue(scoreThreshold, 1, sigmoid(heatmap), dimension);
@@ -406,7 +402,7 @@ function decodeMultiPose(heatmap, offsets, displacement_fwd, displacement_bwd, o
     if(withinNmsRadiusOfCorrespondingPoint(poses, squaredNmsRadius, rootImgCoord, _root.part.id)){
       continue;
     }
-    keypoints = decodePose(_root, heatmap, offsets, outputStride, displacement_fwd, displacement_bwd, dimension);
+    keypoints = decodePose(_root, heatmap, offsets, outputStride, displacementFwd, displacementBwd, dimension);
     score = getInstanceScore(poses, squaredNmsRadius, keypoints);
     poses.push({keypoints: keypoints, score: score});
   }
@@ -418,7 +414,6 @@ function convert4D(n, h, w, c, dimension){
               Number(n*dimension[1]*dimension[2]*dimension[3]);
   return index;
 }
-
 
 function dilationWeights(weights, dimension, rate){
   let dilationW = dimension[2]*rate-rate+1;
@@ -437,7 +432,6 @@ function dilationWeights(weights, dimension, rate){
   }
   return {dimension: dimensionDilation, dilationWeights: dilationWeights}
 }
-
 
 function getValidResolution(imageScaleFactor, inputDimension, outputStride){
   let evenResolution = inputDimension * imageScaleFactor - 1;

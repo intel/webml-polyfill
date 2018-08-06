@@ -1,5 +1,5 @@
 class PoseNet{
-  constructor(modelArch, backend, version, outputStride, inputShape, type){
+  constructor(modelArch, backend, version, outputStride, inputShape, type, cacheMap){
     this._modelArch = modelArch;
     this._model = null;
     this._compilation;
@@ -13,6 +13,7 @@ class PoseNet{
     this._type = type;
     this._inputTensorId;
     this._outputTensorId;
+    this._cacheMap = cacheMap;
     if (typeof backend !== 'undefined') {
       this._backend = backend;
     } else {
@@ -81,9 +82,9 @@ class PoseNet{
     let dimensionOut;
     let dimensionIn = this._inputShape;
     const type = this._nn.TENSOR_FLOAT32;
-    const heatmapDimension = [1, (this._inputShape[1]-1)/this._outputStride+1, (this._inputShape[2]-1)/this._outputStride+1, 17];
+    const heatmapDimension = [1, (this._inputShape[1]-1)/this._modelArch[13].outputStride+1, (this._inputShape[2]-1)/this._modelArch[13].outputStride+1, 17];
     const heatmap = {type: type, dimensions: heatmapDimension};
-    const offsetDimension = [1, (this._inputShape[1]-1)/this._outputStride+1, (this._inputShape[2]-1)/this._outputStride+1, 34];
+    const offsetDimension = [1, (this._inputShape[1]-1)/this._modelArch[13].outputStride+1, (this._inputShape[2]-1)/this._modelArch[13].outputStride+1, 34];
     const offset = {type: type, dimensions: offsetDimension};
     let input = {type:type, dimensions: this._inputShape};
     this._inputTensorId = this._operandIndex++;
@@ -94,8 +95,8 @@ class PoseNet{
     this._outputTensorId.push(this._operandIndex++);
     this._model.addOperand(offset);
     if (this._type === "Multiperson") {
-      const displacement_fwd_dimension = [1, (this._inputShape[1]-1)/this._outputStride+1, (this._inputShape[2]-1)/this._outputStride+1, 32];
-      const displacement_bwd_dimension = [1, (this._inputShape[1]-1)/this._outputStride+1, (this._inputShape[2]-1)/this._outputStride+1, 32];
+      const displacement_fwd_dimension = [1, (this._inputShape[1]-1)/this._modelArch[13].outputStride+1, (this._inputShape[2]-1)/this._modelArch[13].outputStride+1, 32];
+      const displacement_bwd_dimension = [1, (this._inputShape[1]-1)/this._modelArch[13].outputStride+1, (this._inputShape[2]-1)/this._modelArch[13].outputStride+1, 32];
       const displacement_fwd = {type:type, dimensions:displacement_fwd_dimension};
       const displacement_bwd = {type:type, dimensions:displacement_bwd_dimension};
       this._outputTensorId.push(this._operandIndex++);
@@ -107,6 +108,8 @@ class PoseNet{
 
     // add operands and operation for every layer of Mobilenet
     let outputLayerIndex = 0; 
+    let manifest = await fetchDataByUrl(getURL(this._version)+"manifest.json", false);
+    manifest = JSON.parse(manifest);
     for (let i in this._modelArch) {
       let dimensionWeights = [];
       let weights = [];
@@ -120,15 +123,15 @@ class PoseNet{
           inputs.push(this._outputLayer[outputLayerIndex]);
           outputLayerIndex++;
         }	  
-	/** 
-	* data = { 
-	*          shapeWeights,
-	*          weights,
-	*          shapeBias,
-	*          bias
-	*        }
-	*/
-        const data = await getDimensionData("conv2d", this._version, i);
+        /** 
+         * data = { 
+         *          shapeWeights,
+         *          weights,
+         *          shapeBias,
+         *          bias
+         *        }
+         */
+        const data = await getDimensionData("conv2d", this._version, i, manifest, this._cacheMap);
         dimensionWeights.push(reshape(data.shapeWeights));
         weights.push(new Float32Array(transposeWeights(data.weights, data.shapeWeights)));
         dimensionBias.push(data.shapeBias);
@@ -148,7 +151,7 @@ class PoseNet{
           inputs.push(this._outputLayer[outputLayerIndex]);
           outputLayerIndex++;
         }
-        const data = await getDimensionData("separableConv", this._version, i);
+        const data = await getDimensionData("separableConv", this._version, i, manifest, this._cacheMap);
         // regular depthwise convolution
         if (this._modelArch[i].rate == 1) {
           dimensionWeights.push(reshape(data.shapeWeights[0]));
@@ -245,7 +248,7 @@ class PoseNet{
     let inputs = [];
     const stride = 1;
     inputs.push(this._outputLayer[this._outputLayer.length-1]);
-    let data = await getDimensionData("heatmap", this._version, 0);
+    let data = await getDimensionData("heatmap", this._version, 0, manifest, this._cacheMap);
     tensorTypeWeights = {type: type, dimensions: reshape(data.shapeWeights)};
     tensorTypeBias = {type: type, dimensions: data.shapeBias};
     valueWeights = new Float32Array(transposeWeights(data.weights, data.shapeWeights));
@@ -268,7 +271,7 @@ class PoseNet{
     // add operands for offset layer
     inputs = [];
     inputs.push(this._outputLayer[this._outputLayer.length-1]);
-    data = await getDimensionData("offset", this._version, 0)
+    data = await getDimensionData("offset", this._version, 0, manifest, this._cacheMap)
     tensorTypeWeights = {type: type, dimensions: reshape(data.shapeWeights)};
     tensorTypeBias = {type: type, dimensions: data.shapeBias};
     valueWeights = new Float32Array(transposeWeights(data.weights, data.shapeWeights));
@@ -293,7 +296,7 @@ class PoseNet{
       // add operands for forward displacement layer
       inputs = [];
       inputs.push(this._outputLayer[this._outputLayer.length-1]);  
-      data = await getDimensionData("displacement_fwd", this._version, 0)
+      data = await getDimensionData("displacement_fwd", this._version, 0, manifest, this._cacheMap)
       tensorTypeWeights = {type: type, dimensions: reshape(data.shapeWeights)};
       tensorTypeBias = {type: type, dimensions: data.shapeBias};
       valueWeights = new Float32Array(transposeWeights(data.weights, data.shapeWeights));
@@ -317,7 +320,7 @@ class PoseNet{
       // add operands for backward displacement layer     
       inputs = [];
       inputs.push(this._outputLayer[this._outputLayer.length-1]);  
-      data = await getDimensionData("displacement_bwd", this._version, 0)
+      data = await getDimensionData("displacement_bwd", this._version, 0, manifest, this._cacheMap)
       tensorTypeWeights = {type: type, dimensions: reshape(data.shapeWeights)};
       tensorTypeBias = {type: type, dimensions: data.shapeBias};
       valueWeights = new Float32Array(transposeWeights(data.weights, data.shapeWeights));

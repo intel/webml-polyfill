@@ -2,8 +2,14 @@ async function main(){
   const video = document.getElementById('video');
   const canvas = document.getElementById('canvas');
   const ctx = canvas.getContext('2d');
+  const scaleCanvas = document.getElementById('canvas_2');
+  const scaleCtx = scaleCanvas.getContext('2d');
   const stats = new Stats();
   const util = new Utils();
+  const videoWidth = 500;
+  const videoHeight = 500;
+  const inputSize = [1, videoWidth, videoHeight, 3];
+  const isMultiple = guiState.algorithm;
   let streaming  = false;	
   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
     throw new Error(
@@ -28,7 +34,7 @@ async function main(){
   switch(backend){
     case "WebGL":
       if (nnPolyfill.supportWebGL2){
-        util.init('WebGL2').then(()=>{
+        util.init('WebGL2', inputSize).then(()=>{
           predict();
           document.getElementById('loading').style.display = 'none';
           document.getElementById('camera').style.display = 'block';
@@ -40,7 +46,7 @@ async function main(){
       break;
     case "WASM":
       if (nnPolyfill.supportWasm){
-        util.init('WASM').then(()=>{
+        util.init('WASM', inputSize).then(()=>{
           predict();
           document.getElementById('loading').style.display = 'none';
           document.getElementById('camera').style.display = 'block';
@@ -52,7 +58,7 @@ async function main(){
       break;
     case "WebML":
       if(nnNative){
-        util.init('WebML').then(()=>{
+        util.init('WebML', inputSize).then(()=>{
           predict();
           document.getElementById('loading').style.display = 'none';
           document.getElementById('camera').style.display = 'block';
@@ -92,7 +98,13 @@ async function main(){
   async function predict(){
     stats.begin();
     const videoElement = await loadVideo();
-    util.predict();
+    await util.predict(scaleCanvas, ctx, inputSize);
+    if(isMultiple == "multi-pose"){
+    	util.drawOutput(canvas, 'multi', inputSize);
+    }
+    else{
+      util.drawOutput(canvas, 'single', inputSize);
+    }
     stats.end();
     if(streaming){
       setTimeout(predict, 100);
