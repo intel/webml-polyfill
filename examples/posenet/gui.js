@@ -3,7 +3,7 @@ function setupGui(){
   guiState = {
     model: 1.01,
     outputStride: 16,
-    scaleFactor: 1.0,
+    scaleFactor: 0.8,
     scoreThreshold: 0.5,
     multiPoseDetection: {
       nmsRadius: 20.0,

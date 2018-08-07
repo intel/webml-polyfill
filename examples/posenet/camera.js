@@ -96,7 +96,7 @@ async function main(){
   }
   
   async function predict(){
-  	stats.begin();
+    stats.begin();
     const videoElement = await loadVideo();
     await util.predict(scaleCanvas, ctx, inputSize);
     if(isMultiple == "multi-pose"){

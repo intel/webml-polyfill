@@ -40,6 +40,7 @@ class PoseNet{
     this._model = await this._nn.createModel(options);
     await this._addTensorOperands();
     await this._model.finish();
+    //console.log(this._model);
     this._compilation = await this._model.createCompilation();
     this._compilation.setPreference(this._nn.PREFER_FAST_SINGLE_ANSWER);
     await this._compilation.finish();
