@@ -88,25 +88,25 @@ function addVectors(a, b) {
   return { x: a.x + b.x, y: a.y + b.y };
 }
 
-function getDisplacement(index, displacements){
+function getDisplacement(index, displacements) {
   var displacementY = displacements[index];
   var displacementX = displacements[index + 16];
-  return{
+  return {
     y: displacementY,
     x: displacementX
   };
 }
 
-function getOffset(index, offsets){
+function getOffset(index, offsets) {
   var offsetY = offsets[index];
   var offsetX = offsets[index + 17];
-  return{
+  return {
     y: offsetY,
     x: offsetX
   };
 }
 
-function traverseToTargetKeypoint(edgeId, sourceKeypoint, targetKeypointId, scores, offsets, outputStride, displacements, dimension){
+function traverseToTargetKeypoint(edgeId, sourceKeypoint, targetKeypointId, scores, offsets, outputStride, displacements, dimension) {
   var dimensionDisplace = [dimension[0], dimension[1], 32];
   var dimensionOffset = [dimension[0], dimension[1], 34];
   var height = dimension[0], width = dimension[1];
@@ -121,10 +121,10 @@ function traverseToTargetKeypoint(edgeId, sourceKeypoint, targetKeypointId, scor
   var targetKeypointIndeces = decode(targetKeypoint, outputStride, height, width);
   var indexHeatmap = convertCoortoIndex(targetKeypointIndeces.x, targetKeypointIndeces.y, targetKeypointId, dimension);
   var score = scores[indexHeatmap];
-  return{position: targetKeypoint, part: partNames[targetKeypointId], score: score};
+  return {position: targetKeypoint, part: partNames[targetKeypointId], score: score};
 }
 
-function decodePose(root, scores, offsets, outputStride, displacementsFwd, displacementsBwd, dimension){
+function decodePose(root, scores, offsets, outputStride, displacementsFwd, displacementsBwd, dimension) {
   var numParts = dimension[2];
   var numEdges = parentToChildEdges.length;
   var instanceKeypoints = new Array(numParts);
@@ -135,19 +135,19 @@ function decodePose(root, scores, offsets, outputStride, displacementsFwd, displ
     part: partNames[rootPart.id],
     position: rootPoint
   };
-  for(var edge = numEdges-1; edge >=0; --edge){
+  for(var edge = numEdges-1; edge >=0; --edge) {
     var sourceKeypointId = parentToChildEdges[edge];
     var targetKeypointId = childToParentEdges[edge];
-    if(instanceKeypoints[sourceKeypointId] && !instanceKeypoints[targetKeypointId]){
+    if(instanceKeypoints[sourceKeypointId] && !instanceKeypoints[targetKeypointId]) {
       instanceKeypoints[targetKeypointId] = traverseToTargetKeypoint(edge, instanceKeypoints[sourceKeypointId], targetKeypointId, 
                                                                      scores, offsets, outputStride, displacementsBwd, dimension);
     }
   }
 
-  for(var edge = 0; edge<numEdges; ++edge){
+  for(var edge = 0; edge<numEdges; ++edge) {
     var sourceKeypointId = childToParentEdges[edge];
     var targetKeypointId = parentToChildEdges[edge];
-    if(instanceKeypoints[sourceKeypointId] && !instanceKeypoints[targetKeypointId]){
+    if(instanceKeypoints[sourceKeypointId] && !instanceKeypoints[targetKeypointId]) {
       instanceKeypoints[targetKeypointId] = traverseToTargetKeypoint(edge, instanceKeypoints[sourceKeypointId], targetKeypointId, 
                                                                      scores, offsets, outputStride, displacementsFwd, dimension);
     }

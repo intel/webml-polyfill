@@ -68,9 +68,8 @@ const mobileNet50Architecture = [
   ['separableConv', 1],
   ['separableConv', 1]
 ]
-
 class Utils{
-  constructor(){
+  constructor() {
     this.modelArch;
     this.model;
     // single input
@@ -84,10 +83,17 @@ class Utils{
     this._type = "Multiperson";
     this.initialized = false;
     this._cacheMap = new Map();
+
+    this.container = document.getElementById('container');
+    this.progressBar = document.getElementById('progressBar');
+    this.progressContainer = document.getElementById('progressContainer');
   }
   
-  async init(backend, inputSize){
+  async init(backend, inputSize) {
     this.initialized = false;
+    progressContainer.style.display = 'inline';
+    progressBar.style = `width: ${0}%`;
+    progressBar.innerHTML = `${0}%`;
     let result;
     const ModelArch = new Map([
       [0.5, mobileNet50Architecture],
@@ -95,16 +101,14 @@ class Utils{
       [1.0, mobileNet100Architecture],
       [1.01, mobileNet100Architecture],
     ]);
-
     this.modelArch = ModelArch.get(Number(this._version));
     this.scaleWidth = getValidResolution(this._scaleFactor, inputSize[2], this._outputStride);
     this.scaleHeight = getValidResolution(this._scaleFactor, inputSize[1], this._outputStride);
     this.scaleInputSize = [1, this.scaleWidth, this.scaleHeight, 3];
-    if((this._version == 0.75 || this._version == 0.5) && this._outputStride == 32){
-    	this.HEATMAP_TENSOR_SIZE = product(toHeatmapsize(this.scaleInputSize, 16));
-    }
-    else{
-    	this.HEATMAP_TENSOR_SIZE = product(toHeatmapsize(this.scaleInputSize, this._outputStride));
+    if ((this._version == 0.75 || this._version == 0.5) && this._outputStride == 32) {
+      this.HEATMAP_TENSOR_SIZE = product(toHeatmapsize(this.scaleInputSize, 16));
+    } else {
+      this.HEATMAP_TENSOR_SIZE = product(toHeatmapsize(this.scaleInputSize, this._outputStride));
     }
     this.OFFSET_TENSOR_SIZE = this.HEATMAP_TENSOR_SIZE*2;
     this.DISPLACEMENT_FWD_SIZE = this.HEATMAP_TENSOR_SIZE/17*32;
@@ -121,10 +125,13 @@ class Utils{
     result = await this.model.createCompiledModel();
     console.log('compilation result: ${result}');
     this.initialized = true;
+    if (this.initialized == true) {
+      progressContainer.style.display = 'none';
+    }
   }
 
-  async predict(scaleCanvas, canvasContextMulti, inputSize){
-    if(!this.initialized){
+  async predict(scaleCanvas, canvasContextMulti, inputSize) {
+    if (!this.initialized) {
       return;
     }
     let imageSize = [this.scaleWidth, this.scaleHeight, 3];
@@ -133,35 +140,37 @@ class Utils{
     let start = performance.now();
     let result = await this.model.computeMultiPose(this.inputTensor, this.heatmapTensor, 
                                                    this.offsetTensor, this.displacementFwd, 
-                                                   this.displacementBwd);
-    console.log("execution time: ", performance.now()-start);        
+                                                   this.displacementBwd);   
+    let elapsed = performance.now() - start;
+    console.log(`Inference time: ${elapsed.toFixed(2)} ms`);
+    let inferenceTimeElement = document.getElementById('inferenceTime');
+    inferenceTimeElement.innerHTML = `Inference time: <em style="color:green;font-weight:bloder;">${elapsed.toFixed(2)} </em>ms`; 
   }
 
-  drawOutput(canvas, type, inputSize){    
+  drawOutput(canvas, type, inputSize) {    
     let imageSize = [this.scaleWidth, this.scaleHeight, 3];
     let ctx = canvas.getContext('2d');
-    if(type == 'single'){
+    if (type == 'single') {
       let singlePose = decodeSinglepose(this.heatmapTensor, this.offsetTensor, 
                                         toHeatmapsize(imageSize, this._outputStride), 
                                         this._outputStride);
       console.log("single person: ", singlePose);
-      singlePose.forEach((pose)=>{
+      singlePose.forEach((pose) => {
         scalePose(pose, inputSize[1]/this.scaleWidth);
-        if(pose.score >= this._minScore){
+        if (pose.score >= this._minScore) {
           drawKeypoints(pose.keypoints, this._minScore, ctx);
           drawSkeleton(pose.keypoints, this._minScore, ctx);
         }
       });
-    }
-    else{
+    } else {
       let multiPose = decodeMultiPose(sigmoid(this.heatmapTensor), this.offsetTensor, 
                                       this.displacementFwd, this.displacementBwd, 
                                       this._outputStride, this._maxDetection, this._minScore, 
                                       this._nmsRadius, toHeatmapsize(imageSize, this._outputStride));
       console.log("multiple person: ", multiPose);
-      multiPose.forEach((pose)=>{
+      multiPose.forEach((pose) => {
         scalePose(pose, inputSize[1]/this.scaleWidth);
-        if(pose.score >= this._minScore){
+        if (pose.score >= this._minScore) {
           drawKeypoints(pose.keypoints, this._minScore, ctx);
           drawSkeleton(pose.keypoints, this._minScore, ctx);
         }
@@ -169,7 +178,7 @@ class Utils{
     }
   }
 
-  scaleImage(canvasContextMulti, scaleCanvas, inputSize){
+  scaleImage(canvasContextMulti, scaleCanvas, inputSize) {
     const scale = this.scaleWidth/inputSize[1];
     let pixel = canvasContextMulti.getImageData(0,0, inputSize[1], inputSize[2]);
     scaleCanvas.width = this.scaleWidth;
@@ -178,7 +187,7 @@ class Utils{
     scaleCanvas.setAttribute("height", this.scaleHeight);
     let scaleCtx = scaleCanvas.getContext('2d');
     let destImg = scaleCtx.createImageData(this.scaleWidth, this.scaleHeight);
-    const promise = new Promise((resolve, reject)=>{
+    const promise = new Promise((resolve, reject) => {
       bilinear(pixel, destImg, scale);
       scaleCtx.putImageData(destImg, 0, 0);
       resolve(destImg.data);
