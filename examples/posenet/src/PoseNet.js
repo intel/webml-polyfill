@@ -32,7 +32,7 @@ class PoseNet{
       this._nn = nnPolyfill;
     }
   }
-  async createCompiledModel(){
+  async createCompiledModel() {
     let options = {};
     if (this._backend === 'WebGL2') {
       options.useWebGL2 = true;
@@ -40,14 +40,13 @@ class PoseNet{
     this._model = await this._nn.createModel(options);
     await this._addTensorOperands();
     await this._model.finish();
-    //console.log(this._model);
     this._compilation = await this._model.createCompilation();
     this._compilation.setPreference(this._nn.PREFER_FAST_SINGLE_ANSWER);
     await this._compilation.finish();
     this._execution = await this._compilation.createExecution();
   }
 
-  async computeSinglePose(inputTensor, heatmapTensor, offsetTensor){
+  async computeSinglePose(inputTensor, heatmapTensor, offsetTensor) {
     this._execution.setInput(0, inputTensor);
     this._execution.setOutput(0, heatmapTensor);
     this._execution.setOutput(1, offsetTensor);
@@ -58,7 +57,7 @@ class PoseNet{
     return 'success';
   }
 
-  async computeMultiPose(inputTensor, heatmapTensor, offsetTensor, displacementFwd, displacementBwd){
+  async computeMultiPose(inputTensor, heatmapTensor, offsetTensor, displacementFwd, displacementBwd) {
     this._execution.setInput(0, inputTensor);
     this._execution.setOutput(0, heatmapTensor);
     this._execution.setOutput(1, offsetTensor);
@@ -72,7 +71,7 @@ class PoseNet{
   }
 
 
-  async _addTensorOperands(){
+  async _addTensorOperands() {
     /**
     * Set model input and output layer
     * Output: 
@@ -112,6 +111,7 @@ class PoseNet{
     let manifest = await fetchDataByUrl(getURL(this._version)+"manifest.json", false);
     manifest = JSON.parse(manifest);
     for (let i in this._modelArch) {
+      this._calculateProgress(Number(i)+1, this._modelArch.length);
       let dimensionWeights = [];
       let weights = [];
       let dimensionBias = [];
@@ -344,7 +344,7 @@ class PoseNet{
     }
   }
 
-  _calculateOutput(inputDimension, shape, stride, layer){
+  _calculateOutput(inputDimension, shape, stride, layer) {
     let outputDimension;
     if (layer === "conv2d") {
       outputDimension = [1, Math.floor((inputDimension[1]-shape[1]+2)/stride+1), 
@@ -360,12 +360,21 @@ class PoseNet{
   }
 
 
-  _addScalarInt32(value){
+  _addScalarInt32(value) {
     const scalarInt32Type = {type: this._nn.INT32};
     let index = this._operandIndex++;
     this._model.addOperand(scalarInt32Type);
     this._model.setOperandValue(index, new Int32Array([value]));
     return index;
+  }
+
+  _calculateProgress(current, length) {
+    let progressBar = document.getElementById('progressBar');
+    let progressContainer = document.getElementById('progressContainer');
+    let percentComplete = current / length *100;
+    percentComplete = percentComplete.toFixed(0);
+    progressBar.style = `width: ${percentComplete}%`;
+    progressBar.innerHTML = `${percentComplete}%`;
   }
 }
 

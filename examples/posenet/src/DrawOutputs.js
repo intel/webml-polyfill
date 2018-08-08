@@ -17,13 +17,15 @@
 
 const color = 'aqua';
 const lineWidth = 2;
+const imgMaxWidth = 513;
+const imgMaxHeight = 513;
 
-function loadImage(imagePath, ctx){
+function loadImage(imagePath, ctx) {
   const image = new Image();
   const promise = new Promise((resolve, reject) => {
     image.crossOrigin = '';
     image.onload = () => {
-      ctx.drawImage(image, 0, 0);
+      ctx.drawImage(image, 0, 0, imgMaxWidth, imgMaxHeight);
       resolve(image);
     };
   });
@@ -31,14 +33,14 @@ function loadImage(imagePath, ctx){
   return promise;
 }
 
-function eitherPointDoesntMeetConfidence(a, b, minConfidence){
+function eitherPointDoesntMeetConfidence(a, b, minConfidence) {
   return (a < minConfidence || b < minConfidence);
 }
 
-function getAdjacentKeyPoints(keypoints, minConfidence){
-  return connectedPartIndeces.reduce(function (result, _a){
+function getAdjacentKeyPoints(keypoints, minConfidence) {
+  return connectedPartIndeces.reduce(function (result, _a) {
     let leftJoint = _a[0], rightJoint = _a[1];
-    if (eitherPointDoesntMeetConfidence(keypoints[leftJoint].score, keypoints[rightJoint].score, minConfidence)){
+    if (eitherPointDoesntMeetConfidence(keypoints[leftJoint].score, keypoints[rightJoint].score, minConfidence)) {
       return result;
     }
     result.push([keypoints[leftJoint], keypoints[rightJoint]]);
@@ -46,18 +48,18 @@ function getAdjacentKeyPoints(keypoints, minConfidence){
   }, []);
 }
 
-function toTuple({ y, x }){
+function toTuple({ y, x }) {
   return [y, x];
 }
 
-function drawPoint(ctx, y, x, r, color){
+function drawPoint(ctx, y, x, r, color) {
   ctx.beginPath();
   ctx.arc(x, y, r, 0, 2 * Math.PI);
   ctx.fillStyle = color;
   ctx.fill();
 }
 
-function drawSegment([ay, ax], [by, bx], color, scale, ctx){
+function drawSegment([ay, ax], [by, bx], color, scale, ctx) {
   ctx.beginPath();
   ctx.moveTo(ax * scale, ay * scale);
   ctx.lineTo(bx * scale, by * scale);
@@ -66,10 +68,10 @@ function drawSegment([ay, ax], [by, bx], color, scale, ctx){
   ctx.stroke();
 }
 
-function drawKeypoints(keypoints, minConfidence, ctx, scale = 1){
-  for (let i = 0; i < keypoints.length; i++){
+function drawKeypoints(keypoints, minConfidence, ctx, scale = 1) {
+  for (let i = 0; i < keypoints.length; i++) {
     const keypoint = keypoints[i];
-    if (keypoint.score < minConfidence){
+    if (keypoint.score < minConfidence) {
       continue;
     }
     const { y, x } = keypoint.position;

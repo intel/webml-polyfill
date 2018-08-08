@@ -15,9 +15,9 @@
  * =============================================================================
  */
 
-function getInput(inputElement){
+function getInput(inputElement) {
   let reader = new FileReader();
-  const promise = new Promise((resolve, reject)=>{
+  const promise = new Promise((resolve, reject) => {
     reader.onload = function(e){
       resolve(e.target.result);
     }
@@ -26,9 +26,9 @@ function getInput(inputElement){
   return promise;
 }
 
-function getURL(version){
+function getURL(version) {
   let address;
-  switch(version){
+  switch (version) {
     case 1.01:
       address = 'https://storage.googleapis.com/tfjs-models/weights/posenet/mobilenet_v1_101/';
       break;
@@ -48,18 +48,18 @@ function getURL(version){
 }
 
 // Obtain weights data and bias data
-async function fetchDataByUrl(url, binary){
-  return new Promise(function(resolve, reject){
+async function fetchDataByUrl(url, binary) {
+  return new Promise(function(resolve, reject) {
     var xhr = new XMLHttpRequest();
     xhr.open("GET", url, true);
-    if(binary){
+    if (binary) {
       xhr.responseType = 'arraybuffer';
     }
-    xhr.onload = function(ev){
-      if(xhr.readyState == 4){
-        if(xhr.status == 200){
+    xhr.onload = function(ev) {
+      if (xhr.readyState == 4) {
+        if (xhr.status == 200) {
           resolve(xhr.response);
-        }else{
+        } else {
           reject(new Error('Failed to load ' + modelUrl + ' status: ' + request.status));
         }
       }
@@ -68,8 +68,8 @@ async function fetchDataByUrl(url, binary){
   });
 }
 
-async function getDimensionData(layername, version, blockId, manifest, cacheMap){
-  if(layername =="conv2d"){
+async function getDimensionData(layername, version, blockId, manifest, cacheMap) {
+  if (layername =="conv2d") {
     let layerWeights = "MobilenetV1/Conv2d_"+String(blockId)+"/weights";
     let layerBias = "MobilenetV1/Conv2d_"+String(blockId)+"/biases";
     let shapeWeights = manifest[layerWeights]["shape"];
@@ -84,7 +84,7 @@ async function getDimensionData(layername, version, blockId, manifest, cacheMap)
     bias = new Float32Array(bias);
     return {shapeWeights: shapeWeights, weights: weights, shapeBias: shapeBias, bias: bias};
   }
-  else if(layername =="separableConv"){
+  else if (layername =="separableConv") {
     let layerDepthWeights = "MobilenetV1/Conv2d_"+String(blockId)+"_depthwise/depthwise_weights";
     let layerPointWeights = "MobilenetV1/Conv2d_"+String(blockId)+"_pointwise/weights";
     let layerDepthBias = "MobilenetV1/Conv2d_"+String(blockId)+"_depthwise/biases";
@@ -110,8 +110,7 @@ async function getDimensionData(layername, version, blockId, manifest, cacheMap)
     bias.push(new Float32Array(depthBias));
     bias.push(new Float32Array(pointBias));
     return {shapeWeights: shapeWeights, weights: weights, shapeBias: shapeBias, bias: bias};
-  }
-  else{
+  } else {
     let shapeWeights;
     let shapeBias;
     shapeWeights = manifest["MobilenetV1/"+layername+"_2/weights"]["shape"];
@@ -124,9 +123,9 @@ async function getDimensionData(layername, version, blockId, manifest, cacheMap)
   }
 }
 
-async function loadCache(address, cacheMap){
+async function loadCache(address, cacheMap) {
   let results;
-  if(cacheMap.get(address) == undefined){
+  if (cacheMap.get(address) == undefined) {
     results = await fetchDataByUrl(address, true);
     cacheMap.set(address, results);
   } else {
@@ -146,8 +145,7 @@ function toOutputStridedLayers(convolutionDefinition, outputStride) {
       layerStride = 1;
       layerRate = rate;
       rate *= stride;
-    }
-    else {
+    } else {
       layerStride = stride;
       layerRate = 1;
       currentStride *= stride;
@@ -160,19 +158,19 @@ function toOutputStridedLayers(convolutionDefinition, outputStride) {
 }
 
 // weights dimension: HWCN -> NHWC
-function reshape(dimension){
+function reshape(dimension) {
   return [dimension[3], dimension[0], dimension[1], dimension[2]];
 }
 
 // HWCN -> NHWC
-function transposeWeights(weights, dimension){
+function transposeWeights(weights, dimension) {
   let product = dimension.reduce(function(a,b){return a*b});
   let newWeights = new Float32Array(product);
   let [H, W, C, N] = dimension;
-  for(let h =0; h<H; h++){
-    for(let w =0; w<W; w++){
-      for(let c = 0; c<C; c++){
-        for(let n =0; n<N; n++){
+  for (let h =0; h<H; h++) {
+    for (let w =0; w<W; w++) {
+      for (let c = 0; c<C; c++) {
+        for (let n =0; n<N; n++) {
           newWeights[c + w*C + h*W*C + n*H*W*C] = 
               weights[n + c*N + w*C*N + h*W*C*N];
         }
@@ -182,15 +180,15 @@ function transposeWeights(weights, dimension){
   return newWeights;
 }
 
-function valideResolution(inputDimension, outputStride){
+function valideResolution(inputDimension, outputStride) {
   let width = inputDimension[1];
   let height = inputDimension[2];
-  if((width-1) % outputStride != 0){
+  if ((width-1) % outputStride != 0) {
     throw new Error("invalid resolution");
   }
 }
 
-function prepareInputTensor(tensor, canvas, outputStride, imgDimension){
+function prepareInputTensor(tensor, canvas, outputStride, imgDimension) {
   const width = imgDimension[0];
   const height = imgDimension[1]; 
   const channels = imgDimension[2];
@@ -211,42 +209,42 @@ function prepareInputTensor(tensor, canvas, outputStride, imgDimension){
   }   
 }
 
-function sigmoid(heatmap){
+function sigmoid(heatmap) {
   let heatmapScore = [];
-  for(let i in heatmap){
+  for (let i in heatmap) {
     heatmapScore.push(1/(1+Math.pow(Math.E, -heatmap[i])));
   }
   return heatmapScore;
 }
 
-function argMax(array){
+function argMax(array) {
   let max = 0;
-  for(let i in array){
-    if(array[i] > array[max]){
+  for (let i in array) {
+    if (array[i] > array[max]) {
       max = i;
     }
   }
   return max;
 }
 
-function getKeypointIndex(array, dimension){
+function getKeypointIndex(array, dimension) {
   let newArray = [];
   let index = [];
   let confidenceScore = [];
-  for(let i = 0; i< 17; i++){
+  for (let i = 0; i< 17; i++) {
     newArray.push(new Array(dimension[0]*dimension[1]));
   }
-  for(let i in array){
+  for (let i in array) {
     newArray[i%17][Math.floor(i/17)] = array[i];
   }
-  for(let j in newArray){
+  for (let j in newArray) {
     index.push(argMax(newArray[j]));
     confidenceScore.push(newArray[j][argMax(newArray[j])]);
   }
   return [index, confidenceScore];
 }
 
-function convertPosition(index, dimension){
+function convertPosition(index, dimension) {
   let height = dimension[0];
   let width = dimension[1];
   let x = index%height;
@@ -254,7 +252,7 @@ function convertPosition(index, dimension){
   return [y, x];
 }
 
-function convertIndextoCoor(index, dimension){
+function convertIndextoCoor(index, dimension) {
   [height, width, channel] = dimension;
   let z = index%channel;
   let x = Math.floor(index/channel)%width;
@@ -262,18 +260,18 @@ function convertIndextoCoor(index, dimension){
   return [y, x, z];
 }
 
-function convertCoortoIndex(x, y, z, dimension){
+function convertCoortoIndex(x, y, z, dimension) {
   let [height, width, channel] = dimension;
   let index = Number(z)+Number(x*channel)+Number(y*width*channel);
   return index;
 }
 
-function decodeSinglepose(heatmap, offset, dimension, outputStride){
+function decodeSinglepose(heatmap, offset, dimension, outputStride) {
   let [index, confidenceScore] = getKeypointIndex(sigmoid(heatmap),dimension);
   let finalRes = [];
   let totalScore = 0; 
   let poses = [];
-  for(let i in index){
+  for (let i in index) {
     let heatmapY = convertPosition(Number(index[i]), dimension)[0];
     let heatmapX = convertPosition(Number(index[i]), dimension)[1];
     let offsetY = offset[Number(i)+Number(heatmapX)*34+Number(heatmapY*34*dimension[1])];
@@ -324,22 +322,22 @@ function scoreIsMaximumInLocalWindow(keypointId, score, heatmapY, heatmapX, loca
   return localMaximum;
 }
 
-function toHeatmapsize(dimension, outputStride){
+function toHeatmapsize(dimension, outputStride) {
   let heatmapSize;
-  if(dimension.length == 3){
+  if (dimension.length == 3) {
     heatmapSize = [(dimension[0]-1)/outputStride+1, (dimension[1]-1)/outputStride+1, 17];
   }
-  if(dimension.length == 4){
+  if (dimension.length == 4) {
     heatmapSize = [(dimension[1]-1)/outputStride+1, (dimension[2]-1)/outputStride+1, 17]
   }
   return heatmapSize;
 }
 
-function product(array){
+function product(array) {
   return array.reduce(function(a,b){return a*b;});
 }
 
-function buildPartWithScoreQueue(scoreThreshold, localMaximumRadius, scores, dimension){
+function buildPartWithScoreQueue(scoreThreshold, localMaximumRadius, scores, dimension) {
   const height = dimension[0];
   const width = dimension[1];
   const numKeypoints = dimension[2];
@@ -364,7 +362,7 @@ function buildPartWithScoreQueue(scoreThreshold, localMaximumRadius, scores, dim
   return queue;
 }
 
-function getImageCoords(part, outputStride, offsets, dimension){
+function getImageCoords(part, outputStride, offsets, dimension) {
   let dimensionOffset = [];
   dimensionOffset.push(dimension[0]);
   dimensionOffset.push(dimension[1]);
@@ -390,16 +388,16 @@ function getInstanceScore(existingPoses, squaredNmsRadius, instanceKeypoints) {
 }
 
 function decodeMultiPose(heatmap, offsets, displacementFwd, displacementBwd, outputStride, 
-                         maxPoseDectection, scoreThreshold, nmsRadius, dimension){
+                         maxPoseDectection, scoreThreshold, nmsRadius, dimension) {
   let poses = [];
   let queue = buildPartWithScoreQueue(scoreThreshold, 1, sigmoid(heatmap), dimension);
   let _root, keypoints, score;
   const squaredNmsRadius = nmsRadius * nmsRadius;
   let index = 0;
-  while(poses.length < maxPoseDectection && !queue.empty()){
+  while (poses.length < maxPoseDectection && !queue.empty()) {
     _root = queue.dequeue();
     rootImgCoord = getImageCoords(_root.part, outputStride, offsets, dimension);
-    if(withinNmsRadiusOfCorrespondingPoint(poses, squaredNmsRadius, rootImgCoord, _root.part.id)){
+    if (withinNmsRadiusOfCorrespondingPoint(poses, squaredNmsRadius, rootImgCoord, _root.part.id)) {
       continue;
     }
     keypoints = decodePose(_root, heatmap, offsets, outputStride, displacementFwd, displacementBwd, dimension);
@@ -409,21 +407,21 @@ function decodeMultiPose(heatmap, offsets, displacementFwd, displacementBwd, out
   return poses;
 }   
 
-function convert4D(n, h, w, c, dimension){
+function convert4D(n, h, w, c, dimension) {
   let index = Number(c)+Number(w*dimension[3])+Number(h*dimension[3]*dimension[2])+
               Number(n*dimension[1]*dimension[2]*dimension[3]);
   return index;
 }
 
-function dilationWeights(weights, dimension, rate){
+function dilationWeights(weights, dimension, rate) {
   let dilationW = dimension[2]*rate-rate+1;
   let dilationH = dimension[1]*rate-rate+1;
   let dilationWeights = new Float32Array(dimension[0]*dilationW*dilationH*dimension[3]);
   dilationWeights.fill(0);
   let dimensionDilation = [dimension[0], dilationH, dilationW, dimension[3]];
-  for(let h = 0; h < dilationH; h += rate){
-    for(let w = 0; w < dilationW; w += rate){
-      for(let c = 0; c < dimension[3]; c++){
+  for (let h = 0; h < dilationH; h += rate) {
+    for (let w = 0; w < dilationW; w += rate) {
+      for (let c = 0; c < dimension[3]; c++) {
         let indexDilation = convert4D(0, h, w, c, dimensionDilation);
         let indexOrigin = convert4D(0, h/rate, w/rate, c, dimension);
         dilationWeights[indexDilation] = weights[indexOrigin];
@@ -433,7 +431,7 @@ function dilationWeights(weights, dimension, rate){
   return {dimension: dimensionDilation, dilationWeights: dilationWeights}
 }
 
-function getValidResolution(imageScaleFactor, inputDimension, outputStride){
+function getValidResolution(imageScaleFactor, inputDimension, outputStride) {
   let evenResolution = inputDimension * imageScaleFactor - 1;
   return evenResolution - (evenResolution % outputStride) + 1;
 }
@@ -494,8 +492,8 @@ function bilinear(srcImg, destImg, scale) {
   }
 }
 
-function scalePose(pose, scale){
-  for(let i in pose.keypoints){
+function scalePose(pose, scale) {
+  for (let i in pose.keypoints) {
     pose.keypoints[i].position.x = pose.keypoints[i].position.x * scale;
     pose.keypoints[i].position.y = pose.keypoints[i].position.y * scale;
   }
