@@ -14,8 +14,8 @@ export default function depthwiseConv2D(inputChannels, outputChannels, depthMult
   ? `ivec2 inputSize = textureSize(x, 0);
       int sliceIndex = int(floor(float(index) / float(inputSize[1])));
       index = int(mod(float(index), float(inputSize[1])));
-      int fetch_x += sliceIndex * ${inputChannels};`
-  : '';
+      int fetch_x = sliceIndex * ${inputChannels} + in_x;`
+  : `int fetch_x = in_x;`;
 
   const source = `#version 300 es
   precision highp int;
@@ -36,10 +36,10 @@ export default function depthwiseConv2D(inputChannels, outputChannels, depthMult
     int out_y = int(float(indexMapSize[1]) * outTex.y);
     ivec2 kernelSize = textureSize(kernel, 0);
     int convSize = kernelSize[1];
-    int fetch_x = int(floor(float(out_x) / float(${depthMultiplier})));
+    int in_x = int(floor(float(out_x) / float(${depthMultiplier})));
     float sum = 0.0;
 
-    if(fetch_x < ${inputChannels}) {
+    if(in_x < ${inputChannels}) {
       for (int i = 0; i < convSize; ++i) {
         int index = texelFetch(indexMap, ivec2(i, out_y), 0).r; 
         if (index != -1) {
