@@ -78,8 +78,8 @@ export default class _Pool2D extends Layer {
     const [kernelH, kernelW] = this.kernelShape;
 
     if (Array.isArray(this.padding)) {
-      const outputRows = Math.floor((inputRows - kernelH + this.strides[0]+this.padding[0]+this.padding[1]) / this.strides[0]);
-      const outputCols = Math.floor((inputCols - kernelW + this.strides[1]+this.padding[2]+this.padding[3]) / this.strides[1]);
+      const outputRows = Math.floor((inputRows - kernelH + this.strides[0] + this.padding[0]+this.padding[1]) / this.strides[0]);
+      const outputCols = Math.floor((inputCols - kernelW + this.strides[1] + this.padding[2]+this.padding[3]) / this.strides[1]);
       this.outputShape = [outputRows, outputCols, inputChannels];
       this.inputPadding = this.padding;
     } else {
@@ -174,11 +174,10 @@ export default class _Pool2D extends Layer {
     } else {
       this.throwError('Invalid input.');
     }
-
+    const [outputRows, outputCols, inputChannels] = this.outputShape;
+    const outputTextureShape = [outputRows * outputCols, inputChannels];
     // create output textures if doesn't already exist
     if (this.activation !== 'NONE' && !this.outputPreactiv) {
-      const [outputRows, outputCols, inputChannels] = this.outputShape
-      const outputTextureShape = [outputRows * outputCols, inputChannels]
       this.outputPreactiv = new Tensor([], outputTextureShape);
       this.outputPreactiv.createGLTexture({ type: '2d', format: 'float', supportSliceTexture: true });
       this.outputPreactiv.is2DReshaped = true;
@@ -186,8 +185,6 @@ export default class _Pool2D extends Layer {
       this.outputPreactiv.indicesForReshaped = tensorUtils.createIndicesFor2DReshaped(this.outputShape, false, -1);
     }
     if (!this.output) {
-      const [outputRows, outputCols, inputChannels] = this.outputShape
-      const outputTextureShape = [outputRows * outputCols, inputChannels]
       this.output = new Tensor([], outputTextureShape);
       this.output.createGLTexture({ type: '2d', format: 'float', supportSliceTexture: true });
       this.output.is2DReshaped = true;

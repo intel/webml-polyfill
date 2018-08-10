@@ -27,13 +27,12 @@ export default class Concatenation extends Layer {
    */
   call(inputs) {
     if (!this.output) {
-      console.log(this.axis);
       var _concatAxis = 0;
       if (!inputs[0].originalShape){
         //for 2D shape
         this.concatAxis = this.axis;
-        _concatAxis=this.axis;
-      }else{
+        _concatAxis = this.axis;
+      } else {
         // C axis is 3 in NHWC layout
         // no mini-batch axis here, so we subtract 1 if given axis > 0
         this.concatAxis = this.axis < 0 ? this.axis + inputs[0].originalShape.length: this.axis - 1;
@@ -43,7 +42,7 @@ export default class Concatenation extends Layer {
       inputs.forEach(input => {
         if (!input.texture && !input.textureSlices) {
             input.createGLTexture({ type: '2d', format: 'float', supportSliceTexture: true });
-          } 
+        }
       })
       
       const outputTextureShape = inputs[0].textureShape.slice();
@@ -76,32 +75,34 @@ export default class Concatenation extends Layer {
       gl.bindFramebuffer(gl.READ_FRAMEBUFFER, webgl2.concateFramebuffer);
       for (let i = 0; i < this.output.textureSlices.length; ++i) {
         gl.bindTexture(textureTarget, this.output.textureSlices[i]);
+        let offset = 0;
         inputs.forEach((input, k) => {
           gl.framebufferTexture2D(gl.READ_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, input.textureSlices[i], 0)
-          if ( !inputs[0].originalShape && _concatAxis === 0)
-          {
+          if (!inputs[0].originalShape && _concatAxis === 0) {
             //for 2D shape with axis = 0
             gl.copyTexSubImage2D(
               textureTarget,
               0,
               0,
-              k * input.textureSliceShape[0],
+              offset,
               0,
               0,
               input.textureSliceShape[1],
               input.textureSliceShape[0]
             )
-          }else{
+            offset += input.textureShape[0];
+          } else {
             gl.copyTexSubImage2D(
               textureTarget,
               0,
-              k * input.textureSliceShape[1],
+              offset,
               0,
               0,
               0,
               input.textureSliceShape[1],
               input.textureSliceShape[0]
             )
+            offset += input.textureShape[1];
           }
         });
       }
@@ -109,31 +110,34 @@ export default class Concatenation extends Layer {
       // console.log(`concate texture`)
       gl.bindTexture(textureTarget, this.output.texture);
       gl.bindFramebuffer(gl.READ_FRAMEBUFFER, webgl2.concateFramebuffer);
+      let offset = 0;
       inputs.forEach((input, k) => {
         gl.framebufferTexture2D(gl.READ_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, input.texture, 0)
-        if ( !inputs[0].originalShape && _concatAxis === 0){
+        if (!inputs[0].originalShape && _concatAxis === 0) {
           //for 2D shape with axis = 0
           gl.copyTexSubImage2D(
             textureTarget,
             0,
             0,
-            k * input.textureShape[0],
+            offset,
             0,
             0,
             input.textureShape[1],
             input.textureShape[0]
           )
-        }else{
+          offset += input.textureShape[0];
+        } else {
           gl.copyTexSubImage2D(
             textureTarget,
             0,
-            k * input.textureShape[1],
+            offset,
             0,
             0,
             0,
             input.textureShape[1],
             input.textureShape[0]
           )
+          offset += input.textureShape[1];
         }
       });
     }
