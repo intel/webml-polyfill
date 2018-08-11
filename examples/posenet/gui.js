@@ -6,8 +6,8 @@ guiState = {
   scaleFactor: 0.5,
   scoreThreshold: 0.5,
   multiPoseDetection: {
-    maxDetections: 5,
-    nmsRadius: 30.0,
+    maxDetections: 15,
+    nmsRadius: 20.0,
   },
 };
 const gui = new dat.GUI({width: 300});

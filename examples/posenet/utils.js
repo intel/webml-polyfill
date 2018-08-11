@@ -68,6 +68,7 @@ const mobileNet50Architecture = [
   ['separableConv', 1],
   ['separableConv', 1]
 ]
+
 class Utils{
   constructor() {
     this.modelArch;
