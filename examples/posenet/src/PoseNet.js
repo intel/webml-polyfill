@@ -1,5 +1,5 @@
 class PoseNet{
-  constructor(modelArch, backend, version, outputStride, inputShape, type, cacheMap){
+  constructor(modelArch, backend, version, outputStride, inputShape, type, cacheMap) {
     this._modelArch = modelArch;
     this._model = null;
     this._compilation;
@@ -106,7 +106,6 @@ class PoseNet{
     }
     this._model.identifyInputsAndOutputs([this._inputTensorId], this._outputTensorId);
 
-    // add operands and operation for every layer of Mobilenet
     let outputLayerIndex = 0; 
     let manifest = await fetchDataByUrl(getURL(this._version)+"manifest.json", false);
     manifest = JSON.parse(manifest);
@@ -153,7 +152,6 @@ class PoseNet{
           outputLayerIndex++;
         }
         const data = await getDimensionData("separableConv", this._version, i, manifest, this._cacheMap);
-        // regular depthwise convolution
         if (this._modelArch[i].rate == 1) {
           dimensionWeights.push(reshape(data.shapeWeights[0]));
           dimensionWeights.push(reshape(data.shapeWeights[1]));
@@ -166,7 +164,6 @@ class PoseNet{
           dimensionOut = this._calculateOutput(dimensionIn, dimensionWeights[0], 
                                                this._modelArch[i]["stride"], "depthwise");
         }
-        // dilated depthwise convoluton
         else {
           const dilationData = dilationWeights(new Float32Array(transposeWeights(data.weights[0], data.shapeWeights[0])),
                                                reshape(data.shapeWeights[0]), this._modelArch[i].rate);
@@ -245,7 +242,6 @@ class PoseNet{
     // add operation and operands for output layer
     let tensorTypeWeights, tensorTypeBias;
     let valueWeights, valueBias;
-    // add operands for heatmap layer
     let inputs = [];
     const stride = 1;
     inputs.push(this._outputLayer[this._outputLayer.length-1]);
@@ -294,7 +290,6 @@ class PoseNet{
     this._model.addOperation(this._nn.CONV_2D, inputs, [outputs]);
     
     if (this._type === "Multiperson") {  
-      // add operands for forward displacement layer
       inputs = [];
       inputs.push(this._outputLayer[this._outputLayer.length-1]);  
       data = await getDimensionData("displacement_fwd", this._version, 0, manifest, this._cacheMap)
@@ -317,8 +312,7 @@ class PoseNet{
       inputs.push(this._addScalarInt32(this._nn.FUSED_NONE));
       outputs = this._outputTensorId[2];
       this._model.addOperation(this._nn.CONV_2D, inputs, [outputs]);
-     
-      // add operands for backward displacement layer     
+      
       inputs = [];
       inputs.push(this._outputLayer[this._outputLayer.length-1]);  
       data = await getDimensionData("displacement_bwd", this._version, 0, manifest, this._cacheMap)

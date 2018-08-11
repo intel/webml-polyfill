@@ -21,7 +21,7 @@ if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
     'Browser API navigator.mediaDevices.getUserMedia not available');
 }
 let stats = new Stats();
-stats.dom.style.cssText = 'position:fixed;top:60px;left:10px;cursor:pointer;opacity:0.9;z-index:10000';
+stats.dom.style.cssText = 'position:fixed;top:100px;left:10px;cursor:pointer;opacity:0.9;z-index:999';
 stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
 document.body.appendChild(stats.dom);
 const mobile = isMobile();
@@ -40,7 +40,7 @@ async function setupCamera() {
     video.onloadedmetadata = () => {
       resolve(video);
     }
-  })
+  });
 }
 
 async function loadVideo() {
@@ -57,7 +57,7 @@ async function detectPoseInRealTime(video) {
     ctx.drawImage(video, 0, 0, videoWidth, videoHeight);
     ctx.drawImage(video, 0, 0, videoWidth, videoHeight);
     ctx.restore();
-    predict();
+    await predict();
     algorithm.onChange((algorithm) => {
       guiState.algorithm = algorithm;
       poseDetectionFrame();
@@ -92,7 +92,7 @@ async function detectPoseInRealTime(video) {
       util._scaleFactor = guiState.scaleFactor;
       detectPoseInRealTime(video);
     });
-    requestAnimationFrame(poseDetectionFrame);
+    setTimeout(poseDetectionFrame, 0);
   }
   function updateBackend() {
     currentBackend = util.model._backend;
@@ -150,7 +150,7 @@ async function detectPoseInRealTime(video) {
   }
 }
 
-async function drawResult() {
+async function main() {
   let videoSource = await loadVideo();
   detectPoseInRealTime(videoSource);
 }

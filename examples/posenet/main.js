@@ -12,7 +12,7 @@ const webgl = document.getElementById('webgl');
 const webml = document.getElementById('webml');
 let currentBackend = '';
 
-function drawSingleandMulti() {
+function main() {
   function updateBackend() {
     currentBackend = util.model._backend;
     if (getUrlParams('api_info') === 'true') {
@@ -38,7 +38,7 @@ function drawSingleandMulti() {
 
   if (nnNative) {
     webml.setAttribute('class', 'dropdown-item');
-    webml.onclick = function (e) {
+    webml.onclick = function(e) {
       changeBackend('WebML');
     }
   }
@@ -75,17 +75,17 @@ function drawSingleandMulti() {
 model.onChange((model) => {
   guiState.model = model;
   util._version = guiState.model;
-  drawSingleandMulti();
+  main();
 });
 outputStride.onChange((outputStride) => {
   guiState.outputStride = outputStride;
   util._outputStride = guiState.outputStride;
-  drawSingleandMulti();
+  main();
 });
 scaleFactor.onChange((scaleFactor) => {
   guiState.scaleFactor = scaleFactor;
   util._scaleFactor = guiState.scaleFactor;
-  drawSingleandMulti();
+  main();
 });
 scoreThreshold.onChange((scoreThreshold) => {
   guiState.scoreThreshold = scoreThreshold;
@@ -103,7 +103,8 @@ maxDetections.onChange((maxDetections) => {
   drawResult();
 });
 
-async function drawResult(){
+
+async function drawResult() {
   let _inputElement = document.getElementById('image').files[0];
   ctxSingle.clearRect(0, 0, canvasSingle.width, canvasSingle.height);
   ctxMulti.clearRect(0, 0, canvasMulti.width, canvasMulti.height);
