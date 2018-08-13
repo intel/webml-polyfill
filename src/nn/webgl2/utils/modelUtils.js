@@ -21,6 +21,38 @@ const FuseCodeMap = new Map([
 ]);
 
 /**
+ * Get add attributes.
+ * 
+ * @param {Object[]} nnOperands - An array of operands.
+ * @param {number[]} inputs - [input0Code, input1Code, fuseCode].
+ * @param {number[]} outputs - [outputCode].
+ */
+function GetAddAttrs(nnOperands, inputs, outputs) {
+  let attrs = {
+    inputs: inputs.slice(0, 2),
+    outputs: outputs,
+    activation: FuseCodeMap.get(nnOperands[inputs[2]].value[0])
+  };
+  return attrs;
+}
+
+/**
+ * Get mul attributes.
+ * 
+ * @param {Object[]} nnOperands - An array of operands.
+ * @param {number[]} inputs - [input0Code, input1Code, fuseCode].
+ * @param {number[]} outputs - [outputCode].
+ */
+function GetMulAttrs(nnOperands, inputs, outputs) {
+  let attrs = {
+    inputs: inputs.slice(0, 2),
+    outputs: outputs,
+    activation: FuseCodeMap.get(nnOperands[inputs[2]].value[0])
+  };
+  return attrs;
+}
+
+/**
  * Get conv2D attributes.
  * 
  * @param {Object[]} nnOperands - An array of operands.
@@ -241,6 +273,8 @@ function GetConcatenationAttrs(nnOperands, inputs, outputs) {
 }
 
 export const OperationCodeToLayersMap = new Map([
+  [OperationCode.ADD, layers.Add],
+  [OperationCode.MUL, layers.Mul],
   [OperationCode.CONV_2D, layers.Conv2D],
   [OperationCode.DEPTHWISE_CONV_2D, layers.DepthwiseConv2D],
   [OperationCode.MAX_POOL_2D, layers.MaxPool2D],
@@ -251,6 +285,8 @@ export const OperationCodeToLayersMap = new Map([
 ]);
 
 export const OperationCodeAttrsMap = new Map([
+  [OperationCode.ADD, GetAddAttrs],
+  [OperationCode.MUL, GetMulAttrs],
   [OperationCode.CONV_2D, GetConv2DAttrs],
   [OperationCode.DEPTHWISE_CONV_2D, GetDepthwiseConv2DAttrs],
   [OperationCode.MAX_POOL_2D, GetPool2DAttrs],
