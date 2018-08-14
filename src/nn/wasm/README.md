@@ -3,54 +3,39 @@ which is licensed under the Apache License, Version 2.0.
 
 
 
-Build steps:
+# Build
 
-1. install Emscripten: (Reference: http://kripken.github.io/emscripten-site/docs/getting_started/downloads.html) 
-    --# Get the emsdk repo
-        git clone https://github.com/juj/emsdk.git
+## Prerequisites
+1. Python, node.js, CMake, and Java are not provided by emsdk. Make sure you have installed these beforehand with the system package manager. 
 
-    --# Enter that directory
-        cd emsdk
 
-    --# Fetch the latest registry of available tools. 
-        ./emsdk update
+2. [Install Emscripten](http://kripken.github.io/emscripten-site/docs/getting_started/downloads.html).
 
-    --# Download and install the latest SDK tools.  
-        ./emsdk install latest
+## Steps
+### Clone the source code
+```
+$ git clone https://github.com/huningxin/ml.git
+```
 
-    --# Make the "latest" SDK "active" for the current user. (writes ~/.emscripten file)
-        ./emsdk activate latest
+### Initialize and update the submodule
+```
+$ cd ml/nn
+$ git submodule init
+$ git submodule update
+```
 
-    --# Activate PATH and other environment variables in the current terminal
-        source ./emsdk_env.sh
+### Create a new directory `./build`
+```
+$ mkdir build
+$ cd build
+```
 
-2. Python, node.js, CMake, and Java are not provided by emsdk.Make sure you have installed these beforehand with the system package manager:
+### Set `CMAKE_TOOLCHAIN_FILE` for cross compilation
+```
+$ cmake -D CMAKE_TOOLCHAIN_FILE=/yourDownloadDir/emsdk/emscripten/yourVersion/cmake/Modules/Platform/Emscripten.cmake ..
+```
 
-    --# Install Python
-        sudo apt-get install python2.7
-
-    --# Install node.js
-        sudo apt-get install nodejs
-
-    --# Install CMake (optional, only needed for tests and building Binaryen)
-        sudo apt-get install cmake
-
-    --# Install Java (optional, only needed for Closure Compiler minification)
-        sudo apt-get install default-jre
-
-    Note: 
-    (1) You need Python 2.7.12 or newer because older versions may not work due to a GitHub change with SSL(https://github.com/kripken/emscripten/issues/6275)
-    (2) Your system may provide Node.js as node instead of nodejs. In that case, you may need to also update the NODE_JS attribute of your ~/.emscripten file.
-
-3. git clone https://github.com/huningxin/ml.git
-
-4. cd ml/nn
-   git submodule init
-   git submodule update
-
-5. mkdir build
-   cd build
-
-6. cmake -D CMAKE_TOOLCHAIN_FILE=/yourDownloadDir/emsdk/emscripten/1.38.11/cmake/Modules/Platform/Emscripten.cmake .. (there are two dots)
-
-7. make
+### Compile the source code and generate the output file
+```
+$ make
+```
