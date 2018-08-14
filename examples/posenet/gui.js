@@ -1,10 +1,10 @@
 let guiState;
 guiState = {
   algorithm: 'multi-pose',
-  model: 1.01,
+  model: 0.75,
   outputStride: 16,
   scaleFactor: 0.5,
-  scoreThreshold: 0.5,
+  scoreThreshold: 0.2,
   multiPoseDetection: {
     maxDetections: 15,
     nmsRadius: 20.0,

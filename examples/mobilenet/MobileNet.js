@@ -128,6 +128,15 @@ class MobileNet {
       let inputs = Array.from(operator.inputsArray());
       let outputs = Array.from(operator.outputsArray());
       switch (opCode) {
+        case tflite.BuiltinOperator.ADD: {
+          let options = operator.builtinOptions(new tflite.AddOptions());
+          let fuseCode = FuseCodeMap.get(options.fusedActivationFunction());
+          if (typeof fuseCode === 'undefined') {
+            throw new Error(`Fuse code ${options.fusedActivationFunction()} is not supported.`);
+          }
+          inputs.push(this._addScalarInt32(fuseCode));
+          opType = this._nn.ADD;
+        } break;
         case tflite.BuiltinOperator.CONV_2D: {
           let options = operator.builtinOptions(new tflite.Conv2DOptions());
           let paddingCode = PaddingCodeMap.get(options.padding());
@@ -190,7 +199,7 @@ class MobileNet {
           opType = this._nn.RESHAPE;
         } break;
         default: {
-          throw new Error(`operator type ${opcode} is not supported.`);
+          throw new Error(`operator type ${opCode} is not supported.`);
         }
       }
       this._model.addOperation(opType, inputs, outputs);

@@ -1,0 +1,15 @@
+{
+  "name": "CTSConverter",
+  "version": "0.0.1",
+  "description": "Transfer nn test case to webml test case",
+  "main": "./src/main.py",
+  "directories": {
+    "src": "src files"
+  },
+  "dependencies": {},
+  "devDependencies": {},
+  "scripts": {
+    "start": "python3 ./src/main.py"
+  },
+  "license": "Apache 2.0"
+}
