@@ -6,3 +6,4 @@ examples/squeezenet/model/
 !examples/squeezenet/model/README.md
 examples/ssd_mobilenet/model/
 !examples/ssd_mobilenet/model/README.md
+.DS_Store
