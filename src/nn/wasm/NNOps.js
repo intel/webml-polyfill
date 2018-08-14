@@ -1,3 +1,7 @@
+if (!global._babelPolyfill) {
+	require('babel-polyfill');
+}
+
 import Module from './nn_ops'
 
 var nn_ops = null;

@@ -49,13 +49,65 @@ export default class Model {
   /**
    * Called in nn/Execution.js
    *
-   * @param {number[]} inputs - An array of indexes identifying the input operands.
-   * @param {number[]} outputs - An array of indexes identifying the output operands.
+   * @param {Map} inputs - input map with value: inputBuffers and indexes identifying the input operands.
+   * @param {Map} outputs - output map with value: outputBuffers and indexes identifying the output operands.
    */
   execute(inputs, outputs) {
+    let inputShape = this._model._operands[inputs.get(0).index].dimensions;
+    let outputShape = this._model._operands[outputs.get(0).index].dimensions;
+    if (inputShape.length === 4) {
+      let inputIndex = 0;
+      let outputIndex = 0;
+      let inputSize = 0;
+      let outputSize = 0;
+      let inputBuffer = [];
+      let outputBuffer = [];
+      let tmpInputs = new Map();
+      let tmpOutputs = new Map();
+      let tmpBuffer = [];
+      let inputDim = [];
+      for (let i = 0; i< outputs.size; ++i) {
+        tmpBuffer[i] = [];
+      }
+      for (let i = 0; i < inputShape[0]; ++i) {
+        for (let j = 0; j < inputs.size; ++j) {
+          inputDim = this._model._operands[inputs.get(j).index].dimensions;
+          inputSize = inputDim.slice(1).reduce((accumulator, currentValue) => accumulator * currentValue);
+          inputIndex = inputs.get(j).index;
+          inputBuffer = inputs.get(j).buffer;
+          tmpInputs.set(j, {index: inputIndex, buffer: inputBuffer.slice(inputSize * i, inputSize * (i + 1))});
+        }
+        for (let j = 0; j < outputs.size; ++j) {
+          outputShape = this._model._operands[outputs.get(j).index].dimensions;
+          outputSize = outputShape.slice(1).reduce((accumulator, currentValue) => accumulator * currentValue);
+          outputIndex = outputs.get(j).index;
+          outputBuffer = outputs.get(j).buffer;
+          tmpOutputs.set(j, {index: outputIndex, buffer: outputBuffer.slice(outputSize * i, outputSize * (i + 1))});
+        }
+        this._execute(tmpInputs, tmpOutputs, i);
+        for (let j = 0; j < outputs.size; ++j) {
+          tmpBuffer[j].push(...(tmpOutputs.get(j).buffer));
+        }
+      }
+      for (let j = 0; j < outputs.size; ++j) {
+        outputs.get(j).buffer.set(tmpBuffer[j]);
+      }
+    } else {
+      this._execute(inputs, outputs);
+    }
+  }
+
+/**
+   * Called in webgl2/Model.js
+   *
+   * @param {Map} inputs - input map with value: inputBuffers and indexes identifying the input operands.
+   * @param {Map} outputs - output map with value: outputBuffers and indexes identifying the output operands.
+   * @param {number} num - The number of batch.
+   */
+  _execute(inputs, outputs, num = 0) {
     return new Promise((resolve) => {
+      let isLast = false;
       let nnOperands = this._model._operands;
-      let nnOperations = this._model._operations
       let inputBuffer = inputs.get(0).buffer;
       let inputIndex = inputs.get(0).index;
       let outputBuffer = outputs.get(0).buffer;
@@ -63,11 +115,19 @@ export default class Model {
       // let operationStart = performance.now();
       this._layers.forEach((layer, i) => {
         // let start = performance.now();
-        if (i == 0) {
-          if (this.supportInputLayer) {
-            this._operands[inputIndex] = layer.call(inputBuffer, nnOperands[inputIndex].dimensions.slice(1,4), Float32Array);
+        if (i === 0) {
+          let shape = nnOperands[inputIndex].dimensions;
+          if (shape.length === 4 ) {
+            shape = shape.slice(1, 4);
+          } else if (shape.length === 3 || shape.length === 2) {
+            shape = shape;
           } else {
-            let inputTensor = new Tensor(inputBuffer, nnOperands[inputIndex].dimensions.slice(1,4));
+            throw new Error(`the shape ${shape} is not supported`);
+          }
+          if (this.supportInputLayer) {
+            this._operands[inputIndex] = layer.call(inputBuffer, shape, Float32Array);
+          } else {
+            let inputTensor = new Tensor(inputBuffer, shape);
             this._operands[layer.outputs[0]] = layer.call(inputTensor);
           }
         } else if (i === this._layers.length - 1 && (this.supportTopClasses || this.supportFeatureMapConcate)){
@@ -91,9 +151,33 @@ export default class Model {
         } else {
           if (layer.inputs.length === 1) {
             this._operands[layer.outputs[0]] = layer.call(this._operands[layer.inputs[0]]);
+            isLast = true;
           } else {
             let MutiInputs = [];
             layer.inputs.forEach(input => {
+              if (!(this._operands[input] instanceof Tensor)){
+                let inputShape = nnOperands[input].dimensions;
+                if (inputShape.length === 4) {
+                  inputShape = inputShape.slice(1, 4);
+                } else if (inputShape.length === 2 || inputShape.length === 3) {
+                  inputShape = inputShape;
+                } else {
+                  throw new Error(`the shape ${shape} is not supported`);
+                }
+                let inputSize = inputShape.reduce((accumulator, currentValue) => accumulator * currentValue);
+                this._operands[input] = new Tensor(nnOperands[input].value.slice(inputSize * num, inputSize * (num + 1)), inputShape);
+                if (typeof(nnOperands[input].value[inputSize * (num + 1)]) === "undefined") {
+                  isLast = true;
+                }
+              }
+              if (!this._operands[input].texture && !this._operands[input].textureSlices) {
+                if (this._operands[input].tensor.shape.length <= 2) {
+                  this._operands[input].createGLTexture({ type: '2d', format: 'float', supportSliceTexture: true });
+                } else if (this._operands[input].tensor.shape.length > 2) {
+                  this._operands[input].reshapeTo2D();
+                  this._operands[input].createGLTexture({ type: '2d', format: 'float', supportSliceTexture: true });
+                }
+              }
               MutiInputs.push(this._operands[input]);
             });
             this._operands[layer.outputs[0]] = layer.call(MutiInputs);
@@ -111,6 +195,9 @@ export default class Model {
           outputBuffer.set(this._operands[outputIndex].tensor.data);
         }
         // console.log(`Read data from GPU time: ${transferTime.toFixed(2)} ms`)
+      }
+      if (!isLast) {
+        this._operands = [];
       }
       // let operationTime = performance.now() - operationStart;
       // console.log(`WebGL2 execute time: ${operationTime.toFixed(2)} ms`);

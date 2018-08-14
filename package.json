@@ -2,6 +2,7 @@
   "name": "webml-polyfill",
   "version": "0.0.1",
   "description": "WebML API polyfill",
+  "main": "dist/webml-polyfill.js",
   "directories": {
     "lib": "lib"
   },

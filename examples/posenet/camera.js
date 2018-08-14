@@ -60,22 +60,18 @@ async function detectPoseInRealTime(video) {
     await predict();
     algorithm.onChange((algorithm) => {
       guiState.algorithm = algorithm;
-      poseDetectionFrame();
     });
     scoreThreshold.onChange((scoreThreshold) => {
       guiState.scoreThreshold = scoreThreshold;
       util._minScore = guiState.scoreThreshold;
-      poseDetectionFrame();
     });
     nmsRadius.onChange((nmsRadius) => {
       guiState.multiPoseDetection.nmsRadius = nmsRadius;
       util._nmsRadius = guiState.multiPoseDetection.nmsRadius;
-      poseDetectionFrame();
     });
     maxDetections.onChange((maxDetections) => {
       guiState.multiPoseDetection.maxDetections = maxDetections;
       util._maxDetection = guiState.multiPoseDetection.maxDetections;
-      poseDetectionFrame();
     });
     model.onChange((model) => {
       guiState.model = model;
@@ -111,7 +107,6 @@ async function detectPoseInRealTime(video) {
     setTimeout(() => {
       util.init(newBackend, inputSize).then(() => {
         updateBackend();
-        poseDetectionFrame();
       });
     }, 10);
   }
@@ -145,7 +140,6 @@ async function detectPoseInRealTime(video) {
   } else {
     util.init(currentBackend, inputSize).then(() => {
       updateBackend();
-      poseDetectionFrame();
     });
   }
 }
