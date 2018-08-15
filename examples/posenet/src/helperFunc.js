@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licnses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -267,7 +267,7 @@ function convertCoortoIndex(x, y, z, dimension) {
 }
 
 function decodeSinglepose(heatmap, offset, dimension, outputStride) {
-  let [index, confidenceScore] = getKeypointIndex(sigmoid(heatmap),dimension);
+  let [index, confidenceScore] = getKeypointIndex(heatmap, dimension);
   let finalRes = [];
   let totalScore = 0; 
   let poses = [];
@@ -390,7 +390,7 @@ function getInstanceScore(existingPoses, squaredNmsRadius, instanceKeypoints) {
 function decodeMultiPose(heatmap, offsets, displacementFwd, displacementBwd, outputStride, 
                          maxPoseDectection, scoreThreshold, nmsRadius, dimension) {
   let poses = [];
-  let queue = buildPartWithScoreQueue(scoreThreshold, 1, sigmoid(heatmap), dimension);
+  let queue = buildPartWithScoreQueue(scoreThreshold, 1, heatmap, dimension);
   let _root, keypoints, score;
   const squaredNmsRadius = nmsRadius * nmsRadius;
   let index = 0;
@@ -497,4 +497,24 @@ function scalePose(pose, scale) {
     pose.keypoints[i].position.x = pose.keypoints[i].position.x * scale;
     pose.keypoints[i].position.y = pose.keypoints[i].position.y * scale;
   }
+}
+
+function getBoundingBox(keypoints) {
+  const NEGATIVE_INFINITY = Number.NEGATIVE_INFINITY; 
+  const POSITIVE_INFINITY = Number.POSITIVE_INFINITY;
+  return keypoints.reduce(function (_a, _b) {
+    var maxX = _a.maxX, maxY = _a.maxY, minX = _a.minX, minY = _a.minY;
+    var _c = _b.position, x = _c.x, y = _c.y;
+    return {
+      maxX: Math.max(maxX, x),
+      maxY: Math.max(maxY, y),
+      minX: Math.min(minX, x),
+      minY: Math.min(minY, y)
+    };
+  }, {
+      maxX: NEGATIVE_INFINITY,
+      maxY: NEGATIVE_INFINITY,
+      minX: POSITIVE_INFINITY,
+      minY: POSITIVE_INFINITY
+  });
 }

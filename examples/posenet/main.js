@@ -11,8 +11,10 @@ const wasm = document.getElementById('wasm');
 const webgl = document.getElementById('webgl');
 const webml = document.getElementById('webml');
 let currentBackend = '';
+let predictStatus = true;
 
 function main() {
+  predictStatus = true;
   function updateBackend() {
     currentBackend = util.model._backend;
     if (getUrlParams('api_info') === 'true') {
@@ -24,6 +26,7 @@ function main() {
 
   function changeBackend(newBackend) {
     console.log(newBackend);
+    predictStatus = true;
     if (currentBackend === newBackend) {
       return;
     }
@@ -102,6 +105,14 @@ maxDetections.onChange((maxDetections) => {
   util._maxDetection = guiState.multiPoseDetection.maxDetections;
   drawResult();
 });
+showPose.onChange((showPose) => {
+  guiState.showPose = showPose;
+  drawResult();
+});
+showBoundingBox.onChange((showBoundingBox) => {
+  guiState.showBoundingBox = showBoundingBox;
+  drawResult();
+});
 
 
 async function drawResult() {
@@ -112,13 +123,19 @@ async function drawResult() {
     let x = await getInput(_inputElement);
     await loadImage(x, ctxSingle);
     await loadImage(x, ctxMulti);
-    await util.predict(scaleCanvas, ctxMulti, inputSize);
+    if (predictStatus) {
+      await util.predict(scaleCanvas, ctxMulti, inputSize, 'multi');
+      predictStatus = false;
+    }
     util.drawOutput(canvasMulti, 'multi', inputSize);
     util.drawOutput(canvasSingle, 'single', inputSize);
   } else {
     await loadImage("https://storage.googleapis.com/tfjs-models/assets/posenet/tennis_in_crowd.jpg", ctxSingle);
     await loadImage("https://storage.googleapis.com/tfjs-models/assets/posenet/tennis_in_crowd.jpg", ctxMulti);
-    await util.predict(scaleCanvas, ctxMulti, inputSize);
+    if (predictStatus) {
+      await util.predict(scaleCanvas, ctxMulti, inputSize, 'multi');
+      predictStatus = false;
+    }
     util.drawOutput(canvasMulti, 'multi', inputSize);
     util.drawOutput(canvasSingle, 'single', inputSize);
   }
