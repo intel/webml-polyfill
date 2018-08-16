@@ -27,7 +27,7 @@ describe('Concatenation Test for 4-D input with axis being 1', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(nn.PREFER_FAST_SINGLE_ANSWER);
+    compilation.setPreference(prefer);
     await compilation.finish();
 
     let execution = await compilation.createExecution();
