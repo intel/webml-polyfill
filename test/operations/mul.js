@@ -33,7 +33,7 @@ describe('Mul Test', function() {
 
     let compilation = await model.createCompilation();
 
-    compilation.setPreference(nn.PREFER_FAST_SINGLE_ANSWER);
+    compilation.setPreference(prefer);
 
     await compilation.finish();
 
