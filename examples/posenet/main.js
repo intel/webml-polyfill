@@ -10,6 +10,7 @@ const backend = document.getElementById('backend');
 const wasm = document.getElementById('wasm');
 const webgl = document.getElementById('webgl');
 const webml = document.getElementById('webml');
+const inputImage = document.getElementById('image');
 let currentBackend = '';
 let predictStatus = true;
 
@@ -75,6 +76,10 @@ function main() {
   }
 }
 
+inputImage.addEventListener('change', () => {
+  predictStatus = true;
+  drawResult();
+})
 model.onChange((model) => {
   guiState.model = model;
   util._version = guiState.model;
@@ -117,8 +122,6 @@ showBoundingBox.onChange((showBoundingBox) => {
 
 async function drawResult() {
   let _inputElement = document.getElementById('image').files[0];
-  ctxSingle.clearRect(0, 0, canvasSingle.width, canvasSingle.height);
-  ctxMulti.clearRect(0, 0, canvasMulti.width, canvasMulti.height);
   if (_inputElement != undefined) {
     let x = await getInput(_inputElement);
     await loadImage(x, ctxSingle);
@@ -131,7 +134,7 @@ async function drawResult() {
     util.drawOutput(canvasSingle, 'single', inputSize);
   } else {
     await loadImage("https://storage.googleapis.com/tfjs-models/assets/posenet/tennis_in_crowd.jpg", ctxSingle);
-    await loadImage("https://storage.googleapis.com/tfjs-models/assets/posenet/tennis_in_crowd.jpg", ctxMulti);
+    await loadImage("https://storage.googleapis.com/tfjs-models/assets/posenet/tennis_in_crowd.jpg", ctxMulti);    
     if (predictStatus) {
       await util.predict(scaleCanvas, ctxMulti, inputSize, 'multi');
       predictStatus = false;

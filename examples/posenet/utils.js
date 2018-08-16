@@ -159,7 +159,7 @@ class Utils{
     if (type == 'single') {
       let singlePose = decodeSinglepose(sigmoid(this.heatmapTensor), this.offsetTensor, 
                                         toHeatmapsize(imageSize, this._outputStride), 
-                                        this._outputStride);
+                                        this._outputStride);  
       console.log("single person: ", singlePose);
       singlePose.forEach((pose) => {
         scalePose(pose, inputSize[1]/this.scaleWidth);
