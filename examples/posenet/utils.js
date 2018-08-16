@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licnses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -131,17 +131,22 @@ class Utils{
     }
   }
 
-  async predict(scaleCanvas, canvasContextMulti, inputSize) {
+  async predict(scaleCanvas, canvasContextMulti, inputSize, type) {
     if (!this.initialized) {
       return;
     }
     let imageSize = [this.scaleWidth, this.scaleHeight, 3];
-    let scaleData = await this.scaleImage(canvasContextMulti, scaleCanvas, inputSize);
+    await this.scaleImage(canvasContextMulti, scaleCanvas, inputSize);
     prepareInputTensor(this.inputTensor, scaleCanvas, this._outputStride, imageSize);
     let start = performance.now();
-    let result = await this.model.computeMultiPose(this.inputTensor, this.heatmapTensor, 
-                                                   this.offsetTensor, this.displacementFwd, 
-                                                   this.displacementBwd);   
+    let result;
+    if (type == 'single') {
+      result = await this.model.computeSinglePose(this.inputTensor, this.heatmapTensor, this.offsetTensor);
+    } else {
+      result = await this.model.computeMultiPose(this.inputTensor, this.heatmapTensor, 
+                                                 this.offsetTensor, this.displacementFwd, 
+                                                 this.displacementBwd);   
+    }
     let elapsed = performance.now() - start;
     console.log(`Inference time: ${elapsed.toFixed(2)} ms`);
     let inferenceTimeElement = document.getElementById('inferenceTime');
@@ -152,15 +157,20 @@ class Utils{
     let imageSize = [this.scaleWidth, this.scaleHeight, 3];
     let ctx = canvas.getContext('2d');
     if (type == 'single') {
-      let singlePose = decodeSinglepose(this.heatmapTensor, this.offsetTensor, 
+      let singlePose = decodeSinglepose(sigmoid(this.heatmapTensor), this.offsetTensor, 
                                         toHeatmapsize(imageSize, this._outputStride), 
-                                        this._outputStride);
+                                        this._outputStride);  
       console.log("single person: ", singlePose);
       singlePose.forEach((pose) => {
         scalePose(pose, inputSize[1]/this.scaleWidth);
         if (pose.score >= this._minScore) {
-          drawKeypoints(pose.keypoints, this._minScore, ctx);
-          drawSkeleton(pose.keypoints, this._minScore, ctx);
+          if (guiState.showPose) {
+            drawKeypoints(pose.keypoints, this._minScore, ctx);
+            drawSkeleton(pose.keypoints, this._minScore, ctx);
+          }
+          if (guiState.showBoundingBox) {
+            drawBoundingBox(pose.keypoints, ctx);
+          }
         }
       });
     } else {
@@ -172,8 +182,13 @@ class Utils{
       multiPose.forEach((pose) => {
         scalePose(pose, inputSize[1]/this.scaleWidth);
         if (pose.score >= this._minScore) {
-          drawKeypoints(pose.keypoints, this._minScore, ctx);
-          drawSkeleton(pose.keypoints, this._minScore, ctx);
+          if (guiState.showPose) {
+            drawKeypoints(pose.keypoints, this._minScore, ctx);
+            drawSkeleton(pose.keypoints, this._minScore, ctx);
+          }
+          if (guiState.showBoundingBox) {
+            drawBoundingBox(pose.keypoints, ctx);
+          }
         }
       });
     }
@@ -181,7 +196,7 @@ class Utils{
 
   scaleImage(canvasContextMulti, scaleCanvas, inputSize) {
     const scale = this.scaleWidth/inputSize[1];
-    let pixel = canvasContextMulti.getImageData(0,0, inputSize[1], inputSize[2]);
+    let pixel = canvasContextMulti.getImageData(0, 0, inputSize[1], inputSize[2]);
     scaleCanvas.width = this.scaleWidth;
     scaleCanvas.height = this.scaleHeight;
     scaleCanvas.setAttribute("width", this.scaleWidth);

@@ -14,7 +14,7 @@
  * limitations under the License.
  * =============================================================================
  */
-
+const boundingBoxColor = 'red';
 const color = 'aqua';
 const lineWidth = 2;
 const imgMaxWidth = 513;
@@ -87,4 +87,14 @@ function drawSkeleton(keypoints, minConfidence, ctx, scale = 1) {
   adjacentKeyPoints.forEach((keypoints) => {
     drawSegment(toTuple(keypoints[0].position),toTuple(keypoints[1].position), color, scale, ctx);
   });
+}
+
+function drawBoundingBox(keypoints, ctx) {
+  const boundingBox = getBoundingBox(keypoints);
+  ctx.beginPath();
+  ctx.rect(boundingBox.minX, boundingBox.minY,
+           boundingBox.maxX - boundingBox.minX, 
+           boundingBox.maxY - boundingBox.minY);
+  ctx.strokeStyle = boundingBoxColor;
+  ctx.stroke();
 }

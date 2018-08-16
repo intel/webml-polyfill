@@ -9,6 +9,8 @@ guiState = {
     maxDetections: 15,
     nmsRadius: 20.0,
   },
+  showPose: true,
+  showBoundingBox: false,
 };
 const gui = new dat.GUI({width: 300});
 gui.domElement.id = 'gui';
@@ -23,6 +25,8 @@ const maxDetections = multiPoseDetection.add(guiState.multiPoseDetection, 'maxDe
   .min(1)
   .max(20)
   .step(1);
+const showPose = gui.add(guiState, 'showPose');
+const showBoundingBox = gui.add(guiState, 'showBoundingBox');
 gui.close();
 let customContainer = document.getElementById('my-gui-container');
 customContainer.appendChild(gui.domElement);
