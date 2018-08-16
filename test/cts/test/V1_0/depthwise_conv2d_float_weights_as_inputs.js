@@ -52,7 +52,7 @@ describe('CTS', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(nn.PREFER_FAST_SINGLE_ANSWER);
+    compilation.setPreference(prefer);
     await compilation.finish();
 
     let execution = await compilation.createExecution();

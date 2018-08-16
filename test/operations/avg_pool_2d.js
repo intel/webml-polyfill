@@ -42,7 +42,7 @@ describe('Average_pool_2d Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(nn.PREFER_FAST_SINGLE_ANSWER);
+    compilation.setPreference(prefer);
     await compilation.finish();
 
     let execution = await compilation.createExecution();
