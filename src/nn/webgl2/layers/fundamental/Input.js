@@ -23,24 +23,14 @@ export default class Input extends Layer {
    * @param {number[]} data
    */
   call(data, shape, type) {
-    // this.inputTensor = null;
-    if (!this.inputTensor) {
-      this.inputTensor = new Tensor(data, shape, type);
-      if (this.inputTensor.tensor.shape.length <= 2) {
-        this.inputTensor.createGLTexture({ type: '2d', format: 'float', supportSliceTexture: true });
-      } else if (this.inputTensor.tensor.shape.length > 2) {
-        this.inputTensor.reshapeTo2D();
-        this.inputTensor.createGLTexture({ type: '2d', format: 'float', supportSliceTexture: true });
-      } 
-    } else {
-      if (type !== this.inputTensor.arrayType) {
-        this.throwError('Invalid data type in InputLayer.');
-      }
-      if (shape.reduce((i, j) => i * j) !== this.inputTensor.tensor.shape.reduce((i, j) => i * j)) {
-        this.throwError('Invalid data shape in InputLayer.');
-      }
-      this.inputTensor.replaceTensorData(data);
-    }
+    this.inputTensor = null;
+    this.inputTensor = new Tensor(data, shape, type);
+    if (this.inputTensor.tensor.shape.length <= 2) {
+      this.inputTensor.createGLTexture({ type: '2d', format: 'float', supportSliceTexture: true });
+    } else if (this.inputTensor.tensor.shape.length > 2) {
+      this.inputTensor.reshapeTo2D();
+      this.inputTensor.createGLTexture({ type: '2d', format: 'float', supportSliceTexture: true });
+    } 
     return this.inputTensor;
   }
 }
