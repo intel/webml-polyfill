@@ -2,21 +2,21 @@ import Layer from '../../Layer'
 import Tensor from '../../Tensor'
 import * as tensorUtils from '../../utils/tensorUtils'
 import webgl2 from '../../WebGL2'
-import addShaderSourceFunc from '../../webgl/fragmentShader/arithmetic/add'
+import mulShaderSourceFunc from '../../webgl/fragmentShader/arithmetic/mul'
 import { fuseShaderSource } from '../../webgl/fragmentShader/activation/fuse'
 
  /**
- * Add layer class
+ * Mul layer class
  */
-export default class Add extends Layer {
+export default class Mul extends Layer {
   /**
-   * Creates an add layer
+   * Creates an mul layer
    *
    * @param {Object} [attrs] - layer config attributes
    */
   constructor(attrs = {}) {
     super(attrs);
-    this.name = 'Add';
+    this.name = 'Mul';
     const { activation = 'NONE' } = attrs;
     this.activation = activation;
     this.fuseActivation = fuseShaderSource[this.activation];
@@ -47,12 +47,12 @@ export default class Add extends Layer {
       }
     }
 
-    if (!this.addProgram) {
-      const addShaderSource = addShaderSourceFunc(this.fuseActivation);
-      this.addProgram = webgl2.createProgram(addShaderSource);
+    if (!this.mulProgram) {
+      const mulShaderSource = mulShaderSourceFunc(this.fuseActivation);
+      this.mulProgram = webgl2.createProgram(mulShaderSource);
     }
     webgl2.runProgram({
-      program: this.addProgram,
+      program: this.mulProgram,
       output: this.output,
       inputs: [
         { input: inputs[0], name: 'A' },
