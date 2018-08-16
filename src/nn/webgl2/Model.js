@@ -117,15 +117,15 @@ export default class Model {
         // let start = performance.now();
         if (i === 0) {
           let shape = nnOperands[inputIndex].dimensions;
-          if (shape.length === 4 ) {
+          if (shape.length === 4) {
             shape = shape.slice(1, 4);
-          } else if (shape.length === 3 || shape.length === 2) {
-            shape = shape;
           } else {
-            throw new Error(`the shape ${shape} is not supported`);
+            shape = shape;
           }
           if (this.supportInputLayer) {
-            this._operands[inputIndex] = layer.call(inputBuffer, shape, Float32Array);
+            inputs.forEach(input => {
+              this._operands[input.index] = layer.call(input.buffer, shape, Float32Array);
+            });
           } else {
             let inputTensor = new Tensor(inputBuffer, shape);
             this._operands[layer.outputs[0]] = layer.call(inputTensor);
@@ -159,10 +159,8 @@ export default class Model {
                 let inputShape = nnOperands[input].dimensions;
                 if (inputShape.length === 4) {
                   inputShape = inputShape.slice(1, 4);
-                } else if (inputShape.length === 2 || inputShape.length === 3) {
-                  inputShape = inputShape;
                 } else {
-                  throw new Error(`the shape ${shape} is not supported`);
+                  inputShape = inputShape;
                 }
                 let inputSize = inputShape.reduce((accumulator, currentValue) => accumulator * currentValue);
                 this._operands[input] = new Tensor(nnOperands[input].value.slice(inputSize * num, inputSize * (num + 1)), inputShape);
