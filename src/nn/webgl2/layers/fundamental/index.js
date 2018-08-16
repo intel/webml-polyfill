@@ -1,6 +1,6 @@
 import Input from './Input'
 import Add from './Add'
-//import Mul from './Mul'
+import Mul from './Mul'
 import Activation from './Activation'
 import TopClasses from './TopClasses'
 import Reshape from './Reshape'
@@ -10,7 +10,7 @@ import FeatureMapConcate from './FeatureMapConcate'
 export {
   Input,
   Add,
-  //Mul,
+  Mul,
   Activation,
   TopClasses,
   Reshape,
