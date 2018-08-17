@@ -28,21 +28,22 @@ function getInput(inputElement) {
 
 function getURL(version) {
   let address;
+  const urlBase = 'https://storage.googleapis.com/tfjs-models/weights/posenet/';
   switch (version) {
     case 1.01:
-      address = 'https://storage.googleapis.com/tfjs-models/weights/posenet/mobilenet_v1_101/';
+      address = urlBase + 'mobilenet_v1_101/';
       break;
     case 1.0:
-      address = 'https://storage.googleapis.com/tfjs-models/weights/posenet/mobilenet_v1_100/';
+      address = urlBase + 'mobilenet_v1_100/';
       break;
     case 0.75:
-      address = 'https://storage.googleapis.com/tfjs-models/weights/posenet/mobilenet_v1_075/';
+      address = urlBase + 'mobilenet_v1_075/'; 
       break;
     case 0.5:
-      address = 'https://storage.googleapis.com/tfjs-models/weights/posenet/mobilenet_v1_050/';
+      address = urlBase + 'mobilenet_v1_050/';
       break;
     default:
-      throw new Error("It must be 1.01, 1.0, 0.75 or 0.5");
+      throw new Error('It must be 1.01, 1.0, 0.75 or 0.5');
   }
   return address;
 }
@@ -69,13 +70,13 @@ async function fetchDataByUrl(url, binary) {
 }
 
 async function getDimensionData(layername, version, blockId, manifest, cacheMap) {
-  if (layername =="conv2d") {
-    let layerWeights = "MobilenetV1/Conv2d_"+String(blockId)+"/weights";
-    let layerBias = "MobilenetV1/Conv2d_"+String(blockId)+"/biases";
-    let shapeWeights = manifest[layerWeights]["shape"];
-    let shapeBias = manifest[layerBias]["shape"];
-    let filenameWeights = manifest[layerWeights]["filename"];
-    let filenameBias = manifest[layerBias]["filename"];
+  if (layername == 'conv2d') {
+    let layerWeights = 'MobilenetV1/Conv2d_'+String(blockId)+'/weights';
+    let layerBias = 'MobilenetV1/Conv2d_'+String(blockId)+'/biases';
+    let shapeWeights = manifest[layerWeights]['shape'];
+    let shapeBias = manifest[layerBias]['shape'];
+    let filenameWeights = manifest[layerWeights]['filename'];
+    let filenameBias = manifest[layerBias]['filename'];
     let addressWeights = getURL(version)+filenameWeights;
     let addressBias = getURL(version)+filenameBias;
     let weights = await loadCache(addressWeights, cacheMap);
@@ -84,23 +85,23 @@ async function getDimensionData(layername, version, blockId, manifest, cacheMap)
     bias = new Float32Array(bias);
     return {shapeWeights: shapeWeights, weights: weights, shapeBias: shapeBias, bias: bias};
   }
-  else if (layername =="separableConv") {
-    let layerDepthWeights = "MobilenetV1/Conv2d_"+String(blockId)+"_depthwise/depthwise_weights";
-    let layerPointWeights = "MobilenetV1/Conv2d_"+String(blockId)+"_pointwise/weights";
-    let layerDepthBias = "MobilenetV1/Conv2d_"+String(blockId)+"_depthwise/biases";
-    let layerPointBias = "MobilenetV1/Conv2d_"+String(blockId)+"_pointwise/biases";
+  else if (layername == 'separableConv') {
+    let layerDepthWeights = 'MobilenetV1/Conv2d_'+String(blockId)+'_depthwise/depthwise_weights';
+    let layerPointWeights = 'MobilenetV1/Conv2d_'+String(blockId)+'_pointwise/weights';
+    let layerDepthBias = 'MobilenetV1/Conv2d_'+String(blockId)+'_depthwise/biases';
+    let layerPointBias = 'MobilenetV1/Conv2d_'+String(blockId)+'_pointwise/biases';
     let shapeWeights = [];
     let shapeBias = [];
     let weights = [];
     let bias = [];
-    shapeWeights.push(manifest[layerDepthWeights]["shape"]);
-    shapeWeights.push(manifest[layerPointWeights]["shape"]);
-    shapeBias.push(manifest[layerDepthBias]["shape"]);
-    shapeBias.push(manifest[layerPointBias]["shape"]);
-    let fileDepthWeights = manifest[layerDepthWeights]["filename"];
-    let filePointWeights = manifest[layerPointWeights]["filename"];
-    let fileDepthBias = manifest[layerDepthBias]["filename"];
-    let filePointBias = manifest[layerPointBias]["filename"];
+    shapeWeights.push(manifest[layerDepthWeights]['shape']);
+    shapeWeights.push(manifest[layerPointWeights]['shape']);
+    shapeBias.push(manifest[layerDepthBias]['shape']);
+    shapeBias.push(manifest[layerPointBias]['shape']);
+    let fileDepthWeights = manifest[layerDepthWeights]['filename'];
+    let filePointWeights = manifest[layerPointWeights]['filename'];
+    let fileDepthBias = manifest[layerDepthBias]['filename'];
+    let filePointBias = manifest[layerPointBias]['filename'];
     let depthWeights = await loadCache(getURL(version)+fileDepthWeights, cacheMap);
     let pointWeights = await loadCache(getURL(version)+filePointWeights, cacheMap);
     let depthBias = await loadCache(getURL(version)+fileDepthBias, cacheMap);
@@ -113,10 +114,10 @@ async function getDimensionData(layername, version, blockId, manifest, cacheMap)
   } else {
     let shapeWeights;
     let shapeBias;
-    shapeWeights = manifest["MobilenetV1/"+layername+"_2/weights"]["shape"];
-    shapeBias = manifest["MobilenetV1/"+layername+"_2/biases"]["shape"];
-    let weights = await loadCache(getURL(version)+manifest["MobilenetV1/"+layername+"_2/weights"]["filename"], cacheMap);
-    let bias = await loadCache(getURL(version)+manifest["MobilenetV1/"+layername+"_2/biases"]["filename"], cacheMap);
+    shapeWeights = manifest['MobilenetV1/'+layername+'_2/weights']['shape'];
+    shapeBias = manifest['MobilenetV1/'+layername+'_2/biases']['shape'];
+    let weights = await loadCache(getURL(version)+manifest['MobilenetV1/'+layername+'_2/weights']['filename'], cacheMap);
+    let bias = await loadCache(getURL(version)+manifest['MobilenetV1/'+layername+'_2/biases']['filename'], cacheMap);
     weights = new Float32Array(weights);
     bias = new Float32Array(bias);
     return {shapeWeights: shapeWeights, weights: weights, shapeBias: shapeBias, bias: bias};
@@ -184,7 +185,7 @@ function valideResolution(inputDimension, outputStride) {
   let width = inputDimension[1];
   let height = inputDimension[2];
   if ((width-1) % outputStride != 0) {
-    throw new Error("invalid resolution");
+    throw new Error('invalid resolution');
   }
 }
 
