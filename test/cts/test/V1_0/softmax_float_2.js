@@ -9,8 +9,7 @@ describe('CTS', function() {
     let input_value = [1.0, 2.0, 3.0, 4.0, 5.0, -1.0, -2.0, -3.0, -4.0, -5.0];
     let output_expect = [0.011656231, 0.031684921, 0.086128544, 0.234121657, 0.636408647, 0.636408647, 0.234121657, 0.086128544, 0.031684921, 0.011656231];
 
-    let type1 = {type: nn.FLOAT32, dimensions: [1.0]};
-    let type1_length = product(type1.dimensions);
+    let type1 = {type: nn.FLOAT32};
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 5]};
     let type0_length = product(type0.dimensions);
 
