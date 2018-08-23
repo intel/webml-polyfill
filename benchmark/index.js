@@ -185,11 +185,7 @@ class WebMLJSBenchmark extends Benchmark {
       this.labels = result.text.split('\n');
       let flatBuffer = new flatbuffers.ByteBuffer(result.bytes);
       targetModel = tflite.Model.getRootAsModel(flatBuffer);
-      if (this.configuration.backend !== 'native') {
-        this.model = new MobileNet(targetModel, this.configuration.backend);
-      } else {
-        this.model = new MobileNet(targetModel);
-      }
+      this.model = new MobileNet(targetModel, this.configuration.backend);
     } else if (this.configuration.modelName === 'squeezenet') {
       this.labels = JSON.parse(result.text);
       let err = onnx.ModelProto.verify(result.bytes);
@@ -197,11 +193,7 @@ class WebMLJSBenchmark extends Benchmark {
         throw new Error(`Invalid model ${err}`);
       }
       targetModel = onnx.ModelProto.decode(result.bytes);
-      if (this.configuration.backend !== 'native') {
-        this.model = new SqueezeNet(targetModel, this.configuration.backend);
-      } else {
-        this.model = new SqueezeNet(targetModel);
-      }
+      this.model = new SqueezeNet(targetModel, this.configuration.backend);
     }
     await this.model.createCompiledModel();
   }
@@ -256,11 +248,7 @@ async function run() {
     logger.groupEnd();
     logger.group('Configuration');
     Object.keys(configuration).forEach(key => {
-      if (key === 'backend' && configuration[key] === 'native') {
-        logger.log(`${key.padStart(12)}: ${getNativeAPI()}`);
-      } else {
-        logger.log(`${key.padStart(12)}: ${configuration[key]}`);
-      }
+      logger.log(`${key.padStart(12)}: ${configuration[key]}`);
     });
     logger.groupEnd();
     logger.group('Run');
@@ -298,14 +286,37 @@ document.addEventListener('DOMContentLoaded', () => {
     modelName: 'mobilenet',
     iteration: 0
   }];
-  let webmlAPIConfigurations = [{
+  let webmlAPIConfigurationsAndroid = [{
     framework: 'Web ML API',
-    backend: 'native',
+    backend: 'NN',
+    modelName: 'mobilenet',
+    iteration: 0
+  }];
+  let webmlAPIConfigurationsMacOS = [{
+    framework: 'Web ML API',
+    backend: 'MPS',
+    modelName: 'mobilenet',
+    iteration: 0
+  },
+  {
+    framework: 'Web ML API',
+    backend: 'BNNS',
     modelName: 'mobilenet',
     iteration: 0
   }];
   let configurations = [];
-  configurations = configurations.concat(webmljsConfigurations, webmlAPIConfigurations);
+  let os = getOS();
+  if (os === 'Mac OS') {
+    configurations = configurations.concat(webmljsConfigurations, webmlAPIConfigurationsMacOS);
+  } else if (os === 'Windows') {
+    configurations = configurations.concat(webmljsConfigurations);
+  } else if (os === 'Android') {
+    configurations = configurations.concat(webmljsConfigurations, webmlAPIConfigurationsAndroid);
+  } else if (os === 'Linux') {
+    configurations = configurations.concat(webmljsConfigurations);
+  }
+  let modelElement = document.getElementById('modelName');
+  let modelName = modelElement.options[modelElement.selectedIndex].text;
   for (let configuration of configurations) {
     let option = document.createElement('option');
     option.value = JSON.stringify(configuration);
@@ -313,10 +324,63 @@ document.addEventListener('DOMContentLoaded', () => {
     if (configuration.framework === 'Web ML API') {
       if (navigator.ml.isPolyfill) {
         option.disabled = true;
+      } else {
+        if (modelName !== 'SqueezeNet' && configuration.backend === 'BNNS') {
+          option.disabled = true;
+        } else if (modelName === 'SqueezeNet' && configuration.backend === 'BNNS') {
+          option.disabled = false;
+        }
+      }
+    } else {
+      if (configuration.backend === 'WebGL2') {
+        if (nnPolyfill.supportWebGL2) {
+          option.disabled = false;
+        } else {
+          console.log("[WebGL2] Do not support WebGL2");
+          option.disabled = true;
+        }
+      }
+      if (configuration.backend === 'WASM') {
+        if (nnPolyfill.supportWasm) {
+          option.disabled = false;
+        } else {
+          console.log("[WASM] Do not support WASM");
+          option.disabled = true;
+        }
       }
     }
     document.querySelector('#configurations').appendChild(option);
   }
+  let configElement =  document.getElementById('configurations');
+  let configOptionsElements = configElement.getElementsByTagName("option");
+  modelElement.addEventListener('change', (e) => {
+    modelName = modelElement.options[modelElement.selectedIndex].text;
+    for (let i = 0; i<configOptionsElements.length; i++ ) {
+      let option = configOptionsElements[i];
+      let optionText = option.firstChild.nodeValue;
+      if (modelName !== 'SqueezeNet' && optionText.indexOf('BNNS') !== -1) {
+        console.log("Currently BNNS backend only supports SqueezeNet.");
+        option.disabled = true;
+      } else if (modelName === 'SqueezeNet' && optionText.indexOf('BNNS') !== -1) {
+        option.disabled = false;
+      }
+    }
+  }, false);
+  let modelOptionsElements = modelElement.getElementsByTagName("option");
+  configElement.addEventListener('change', (e) => {
+    let configName = configElement.options[configElement.selectedIndex].text;
+    for (let i = 0; i<modelOptionsElements.length; i++ ) {
+      let option = modelOptionsElements[i];
+      option.disabled = false;
+      let optionText = option.firstChild.nodeValue;
+      if (configName.indexOf('BNNS') !== -1) {
+        if (optionText !== 'SqueezeNet') {
+          console.log("Currently BNNS backend only supports SqueezeNet.");
+          option.disabled = true;
+        }
+      }
+    }
+  }, false);
   let button = document.querySelector('#runButton');
   button.setAttribute('class', 'btn btn-primary');
   button.addEventListener('click', run);

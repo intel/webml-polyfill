@@ -99,7 +99,7 @@ async function detectPoseInRealTime(video) {
   function updateBackend() {
     currentBackend = util.model._backend;
     if (getUrlParams('api_info') === 'true') {
-      backend.innerHTML = currentBackend === 'WebML' ? currentBackend + '/' + getNativeAPI() : currentBackend;
+      backend.innerHTML = currentBackend === 'WebML' ? currentBackend + '/' + getActuralNativeAPI() : currentBackend;
     } else {
       backend.innerHTML = currentBackend;
     }

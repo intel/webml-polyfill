@@ -11,7 +11,7 @@ function main() {
   function updateBackend() {
     currentBackend = utils.model._backend;
     if (getUrlParams('api_info') === 'true') {
-      backend.innerHTML = currentBackend === 'WebML' ? currentBackend + '/' + getNativeAPI() : currentBackend;
+      backend.innerHTML = currentBackend === 'WebML' ? currentBackend + '/' + getActuralNativeAPI() : currentBackend;
     } else {
       backend.innerHTML = currentBackend;
     }

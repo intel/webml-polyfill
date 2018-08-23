@@ -15,7 +15,7 @@ class SsdMobileNet {
         this._backend = 'WASM';
       }
     }
-    if (this._backend === 'WebML') {
+    if (nativeBackendArray.indexOf(this._backend) !== -1) {
       if (nnNative === null) {
         throw Error('Fails to initialize neural network context');
       }
@@ -37,7 +37,7 @@ class SsdMobileNet {
 
     await this._model.finish();
     this._compilation = await this._model.createCompilation();
-    this._compilation.setPreference(this._nn.PREFER_FAST_SINGLE_ANSWER);
+    this._compilation.setPreference(this._getPrefer());
     await this._compilation.finish();
     this._execution = await this._compilation.createExecution();
   }
@@ -83,6 +83,25 @@ class SsdMobileNet {
       return error;
     }
     return 'success';
+  }
+
+  _getPrefer() {
+    let prefer = this._nn.PREFER_FAST_SINGLE_ANSWER;
+    if (getOS() === 'Mac OS') {
+      if (this._backend === 'MPS') {
+        prefer = this._nn.PREFER_SUSTAINED_SPEED;
+      } else if (this._backend === 'WebML') {
+        let backend = 'MPS';
+        if (getPreferParam() === 'sustained') {
+          prefer = this._nn.PREFER_SUSTAINED_SPEED;
+        } else if (getPreferParam() === 'fast') {
+          console.log("Currently BNNS does not support SSD MobileNet, switch to use MPS.");
+          prefer = this._nn.PREFER_SUSTAINED_SPEED;
+        }
+        setActuralNativeAPI(backend);
+      }
+    }
+    return prefer;
   }
 
   _addTensorOperands() {
