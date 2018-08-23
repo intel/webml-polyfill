@@ -7,6 +7,9 @@ if (navigator.ml.isPolyfill) {
   nnPolyfill = navigator.ml_polyfill.getNeuralNetworkContext();
 }
 
+const nativeBackendArray = ['WebML', 'NN', 'BNNS', 'MPS', 'DirectML'];
+let acturalNativeBackend = null;
+
 function getOS() {
   var userAgent = window.navigator.userAgent,
       platform = window.navigator.platform,
@@ -32,13 +35,37 @@ function getOS() {
 
 function getNativeAPI() {
   const apiMapping = {
-    'Mac OS': 'MPS',
     'Android': 'NN',
     'Windows': 'DirectML',
     'Linux': 'N/A'
   };
+  let os = getOS();
+  let backend;
 
-  return apiMapping[getOS()];
+  if (os === 'Mac OS') {
+    let prefer = getPreferParam();
+    if (prefer === 'fast') {
+      backend = 'BNNS';
+    } else if (prefer === 'sustained') {
+      backend = 'MPS';
+    }
+  } else {
+    backend = apiMapping[os];
+  }
+
+  return backend;
+}
+
+function setActuralNativeAPI(backend) {
+  acturalNativeBackend = backend;
+}
+
+function getActuralNativeAPI() {
+  if (getOS() === 'Mac OS') {
+    return acturalNativeBackend;
+  } else {
+    return getNativeAPI();
+  }
 }
 
 function getUrlParams( prop ) {
@@ -52,4 +79,22 @@ function getUrlParams( prop ) {
   } );
 
   return ( prop && prop in params ) ? params[ prop ] : params;
+}
+
+function getPreferParam() {
+  // workaround for using MPS backend on Mac OS by visiting URL with 'prefer=sustained'
+  // workaround for using BNNS backend on Mac OS by visiting URL with 'prefer=fast'
+  var prefer = 'sustained';
+  var parameterStr = window.location.search.substr(1);
+  var reg = new RegExp("(^|&)prefer=([^&]*)(&|$)", "i");
+  var r = parameterStr.match(reg);
+  if (r != null) {
+    prefer = unescape(r[2]);
+    if (prefer !== 'fast' && prefer !== 'sustained') {
+      console.log("Error: prefer value is invalid, currently it supports 'fast' or 'sustained', switch to use default 'sustained'.");
+      prefer = 'sustained';
+    }
+  }
+
+  return prefer;
 }
