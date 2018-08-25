@@ -133,7 +133,7 @@ export default class _Pool2D extends Layer {
       inputRows = inputRows + paddingRowBefore + paddingRowAfter;
       inputCols = inputCols + paddingColBefore + paddingColAfter;
       const _rowIndices = new Tensor([], [inputRows, inputCols]);
-      ops.assigns(_rowIndices.tensor, Number.NEGATIVE_INFINITY);
+      ops.assigns(_rowIndices.tensor, -1);
       ops.assign(
         _rowIndices.tensor
           .hi(this.inputShape[0] + paddingRowBefore, this.inputShape[1] + paddingColBefore)
