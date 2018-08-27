@@ -47,7 +47,7 @@ class Benchmark {
   async runAsync(configuration) {
     this.configuration = configuration;
     await this.setupAsync();
-    setInputOutput();
+    this.setInputOutput();
     let results = await this.executeAsync();
     await this.finalizeAsync();
     return this.summarize(results);
