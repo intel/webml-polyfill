@@ -47,7 +47,6 @@ class Benchmark {
   async runAsync(configuration) {
     this.configuration = configuration;
     await this.setupAsync();
-    this.setInputOutput();
     let results = await this.executeAsync();
     await this.finalizeAsync();
     return this.summarize(results);
@@ -140,7 +139,7 @@ class WebMLJSBenchmark extends Benchmark {
       request.send();
     });
   }
-  setInputOutput() {
+  async setInputOutput() {
     const width = 224;
     const height = 224;
     const channels = 3;
@@ -204,6 +203,7 @@ class WebMLJSBenchmark extends Benchmark {
       }
     }
     await this.model.createCompiledModel();
+    await this.setInputOutput();
   }
   printPredictResult() {
     let probs = Array.from(this.outputTensor);
