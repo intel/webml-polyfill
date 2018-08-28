@@ -176,7 +176,7 @@ class Type(object):
       type_string = str(key.split(",")[0])
       data_string = str(key[len(key.split(",")[0]) + 2:])
 
-      if type_string == "INT32" or type_string == "UINT32":
+      if type_string in ["FLOAT32", "INT32",  "UINT32"]:
         print ("    let " + str(value.__name) + " = {type: nn." + type_string + "};", file = filename)
       else :
         if len(data_string[1:-1]) == 0:
