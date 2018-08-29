@@ -6,10 +6,14 @@ class SqueezeNet {
     this._execution;
     this._tensorIds = [];
     this._operandIndex = 0;
+    this._urlPrefer = getPreferParam();
     if (typeof backend !== 'undefined') {
       this._backend = backend;
+      if (getOS() === 'Mac OS' && backend === 'WebML' && this._urlPrefer === 'invalid') {
+        this._backend = 'WASM';
+      }
     } else {
-      if (nnNative) {
+      if (nnNative && this._urlPrefer !== 'invalid') {
         this._backend = 'WebML';
       } else {
         this._backend = 'WASM';
@@ -59,14 +63,11 @@ class SqueezeNet {
       if (this._backend === 'MPS') {
         prefer = this._nn.PREFER_SUSTAINED_SPEED;
       } else if (this._backend === 'WebML') {
-        let backend = 'MPS';
-        if (getPreferParam() === 'sustained') {
+        if (this._urlPrefer === 'sustained') {
           prefer = this._nn.PREFER_SUSTAINED_SPEED;
-        } else if (getPreferParam() === 'fast') {
+        } else if (this._urlPrefer === 'fast') {
           prefer = this._nn.PREFER_FAST_SINGLE_ANSWER;
-          backend = 'BNNS';
         }
-        setActuralNativeAPI(backend);
       }
     }
     return prefer;

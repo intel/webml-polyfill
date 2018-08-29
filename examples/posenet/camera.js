@@ -99,7 +99,7 @@ async function detectPoseInRealTime(video) {
   function updateBackend() {
     currentBackend = util.model._backend;
     if (getUrlParams('api_info') === 'true') {
-      backend.innerHTML = currentBackend === 'WebML' ? currentBackend + '/' + getActuralNativeAPI() : currentBackend;
+      backend.innerHTML = currentBackend === 'WebML' ? currentBackend + '/' + getNativeAPI() : currentBackend;
     } else {
       backend.innerHTML = currentBackend;
     }
@@ -120,6 +120,8 @@ async function detectPoseInRealTime(video) {
   if (nnNative) {
     webml.setAttribute('class', 'dropdown-item');
     webml.onclick = function (e) {
+      removeAlertElement();
+      checkPreferParam();
       changeBackend('WebML');
     }
   }
@@ -127,6 +129,7 @@ async function detectPoseInRealTime(video) {
   if (nnPolyfill.supportWebGL2) {
     webgl.setAttribute('class', 'dropdown-item');
     webgl.onclick = function(e) {
+      removeAlertElement();
       changeBackend('WebGL2');
     }
   }
@@ -134,6 +137,7 @@ async function detectPoseInRealTime(video) {
   if (nnPolyfill.supportWasm) {
     wasm.setAttribute('class', 'dropdown-item');
     wasm.onclick = function(e) {
+      removeAlertElement();
       changeBackend('WASM');
     }
   }
@@ -142,15 +146,69 @@ async function detectPoseInRealTime(video) {
     util.init(undefined, inputSize).then(() => {
       updateBackend();
       poseDetectionFrame();
+    }).catch((e) => {
+      console.warn(`Failed to init ${util.model._backend}, try to use WASM`);
+      console.error(e);
+      showAlert(util.model._backend);
+      changeBackend('WASM');
     });
   } else {
     util.init(currentBackend, inputSize).then(() => {
       updateBackend();
+    }).catch((e) => {
+      console.warn(`Failed to init ${util.model._backend}, try to use WASM`);
+      console.error(e);
+      showAlert(util.model._backend);
+      changeBackend('WASM');
     });
   }
 }
 
+function checkPreferParam() {
+  if (getOS() === 'Mac OS') {
+    let preferValue = getPreferParam();
+    if (preferValue === 'invalid') {
+      console.log("Invalid prefer, prefer should be 'fast' or 'sustained', try to use WASM.");
+      showPreferAlert();
+    }
+  }
+}
+
+function showAlert(backend) {
+  let div = document.createElement('div');
+  div.setAttribute('id', 'backendAlert');
+  div.setAttribute('class', 'alert alert-warning alert-dismissible fade show');
+  div.setAttribute('role', 'alert');
+  div.innerHTML = `<strong>Failed to setup ${backend} backend.</strong>`;
+  div.innerHTML += `<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>`;
+  let container = document.getElementById('container');
+  container.insertBefore(div, container.firstElementChild);
+}
+
+function showPreferAlert() {
+  let div = document.createElement('div');
+  div.setAttribute('id', 'preferAlert');
+  div.setAttribute('class', 'alert alert-danger alert-dismissible fade show');
+  div.setAttribute('role', 'alert');
+  div.innerHTML = `<strong>Invalid prefer, prefer should be 'fast' or 'sustained'.</strong>`;
+  div.innerHTML += `<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>`;
+  let container = document.getElementById('container');
+  container.insertBefore(div, container.firstElementChild);
+}
+
+function removeAlertElement() {
+  let backendAlertElem =  document.getElementById('backendAlert');
+  if (backendAlertElem !== null) {
+    backendAlertElem.remove();
+  }
+  let preferAlertElem =  document.getElementById('preferAlert');
+  if (preferAlertElem !== null) {
+    preferAlertElem.remove();
+  }
+}
+
 async function main() {
+  checkPreferParam();
   let videoSource = await loadVideo();
   detectPoseInRealTime(videoSource);
 }
