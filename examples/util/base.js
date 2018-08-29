@@ -8,7 +8,6 @@ if (navigator.ml.isPolyfill) {
 }
 
 const nativeBackendArray = ['WebML', 'NN', 'BNNS', 'MPS', 'DirectML'];
-let acturalNativeBackend = null;
 
 function getOS() {
   var userAgent = window.navigator.userAgent,
@@ -56,18 +55,6 @@ function getNativeAPI() {
   return backend;
 }
 
-function setActuralNativeAPI(backend) {
-  acturalNativeBackend = backend;
-}
-
-function getActuralNativeAPI() {
-  if (getOS() === 'Mac OS') {
-    return acturalNativeBackend;
-  } else {
-    return getNativeAPI();
-  }
-}
-
 function getUrlParams( prop ) {
   var params = {};
   var search = decodeURIComponent( window.location.href.slice( window.location.href.indexOf( '?' ) + 1 ) );
@@ -91,8 +78,7 @@ function getPreferParam() {
   if (r != null) {
     prefer = unescape(r[2]);
     if (prefer !== 'fast' && prefer !== 'sustained') {
-      console.log("Error: prefer value is invalid, currently it supports 'fast' or 'sustained', switch to use default 'sustained'.");
-      prefer = 'sustained';
+      prefer = 'invalid';
     }
   }
 

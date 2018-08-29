@@ -1,4 +1,6 @@
 function main(camera) {
+
+
   let utils = new Utils();
   const videoElement = document.getElementById('video');
   let streaming = false;
@@ -11,14 +13,49 @@ function main(camera) {
   const webml = document.getElementById('webml');
   let currentBackend = '';
 
+  function checkPreferParam() {
+    if (getOS() === 'Mac OS') {
+      let preferValue = getPreferParam();
+      if (preferValue === 'invalid') {
+        console.log("Invalid prefer, prefer should be 'fast' or 'sustained', try to use WASM.");
+        showPreferAlert();
+      }
+    }
+  }
+
+  checkPreferParam();
+
   function showAlert(backend) {
     let div = document.createElement('div');
+    div.setAttribute('id', 'backendAlert');
     div.setAttribute('class', 'alert alert-warning alert-dismissible fade show');
     div.setAttribute('role', 'alert');
     div.innerHTML = `<strong>Failed to setup ${backend} backend.</strong>`;
     div.innerHTML += `<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>`;
     let container = document.getElementById('container');
     container.insertBefore(div, container.firstElementChild);
+  }
+
+  function showPreferAlert() {
+    let div = document.createElement('div');
+    div.setAttribute('id', 'preferAlert');
+    div.setAttribute('class', 'alert alert-danger alert-dismissible fade show');
+    div.setAttribute('role', 'alert');
+    div.innerHTML = `<strong>Invalid prefer, prefer should be 'fast' or 'sustained'.</strong>`;
+    div.innerHTML += `<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>`;
+    let container = document.getElementById('container');
+    container.insertBefore(div, container.firstElementChild);
+  }
+
+  function removeAlertElement() {
+    let backendAlertElem =  document.getElementById('backendAlert');
+    if (backendAlertElem !== null) {
+      backendAlertElem.remove();
+    }
+    let preferAlertElem =  document.getElementById('preferAlert');
+    if (preferAlertElem !== null) {
+      preferAlertElem.remove();
+    }
   }
 
   function updateBackend() {
@@ -57,6 +94,8 @@ function main(camera) {
   if (nnNative) {
     webml.setAttribute('class', 'dropdown-item');
     webml.onclick = function (e) {
+      removeAlertElement();
+      checkPreferParam();
       changeBackend('WebML');
     }
   }
@@ -64,6 +103,7 @@ function main(camera) {
   if (nnPolyfill.supportWebGL2) {
     webgl.setAttribute('class', 'dropdown-item');
     webgl.onclick = function(e) {
+      removeAlertElement();
       changeBackend('WebGL2');
     }
   }
@@ -71,6 +111,7 @@ function main(camera) {
   if (nnPolyfill.supportWasm) {
     wasm.setAttribute('class', 'dropdown-item');
     wasm.onclick = function(e) {
+      removeAlertElement();
       changeBackend('WASM');
     }
   }
