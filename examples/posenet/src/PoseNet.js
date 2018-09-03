@@ -14,20 +14,16 @@ class PoseNet{
     this._inputTensorId;
     this._outputTensorId;
     this._cacheMap = cacheMap;
-    this._urlPrefer = getPreferParam();
     if (typeof backend !== 'undefined') {
       this._backend = backend;
-      if (getOS() === 'Mac OS' && backend === 'WebML' && this._urlPrefer === 'invalid') {
-        this._backend = 'WASM';
-      }
     } else {
-      if (nnNative && this._urlPrefer !== 'invalid') {
+      if (nnNative && getPreferParam() !== 'invalid') {
         this._backend = 'WebML';
       } else {
         this._backend = 'WASM';
       }
     }
-    if (nativeBackendArray.indexOf(this._backend) !== -1) {
+    if (this._backend === 'WebML') {
       if (nnNative === null) {
         throw Error('Fails to initialize neural network context');
       }
@@ -45,7 +41,7 @@ class PoseNet{
     await this._addTensorOperands();
     await this._model.finish();
     this._compilation = await this._model.createCompilation();
-    this._compilation.setPreference(this._getPrefer());
+    this._compilation.setPreference(getPrefer(this._backend));
     await this._compilation.finish();
     this._execution = await this._compilation.createExecution();
   }
@@ -72,22 +68,6 @@ class PoseNet{
       return error;
     }
     return 'success';
-  }
-
-  _getPrefer() {
-    let prefer = this._nn.PREFER_FAST_SINGLE_ANSWER;
-    if (getOS() === 'Mac OS') {
-      if (this._backend === 'MPS') {
-        prefer = this._nn.PREFER_SUSTAINED_SPEED;
-      } else if (this._backend === 'WebML') {
-        if (this._urlPrefer === 'sustained') {
-          prefer = this._nn.PREFER_SUSTAINED_SPEED;
-        } else if (this._urlPrefer === 'fast') {
-          prefer = this._nn.PREFER_FAST_SINGLE_ANSWER;
-        }
-      }
-    }
-    return prefer;
   }
 
   async _addTensorOperands() {
