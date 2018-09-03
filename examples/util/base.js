@@ -71,6 +71,7 @@ function getUrlParams( prop ) {
 function getPreferParam() {
   // workaround for using MPS backend on Mac OS by visiting URL with 'prefer=sustained'
   // workaround for using BNNS backend on Mac OS by visiting URL with 'prefer=fast'
+  // use 'sustained' as default for Mac OS
   var prefer = 'sustained';
   var parameterStr = window.location.search.substr(1);
   var reg = new RegExp("(^|&)prefer=([^&]*)(&|$)", "i");
@@ -82,5 +83,19 @@ function getPreferParam() {
     }
   }
 
+  return prefer;
+}
+
+function getPrefer(backend) {
+  let nn = navigator.ml.getNeuralNetworkContext();
+  let prefer = nn.PREFER_FAST_SINGLE_ANSWER;
+  if (getOS() === 'Mac OS' && backend === 'WebML') {
+      let urlPrefer = getPreferParam();
+      if (urlPrefer === 'sustained') {
+        prefer = nn.PREFER_SUSTAINED_SPEED;
+      } else if (urlPrefer === 'fast') {
+        prefer = nn.PREFER_FAST_SINGLE_ANSWER;
+      }
+  }
   return prefer;
 }
