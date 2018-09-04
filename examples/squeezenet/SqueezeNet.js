@@ -9,7 +9,7 @@ class SqueezeNet {
     if (typeof backend !== 'undefined') {
       this._backend = backend;
     } else {
-      if (nnNative) {
+      if (nnNative && getPreferParam() !== 'invalid') {
         this._backend = 'WebML';
       } else {
         this._backend = 'WASM';
@@ -37,7 +37,7 @@ class SqueezeNet {
 
     await this._model.finish();
     this._compilation = await this._model.createCompilation();
-    this._compilation.setPreference(this._nn.PREFER_FAST_SINGLE_ANSWER);
+    this._compilation.setPreference(getPrefer(this._backend));
     await this._compilation.finish();
     this._execution = await this._compilation.createExecution();
   }
