@@ -239,7 +239,7 @@ class WebMLJSBenchmark extends Benchmark {
 //
 const BenchmarkClass = {
   'webml-polyfill.js': WebMLJSBenchmark,
-  'Web ML API': WebMLJSBenchmark
+  'WebML API': WebMLJSBenchmark
 };
 async function run() {
   inputElement.setAttribute('class', 'disabled');
@@ -299,18 +299,25 @@ document.addEventListener('DOMContentLoaded', () => {
     iteration: 0
   }];
   let webmlAPIConfigurations = [{
-    framework: 'Web ML API',
+    framework: 'WebML API',
     backend: 'native',
     modelName: 'mobilenet',
     iteration: 0
   }];
   let configurations = [];
-  configurations = configurations.concat(webmljsConfigurations, webmlAPIConfigurations);
+  let os = getOS();
+  if (os === 'Android' || os === 'Mac OS' ) {
+    configurations = configurations.concat(webmljsConfigurations, webmlAPIConfigurations);
+  } else if (os === 'Windows') {
+    configurations = configurations.concat(webmljsConfigurations);
+  } else if (os === 'Linux') {
+    configurations = configurations.concat(webmljsConfigurations);
+  }
   for (let configuration of configurations) {
     let option = document.createElement('option');
     option.value = JSON.stringify(configuration);
     option.textContent = configuration.framework + ' (' + configuration.backend + ' backend)';
-    if (configuration.framework === 'Web ML API') {
+    if (configuration.framework === 'WebML API') {
       if (navigator.ml.isPolyfill) {
         option.disabled = true;
       }
