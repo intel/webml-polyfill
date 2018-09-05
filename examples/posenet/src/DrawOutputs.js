@@ -17,21 +17,6 @@
 const boundingBoxColor = 'red';
 const color = 'aqua';
 const lineWidth = 2;
-const imgMaxWidth = 513;
-const imgMaxHeight = 513;
-
-function loadImage(imagePath, ctx) {
-  const image = new Image();
-  const promise = new Promise((resolve, reject) => {
-    image.crossOrigin = '';
-    image.onload = () => {
-      ctx.drawImage(image, 0, 0, imgMaxWidth, imgMaxHeight);
-      resolve(image);
-    };
-  });
-  image.src = imagePath;
-  return promise;
-}
 
 function eitherPointDoesntMeetConfidence(a, b, minConfidence) {
   return (a < minConfidence || b < minConfidence);
