@@ -131,67 +131,50 @@ class Utils{
     }
   }
 
-  async predict(scaleCanvas, canvasContextMulti, inputSize, type) {
+  async predict(scaleCanvas, type) {
     if (!this.initialized) {
       return;
     }
-    let imageSize = [this.scaleWidth, this.scaleHeight, 3];
-    await this.scaleImage(canvasContextMulti, scaleCanvas, inputSize);
+    const imageSize = [scaleCanvas.width, scaleCanvas.height, 3];
     prepareInputTensor(this.inputTensor, scaleCanvas, this._outputStride, imageSize);
     let start = performance.now();
-    let result;
+    let poses;
     if (type == 'single') {
-      result = await this.model.computeSinglePose(this.inputTensor, this.heatmapTensor, this.offsetTensor);
+      await this.model.computeSinglePose(this.inputTensor, this.heatmapTensor, this.offsetTensor);
+      poses = decodeSinglepose(sigmoid(this.heatmapTensor), this.offsetTensor,
+                              toHeatmapsize(imageSize, this._outputStride),
+                              this._outputStride);
     } else {
-      result = await this.model.computeMultiPose(this.inputTensor, this.heatmapTensor, 
-                                                 this.offsetTensor, this.displacementFwd, 
-                                                 this.displacementBwd);   
+      await this.model.computeMultiPose(this.inputTensor, this.heatmapTensor,
+                                        this.offsetTensor, this.displacementFwd,
+                                        this.displacementBwd);
+      poses = decodeMultiPose(sigmoid(this.heatmapTensor), this.offsetTensor,
+                             this.displacementFwd, this.displacementBwd,
+                             this._outputStride, this._maxDetection, this._minScore,
+                             this._nmsRadius, toHeatmapsize(imageSize, this._outputStride));
     }
     let elapsed = performance.now() - start;
     console.log(`Inference time: ${elapsed.toFixed(2)} ms`);
     let inferenceTimeElement = document.getElementById('inferenceTime');
-    inferenceTimeElement.innerHTML = `Inference time: <em style="color:green;font-weight:bloder;">${elapsed.toFixed(2)} </em>ms`; 
+    inferenceTimeElement.innerHTML = `Inference time: <em style="color:green;font-weight:bloder;">${elapsed.toFixed(2)} </em>ms`;
+    return poses;
   }
 
-  drawOutput(canvas, type, inputSize) {    
-    let imageSize = [this.scaleWidth, this.scaleHeight, 3];
-    let ctx = canvas.getContext('2d');
-    if (type == 'single') {
-      let singlePose = decodeSinglepose(sigmoid(this.heatmapTensor), this.offsetTensor, 
-                                        toHeatmapsize(imageSize, this._outputStride), 
-                                        this._outputStride);  
-      console.log("single person: ", singlePose);
-      singlePose.forEach((pose) => {
-        scalePose(pose, inputSize[1]/this.scaleWidth);
-        if (pose.score >= this._minScore) {
-          if (guiState.showPose) {
-            drawKeypoints(pose.keypoints, this._minScore, ctx);
-            drawSkeleton(pose.keypoints, this._minScore, ctx);
-          }
-          if (guiState.showBoundingBox) {
-            drawBoundingBox(pose.keypoints, ctx);
-          }
+  drawPoses(canvas, poses) {
+    const ctx = canvas.getContext('2d');
+    if (!poses) return;
+    poses.forEach((pose) => {
+      scalePose(pose, canvas.width/this.scaleWidth);
+      if (pose.score >= this._minScore) {
+        if (guiState.showPose) {
+          drawKeypoints(pose.keypoints, this._minScore, ctx);
+          drawSkeleton(pose.keypoints, this._minScore, ctx);
         }
-      });
-    } else {
-      let multiPose = decodeMultiPose(sigmoid(this.heatmapTensor), this.offsetTensor, 
-                                      this.displacementFwd, this.displacementBwd, 
-                                      this._outputStride, this._maxDetection, this._minScore, 
-                                      this._nmsRadius, toHeatmapsize(imageSize, this._outputStride));
-      console.log("multiple person: ", multiPose);
-      multiPose.forEach((pose) => {
-        scalePose(pose, inputSize[1]/this.scaleWidth);
-        if (pose.score >= this._minScore) {
-          if (guiState.showPose) {
-            drawKeypoints(pose.keypoints, this._minScore, ctx);
-            drawSkeleton(pose.keypoints, this._minScore, ctx);
-          }
-          if (guiState.showBoundingBox) {
-            drawBoundingBox(pose.keypoints, ctx);
-          }
+        if (guiState.showBoundingBox) {
+          drawBoundingBox(pose.keypoints, ctx);
         }
-      });
-    }
+      }
+    });
   }
 
   scaleImage(canvasContextMulti, scaleCanvas, inputSize) {

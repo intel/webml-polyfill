@@ -1,6 +1,5 @@
 const video = document.getElementById('video');
 const canvas = document.getElementById('canvas');
-const ctx = canvas.getContext('2d');
 const scaleCanvas = document.getElementById('scaleCanvas');
 const scaleCtx = scaleCanvas.getContext('2d');
 const backend = document.getElementById('backend');
@@ -51,13 +50,7 @@ async function loadVideo() {
 
 async function detectPoseInRealTime(video) {
   async function poseDetectionFrame() {
-    ctx.save();
-    ctx.scale(-1, 1);
-    ctx.translate(-videoWidth, 0);
-    ctx.drawImage(video, 0, 0, videoWidth, videoHeight);
-    ctx.drawImage(video, 0, 0, videoWidth, videoHeight);
-    ctx.restore();
-    await predict();
+    await predict(video);
     algorithm.onChange((algorithm) => {
       guiState.algorithm = algorithm;
     });
@@ -225,15 +218,26 @@ function isMobile() {
   return isAndroid() || isiOS();
 }
 
-async function predict() {
+function drawVideo(video, canvas, w, h) {
+  const ctx = canvas.getContext('2d');
+  canvas.width = w;
+  canvas.height = h;
+  canvas.setAttribute("width", w);
+  canvas.setAttribute("height", h);
+  ctx.save();
+  ctx.scale(-1, 1);
+  ctx.translate(-w, 0);
+  ctx.drawImage(video, 0, 0, w, h);
+  ctx.restore();
+}
+
+async function predict(video) {
   isMultiple = guiState.algorithm;
   stats.begin();
-  if (isMultiple == "multi-pose") {
-    await util.predict(scaleCanvas, ctx, inputSize, 'multi');
-    util.drawOutput(canvas, 'multi', inputSize);
-  } else {
-    await util.predict(scaleCanvas, ctx, inputSize, 'single');
-    util.drawOutput(canvas, 'single', inputSize);
-  }
+  let type = isMultiple == 'multi-pose' ? 'multi' : 'single';
+  drawVideo(video, scaleCanvas, util.scaleWidth, util.scaleHeight);
+  let poses = await util.predict(scaleCanvas, type);
+  drawVideo(video, canvas, videoWidth, videoHeight);
+  util.drawPoses(canvas, poses);
   stats.end();
 }
