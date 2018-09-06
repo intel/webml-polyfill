@@ -164,7 +164,7 @@ class Utils{
     const ctx = canvas.getContext('2d');
     if (!poses) return;
     poses.forEach((pose) => {
-      scalePose(pose, canvas.width/this.scaleWidth);
+      scalePose(pose, canvas.width/this.scaleWidth, canvas.height/this.scaleHeight);
       if (pose.score >= this._minScore) {
         if (guiState.showPose) {
           drawKeypoints(pose.keypoints, this._minScore, ctx);
