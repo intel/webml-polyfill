@@ -5,7 +5,9 @@ const canvasMulti = document.getElementById('canvasMulti');
 const ctxMulti = canvasMulti.getContext('2d');
 const scaleCanvas = document.getElementById('scaleImage');
 const scaleCtx = scaleCanvas.getContext('2d');
-const inputSize = [1, 513, 513, 3];
+const inputWidth = 513;
+const inputHeight = 513;
+const inputSize = [1, inputWidth, inputHeight, 3];
 const backend = document.getElementById('backend');
 const wasm = document.getElementById('wasm');
 const webgl = document.getElementById('webgl');
@@ -184,27 +186,51 @@ showBoundingBox.onChange((showBoundingBox) => {
   drawResult();
 });
 
+function drawImage(image, canvas, w, h) {
+  const ctx = canvas.getContext('2d');
+  canvas.width = w;
+  canvas.height = h;
+  canvas.setAttribute("width", w);
+  canvas.setAttribute("height", h);
+  ctx.save();
+  ctx.drawImage(image, 0, 0, w, h);
+  ctx.restore();
+}
+
+function loadImage(imagePath, canvas) {
+  const ctx = canvas.getContext('2d');
+  const image = new Image();
+  const promise = new Promise((resolve, reject) => {
+    image.crossOrigin = '';
+    image.onload = () => {
+      canvas.width = inputWidth;
+      canvas.height = inputHeight;
+      canvas.setAttribute("width", inputWidth);
+      canvas.setAttribute("height", inputHeight);
+      ctx.drawImage(image, 0, 0, inputWidth, inputHeight);
+      resolve(image);
+    };
+  });
+  image.src = imagePath;
+  return promise;
+}
 
 async function drawResult() {
   let _inputElement = document.getElementById('image').files[0];
+  let imageUrl;
   if (_inputElement != undefined) {
-    let x = await getInput(_inputElement);
-    await loadImage(x, ctxSingle);
-    await loadImage(x, ctxMulti);
-    if (predictStatus) {
-      await util.predict(scaleCanvas, ctxMulti, inputSize, 'multi');
-      predictStatus = false;
-    }
-    util.drawOutput(canvasMulti, 'multi', inputSize);
-    util.drawOutput(canvasSingle, 'single', inputSize);
+    imageUrl = await getInput(_inputElement);
   } else {
-    await loadImage("https://storage.googleapis.com/tfjs-models/assets/posenet/tennis_in_crowd.jpg", ctxSingle);
-    await loadImage("https://storage.googleapis.com/tfjs-models/assets/posenet/tennis_in_crowd.jpg", ctxMulti);    
-    if (predictStatus) {
-      await util.predict(scaleCanvas, ctxMulti, inputSize, 'multi');
-      predictStatus = false;
-    }
-    util.drawOutput(canvasMulti, 'multi', inputSize);
-    util.drawOutput(canvasSingle, 'single', inputSize);
+    imageUrl = 'https://storage.googleapis.com/tfjs-models/assets/posenet/tennis_in_crowd.jpg';
+  }
+  if (predictStatus) {
+    await loadImage(imageUrl, canvasSingle);
+    let image = await loadImage(imageUrl, canvasMulti);
+    drawImage(image, scaleCanvas, util.scaleWidth, util.scaleHeight);
+    let poses = await util.predict(scaleCanvas, 'single');
+    util.drawPoses(canvasSingle, poses);
+    poses = await util.predict(scaleCanvas, 'multi');
+    util.drawPoses(canvasMulti, poses);
+    predictStatus = false;
   }
 }
