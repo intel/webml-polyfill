@@ -23,7 +23,11 @@ function half(k) {
 
 var MaxHeap = (function () {
   function MaxHeap(maxSize, getElementValue) {
-    this.priorityQueue = new Array(maxSize);
+    try {
+      this.priorityQueue = new Array(maxSize);
+    } catch (e) {
+      console.log(e);
+    }
     this.numberOfElements = -1;
     this.getElementValue = getElementValue;
   }
