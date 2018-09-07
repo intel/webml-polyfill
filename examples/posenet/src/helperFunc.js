@@ -190,14 +190,13 @@ function valideResolution(inputDimension, outputStride) {
 }
 
 function prepareInputTensor(tensor, canvas, outputStride, imgDimension) {
-  const width = imgDimension[0];
-  const height = imgDimension[1]; 
-  const channels = imgDimension[2];
+  const width = imgDimension[1];
+  const height = imgDimension[2];
+  const channels = imgDimension[3];
   const imageChannels = 4;
   const mean = 127.5;
   const std = 127.5;
-  let dimension = [1, canvas.width, canvas.height, 3];
-  valideResolution(dimension, outputStride);
+  valideResolution(imgDimension, outputStride);
   let context = canvas.getContext('2d');
   let pixels = context.getImageData(0, 0, width, height).data;
   for (let y = 0; y < height; ++y) {
@@ -490,13 +489,6 @@ function bilinear(srcImg, destImg, scale) {
                 srcImg.data[idxS01+3], srcImg.data[idxS11+3], dx, dy);
       destImg.data[idxD+3] = a;
     }
-  }
-}
-
-function scalePose(pose, scaleX, scaleY) {
-  for (let i in pose.keypoints) {
-    pose.keypoints[i].position.x = pose.keypoints[i].position.x * scaleX;
-    pose.keypoints[i].position.y = pose.keypoints[i].position.y * scaleY;
   }
 }
 
