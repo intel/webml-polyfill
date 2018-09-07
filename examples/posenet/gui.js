@@ -16,7 +16,7 @@ const gui = new dat.GUI({width: 300});
 gui.domElement.id = 'gui';
 const model = gui.add(guiState, 'model', [0.50, 0.75, 1.00, 1.01]);
 const outputStride = gui.add(guiState, 'outputStride', [8, 16, 32]);
-const scaleFactor = gui.add(guiState, 'scaleFactor');
+const scaleFactor = gui.add(guiState, 'scaleFactor', [0.25, 0.5, 0.75, 1.00]).listen();
 const scoreThreshold = gui.add(guiState, 'scoreThreshold', 0.0, 1.0).listen();
 const multiPoseDetection = gui.addFolder('Multi Pose Estimation');
 multiPoseDetection.open();

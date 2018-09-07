@@ -27,39 +27,44 @@ stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
 document.body.appendChild(stats.dom);
 const mobile = isMobile();
 
-algorithm.onChange((algorithm) => {
+algorithm.onFinishChange((algorithm) => {
   guiState.algorithm = algorithm;
 });
+
 scoreThreshold.onChange((scoreThreshold) => {
-  guiState.scoreThreshold = scoreThreshold;
+  guiState.scoreThreshold = parseFloat(scoreThreshold);
   util._minScore = guiState.scoreThreshold;
 });
-nmsRadius.onChange((nmsRadius) => {
-  guiState.multiPoseDetection.nmsRadius = nmsRadius;
+
+nmsRadius.onFinishChange((nmsRadius) => {
+  guiState.multiPoseDetection.nmsRadius = parseInt(nmsRadius);
   util._nmsRadius = guiState.multiPoseDetection.nmsRadius;
 });
-maxDetections.onChange((maxDetections) => {
-  guiState.multiPoseDetection.maxDetections = maxDetections;
+
+maxDetections.onFinishChange((maxDetections) => {
+  guiState.multiPoseDetection.maxDetections = parseInt(maxDetections);
   util._maxDetection = guiState.multiPoseDetection.maxDetections;
 });
-model.onChange((model) => {
+
+model.onFinishChange((model) => {
   guiState.model = model;
-  util._version = guiState.model;
-  detectPoseInRealTime(video);
+  initModel();
 });
-outputStride.onChange((outputStride) => {
-  guiState.outputStride = outputStride;
-  util._outputStride = guiState.outputStride;
-  detectPoseInRealTime(video);
+
+outputStride.onFinishChange((outputStride) => {
+  guiState.outputStride = parseInt(outputStride);
+  initModel();
 });
-scaleFactor.onChange((scaleFactor) => {
-  guiState.scaleFactor = scaleFactor;
-  util._scaleFactor = guiState.scaleFactor;
-  detectPoseInRealTime(video);
+
+scaleFactor.onFinishChange((scaleFactor) => {
+  guiState.scaleFactor = parseFloat(scaleFactor);
+  initModel();
 });
+
 showPose.onChange((showPose) => {
   guiState.showPose = showPose;
 });
+
 showBoundingBox.onChange((showBoundingBox) => {
   guiState.showBoundingBox = showBoundingBox;
 });
@@ -101,55 +106,24 @@ async function setupCamera() {
 async function loadVideo() {
   const videoElement = await setupCamera();
   videoElement.play();
+  canvas.setAttribute("width", videoElement.videoWidth);
+  canvas.setAttribute("height", videoElement.videoHeight);
   return videoElement;
 }
 
-async function detectPoseInRealTime(video) {
-  if (nnNative) {
-    webml.setAttribute('class', 'dropdown-item');
-    webml.onclick = function (e) {
-      removeAlertElement();
-      checkPreferParam();
-      changeBackend('WebML');
-    }
+async function initModel(first = false) {
+  if (!first && !util.initialized) {
+    console.warn('not initialized');
+    return;
   }
-
-  if (nnPolyfill.supportWebGL2) {
-    webgl.setAttribute('class', 'dropdown-item');
-    webgl.onclick = function(e) {
-      removeAlertElement();
-      changeBackend('WebGL2');
-    }
-  }
-
-  if (nnPolyfill.supportWasm) {
-    wasm.setAttribute('class', 'dropdown-item');
-    wasm.onclick = function(e) {
-      removeAlertElement();
-      changeBackend('WASM');
-    }
-  }
-
-  if (currentBackend == '') {
-    util.init(undefined, inputSize).then(() => {
-      updateBackend();
-      poseDetectionFrame();
-    }).catch((e) => {
-      console.warn(`Failed to init ${util.model._backend}, try to use WASM`);
-      console.error(e);
-      showAlert(util.model._backend);
-      changeBackend('WASM');
-    });
-  } else {
-    util.init(currentBackend, inputSize).then(() => {
-      updateBackend();
-    }).catch((e) => {
-      console.warn(`Failed to init ${util.model._backend}, try to use WASM`);
-      console.error(e);
-      showAlert(util.model._backend);
-      changeBackend('WASM');
-    });
-  }
+  util.init(currentBackend == '' ? undefined : currentBackend, inputSize).then(() => {
+    updateBackend();
+  }).catch((e) => {
+    console.warn(`Failed to init ${util.model._backend}, try to use WASM`);
+    console.error(e);
+    showAlert(util.model._backend);
+    changeBackend('WASM');
+  });
 }
 
 function checkPreferParam() {
@@ -197,8 +171,35 @@ function removeAlertElement() {
 
 async function main() {
   checkPreferParam();
-  let videoSource = await loadVideo();
-  detectPoseInRealTime(videoSource);
+
+  if (nnNative) {
+    webml.setAttribute('class', 'dropdown-item');
+    webml.onclick = function (e) {
+      removeAlertElement();
+      checkPreferParam();
+      changeBackend('WebML');
+    }
+  }
+
+  if (nnPolyfill.supportWebGL2) {
+    webgl.setAttribute('class', 'dropdown-item');
+    webgl.onclick = function(e) {
+      removeAlertElement();
+      changeBackend('WebGL2');
+    }
+  }
+
+  if (nnPolyfill.supportWasm) {
+    wasm.setAttribute('class', 'dropdown-item');
+    wasm.onclick = function(e) {
+      removeAlertElement();
+      changeBackend('WASM');
+    }
+  }
+
+  await loadVideo();
+  initModel(true);
+  poseDetectionFrame();
 }
   
 function isAndroid() {
@@ -215,10 +216,6 @@ function isMobile() {
 
 function drawVideo(video, canvas, w, h) {
   const ctx = canvas.getContext('2d');
-  canvas.width = w;
-  canvas.height = h;
-  canvas.setAttribute("width", w);
-  canvas.setAttribute("height", h);
   ctx.save();
   ctx.scale(-1, 1);
   ctx.translate(-w, 0);
@@ -227,17 +224,22 @@ function drawVideo(video, canvas, w, h) {
 }
 
 async function poseDetectionFrame() {
-  await predict(video);
+  if (util.initialized) {
+    await predict(video);
+  }
   setTimeout(poseDetectionFrame, 0);
 }
 
 async function predict(video) {
-  isMultiple = guiState.algorithm;
   stats.begin();
-  let type = isMultiple == 'multi-pose' ? 'multi' : 'single';
+  const start = performance.now();
+  let type = guiState.algorithm == 'multi-pose' ? 'multi' : 'single';
   drawVideo(video, scaleCanvas, util.scaleWidth, util.scaleHeight);
-  let poses = await util.predict(scaleCanvas, type);
-  stats.end();
+  await util.predict(scaleCanvas, type);
   drawVideo(video, canvas, video.videoWidth, video.videoHeight);
-  util.drawPoses(canvas, poses);
+  util.drawPoses(canvas, util.decodePose(type));
+  const elapsed = performance.now() - start;
+  const inferenceTimeElement = document.getElementById('inferenceTime');
+  inferenceTimeElement.innerHTML = `Inference time: <em style="color:green;font-weight:bloder;">${elapsed.toFixed(2)} </em>ms`;
+  stats.end();
 }
