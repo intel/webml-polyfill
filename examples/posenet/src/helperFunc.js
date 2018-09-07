@@ -493,10 +493,10 @@ function bilinear(srcImg, destImg, scale) {
   }
 }
 
-function scalePose(pose, scale) {
+function scalePose(pose, scaleX, scaleY) {
   for (let i in pose.keypoints) {
-    pose.keypoints[i].position.x = pose.keypoints[i].position.x * scale;
-    pose.keypoints[i].position.y = pose.keypoints[i].position.y * scale;
+    pose.keypoints[i].position.x = pose.keypoints[i].position.x * scaleX;
+    pose.keypoints[i].position.y = pose.keypoints[i].position.y * scaleY;
   }
 }
 
