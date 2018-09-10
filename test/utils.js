@@ -1,7 +1,9 @@
 const nn = navigator.ml.getNeuralNetworkContext();
 let options = {};
 let prefer = nn.PREFER_FAST_SINGLE_ANSWER;
-let episilonCTS = 1e-5;
+const EPISILON = 1e-5;
+const EPISILON5ULP = 5.0 * 0.0009765625;
+let episilonCTS = EPISILON;
 
 function product(array) {
   return array.reduce((accumulator, currentValue) => accumulator * currentValue);
@@ -38,7 +40,8 @@ function setOptions() {
     } else if (backend == "mps") {
       // use PREFER_SUSTAINED_SPEED for MacOS MPS backend
       prefer = nn.PREFER_SUSTAINED_SPEED;
-      episilonCTS = 5.0 * 0.0009765625;
+      // As MPS computes on FP16, use 5ULP of FP16 range
+      episilonCTS = EPISILON5ULP;
     }
   }
 }
