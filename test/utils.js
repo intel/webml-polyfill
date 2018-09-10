@@ -1,6 +1,7 @@
 const nn = navigator.ml.getNeuralNetworkContext();
 let options = {};
 let prefer = nn.PREFER_FAST_SINGLE_ANSWER;
+let episilonCTS = 1e-5;
 
 function product(array) {
   return array.reduce((accumulator, currentValue) => accumulator * currentValue);
@@ -17,7 +18,7 @@ function almostEqual(a, b, episilon=1e-6) {
 }
 
 function almostEqualCTS(a, b) {
-  return almostEqual(a, b, episilon=1e-5)
+  return almostEqual(a, b, episilonCTS)
 }
 
 function setOptions() {
@@ -37,6 +38,7 @@ function setOptions() {
     } else if (backend == "mps") {
       // use PREFER_SUSTAINED_SPEED for MacOS MPS backend
       prefer = nn.PREFER_SUSTAINED_SPEED;
+      episilonCTS = 5.0 * 0.0009765625;
     }
   }
 }
