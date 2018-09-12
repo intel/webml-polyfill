@@ -139,7 +139,7 @@ class WebMLJSBenchmark extends Benchmark {
       request.send();
     });
   }
-  setInputOutput() {
+  async setInputOutput() {
     const width = 224;
     const height = 224;
     const channels = 3;
@@ -178,7 +178,6 @@ class WebMLJSBenchmark extends Benchmark {
     }
   }
   async setupAsync() {
-    this.setInputOutput();
     let result = await this.loadModelAndLabels();
     let targetModel;
     if (this.configuration.modelName === 'mobilenet') {
@@ -204,6 +203,7 @@ class WebMLJSBenchmark extends Benchmark {
       }
     }
     await this.model.createCompiledModel();
+    await this.setInputOutput();
   }
   printPredictResult() {
     let probs = Array.from(this.outputTensor);
