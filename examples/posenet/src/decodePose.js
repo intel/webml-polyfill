@@ -115,11 +115,17 @@ function traverseToTargetKeypoint(edgeId, sourceKeypoint, targetKeypointId, scor
   var displacement = getDisplacement(indexDisp, displacements);
   var displacedPoint = addVectors(sourceKeypoint.position, displacement);
   var displacedPointIndeces = decode(displacedPoint, outputStride, height, width);
-  var indexOffet = convertCoortoIndex(displacedPointIndeces.x, displacedPointIndeces.y, targetKeypointId, dimensionOffset);
-  var offsetPoint = getOffset(indexOffet, offsets);
-  var targetKeypoint = addVectors(displacedPoint, {x: offsetPoint.x, y: offsetPoint.y});
-  var targetKeypointIndeces = decode(targetKeypoint, outputStride, height, width);
-  var indexHeatmap = convertCoortoIndex(targetKeypointIndeces.x, targetKeypointIndeces.y, targetKeypointId, dimension);
+  var indexOffset = convertCoortoIndex(displacedPointIndeces.x, displacedPointIndeces.y, targetKeypointId, dimensionOffset);
+  var offsetPoint = getOffset(indexOffset, offsets);
+  var targetKeypoint = addVectors(
+    {
+      x: displacedPointIndeces.x * outputStride,
+      y: displacedPointIndeces.y * outputStride
+    }, {
+      x: offsetPoint.x, 
+      y: offsetPoint.y
+    }); 
+  var indexHeatmap = convertCoortoIndex(displacedPointIndeces.x, displacedPointIndeces.y, targetKeypointId, dimension);
   var score = scores[indexHeatmap];
   return {position: targetKeypoint, part: partNames[targetKeypointId], score: score};
 }
