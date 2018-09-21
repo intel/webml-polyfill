@@ -3,6 +3,7 @@ WebML Benchmark
 This benchmark loads:
   * MobileNet model trained by ImageNet in TensorFlow Lite format
   * SqueezeNet model trained by ImageNet in ONNX format
+  * PoseNet model using [Model: 1.0 / OutputStride: 16 / Scale Factor: 0.5 / Score Threshold: 0.5 parameters](../examples/posenet/README.md)
 
 , constructs and inferences it by WebML API.
 
