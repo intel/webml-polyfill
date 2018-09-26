@@ -1,5 +1,5 @@
 class PoseNet{
-  constructor(modelArch, backend, version, outputStride, inputShape, type, cacheMap) {
+  constructor(modelArch, version, outputStride, inputShape, type, cacheMap, backend) {
     this._modelArch = modelArch;
     this._model = null;
     this._compilation;
@@ -364,10 +364,12 @@ class PoseNet{
   _calculateProgress(current, length) {
     let progressBar = document.getElementById('progressBar');
     let progressContainer = document.getElementById('progressContainer');
-    let percentComplete = current / length *100;
-    percentComplete = percentComplete.toFixed(0);
-    progressBar.style = `width: ${percentComplete}%`;
-    progressBar.innerHTML = `${percentComplete}%`;
+    if (progressBar !== null && progressContainer !== null) {
+      let percentComplete = current / length *100;
+      percentComplete = percentComplete.toFixed(0);
+      progressBar.style = `width: ${percentComplete}%`;
+      progressBar.innerHTML = `${percentComplete}%`;
+    }
   }
 }
 
