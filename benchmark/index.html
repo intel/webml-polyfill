@@ -3,24 +3,10 @@
   <head>
     <meta charset="utf-8">
     <title>WebML Benchmark</title>
-    <script src="../dist/webml-polyfill.js"></script>
-    <script src="../examples/util/base.js"></script>
-    <script src="../examples/mobilenet/flatbuffers/js/flatbuffers.js"></script>
-    <script src="../examples/mobilenet/schema/schema_generated.js"></script>
-    <script src="../examples/mobilenet/TfLiteModelUtils.js"></script>
-    <script src="../examples/mobilenet/MobileNet.js"></script>
-    <script src="../examples/third_party/protobuf.min.js"></script>
-    <script src="../examples/squeezenet/onnx.js"></script>
-    <script src="../examples/squeezenet/OnnxModelUtils.js"></script>
-    <script src="../examples/squeezenet/SqueezeNet.js"></script>
-    <script src="index.js"></script>
     <link rel="stylesheet" href="../examples/third_party/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
     <style>
       body {
         font-size: 13px;
-      }
-      img {
-        max-height: 400px;
       }
       canvas {
         display: none;
@@ -56,6 +42,7 @@
             <select id="modelName">
               <option value="mobilenet" selected>MobileNet</option>
               <option value="squeezenet">SqueezeNet</option>
+              <option value="posenet">PoseNet</option>
             </select>
           </div>
           <div>
@@ -71,8 +58,12 @@
             <div class="col">
             </div>
             <div class="col-8" align="center">
+              <canvas id="poseCanvas"></canvas>
+              <canvas id="poseCanvasPredict" width="513" height="513"></canvas>
+              <canvas id="canvas"></canvas>
               <img id="image" crossorigin="anonymous" class="img-fluid" alt="Responsive image" src="../examples/mobilenet/img/bee_eater.jpg">
-              </img>
+              <img id="mobileImage" hidden crossorigin="anonymous" class="img-fluid" alt="Responsive image" src="../examples/mobilenet/img/bee_eater.jpg">
+              <img id="poseImage" hidden  crossorigin="anonymous" class="img-fluid" alt="Responsive image" src="../examples/posenet/download.png">
             </div>
             <div class="col">
             </div>
@@ -87,7 +78,6 @@
             <div class="col">
             </div>
           </div>
-          <canvas id="canvas" width=224 height=224></canvas>
           <button type="button" id="runButton" class="btn btn-primary disabled">Run</button>
             (It will take several minutes)
           <div>
@@ -96,5 +86,21 @@
         </div>
       </div>
     </div>
+    <script src="../dist/webml-polyfill.js"></script>
+    <script src="../examples/util/base.js"></script>
+    <script src="../examples/mobilenet/flatbuffers/js/flatbuffers.js"></script>
+    <script src="../examples/mobilenet/schema/schema_generated.js"></script>
+    <script src="../examples/mobilenet/TfLiteModelUtils.js"></script>
+    <script src="../examples/mobilenet/MobileNet.js"></script>
+    <script src="../examples/third_party/protobuf.min.js"></script>
+    <script src="../examples/squeezenet/onnx.js"></script>
+    <script src="../examples/squeezenet/OnnxModelUtils.js"></script>
+    <script src="../examples/squeezenet/SqueezeNet.js"></script>
+    <script src="../examples/posenet/src/decodePose.js"></script>
+    <script src="../examples/posenet/src/helperFunc.js"></script>
+    <script src="../examples/posenet/utils.js"></script>
+    <script src="../examples/posenet/src/PoseNet.js"></script>
+    <script src="../examples/posenet/src/DrawOutputs.js"></script>
+    <script src="index.js"></script>
   </body>
 </html>

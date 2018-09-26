@@ -69,6 +69,13 @@ const mobileNet50Architecture = [
   ['separableConv', 1]
 ]
 
+const ModelArch = new Map([
+  [0.5, mobileNet50Architecture],
+  [0.75, mobileNet75Architecture],
+  [1.0, mobileNet100Architecture],
+  [1.01, mobileNet100Architecture],
+]);
+
 class Utils{
   constructor() {
     this.modelArch;
@@ -105,12 +112,7 @@ class Utils{
     progressBar.style = `width: ${0}%`;
     progressBar.innerHTML = `${0}%`;
     let result;
-    const ModelArch = new Map([
-      [0.5, mobileNet50Architecture],
-      [0.75, mobileNet75Architecture],
-      [1.0, mobileNet100Architecture],
-      [1.01, mobileNet100Architecture],
-    ]);
+
     this.modelArch = ModelArch.get(Number(this._version));
     this.scaleWidth = getValidResolution(this._scaleFactor, inputSize[2], this._outputStride);
     this.scaleHeight = getValidResolution(this._scaleFactor, inputSize[1], this._outputStride);
@@ -129,8 +131,8 @@ class Utils{
     this.offsetTensor = new Float32Array(this.OFFSET_TENSOR_SIZE);
     this.displacementFwd = new Float32Array(this.DISPLACEMENT_FWD_SIZE);
     this.displacementBwd = new Float32Array(this.DISPLACEMENT_BWD_SIZE);
-    this.model = new PoseNet(this.modelArch, backend, Number(this._version), 
-                             Number(this._outputStride), this.scaleInputSize, this._type, this._cacheMap);
+    this.model = new PoseNet(this.modelArch, Number(this._version), Number(this._outputStride),
+                             this.scaleInputSize, this._type, this._cacheMap, backend);
     let start = performance.now();
     result = await this.model.createCompiledModel();
     console.log('compilation result: ${result}');

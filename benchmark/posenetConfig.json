@@ -1,0 +1,6 @@
+{
+    "modelVersion": 1.0,
+    "outputStride": 16,
+    "scaleFactor": 0.5,
+    "minScore": 0.5
+}
