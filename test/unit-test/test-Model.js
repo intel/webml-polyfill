@@ -1100,7 +1100,7 @@ describe('Unit Test/Model Test', function() {
         let inputOptions = {type: nn.TENSOR_FLOAT32, dimensions: TENSOR_DIMENSIONS};
         model.addOperand(inputOptions);
         model.addOperand(inputOptions);
-        let data = new Uint8Array(product(inputOptions.dimensions));
+        let data = new Float32Array(product(inputOptions.dimensions));
         data.fill(0);
         model.setOperandValue(1, data);
         model.addOperand({type: nn.INT32});
@@ -1901,14 +1901,14 @@ describe('Unit Test/Model Test', function() {
       });
     });
 
-    it('"the length of inputs (implicit padding) being 7, 4-D tensor as input0 of TENSOR_QUANT8_ASYMM type having input_scale, 4-D tensor as input1 of TENSOR_QUANT8_ASYMM type having filter_scale, 1-D tensor as input2 of INT32 type having zeroPoint of 0 with bias_scale being equal to the product of input_scale and filter_scale, the type of input3 to input5 being INT32 type, input6 also having INT32 type with value of 0-3, 4-D tensor as output of same type as input0 and input1 with output_scale being greater than the product of input_scale and filter_scale" are ok for "CONV_2D" operation', function() {
+    it('"the length of inputs (implicit padding) being 7, 4-D tensor as input0 of TENSOR_QUANT8_ASYMM type having input_scale, 4-D tensor as input1 of TENSOR_QUANT8_ASYMM type having filter_scale, 1-D tensor as input2 of TENSOR_INT32 type having zeroPoint of 0 with bias_scale being equal to the product of input_scale and filter_scale, the type of input3 to input5 being INT32 type, input6 also having INT32 type with value of 0-3, 4-D tensor as output of same type as input0 and input1 with output_scale being greater than the product of input_scale and filter_scale" are ok for "CONV_2D" operation', function() {
       return nn.createModel(options).then((model)=>{
         let input_scale = 0.5;
         model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [100, 32, 32, 3], scale: input_scale, zeroPoint: 1});
         let filter_scale = 0.2;
         model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [6, 5, 5, 3], scale: filter_scale, zeroPoint: 2});
         let bias_scale = input_scale * filter_scale;
-        model.addOperand({type: nn.INT32, dimensions: [6], scale: bias_scale, zeroPoint: 0});
+        model.addOperand({type: nn.TENSOR_INT32, dimensions: [6], scale: bias_scale, zeroPoint: 0});
         model.addOperand({type: nn.INT32});
         model.addOperand({type: nn.INT32});
         model.addOperand({type: nn.INT32});
@@ -2844,7 +2844,7 @@ describe('Unit Test/Model Test', function() {
         let filter_scale = 0.2;
         model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [1, 5, 5, 3], scale: filter_scale, zeroPoint: 2});
         let bias_scale = input_scale * filter_scale;
-        model.addOperand({type: nn.INT32, dimensions: [1], scale: bias_scale, zeroPoint: 0});
+        model.addOperand({type: nn.TENSOR_INT32, dimensions: [1], scale: bias_scale, zeroPoint: 0});
         model.addOperand({type: nn.INT32});
         model.addOperand({type: nn.INT32});
         model.addOperand({type: nn.INT32});
@@ -2866,7 +2866,7 @@ describe('Unit Test/Model Test', function() {
         let filter_scale = 0.2;
         model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [1, 5, 5, 3], scale: filter_scale, zeroPoint: 2});
         let bias_scale = input_scale * filter_scale;
-        model.addOperand({type: nn.INT32, dimensions: [1], scale: bias_scale, zeroPoint: 0});
+        model.addOperand({type: nn.TENSOR_INT32, dimensions: [1], scale: bias_scale, zeroPoint: 0});
         model.addOperand({type: nn.INT32});
         model.addOperand({type: nn.INT32});
         model.addOperand({type: nn.INT32});
@@ -3743,10 +3743,10 @@ describe('Unit Test/Model Test', function() {
 
     it('"input0 as a 4-D tensor of TENSOR_QUANT8_ASYMM type, input1 as a scale of FLOAT32 type (its value being positive), output tensor of same shape as input0 and scale as 1.f / 256 and the zeroPoint as 0" are ok for "SOFTMAX" operation', function() {
       return nn.createModel(options).then((model)=>{
-        model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, TENSOR_DIMENSIONS, scale: 0, zeroPoint: 0});
+        model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: TENSOR_DIMENSIONS, scale: 0, zeroPoint: 0});
         model.addOperand({type: nn.FLOAT32});
         model.setOperandValue(1, new Float32Array([0.000001]));
-        model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, TENSOR_DIMENSIONS, scale: 1.0 / 256, zeroPoint: 0});
+        model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: TENSOR_DIMENSIONS, scale: 1.0 / 256, zeroPoint: 0});
         assert.doesNotThrow(() => {
           model.addOperation(nn.SOFTMAX, [0, 1], [2]);
         });
@@ -3794,10 +3794,10 @@ describe('Unit Test/Model Test', function() {
 
     it('raise error when the scale of TENSOR_QUANT8_ASYMM type output tensor is not 1.f / 256 for "SOFTMAX" operation', function() {
       return nn.createModel(options).then((model)=>{
-        model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, TENSOR_DIMENSIONS, scale: 0, zeroPoint: 0});
+        model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: TENSOR_DIMENSIONS, scale: 0, zeroPoint: 0});
         model.addOperand({type: nn.FLOAT32});
         model.setOperandValue(1, new Float32Array([0.000001]));
-        model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, TENSOR_DIMENSIONS, scale: 1.0, zeroPoint: 0});
+        model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: TENSOR_DIMENSIONS, scale: 1.0, zeroPoint: 0});
         assert.throws(() => {
           model.addOperation(nn.SOFTMAX, [0, 1], [2]);
         });
@@ -3806,10 +3806,10 @@ describe('Unit Test/Model Test', function() {
 
     it('raise error when the zeroPoint of TENSOR_QUANT8_ASYMM type output tensor is not 0 for "SOFTMAX" operation', function() {
       return nn.createModel(options).then((model)=>{
-        model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, TENSOR_DIMENSIONS, scale: 0, zeroPoint: 0});
+        model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: TENSOR_DIMENSIONS, scale: 0, zeroPoint: 0});
         model.addOperand({type: nn.FLOAT32});
         model.setOperandValue(1, new Float32Array([0.000001]));
-        model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, TENSOR_DIMENSIONS, scale: 1.0 / 256, zeroPoint: 1});
+        model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: TENSOR_DIMENSIONS, scale: 1.0 / 256, zeroPoint: 1});
         assert.throws(() => {
           model.addOperation(nn.SOFTMAX, [0, 1], [2]);
         });
