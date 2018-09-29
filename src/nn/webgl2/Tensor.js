@@ -117,9 +117,6 @@ export default class Tensor {
 
     const shape = this.textureSliceShape;
     const numSlices = Math.ceil(this.textureShape[0] / webgl2.MAX_TEXTURE_SIZE);
-    if (numSlices > webgl2.MAX_TEXTURE_IMAGE_UNITS) {
-      throw new Error(`[Tensor] numSlices ${numSlices} > MAX_TEXTURE_IMAGE_UNITS ${webgl2.MAX_TEXTURE_IMAGE_UNITS}`);
-    }
     let offset = 0;
 
     for (let k = 0; k < numSlices; k++) {
