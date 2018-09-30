@@ -19,7 +19,16 @@ const MODEL_DIC = {
   posenet: {
     width: 513,
     height: 513
-  }
+  },
+  ssdmobilenet: {
+    width: 300,
+    height: 300,
+    inputTensorSize: 300 * 300 * 3,
+    outputBoxTensorSize: (1083 + 600 + 150 + 54 + 24 + 6) * 4,
+    outputClassScoresTensorSize: (1083 + 600 + 150 + 54 + 24 + 6) * 91,
+    modelFile: '../examples/ssd_mobilenet/model/ssd_mobilenet.tflite',
+    labelFile: '../examples/ssd_mobilenet/model/coco_labels_list.txt'
+  },
 }
 let imageElement = null;
 let inputElement = null;
@@ -134,6 +143,26 @@ class Benchmark {
       });
       bkPoseImageSrc = imageElement.src;
       imageElement.src = poseCanvas.toDataURL();
+    } else if (this.configuration.modelName === 'ssdmobilenet') {
+      for (let i = 0; i < this.configuration.iteration; i++) {
+        this.onExecuteSingle(i);
+        await new Promise(resolve => requestAnimationFrame(resolve));
+        let tStart = performance.now();
+        await this.executeSingleAsyncSSDMN();
+        let elapsedTime = performance.now() - tStart;
+        computeResults.push(elapsedTime);
+        let dstart = performance.now();
+        decodeOutputBoxTensor(this.outputBoxTensor, this.anchors);
+        let decodeTime = performance.now() - dstart;
+        console.log("Decode time:" + decodeTime);
+        decodeResults.push(decodeTime);
+      }
+      let [totalDetections, boxesList, scoresList, classesList] = NMS({}, this.outputBoxTensor, this.outputClassScoresTensor);
+      poseCanvas.setAttribute("width", imageElement.width);
+      poseCanvas.setAttribute("height", imageElement.height);
+      visualize(poseCanvas, totalDetections, imageElement, boxesList, scoresList, classesList, this.labels);
+      bkPoseImageSrc = imageElement.src;
+      imageElement.src = poseCanvas.toDataURL();
     }
     return {"computeResults": computeResults, "decodeResults": decodeResults};
   }
@@ -144,15 +173,20 @@ class Benchmark {
   async executeSingleAsync() {
     throw Error('Not Implemented');
   }
-
-    /**
+  /**
    * Execute PoseNet model
    * @returns {Promise<void>}
    */
   async executeSingleAsyncPN() {
     throw Error('Not Implemented');
   }
-
+  /**
+   * Execute SSD MobileNet model
+   * @returns {Promise<void>}
+   */
+  async executeSingleAsyncSSDMN() {
+    throw Error('Not Implemented');
+  }
   /**
    * Finalize
    * @returns {Promise<void>}
@@ -201,6 +235,11 @@ class WebMLJSBenchmark extends Benchmark {
     this.heatmapTensor = null;
     this.offsetTensor  = null;
 
+    //only for ssd mobilenet
+    this.outputBoxTensor = null;
+    this.outputClassScoresTensor = null;
+    this.anchors = null;
+
     this.model = null;
     this.labels = null;
 
@@ -236,14 +275,25 @@ class WebMLJSBenchmark extends Benchmark {
   async setInputOutput() {
     const channels = 3;
     const imageChannels = 4; // RGBA
-    let width = MODEL_DIC[this.configuration.modelName].width;;
-    let height = MODEL_DIC[this.configuration.modelName].height;
+    let configModelName = this.configuration.modelName;
+    let width = MODEL_DIC[configModelName].width;;
+    let height = MODEL_DIC[configModelName].height;
     let drawContent;
-    if (this.configuration.modelName === 'mobilenet' || this.configuration.modelName === 'squeezenet') {
-      this.inputTensor = new Float32Array(MODEL_DIC[this.configuration.modelName].inputTensorSize);
-      this.outputTensor = new Float32Array(MODEL_DIC[this.configuration.modelName].outputTensorSize);
+    if (configModelName === 'mobilenet' || configModelName === 'squeezenet') {
+      this.inputTensor = new Float32Array(MODEL_DIC[configModelName].inputTensorSize);
+      this.outputTensor = new Float32Array(MODEL_DIC[configModelName].outputTensorSize);
       drawContent = imageElement;
-    } else if (this.configuration.modelName === 'posenet') {
+    } else if (configModelName === 'ssdmobilenet') {
+      if (bkPoseImageSrc !== null) {
+        // reset for rerun with same image
+        imageElement.src = bkPoseImageSrc;
+      }
+      this.inputTensor = new Float32Array(MODEL_DIC[configModelName].inputTensorSize);
+      this.outputBoxTensor = new Float32Array(MODEL_DIC[configModelName].outputBoxTensorSize);
+      this.outputClassScoresTensor = new Float32Array(MODEL_DIC[configModelName].outputClassScoresTensorSize);
+      this.anchors = generateAnchors({});
+      drawContent = imageElement;
+    } else if (configModelName === 'posenet') {
       if (bkPoseImageSrc !== null) {
         // reset for rerun with same image
         imageElement.src = bkPoseImageSrc;
@@ -284,7 +334,7 @@ class WebMLJSBenchmark extends Benchmark {
     let canvasContext = canvasElement.getContext('2d');
     canvasContext.drawImage(drawContent, 0, 0, width, height);
     let pixels = canvasContext.getImageData(0, 0, width, height).data;
-    if (this.configuration.modelName === 'mobilenet' || this.configuration.modelName === 'posenet') {
+    if (configModelName === 'mobilenet' || configModelName === 'posenet' || configModelName === 'ssdmobilenet') {
       const meanMN = 127.5;
       const stdMN = 127.5;
       // NHWC layout
@@ -296,7 +346,7 @@ class WebMLJSBenchmark extends Benchmark {
           }
         }
       }
-    } else if (this.configuration.modelName === 'squeezenet') {
+    } else if (configModelName === 'squeezenet') {
       // The RGB mean values are from
       // https://github.com/caffe2/AICamera/blob/master/app/src/main/cpp/native-lib.cpp#L108
       const meanSN = [122.67891434, 116.66876762, 104.00698793];
@@ -323,6 +373,16 @@ class WebMLJSBenchmark extends Benchmark {
         this.model = new MobileNet(targetModel, this.configuration.backend);
       } else {
         this.model = new MobileNet(targetModel);
+      }
+    } else if (this.configuration.modelName === 'ssdmobilenet') {
+      let resultSSDMN = await this.loadModelAndLabels();
+      this.labels = resultSSDMN.text.split('\n');
+      let flatBuffer = new flatbuffers.ByteBuffer(resultSSDMN.bytes);
+      targetModel = tflite.Model.getRootAsModel(flatBuffer);
+      if (this.configuration.backend !== 'native') {
+        this.model = new SsdMobileNet(targetModel, this.configuration.backend);
+      } else {
+        this.model = new SsdMobileNet(targetModel);
       }
     } else if (this.configuration.modelName === 'squeezenet') {
       let resultSN = await this.loadModelAndLabels();
@@ -371,6 +431,11 @@ class WebMLJSBenchmark extends Benchmark {
   async executeSingleAsync() {
     let result;
     result = await this.model.compute(this.inputTensor, this.outputTensor);
+    console.log(`compute result: ${result}`);
+  }
+  async executeSingleAsyncSSDMN() {
+    let result;
+    result = await this.model.compute(this.inputTensor, this.outputBoxTensor, this.outputClassScoresTensor);
     console.log(`compute result: ${result}`);
   }
   async executeSingleAsyncPN() {
@@ -440,12 +505,13 @@ document.addEventListener('DOMContentLoaded', () => {
     let files = e.target.files;
     if (files.length > 0) {
       imageElement.src = URL.createObjectURL(files[0]);
-      bkPoseImageSrc = null;
+      bkPoseImageSrc = imageElement.src;
     }
   }, false);
 
   let modelElement = document.getElementById('modelName');
   modelElement.addEventListener('change', (e) => {
+    bkPoseImageSrc = null;
     let modelName = modelElement.options[modelElement.selectedIndex].text;
     let inputFile = document.getElementById('input').files[0];
     if (inputFile !== undefined) {
@@ -453,6 +519,8 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
       if (modelName === 'PoseNet') {
         imageElement.src = document.getElementById('poseImage').src;
+      } else if (modelName === 'SSD MobileNet') {
+        imageElement.src = document.getElementById('ssdMobileImage').src;
       } else {
         imageElement.src = document.getElementById('mobileImage').src;
       }
@@ -461,6 +529,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let configurationsElement = document.getElementById('configurations');
   configurationsElement.addEventListener('change', (e) => {
+    bkPoseImageSrc = null;
     let modelName = modelElement.options[modelElement.selectedIndex].text;
     let inputFile = document.getElementById('input').files[0];
     if (inputFile !== undefined) {
@@ -468,6 +537,8 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
       if (modelName === 'PoseNet') {
         imageElement.src = document.getElementById('poseImage').src;
+      } else if (modelName === 'SSD MobileNet') {
+        imageElement.src = document.getElementById('ssdMobileImage').src;
       } else {
         imageElement.src = document.getElementById('mobileImage').src;
       }
@@ -493,14 +564,7 @@ document.addEventListener('DOMContentLoaded', () => {
     iteration: 0
   }];
   let configurations = [];
-  let os = getOS();
-  if (os === 'Android' || os === 'Mac OS' ) {
-    configurations = configurations.concat(webmljsConfigurations, webmlAPIConfigurations);
-  } else if (os === 'Windows') {
-    configurations = configurations.concat(webmljsConfigurations);
-  } else if (os === 'Linux') {
-    configurations = configurations.concat(webmljsConfigurations);
-  }
+  configurations = configurations.concat(webmljsConfigurations, webmlAPIConfigurations);
   for (let configuration of configurations) {
     let option = document.createElement('option');
     option.value = JSON.stringify(configuration);

@@ -41,8 +41,9 @@
             <h4>Model</h4>
             <select id="modelName">
               <option value="mobilenet" selected>MobileNet</option>
-              <option value="squeezenet">SqueezeNet</option>
               <option value="posenet">PoseNet</option>
+              <option value="squeezenet">SqueezeNet</option>
+              <option value="ssdmobilenet">SSD MobileNet</option>
             </select>
           </div>
           <div>
@@ -64,6 +65,7 @@
               <img id="image" crossorigin="anonymous" class="img-fluid" alt="Responsive image" src="../examples/mobilenet/img/bee_eater.jpg">
               <img id="mobileImage" hidden crossorigin="anonymous" class="img-fluid" alt="Responsive image" src="../examples/mobilenet/img/bee_eater.jpg">
               <img id="poseImage" hidden  crossorigin="anonymous" class="img-fluid" alt="Responsive image" src="../examples/posenet/download.png">
+              <img id="ssdMobileImage" hidden crossorigin="anonymous" class="img-fluid" alt="Responsive image" src="../examples/ssd_mobilenet/img/image1.jpg">
             </div>
             <div class="col">
             </div>
@@ -101,6 +103,7 @@
     <script src="../examples/posenet/utils.js"></script>
     <script src="../examples/posenet/src/PoseNet.js"></script>
     <script src="../examples/posenet/src/DrawOutputs.js"></script>
+    <script src="../examples/ssd_mobilenet/SsdMobileNet.js"></script>
     <script src="index.js"></script>
   </body>
 </html>
