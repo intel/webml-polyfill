@@ -86,7 +86,7 @@ export default class Model {
         }
         this._execute(tmpInputs, tmpOutputs, i);
         for (let j = 0; j < outputs.size; ++j) {
-          tmpBuffer[j].push(...(tmpOutputs.get(j).buffer));
+          tmpOutputs.get(j).buffer.forEach(a => tmpBuffer[j].push(a));
         }
       }
       for (let j = 0; j < outputs.size; ++j) {
