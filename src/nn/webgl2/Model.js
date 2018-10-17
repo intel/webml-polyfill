@@ -27,7 +27,8 @@ export default class Model {
   prepareModel() {
     return new Promise((resolve) => {
       if (this.supportInputLayer) {
-        this._layers.push(new WebGL2SpecialLayers.Input());
+        let attrs = {inputsNum: this._model._inputs.length};
+        this._layers.push(new WebGL2SpecialLayers.Input(attrs));
       }
       this._model._operations.forEach((op, i) => {
         // console.log(op);
@@ -123,8 +124,9 @@ export default class Model {
             shape = shape;
           }
           if (this.supportInputLayer) {
-            inputs.forEach(input => {
-              this._operands[input.index] = layer.call(input.buffer, shape, Float32Array);
+            let inputTensors = layer.call(inputs, shape, Float32Array); 
+            inputs.forEach((input, k) => {
+              this._operands[input.index] = inputTensors[k];
             });
           } else {
             let inputTensor = new Tensor(inputBuffer, shape);
