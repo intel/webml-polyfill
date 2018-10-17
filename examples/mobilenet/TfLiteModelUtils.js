@@ -62,6 +62,22 @@ function printTfLiteModel(model) {
         let options = operator.builtinOptions(new tflite.ReshapeOptions());
         console.log(`\t\t\t  builtin_options: {new_shape: [${options.newShapeArray()}]}}`);
       } break;
+      case 'MAX_POOL_2D': {
+        let options = operator.builtinOptions(new tflite.Pool2DOptions());
+        console.log(`\t\t\t  builtin_options: {` +
+          `padding: ${PaddingTypes[options.padding()]}, ` +
+          `stride_w: ${options.strideW()}, ` +
+          `stride_h: ${options.strideH()}, ` +
+          `filter_width: ${options.filterWidth()}, ` +
+          `filter_height: ${options.filterHeight()}, ` +
+          `fused_activation_function: ${ActivationFunctionTypes[options.fusedActivationFunction()]}}}`);
+      } break;
+      case 'CONCATENATION': {
+        let options = operator.builtinOptions(new tflite.ConcatenationOptions());
+        console.log(`\t\t\t  builtin_options: {` +
+          `axis: ${options.axis()}, ` +
+          `fused_activation_function: ${ActivationFunctionTypes[options.fusedActivationFunction()]}}}`);
+      } break;
       default: {
         console.warn(`\t\t\t  builtin_options: ${op} is not supported.}`);
       }

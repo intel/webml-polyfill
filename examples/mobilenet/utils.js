@@ -1,6 +1,6 @@
-const INPUT_TENSOR_SIZE = 224*224*3;
+const INPUT_TENSOR_SIZE = 299*299*3;
 const OUTPUT_TENSOR_SIZE = 1001;
-const MODEL_FILE = './model/mobilenet_v1_1.0_224.tflite';
+const MODEL_FILE = './model/inception_v3.tflite';
 const LABELS_FILE = './model/labels.txt';
 
 class Utils {
@@ -34,7 +34,7 @@ class Utils {
       this.tfModel = tflite.Model.getRootAsModel(flatBuffer);
       printTfLiteModel(this.tfModel);
     }
-    this.model = new MobileNet(this.tfModel, backend);
+    this.model = new Inception_V3(this.tfModel, backend);
     result = await this.model.createCompiledModel();
     console.log(`compilation result: ${result}`);
     let start = performance.now();
@@ -106,14 +106,14 @@ class Utils {
   }
 
   prepareInputTensor(tensor, canvas) {
-    const width = 224;
-    const height = 224;
+    const width = 299;
+    const height = 299;
     const channels = 3;
     const imageChannels = 4; // RGBA
     const mean = 127.5;
     const std = 127.5;
     if (canvas.width !== width || canvas.height !== height) {
-      throw new Error(`canvas.width(${canvas.width}) or canvas.height(${canvas.height}) is not 224`);
+      throw new Error(`canvas.width(${canvas.width}) or canvas.height(${canvas.height}) is not 299`);
     }
     let context = canvas.getContext('2d');
     let pixels = context.getImageData(0, 0, width, height).data;
