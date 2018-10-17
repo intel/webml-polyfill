@@ -385,6 +385,26 @@ export default class PreparedModel {
         inputShapes.delete();
         inputValues.delete();
       } break;
+      case OperationCode.FULLY_CONNECTED: {
+        allParametersPresent(4, 1);
+        let input = operands[inputs[0]];
+        let weights = operands[inputs[1]];
+        let bias = operands[inputs[2]]
+        let activation = FuseCodeMap.get(operands[inputs[3]].value[0]);
+        let output = operands[outputs[0]];
+        success = nn_ops.fullyConnectedPrepare(input.shape, weights.shape, bias.shape, output.shape);
+        if (!success) {
+          throw new Error('fullyConnectedPrepare fails');
+        }
+        success = nn_ops.fullyConnectedFloat32(input.value, input.shape,
+                                    weights.value, weights.shape,
+                                    bias.value, bias.shape,
+                                    activation,
+                                    output.value, output.shape);
+        if (!success) {
+          throw new Error('fullyConnectedFloat32 fails');
+        }
+      } break;
       default: {
         throw new Error(`Operation ${op} is not supported`);
       }
