@@ -1,3 +1,5 @@
+var INPUT_SIZE,OUTPUT_TENSOR_SIZE,MODEL_FILE,LABELS_FILE;
+
 function main() {
   let utils = new Utils();
   const imageElement = document.getElementById('image');
@@ -7,7 +9,17 @@ function main() {
   const wasm = document.getElementById('wasm');
   const webgl = document.getElementById('webgl');
   const webml = document.getElementById('webml');
+  const canvasElement = document.getElementById('canvas');
+  var progressContainer = document.getElementById('progressContainer');
+  const container = document.getElementById('container');
+  const Mobilenet_V1 = document.getElementById('Mobilenet_V1');
+  const Mobilenet_V2 = document.getElementById('Mobilenet_V2');
+  const Inception_V3 = document.getElementById('Inception_V3');
+  const Squeezenet = document.getElementById('Squeezenet');
+
   let currentBackend = '';
+  let currentModel = '';
+  let chooseFirstModel = true;
 
   function checkPreferParam() {
     if (getOS() === 'Mac OS') {
@@ -81,6 +93,45 @@ function main() {
       });
     }, 10);
   }
+
+  function changeModel(newModel) {
+    if (currentModel === newModel.MODEL_NAME) {
+      return;
+    }
+    INPUT_SIZE = newModel.INPUT_SIZE;
+    OUTPUT_TENSOR_SIZE = newModel.OUTPUT_SIZE;
+    MODEL_FILE = newModel.MODEL_FILE;
+    LABELS_FILE = newModel.LABELS_FILE;
+    utils.inputTensor = new Float32Array(INPUT_SIZE * INPUT_SIZE *3);
+    utils.outputTensor = new Float32Array(OUTPUT_TENSOR_SIZE);
+    canvasElement.width = newModel.INPUT_SIZE;
+    canvasElement.height = newModel.INPUT_SIZE;
+    progressContainer.style.display = "inline";
+    utils.tfModel = null;
+    selectModel.innerHTML = 'Setting...';
+    setTimeout(() => {
+      utils.init(utils.model._backend).then(() => {
+        currentModel = newModel.MODEL_NAME;
+        selectModel.innerHTML = currentModel;
+        utils.predict(imageElement);
+      });
+    }, 10);
+  }
+
+  function fileExists(url) {
+    var isExists;
+    $.ajax({
+      url:url,
+      async:false,
+      type:'HEAD',
+      error:function() { isExists = 0; },
+      success:function() { isExists = 1; }
+    });
+    if (isExists === 1) {
+      return true;
+    } else {
+      return false;
+    }}
  
   if (nnNative) {
     webml.setAttribute('class', 'dropdown-item');
@@ -107,6 +158,65 @@ function main() {
     }
   }
 
+  //check if the model file exist and choose the first model
+  if (fileExists(mobilenet_v1.MODEL_FILE)) {
+    Mobilenet_V1.setAttribute('class', 'dropdown-item');
+    Mobilenet_V1.onclick = function(e) {
+      changeModel(mobilenet_v1);
+    }
+    if (chooseFirstModel) {
+      INPUT_SIZE = mobilenet_v1.INPUT_SIZE;
+      OUTPUT_TENSOR_SIZE = mobilenet_v1.OUTPUT_SIZE;
+      MODEL_FILE = mobilenet_v1.MODEL_FILE;
+      LABELS_FILE = mobilenet_v1.LABELS_FILE;
+      currentModel = "Mobilenet_V1";
+      chooseFirstModel = false;
+    }
+  }
+  if (fileExists(mobilenet_v2.MODEL_FILE)) {
+    Mobilenet_V2.setAttribute('class', 'dropdown-item');
+    Mobilenet_V2.onclick = function(e) {
+      changeModel(mobilenet_v2);
+    }
+    if (chooseFirstModel) {
+      INPUT_SIZE = mobilenet_v2.INPUT_SIZE;
+      OUTPUT_TENSOR_SIZE = mobilenet_v2.OUTPUT_SIZE;
+      MODEL_FILE = mobilenet_v2.MODEL_FILE;
+      LABELS_FILE = mobilenet_v2.LABELS_FILE;
+      currentModel = "Mobilenet_V2";
+      chooseFirstModel = false;
+    }
+  }
+  if (fileExists(inception_v3.MODEL_FILE)) {
+    Inception_V3.setAttribute('class', 'dropdown-item');
+    Inception_V3.onclick = function(e) {
+      changeModel(inception_v3);
+    }
+    if (chooseFirstModel) {
+      INPUT_SIZE = inception_v3.INPUT_SIZE;
+      OUTPUT_TENSOR_SIZE = inception_v3.OUTPUT_SIZE;
+      MODEL_FILE = inception_v3.MODEL_FILE;
+      LABELS_FILE = inception_v3.LABELS_FILE;
+      currentModel = "Inception_V3";
+      chooseFirstModel = false;
+    }
+  }
+  
+  if (fileExists(squeezenet.MODEL_FILE)) {
+    Squeezenet.setAttribute('class', 'dropdown-item');
+    Squeezenet.onclick = function(e) {
+      changeModel(squeezenet);
+    }
+    if (chooseFirstModel) {
+      INPUT_SIZE = squeezenet.INPUT_SIZE;
+      OUTPUT_TENSOR_SIZE = squeezenet.OUTPUT_SIZE;
+      MODEL_FILE = squeezenet.MODEL_FILE;
+      LABELS_FILE = squeezenet.LABELS_FILE;
+      currentModel = "Squeezenet";
+      chooseFirstModel = false;
+    }
+  }
+
   inputElement.addEventListener('change', (e) => {
     let files = e.target.files;
     if (files.length > 0) {
@@ -118,8 +228,14 @@ function main() {
     utils.predict(imageElement);
   }
 
+  utils.inputTensor = new Float32Array(INPUT_SIZE * INPUT_SIZE *3);
+  utils.outputTensor = new Float32Array(OUTPUT_TENSOR_SIZE);
+  canvasElement.width = INPUT_SIZE;
+  canvasElement.height = INPUT_SIZE;
+
   utils.init().then(() => {
     updateBackend();
+    selectModel.innerHTML = currentModel;
     utils.predict(imageElement);
     button.setAttribute('class', 'btn btn-primary');
     input.removeAttribute('disabled');

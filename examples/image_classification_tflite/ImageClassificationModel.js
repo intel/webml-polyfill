@@ -1,4 +1,4 @@
-class Inception_V3 {
+class ImageClassificationModel {
   constructor(tfModel, backend) {
     this._tfModel = tfModel;
     this._model = null;

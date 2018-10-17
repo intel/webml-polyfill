@@ -1,6 +1,6 @@
-WebML Inception_V3 Sample
+WebML Image classification Sample
 ======
-This sample loads Inception_V3 model trained by ImageNet in TensorFlow Lite format, constructs and inferences it by WebML API.
+This sample loads Image classification models trained by ImageNet in TensorFlow Lite format, constructs and inferences it by WebML API.
 
 Download Model
 -----------

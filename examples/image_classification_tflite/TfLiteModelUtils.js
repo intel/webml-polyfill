@@ -3,7 +3,9 @@ const BuiltinOperators = [
   'DEQUANTIZE', 'EMBEDDING_LOOKUP', 'FLOOR', 'FULLY_CONNECTED', 'HASHTABLE_LOOKUP',
   'L2_NORMALIZATION', 'L2_POOL_2D', 'LOCAL_RESPONSE_NORMALIZATION', 'LOGISTIC',
   'LSH_PROJECTION', 'LSTM', 'MAX_POOL_2D', 'MUL', 'RELU', 'RELU1', 'RELU6', 'RESHAPE',
-  'RESIZE_BILINEAR', 'RNN', 'SOFTMAX', 'SPACE_TO_DEPTH', 'SVDF', 'TANH'];
+  'RESIZE_BILINEAR', 'RNN', 'SOFTMAX', 'SPACE_TO_DEPTH', 'SVDF', 'TANH', "CONCAT_EMBEDDINGS",
+  "SKIP_GRAM", "CALL", "CUSTOM", "EMBEDDING_LOOKUP_SPARSE", "PAD", "UNIDIRECTIONAL_SEQUENCE_RNN",
+  "GATHER", "BATCH_TO_SPACE_ND", "SPACE_TO_BATCH_ND", "TRANSPOSE", "MEAN", "SUB", "DIV", 'SQUEEZE'];
 
 const TensorTypes = ['FLOAT32', 'FLOAT16', 'INT32', 'UINT8', 'INT64', 'STRING'];
 
@@ -77,6 +79,13 @@ function printTfLiteModel(model) {
         console.log(`\t\t\t  builtin_options: {` +
           `axis: ${options.axis()}, ` +
           `fused_activation_function: ${ActivationFunctionTypes[options.fusedActivationFunction()]}}}`);
+      } break;
+      case 'SQUEEZE': {
+        let options = operator.builtinOptions(new tflite.SqueezeOptions());
+        console.log(`\t\t\t  builtin_options: {` +
+          `squeezeDims: ${options.squeezeDims()}, ` +
+          `squeezeDimsLength: ${options.squeezeDimsLength()}, ` +
+          `squeezeDimsArray: ${options.squeezeDimsArray()}}}`);
       } break;
       default: {
         console.warn(`\t\t\t  builtin_options: ${op} is not supported.}`);
