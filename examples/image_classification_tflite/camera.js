@@ -1,4 +1,4 @@
-var INPUT_SIZE,OUTPUT_TENSOR_SIZE,MODEL_FILE,LABELS_FILE;
+var INPUT_SIZE, OUTPUT_TENSOR_SIZE, MODEL_FILE, LABELS_FILE;
 
 function main() {
   let utils = new Utils();
@@ -6,12 +6,12 @@ function main() {
   let streaming = false;
   let changing = false;           // use to avoid the mismatch between canvas size(inputTensor size) and the old model's input oprand when changing model
   const backend = document.getElementById('backend');
+  const selectModel = document.getElementById('selectModel');
   const wasm = document.getElementById('wasm');
   const webgl = document.getElementById('webgl');
   const webml = document.getElementById('webml');
   const canvasElement = document.getElementById('canvas');
   const progressContainer = document.getElementById('progressContainer');
-  const container = document.getElementById('container');
   const Mobilenet_V1 = document.getElementById('Mobilenet_V1');
   const Mobilenet_V2 = document.getElementById('Mobilenet_V2');
   const Inception_V3 = document.getElementById('Inception_V3');
@@ -135,7 +135,8 @@ function main() {
       return true;
     } else {
       return false;
-    }}
+    }
+  }
  
   if (nnNative) {
     webml.setAttribute('class', 'dropdown-item');
@@ -223,7 +224,7 @@ function main() {
     }
   }
 
-  utils.inputTensor = new Float32Array(INPUT_SIZE * INPUT_SIZE *3);
+  utils.inputTensor = new Float32Array(INPUT_SIZE * INPUT_SIZE * 3);
   utils.outputTensor = new Float32Array(OUTPUT_TENSOR_SIZE);
   canvasElement.width = INPUT_SIZE;
   canvasElement.height = INPUT_SIZE;

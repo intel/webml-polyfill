@@ -1,4 +1,4 @@
-var INPUT_SIZE,OUTPUT_TENSOR_SIZE,MODEL_FILE,LABELS_FILE;
+var INPUT_SIZE, OUTPUT_TENSOR_SIZE, MODEL_FILE, LABELS_FILE;
 
 function main() {
   let utils = new Utils();
@@ -6,12 +6,12 @@ function main() {
   const inputElement = document.getElementById('input');
   const buttonEelement = document.getElementById('button');
   const backend = document.getElementById('backend');
+  const selectModel = document.getElementById('selectModel');
   const wasm = document.getElementById('wasm');
   const webgl = document.getElementById('webgl');
   const webml = document.getElementById('webml');
   const canvasElement = document.getElementById('canvas');
   var progressContainer = document.getElementById('progressContainer');
-  const container = document.getElementById('container');
   const Mobilenet_V1 = document.getElementById('Mobilenet_V1');
   const Mobilenet_V2 = document.getElementById('Mobilenet_V2');
   const Inception_V3 = document.getElementById('Inception_V3');
@@ -102,7 +102,7 @@ function main() {
     OUTPUT_TENSOR_SIZE = newModel.OUTPUT_SIZE;
     MODEL_FILE = newModel.MODEL_FILE;
     LABELS_FILE = newModel.LABELS_FILE;
-    utils.inputTensor = new Float32Array(INPUT_SIZE * INPUT_SIZE *3);
+    utils.inputTensor = new Float32Array(INPUT_SIZE * INPUT_SIZE * 3);
     utils.outputTensor = new Float32Array(OUTPUT_TENSOR_SIZE);
     canvasElement.width = newModel.INPUT_SIZE;
     canvasElement.height = newModel.INPUT_SIZE;
@@ -131,7 +131,8 @@ function main() {
       return true;
     } else {
       return false;
-    }}
+    }
+  }
  
   if (nnNative) {
     webml.setAttribute('class', 'dropdown-item');
@@ -228,7 +229,7 @@ function main() {
     utils.predict(imageElement);
   }
 
-  utils.inputTensor = new Float32Array(INPUT_SIZE * INPUT_SIZE *3);
+  utils.inputTensor = new Float32Array(INPUT_SIZE * INPUT_SIZE * 3);
   utils.outputTensor = new Float32Array(OUTPUT_TENSOR_SIZE);
   canvasElement.width = INPUT_SIZE;
   canvasElement.height = INPUT_SIZE;
