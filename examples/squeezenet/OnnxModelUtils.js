@@ -63,6 +63,11 @@ function printOnnxModel(model) {
       case 'Dropout': {} break;
       case 'GlobalAveragePool': {} break;
       case 'Softmax': {} break;
+      case 'BatchNormalization': {} break;
+      case 'Add': {} break;
+      case 'Mul': {} break;
+      case 'Constant': {} break;
+      case 'Reshape': {} break;
       default: {
         console.warn(`    ${node.opType} is not supported.}`);
       }

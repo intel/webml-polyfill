@@ -53,6 +53,14 @@ class SqueezeNet {
     return 'success';
   }
 
+  _getOperandValue(id) {
+    return this._model._operands[id].value;
+  }
+
+  _getOperandValueByName(name) {
+    return this._getOperandValue(this._getTensorIdByName(name));
+  }
+  
   _getInputByName(name) {
     return getObjectByName(this._onnxModel.graph.input, name);
   }
@@ -68,12 +76,17 @@ class SqueezeNet {
   _addTensorOperands() {
     const graph = this._onnxModel.graph;
     for (let i = 0; i < graph.input.length; ++i) {
+      // delete useless empty node in the graph
+      if (graph.input[i].type.tensorType.elemType === 7 && graph.input[i].type.tensorType.shape.dim.length === 0) {
+        graph.input.splice(i--, 1);
+        continue;
+      }
       this._addTensorByValueInfo(graph.input[i]);
     }
     for (let i = 0; i < graph.output.length; ++i) {
       this._addTensorByValueInfo(graph.output[i]);
     }
-    let inputs = [this._getTensorIdByName(graph.input[graph.input.length-1].name)];
+    let inputs = [this._getTensorIdByName(graph.node[0].input[0])];
     let outputs = [this._getTensorIdByName(graph.output[0].name)];
     this._model.identifyInputsAndOutputs(inputs, outputs);
   }
@@ -95,10 +108,16 @@ class SqueezeNet {
     
     let type;
     switch (tensorType.elemType) {
+      case onnx.TensorProto.DataType.FLOAT16:
+        tensorType.elemType = onnx.TensorProto.DataType.FLOAT; // Fall through
       case onnx.TensorProto.DataType.FLOAT: {
         type = this._nn.TENSOR_FLOAT32;
       } break;
-      case onnx.TensorProto.DataType.FLOAT: {
+      case onnx.TensorProto.DataType.INT8:
+      case onnx.TensorProto.DataType.INT16:
+      case onnx.TensorProto.DataType.INT64:   // Warning: treat int64 as int32
+        tensorType.elemType = onnx.TensorProto.DataType.INT32; // Fall through
+      case onnx.TensorProto.DataType.INT32: {
         type = this._nn.TENSOR_INT32;
       } break;
       default: {
@@ -106,9 +125,8 @@ class SqueezeNet {
       }
     }
     const operandType = {type: type, dimensions: Array.from(dims)};
-    const tensorId = this._operandIndex++;
+    const tensorId = this._addOperand(operandType);
     this._tensorIds[name] = {id: tensorId, type: operandType};
-    this._model.addOperand(operandType);
 
     // set operand value
     const initializer = getObjectByName(this._onnxModel.graph.initializer, name);
@@ -116,7 +134,7 @@ class SqueezeNet {
       let data;
       if (initializer.dataType == onnx.TensorProto.DataType.FLOAT) {
         if (initializer.floatData && initializer.floatData.length > 0) {
-          data = initializer.floatData;
+          data = new Float32Array(initializer.floatData);
         } else if (initializer.rawData && initializer.rawData.length > 0) {
           let dataView = new DataView(initializer.rawData.buffer, initializer.rawData.byteOffset, initializer.rawData.byteLength);
           let length = product(initializer.dims);
@@ -145,26 +163,38 @@ class SqueezeNet {
         }
         data = nhwcData;
       }
+
+      // shape tensor for reshape
+      if (initializer.dims.length === 1 && initializer.int64Data.length) {
+        data = new Int32Array(initializer.int64Data);
+      }
       this._model.setOperandValue(tensorId, data);
       console.log(`set operand ${name} data ${data.length}`);
     }
     return tensorId;
   }
 
-  _addScalarInt32(value) {
-    const scalarInt32Type = {type: this._nn.INT32};
+  _addOperand(type, value) {
     let index = this._operandIndex++;
-    this._model.addOperand(scalarInt32Type);
-    this._model.setOperandValue(index, new Int32Array([value]));
+    this._model.addOperand(type);
+    if (typeof value !== 'undefined')
+      this._model.setOperandValue(index, value);
     return index;
   }
 
+  _addScalarInt32(value) {
+    return this._addOperand({type: this._nn.INT32}, new Int32Array([value]));
+  }
+
   _addScalarFloat32(value) {
-    const scalarInt32Type = {type: this._nn.FLOAT32};
-    let index = this._operandIndex++;
-    this._model.addOperand(scalarInt32Type);
-    this._model.setOperandValue(index, new Float32Array([value]));
-    return index;
+    return this._addOperand({type: this._nn.FLOAT32}, new Float32Array([value]));
+  }
+
+  _addTensorFloat32(tensor, dims) {
+    return this._addOperand({
+      type: this._nn.TENSOR_FLOAT32,
+      dimensions: dims
+    }, new Float32Array(tensor));
   }
 
   _getTensorIdByName(name) {
@@ -184,7 +214,7 @@ class SqueezeNet {
   _addOpsAndParams() {
     const graph = this._onnxModel.graph;
     for (let i = 0; i < graph.node.length; ++i) {
-      const node = graph.node[i];
+      let node = graph.node[i];
       console.log(`opType: ${node.opType}`);
       let opCode;
       let inputs = [];
@@ -193,12 +223,19 @@ class SqueezeNet {
         case 'Conv': {
           // Add inputs
           console.log(`  inputs: [${node.input}]`);
-          const x = node.input[0];
-          const w = node.input[1];
-          const b = node.input[2];
-          inputs.push(this._getTensorIdByName(x));
-          inputs.push(this._getTensorIdByName(w));
-          inputs.push(this._getTensorIdByName(b));
+          const input = node.input[0];
+          const convFilter = node.input[1];
+          const convBias = node.input[2];
+          const convFilterType = this._getTensorTypeByName(convFilter);
+          const dims = convFilterType.dimensions;
+          const nChannels = dims[0];
+          const convFilterId = this._getTensorIdByName(convFilter);
+          const convBiasId = typeof convBias !== 'undefined' ? // optional bias
+            this._getTensorIdByName(convBias) :
+            this._addTensorFloat32(new Array(nChannels).fill(0), [nChannels]);
+          inputs.push(this._getTensorIdByName(input));
+          inputs.push(convFilterId);
+          inputs.push(convBiasId);
 
           const attributes = node.attribute;
           const kernelShape = getObjectByName(attributes, 'kernel_shape');
@@ -214,12 +251,12 @@ class SqueezeNet {
           const paddingHeightBegin = pads.ints[0];
           const paddingWidthBegin = pads.ints[1];
           const paddingHeightEnd = pads.ints[2];
-          const paddingWidthEnd = pads.ints[3]
+          const paddingWidthEnd = pads.ints[3];
           inputs.push(this._addScalarInt32(paddingWidthBegin));
           inputs.push(this._addScalarInt32(paddingWidthEnd));
           inputs.push(this._addScalarInt32(paddingHeightBegin));
           inputs.push(this._addScalarInt32(paddingHeightEnd));
-
+          
           const strides = getObjectByName(attributes, 'strides');
           if (!strides || strides.ints.length !== 2)
             throw new Error('Invalid strides');
@@ -229,9 +266,149 @@ class SqueezeNet {
           inputs.push(this._addScalarInt32(strideX));
           inputs.push(this._addScalarInt32(strideY));
 
+          let output = node.output[0];
+          let nextNode = graph.node[i+1];
+
+          // fuse batch norm preceded by a conv
+          if (nextNode &&
+            nextNode.opType === 'BatchNormalization' &&
+            node.output[0] === nextNode.input[0]) {
+            const bnNode = nextNode;
+            const scale = bnNode.input[1];
+            const bnBias = bnNode.input[2];
+            const mean = bnNode.input[3];
+            const variance = bnNode.input[4];
+            const attributes = bnNode.attribute;
+            const epsilon = getObjectByName(attributes, 'epsilon').f;
+            const is_test = getObjectByName(attributes, 'is_test');
+            const momentum = getObjectByName(attributes, 'momentum').f;
+
+            const scaleTensor = this._getOperandValueByName(scale);
+            const meanTensor = this._getOperandValueByName(mean);
+            const varTensor = this._getOperandValueByName(variance);
+            const bnBiasTensor = this._getOperandValueByName(bnBias);
+            const convFilterTensor = this._getOperandValueByName(convFilter);
+            const convBiasTensor = this._getOperandValue(convBiasId);
+
+            const nPixels = product(dims.slice(1));
+            for (let c = 0; c < nChannels; c++) {
+              const w = scaleTensor[c] / Math.sqrt(varTensor[c] + epsilon);
+              // convBiasTensor[c] += bnBiasTensor[c] - w * meanTensor[c];
+              convBiasTensor[c] = bnBiasTensor[c] + (convBiasTensor[c] - meanTensor[c]) * w;
+              for (let p = c * nPixels; p < (c+1) * nPixels; p++)
+                convFilterTensor[p] *= w;
+            }
+
+            i++;
+            node = bnNode;
+            console.log(`  fuse batch norm: ${nextNode.output[0]} -> ${output}`);
+            nextNode = graph.node[i+1];
+            output = bnNode.output[0];
+          }
+
+          if (nextNode && nextNode.opType === 'Relu' && node.output[0] === nextNode.input[0]) {
+            // Fuse relu
+            inputs.push(this._addScalarInt32(this._nn.FUSED_RELU));
+            i++;
+            console.log(`  fuse relu: ${nextNode.output[0]} -> ${output}`);
+            output = nextNode.output[0];
+          } else {
+            inputs.push(this._addScalarInt32(this._nn.FUSED_NONE));
+          }
+
+          // reshape kernel for depthwise conv
+          const inputType = this._getTensorTypeByName(input);
+          const inputChannels = inputType.dimensions[3];
+          const groups = getObjectByName(attributes, 'group');
+          const nGroups = typeof groups !== 'undefined' ? groups.i : 1;
+          const isDepthWiseConv = nGroups > 1 && nGroups === inputChannels;
+          if (isDepthWiseConv) {
+            console.log(`  groups: ${nGroups} (depthwise convolution)`);
+            let nhwc = this._getOperandValueByName(convFilter);
+            // NHWC -> CHWN where C === 1
+            let chwnData = new Float32Array(nhwc.length);
+            const N = dims[0];
+            const H = dims[1];
+            const W = dims[2];
+            for (let n = 0; n < N; ++n)
+              for (let h = 0; h < H; ++h)
+                for (let w = 0; w < W; ++w)
+                  chwnData[h*W*N + w*N + n] = nhwc[n*H*W + h*W + w];
+
+            this._model.setOperandValue(convFilterId, chwnData);
+            convFilterType.dimensions[0] = 1;
+            convFilterType.dimensions[3] = nGroups;
+
+            // set multiplier to 1, not used in onnx model
+            inputs.splice(9, 0, this._addScalarInt32(1));
+          }
+
+          // Add outputs
+          const batch = inputType.dimensions[0];
+          const inputHeight = inputType.dimensions[1];
+          const inputWidth = inputType.dimensions[2];
+          const outputHeight = Math.floor((inputHeight - kernelHeight + paddingHeightBegin + paddingHeightEnd)/strideY + 1);
+          const outputWidth = Math.floor((inputWidth - kernelWidth + paddingWidthBegin + paddingWidthEnd)/strideX + 1);
+          const outputChannels = isDepthWiseConv ? nGroups : nChannels;
+          const outputDims = [batch, outputHeight, outputWidth, outputChannels];
+          let operandType = {type: this._nn.TENSOR_FLOAT32, dimensions: outputDims};
+          let outputId = (i === graph.node.length - 1) ? // last node in graph?
+            this._getTensorIdByName(output) :
+            this._addOperand(operandType);
+          this._tensorIds[output] = {id: outputId, type: operandType};
+          outputs.push(outputId);
+          console.log(`  output ${output}: [${outputDims}]`);
+
+          opCode = isDepthWiseConv ? this._nn.DEPTHWISE_CONV_2D : this._nn.CONV_2D;
+        } break;
+        case 'BatchNormalization': {
+          // Add inputs
+          console.log(`  inputs: [${node.input}]`);
+          const input = node.input[0];
+          const scale = node.input[1];
+          const bnBias = node.input[2];
+          const mean = node.input[3];
+          const variance = node.input[4];
+
+          const attributes = node.attribute;
+          const epsilon = getObjectByName(attributes, 'epsilon').f;
+          const is_test = getObjectByName(attributes, 'is_test');
+          const momentum = getObjectByName(attributes, 'momentum').f; //TODO
+
+          const scaleTensor = this._getOperandValueByName(scale);
+          const meanTensor = this._getOperandValueByName(mean);
+          const varTensor = this._getOperandValueByName(variance);
+          const bnBiasTensor = this._getOperandValueByName(bnBias);
+
+          // Conv with identity kernel
+          const inputType = this._getTensorTypeByName(input);
+          const nChannels = inputType.dimensions[3];
+          const convFilterTensor = new Float32Array(nChannels * nChannels).fill(0);
+          const convBiasTensor = new Float32Array(nChannels).fill(0);
+          const convFilterDims = [nChannels, 1, 1, nChannels];
+          const convBiasDims = [nChannels];
+
+          for (let c = 0; c < nChannels; c++) {
+            const w = scaleTensor[c] / Math.sqrt(varTensor[c] + epsilon);
+            convFilterTensor[c * nChannels + c] = w;
+            convBiasTensor[c] = bnBiasTensor[c] - w * meanTensor[c];
+          }
+
+          inputs.push(this._getTensorIdByName(input));
+          inputs.push(this._addTensorFloat32(convFilterTensor, convFilterDims));
+          inputs.push(this._addTensorFloat32(convBiasTensor, convBiasDims));
+          // paddings
+          inputs.push(this._addScalarInt32(0));
+          inputs.push(this._addScalarInt32(0));
+          inputs.push(this._addScalarInt32(0));
+          inputs.push(this._addScalarInt32(0));
+          // strides
+          inputs.push(this._addScalarInt32(1));
+          inputs.push(this._addScalarInt32(1));
+
           const nextNode = graph.node[i+1];
           let output = node.output[0];
-          if (nextNode.opType === 'Relu' && node.output[0] === nextNode.input[0]) {
+          if (nextNode && nextNode.opType === 'Relu' && node.output[0] === nextNode.input[0]) {
             // Fuse relu
             inputs.push(this._addScalarInt32(this._nn.FUSED_RELU));
             i++;
@@ -242,27 +419,97 @@ class SqueezeNet {
           }
 
           // Add outputs
-          const inputType = this._getTensorTypeByName(x);
-          const batch = inputType.dimensions[0];
-          const inputHeight = inputType.dimensions[1];
-          const inputWidth = inputType.dimensions[2];
-          const outputHeight = Math.floor((inputHeight - kernelHeight + paddingHeightBegin + paddingHeightEnd)/strideY + 1);
-          const outputWidth = Math.floor((inputWidth - kernelWidth + paddingWidthBegin + paddingWidthEnd)/strideX + 1);
-          const filterType = this._getTensorTypeByName(w);
-          const filterNum = filterType.dimensions[0];
-          const outputDims = [batch, outputHeight, outputWidth, filterNum];
+          let outputDims = Array.from(inputType.dimensions);
           let operandType = {type: this._nn.TENSOR_FLOAT32, dimensions: outputDims};
-          let outputId = this._operandIndex++;
+          let outputId = (i === graph.node.length - 1) ? // last node in graph?
+            this._getTensorIdByName(output) :
+            this._addOperand(operandType);
           this._tensorIds[output] = {id: outputId, type: operandType};
-          this._model.addOperand(operandType);
           outputs.push(outputId);
           console.log(`  output ${output}: [${outputDims}]`);
 
           opCode = this._nn.CONV_2D;
         } break;
         case 'Relu': {
-          throw new Error('Relu should be fused into Conv');
+          // Add inputs
+          console.log(`  inputs: [${node.input}]`);
+          const input = node.input[0];
+
+          // Conv with identity kernel
+          const inputType = this._getTensorTypeByName(input);
+          const nChannels = inputType.dimensions[3];
+          const convFilterTensor = new Float32Array(nChannels * nChannels).fill(0);
+          const convBiasTensor = new Float32Array(nChannels).fill(0);
+          const convFilterDims = [nChannels, 1, 1, nChannels];
+          const convBiasDims = [nChannels];
+
+          for (let c = 0; c < nChannels; c++)
+            convFilterTensor[c * nChannels + c] = 1;
+
+          inputs.push(this._getTensorIdByName(input));
+          inputs.push(this._addTensorFloat32(convFilterTensor, convFilterDims));
+          inputs.push(this._addTensorFloat32(convBiasTensor, convBiasDims));
+          // paddings
+          inputs.push(this._addScalarInt32(0));
+          inputs.push(this._addScalarInt32(0));
+          inputs.push(this._addScalarInt32(0));
+          inputs.push(this._addScalarInt32(0));
+          // strides
+          inputs.push(this._addScalarInt32(1));
+          inputs.push(this._addScalarInt32(1));
+          inputs.push(this._addScalarInt32(this._nn.FUSED_RELU));
+
+          // Add outputs
+          let output = node.output[0];
+          let outputDims = Array.from(inputType.dimensions);
+          let operandType = {type: this._nn.TENSOR_FLOAT32, dimensions: outputDims};
+          let outputId = (i === graph.node.length - 1) ? // last node in graph?
+            this._getTensorIdByName(output) :
+            this._addOperand(operandType);
+          this._tensorIds[output] = {id: outputId, type: operandType};
+          outputs.push(outputId);
+          console.log(`  output ${output}: [${outputDims}]`);
+
+          opCode = this._nn.CONV_2D;
         } break;
+        case 'Mul':
+        case 'Add': {
+          // Add inputs
+          console.log(`  inputs: [${node.input}]`);
+          const in1 = node.input[0];
+          const in2 = node.input[1];
+          inputs.push(this._getTensorIdByName(in1));
+          inputs.push(this._getTensorIdByName(in2));
+
+          const nextNode = graph.node[i+1];
+          let output = node.output[0];
+          if (nextNode && nextNode.opType === 'Relu' && node.output[0] === nextNode.input[0]) {
+            // Fuse relu
+            inputs.push(this._addScalarInt32(this._nn.FUSED_RELU));
+            i++;
+            console.log(`  fuse relu: ${nextNode.output[0]} -> ${output}`);
+            output = nextNode.output[0];
+          } else {
+            inputs.push(this._addScalarInt32(this._nn.FUSED_NONE));
+          }
+
+          // Add outputs
+          const in1Type = this._getTensorTypeByName(in1);
+          let outputDims = Array.from(in1Type.dimensions);
+          let operandType = {type: this._nn.TENSOR_FLOAT32, dimensions: outputDims};
+          let outputId = (i === graph.node.length - 1) ? // last node in graph?
+            this._getTensorIdByName(output) :
+            this._addOperand(operandType);
+          this._tensorIds[output] = {id: outputId, type: operandType};
+          outputs.push(outputId);
+          console.log(`  output ${output}: [${outputDims}]`);
+
+          if (node.opType === 'Add')
+            opCode = this._nn.ADD;
+          else if (node.opType === 'Mul')
+            opCode = this._nn.MUL;
+        } break;
+        case 'AveragePool':
         case 'MaxPool': {
           console.log(`  inputs: [${node.input}]`);
           const x = node.input[0];
@@ -276,7 +523,7 @@ class SqueezeNet {
           const paddingHeightBegin = pads.ints[0];
           const paddingWidthBegin = pads.ints[1];
           const paddingHeightEnd = pads.ints[2];
-          const paddingWidthEnd = pads.ints[3]
+          const paddingWidthEnd = pads.ints[3];
           inputs.push(this._addScalarInt32(paddingWidthBegin));
           inputs.push(this._addScalarInt32(paddingWidthEnd));
           inputs.push(this._addScalarInt32(paddingHeightBegin));
@@ -311,13 +558,17 @@ class SqueezeNet {
           const outputWidth = Math.floor((inputWidth - kernelWidth + paddingWidthBegin + paddingWidthEnd)/strideX + 1);
           const outputDims = [batch, outputHeight, outputWidth, inputChannels];
           let operandType = {type: this._nn.TENSOR_FLOAT32, dimensions: outputDims};
-          let outputId = this._operandIndex++;
+          let outputId = (i === graph.node.length - 1) ? // last node in graph?
+            this._getTensorIdByName(output) :
+            this._addOperand(operandType);
           this._tensorIds[output] = {id: outputId, type: operandType};
-          this._model.addOperand(operandType);
           outputs.push(outputId);
           console.log(`  output ${output}: [${outputDims}]`);
 
-          opCode = this._nn.MAX_POOL_2D;
+          if (node.opType === 'MaxPool')
+            opCode = this._nn.MAX_POOL_2D;
+          else if (node.opType === 'AveragePool')
+            opCode = this._nn.AVERAGE_POOL_2D;
         } break;
         case 'Concat': {
           console.log(`  inputs: [${node.input}]`);
@@ -342,9 +593,10 @@ class SqueezeNet {
             outputDims[concatAxis] += inputType.dimensions[concatAxis];
           }
           let operandType = {type: this._nn.TENSOR_FLOAT32, dimensions: outputDims};
-          let outputId = this._operandIndex++;
+          let outputId = (i === graph.node.length - 1) ? // last node in graph?
+            this._getTensorIdByName(output) :
+            this._addOperand(operandType);
           this._tensorIds[output] = {id: outputId, type: operandType};
-          this._model.addOperand(operandType);
           outputs.push(outputId);
           console.log(`  output ${output}: [${outputDims}]`);
 
@@ -384,13 +636,67 @@ class SqueezeNet {
           const outputWidth = 1;
           const outputDims = [batch, outputHeight, outputWidth, inputChannels];
           let operandType = {type: this._nn.TENSOR_FLOAT32, dimensions: outputDims};
-          let outputId = this._operandIndex++;
+          let outputId = (i === graph.node.length - 1) ? // last node in graph?
+            this._getTensorIdByName(output) :
+            this._addOperand(operandType);
           this._tensorIds[output] = {id: outputId, type: operandType};
-          this._model.addOperand(operandType);
           outputs.push(outputId);
           console.log(`  output ${output}: [${outputDims}]`);
 
           opCode = this._nn.AVERAGE_POOL_2D;
+        } break;
+        case 'Constant': {
+          const name = node.output[0];
+          const attributes = node.attribute;
+          const value = getObjectByName(attributes, 'value');
+          const shapeTensor = value.t;
+
+          // warning: cast a int64 array to an int32 tensor
+          let dataView = new DataView(shapeTensor.rawData.buffer, shapeTensor.rawData.byteOffset, shapeTensor.rawData.byteLength);
+          let length = shapeTensor.rawData.byteLength / BigUint64Array.BYTES_PER_ELEMENT;
+          let shapeData = new Int32Array(length);
+          for (let i = 0; i < length; ++i) {
+            // raw data is stored in little-endian order
+            shapeData[i] = dataView.getInt32(i * BigUint64Array.BYTES_PER_ELEMENT, true);
+          }
+
+          let shapeType = {type: this._nn.TENSOR_INT32, dimensions: Array.from(shapeTensor.dims)};
+          let shapeId = this._addOperand(shapeType, shapeData);
+          this._tensorIds[name] = {id: shapeId, type: shapeType};    
+        } break;
+        case 'Reshape': {
+          console.log(`  inputs: [${node.input}]`);
+          const input = node.input[0];
+          const shape = node.input[1];
+          const inputId = this._getTensorIdByName(input);
+          const shapeId = this._getTensorIdByName(shape);
+          inputs.push(inputId);
+          inputs.push(shapeId);
+          
+          let inputDims = this._getTensorTypeByName(input).dimensions;
+          let outputDims = this._getOperandValue(shapeId);
+          // dim == 0 means actual dim is unchanged, i.e. taken from the inputDim
+          outputDims = outputDims.map((d, i) => d === 0 ? inputDims[i] : d);
+          // At most one dimension of the new shape can be -1
+          const minusOneCnt = outputDims.filter(x => x === -1).length;
+          if (minusOneCnt === 1) {
+            const nonAdaptDim = outputDims.filter(x => x !== -1);
+            const adaptDimIdx = outputDims.indexOf(-1);
+            outputDims[adaptDimIdx] = product(inputDims) / product(nonAdaptDim);
+          } else if (minusOneCnt !== 0)
+            throw new Error(`Invalid shape ${outputDims}`); 
+          this._model.setOperandValue(shapeId, outputDims);
+
+          // Add outputs
+          const output = node.output[0];
+          let operandType = {type: this._nn.TENSOR_FLOAT32, dimensions: Array.from(outputDims)};
+          let outputId = (i === graph.node.length - 1) ? // last node in graph?
+            this._getTensorIdByName(output) :
+            this._addOperand(operandType);
+          this._tensorIds[output] = {id: outputId, type: operandType};
+          outputs.push(outputId);
+          console.log(`  output ${output}: [${outputDims}]`);
+          opCode = this._nn.RESHAPE;
         } break;
         case 'Softmax': {
           console.log(`  inputs: [${node.input}]`);
@@ -407,8 +713,9 @@ class SqueezeNet {
           console.warn(`    ${node.opType} is not supported.}`);
         }
       }
-      if (opCode)
+      if (typeof opCode !== 'undefined') {
         this._model.addOperation(opCode, inputs, outputs);
+      }
     }
   }
 }
