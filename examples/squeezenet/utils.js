@@ -49,7 +49,8 @@ class Utils {
   }
 
   softmax(vec) {
-    return vec.map(v => Math.exp(v) / vec.map(z => Math.exp(z)).reduce((x, y) => x + y));
+    const sum = vec.map(z => Math.exp(z)).reduce((x, y) => x + y);
+    return vec.map(v => Math.exp(v) / sum);
   }
 
   async predict(imageSource) {
