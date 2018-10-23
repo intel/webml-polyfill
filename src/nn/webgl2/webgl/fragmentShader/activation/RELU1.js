@@ -8,5 +8,5 @@ out vec4 outColor;
 
 void main() {
   vec4 v = texture(x, vec2(outTex.x, outTex.y));
-  outColor = min(max(v, 0.0), 1.0);
+  outColor = min(max(v, -1.0), 1.0);
 }`;
