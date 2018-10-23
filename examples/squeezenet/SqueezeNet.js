@@ -509,6 +509,54 @@ class SqueezeNet {
           else if (node.opType === 'Mul')
             opCode = this._nn.MUL;
         } break;
+        case 'Gemm': {
+          // Add inputs
+          console.log(`  inputs: [${node.input}]`);
+          const input = node.input[0];    // A
+          const weights = node.input[1];  // B
+          const bias = node.input[2];     // C
+          const attributes = node.attribute;
+          const alpha = getObjectByName(attributes, 'alpha').f;
+          const beta = getObjectByName(attributes, 'beta').f;
+          const transA = getObjectByName(attributes, 'transA').i === 1;
+          const transB = getObjectByName(attributes, 'transB').i === 1;
+          if (alpha !== 1 || beta !== 1 || transA || !transB) {
+            console.warn('Only support fc-like Gemm oprations, i.e. alpha == beta == 1 && !transA && transB');
+            break;
+          }
+
+          inputs.push(this._getTensorIdByName(input));
+          inputs.push(this._getTensorIdByName(weights));
+          inputs.push(this._getTensorIdByName(bias));
+
+          const nextNode = graph.node[i+1];
+          let output = node.output[0];
+          if (nextNode && nextNode.opType === 'Relu' && node.output[0] === nextNode.input[0]) {
+            // Fuse relu
+            inputs.push(this._addScalarInt32(this._nn.FUSED_RELU));
+            i++;
+            console.log(`  fuse relu: ${nextNode.output[0]} -> ${output}`);
+            output = nextNode.output[0];
+          } else {
+            inputs.push(this._addScalarInt32(this._nn.FUSED_NONE));
+          }
+
+          // Add outputs
+          const inputType = this._getTensorTypeByName(input);
+          const weightsType = this._getTensorTypeByName(weights);
+          const nUnits = weightsType.dimensions[0];
+          const batchSize = product(inputType.dimensions) / weightsType.dimensions[1];
+          let outputDims = [batchSize, nUnits];
+          let operandType = {type: this._nn.TENSOR_FLOAT32, dimensions: outputDims};
+          let outputId = (i === graph.node.length - 1) ? // last node in graph?
+            this._getTensorIdByName(output) :
+            this._addOperand(operandType);
+          this._tensorIds[output] = {id: outputId, type: operandType};
+          outputs.push(outputId);
+          console.log(`  output ${output}: [${outputDims}]`);
+
+          opCode = this._nn.FULLY_CONNECTED;
+        } break;
         case 'AveragePool':
         case 'MaxPool': {
           console.log(`  inputs: [${node.input}]`);
