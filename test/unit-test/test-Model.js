@@ -201,7 +201,7 @@ describe('Unit Test/Model Test', function() {
       });
     });
 
-    it.skip('raise error when attempting to add an operand into the finished model', function() {
+    it('raise error when attempting to add an operand into the finished model', function() {
       return nn.createModel(options).then((model)=>{
         let op = {type: nn.TENSOR_FLOAT32, dimensions: [4, 1, 2]};
         model.addOperand(op);
@@ -900,7 +900,7 @@ describe('Unit Test/Model Test', function() {
       });
     });
 
-    it.skip('raise error when attempting to reset the value for an operand of the finished model', function() {
+    it('raise error when attempting to reset the value for an operand of the finished model', function() {
       return nn.createModel(options).then((model)=>{
         let op = {type: nn.TENSOR_FLOAT32, dimensions: [4, 1, 2]};
         model.addOperand(op);
@@ -2793,7 +2793,7 @@ describe('Unit Test/Model Test', function() {
       });
     });
 
-    it.skip('raise error when 4-D tensor as input0 of TENSOR_QUANT8_ASYMM type having input_scale, 4-D tensor as input1 of TENSOR_QUANT8_ASYMM type having filter_scale, 1-D tensor as input2 of TENSOR_INT32 type having zeroPoint of 0 with bias_scale being not equal to the product of input_scale and filter_scale for "DEPTHWISE_CONV_2D" operation', function() {
+    it('raise error when 4-D tensor as input0 of TENSOR_QUANT8_ASYMM type having input_scale, 4-D tensor as input1 of TENSOR_QUANT8_ASYMM type having filter_scale, 1-D tensor as input2 of TENSOR_INT32 type having zeroPoint of 0 with bias_scale being not equal to the product of input_scale and filter_scale for "DEPTHWISE_CONV_2D" operation', function() {
       return nn.createModel(options).then((model)=>{
         let input_scale = 0.5;
         model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [100, 32, 32, 3], scale: input_scale, zeroPoint: 1});
@@ -2805,6 +2805,7 @@ describe('Unit Test/Model Test', function() {
         model.addOperand({type: nn.INT32});
         model.addOperand({type: nn.INT32});
         model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
         model.setOperandValue(7, new Int32Array([nn.FUSED_NONE]));
         // Assume no padding and stride=1
         let output_scale = input_scale * filter_scale + 1.0;
@@ -2815,7 +2816,7 @@ describe('Unit Test/Model Test', function() {
       });
     });
 
-    it.skip('raise error when 4-D tensor as input0 of TENSOR_QUANT8_ASYMM type having input_scale, 4-D tensor as input1 of TENSOR_QUANT8_ASYMM type having filter_scale, 1-D tensor as input2 of TENSOR_INT32 type having bias_scale being equal to the product of input_scale and filter_scale with zeroPoint being greater than 0 for "DEPTHWISE_CONV_2D" operation', function() {
+    it('raise error when 4-D tensor as input0 of TENSOR_QUANT8_ASYMM type having input_scale, 4-D tensor as input1 of TENSOR_QUANT8_ASYMM type having filter_scale, 1-D tensor as input2 of TENSOR_INT32 type having bias_scale being equal to the product of input_scale and filter_scale with zeroPoint being greater than 0 for "DEPTHWISE_CONV_2D" operation', function() {
       return nn.createModel(options).then((model)=>{
         let input_scale = 0.5;
         model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [100, 32, 32, 3], scale: input_scale, zeroPoint: 1});
@@ -2827,6 +2828,7 @@ describe('Unit Test/Model Test', function() {
         model.addOperand({type: nn.INT32});
         model.addOperand({type: nn.INT32});
         model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
         model.setOperandValue(7, new Int32Array([nn.FUSED_NONE]));
         // Assume no padding and stride=1
         let output_scale = input_scale * filter_scale + 1.0;
@@ -2837,7 +2839,7 @@ describe('Unit Test/Model Test', function() {
       });
     });
 
-    it.skip('raise error when 4-D tensor as input0 of TENSOR_QUANT8_ASYMM type having input_scale, 4-D tensor as input1 of TENSOR_QUANT8_ASYMM type having filter_scale, output of same type as input0 with output_scale being equal to the product of input_scale and filter_scale with zeroPoint being greater than 0 for "DEPTHWISE_CONV_2D" operation', function() {
+    it('raise error when 4-D tensor as input0 of TENSOR_QUANT8_ASYMM type having input_scale, 4-D tensor as input1 of TENSOR_QUANT8_ASYMM type having filter_scale, output of same type as input0 with output_scale being equal to the product of input_scale and filter_scale with zeroPoint being greater than 0 for "DEPTHWISE_CONV_2D" operation', function() {
       return nn.createModel(options).then((model)=>{
         let input_scale = 0.5;
         model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [100, 32, 32, 3], scale: input_scale, zeroPoint: 1});
@@ -2845,6 +2847,7 @@ describe('Unit Test/Model Test', function() {
         model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [1, 5, 5, 3], scale: filter_scale, zeroPoint: 2});
         let bias_scale = input_scale * filter_scale;
         model.addOperand({type: nn.TENSOR_INT32, dimensions: [1], scale: bias_scale, zeroPoint: 0});
+        model.addOperand({type: nn.INT32});
         model.addOperand({type: nn.INT32});
         model.addOperand({type: nn.INT32});
         model.addOperand({type: nn.INT32});
@@ -2859,7 +2862,7 @@ describe('Unit Test/Model Test', function() {
       });
     });
 
-    it.skip('raise error when 4-D tensor as input0 of TENSOR_QUANT8_ASYMM type having input_scale, 4-D tensor as input1 of TENSOR_QUANT8_ASYMM type having filter_scale, output of same type as input0 with output_scale being less than the product of input_scale and filter_scale for "DEPTHWISE_CONV_2D" operation', function() {
+    it('raise error when 4-D tensor as input0 of TENSOR_QUANT8_ASYMM type having input_scale, 4-D tensor as input1 of TENSOR_QUANT8_ASYMM type having filter_scale, output of same type as input0 with output_scale being less than the product of input_scale and filter_scale for "DEPTHWISE_CONV_2D" operation', function() {
       return nn.createModel(options).then((model)=>{
         let input_scale = 0.5;
         model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [100, 32, 32, 3], scale: input_scale, zeroPoint: 1});
@@ -2867,6 +2870,7 @@ describe('Unit Test/Model Test', function() {
         model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [1, 5, 5, 3], scale: filter_scale, zeroPoint: 2});
         let bias_scale = input_scale * filter_scale;
         model.addOperand({type: nn.TENSOR_INT32, dimensions: [1], scale: bias_scale, zeroPoint: 0});
+        model.addOperand({type: nn.INT32});
         model.addOperand({type: nn.INT32});
         model.addOperand({type: nn.INT32});
         model.addOperand({type: nn.INT32});
@@ -3884,7 +3888,7 @@ describe('Unit Test/Model Test', function() {
     });
 
 
-    it.skip('raise error when attempting to reset the operation of the finished model', function() {
+    it('raise error when attempting to reset the operation of the finished model', function() {
       return nn.createModel(options).then((model)=>{
         let op = {type: nn.TENSOR_FLOAT32, dimensions: TENSOR_DIMENSIONS};
         model.addOperand(op);
@@ -3985,7 +3989,7 @@ describe('Unit Test/Model Test', function() {
       });
     });
 
-    it.skip('raise error when attempting to modify inputs/outputs of the finished model', function() {
+    it('raise error when attempting to modify inputs/outputs of the finished model', function() {
       return nn.createModel(options).then((model)=>{
         let op = {type: nn.TENSOR_FLOAT32, dimensions: TENSOR_DIMENSIONS};
         model.addOperand(op);

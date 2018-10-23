@@ -1,16 +1,18 @@
-describe('Softmax Test', function() {
+describe('CTS Supplement Test', function() {
   const assert = chai.assert;
   const nn = navigator.ml.getNeuralNetworkContext();
-  it.skip('check result', async function() {
+
+  it('check result for Reshape example', async function() {
     let model = await nn.createModel(options);
-    const float32TensorType = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2]};
+
+    const float32TensorType = {type: nn.TENSOR_FLOAT32, dimensions:[1, 4]};
     const tensorLength = product(float32TensorType.dimensions);
 
     model.addOperand(float32TensorType);
-    model.addOperand({type: nn.FLOAT32});
-    model.setOperandValue(1, new Float32Array([1.0]));
-    model.addOperand(float32TensorType);
-    model.addOperation(nn.SOFTMAX, [0, 1], [2]);
+    model.addOperand({type: nn.TENSOR_INT32, dimensions: [2]});
+    model.setOperandValue(1, new Int32Array([2, 2]));
+    model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [2, 2]});
+    model.addOperation(nn.RESHAPE, [0, 1], [2]);
 
     model.identifyInputsAndOutputs([0], [2]);
     await model.finish();
@@ -21,19 +23,16 @@ describe('Softmax Test', function() {
 
     let execution = await compilation.createExecution();
 
-    let inputData0 = new Float32Array(tensorLength);
-    inputData0.set([1.0, 1.0, 1.0, 1.0]);
-    execution.setInput(0, inputData0);
+    let inputData = new Float32Array(tensorLength);
+    inputData.set([1.0, 2.0, 3.0, 4.0]);
+    execution.setInput(0, inputData);
 
     let outputData = new Float32Array(tensorLength);
     execution.setOutput(0, outputData);
-
     await execution.startCompute();
-    let expectedData = new Float32Array(tensorLength);
-    expectedData.set([0.5, 0.5, 0.5, 0.5]);
 
     for (let i = 0; i < tensorLength; ++i) {
-      assert.isTrue(almostEqual(outputData[i], expectedData[i]));
+      assert.isTrue(almostEqualCTS(outputData[i], inputData[i]));
     }
   });
 });
