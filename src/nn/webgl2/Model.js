@@ -1,6 +1,7 @@
 import {OperationCodeToLayersMap, OperationCodeAttrsMap, WebGL2SpecialLayers} from './utils/modelUtils'
 import Tensor from './Tensor'
 import ops from 'ndarray-ops'
+import webgl2 from './WebGL2'
 
 /**
  * WebGL2 Model class
@@ -55,7 +56,7 @@ export default class Model {
   execute(inputs, outputs) {
     let inputShape = this._model._operands[inputs.get(0).index].dimensions;
     let outputShape = this._model._operands[outputs.get(0).index].dimensions;
-    if (inputShape.length === 4) {
+    if (inputShape.length === 4 && inputShape[0] != 1) {
       let inputIndex = 0;
       let outputIndex = 0;
       let inputSize = 0;
@@ -200,6 +201,13 @@ export default class Model {
       // let operationTime = performance.now() - operationStart;
       // console.log(`WebGL2 execute time: ${operationTime.toFixed(2)} ms`);
       resolve('execute success');
+    });
+  }
+
+  _deleteAll() {
+    webgl2.deleteAll();
+    this._model._operands.forEach(operand => {
+      operand.value = null;
     });
   }
 }
