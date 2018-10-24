@@ -1,7 +1,7 @@
-describe('Concatenation Test for 4-D input with axis being 1', function() {
+describe('CTS Supplement Test', function() {
   const assert = chai.assert;
   const nn = navigator.ml.getNeuralNetworkContext();
-  it('check result', async function() {
+  it('check result for Concatenation axis 1 example', async function() {
     let model = await nn.createModel(options);
 
     let float32TensorType = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2, 2]};
@@ -48,7 +48,7 @@ describe('Concatenation Test for 4-D input with axis being 1', function() {
                       209.0, 210.0, 211.0, 212.0, 213.0, 214.0, 215.0, 216.0]);
 
     for (let i = 0; i < outputTensorLength; ++i) {
-      assert.isTrue(almostEqual(outputData[i], expectedData[i]));
+      assert.isTrue(almostEqualCTS(outputData[i], expectedData[i]));
     }
   });
 });

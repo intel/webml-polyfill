@@ -1,7 +1,7 @@
-describe('Concatenation Test for 4-D input with axis being 2', function() {
+describe('CTS Supplement Test', function() {
   const assert = chai.assert;
   const nn = navigator.ml.getNeuralNetworkContext();
-  it('check result', async function() {
+  it('check result for Concatenation axis 3 example', async function() {
     let model = await nn.createModel(options);
 
     let float32TensorType = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2, 2]};
@@ -14,10 +14,10 @@ describe('Concatenation Test for 4-D input with axis being 2', function() {
                     209.0, 210.0, 211.0, 212.0, 213.0, 214.0, 215.0, 216.0]);
     model.setOperandValue(1, inputData1);
     model.addOperand({type: nn.INT32});
-    let axis = 2;
+    let axis = 3;
     model.setOperandValue(2, new Int32Array([axis]));
 
-    let outputFloat32TensorType = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 4, 2]};
+    let outputFloat32TensorType = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2, 4]};
     const outputTensorLength = product(outputFloat32TensorType.dimensions);
 
     model.addOperand(outputFloat32TensorType);
@@ -42,16 +42,17 @@ describe('Concatenation Test for 4-D input with axis being 2', function() {
     await execution.startCompute();
 
     let expectedData = new Float32Array(outputTensorLength);
-    expectedData.set([101.0, 102.0, 103.0, 104.0,
-                      201.0, 202.0, 203.0, 204.0,
-                      105.0, 106.0, 107.0, 108.0,
-                      205.0, 206.0, 207.0, 208.0,
-                      109.0, 110.0, 111.0, 112.0,
-                      209.0, 210.0, 211.0, 212.0,
-                      113.0, 114.0, 115.0, 116.0,
-                      213.0, 214.0, 215.0, 216.0]);
+    expectedData.set([101.0, 102.0, 201.0, 202.0,
+                      103.0, 104.0, 203.0, 204.0,
+                      105.0, 106.0, 205.0, 206.0,
+                      107.0, 108.0, 207.0, 208.0,
+                      109.0, 110.0, 209.0, 210.0,
+                      111.0, 112.0, 211.0, 212.0,
+                      113.0, 114.0, 213.0, 214.0,
+                      115.0, 116.0, 215.0, 216.0]);
+
     for (let i = 0; i < outputTensorLength; ++i) {
-      assert.isTrue(almostEqual(outputData[i], expectedData[i]));
+      assert.isTrue(almostEqualCTS(outputData[i], expectedData[i]));
     }
   });
 });
