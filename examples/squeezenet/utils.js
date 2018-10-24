@@ -1,23 +1,21 @@
 class Utils {
-  constructor(model, preOptions = {}, postOptions = {}) {
+  constructor(model, canvas) {
     this.onnxModel;
     this.labels;
     this.model;
     this.inputTensor;
     this.outputTensor;
+    this.progressCallback;
 
     this.modelFile = model.modelFile;
     this.labelsFile = model.labelsFile;
     this.inputSize = model.inputSize;
     this.outputSize = model.outputSize;
-    this.preOptions = preOptions;
-    this.postOptions = postOptions;
+    this.preOptions = model.preOptions || {};
+    this.postOptions = model.postOptions || {};
     this.inputTensor = new Float32Array(product(model.inputSize));
     this.outputTensor = new Float32Array(model.outputSize);
-    this.container = document.getElementById('container');
-    this.progressBar = document.getElementById('progressBar');
-    this.progressContainer = document.getElementById('progressContainer');
-    this.canvasElement = document.getElementById('canvas');
+    this.canvasElement = canvas;
     this.canvasContext = this.canvasElement.getContext('2d');
 
     this.initialized = false;
@@ -28,7 +26,6 @@ class Utils {
     let result;
     if (!this.onnxModel) {
       result = await this.loadModelAndLabels(this.modelFile, this.labelsFile);
-      this.container.removeChild(progressContainer);
       this.labels = JSON.parse(result.text);
       console.log(`labels: ${this.labels}`);
       let err = onnx.ModelProto.verify(result.bytes);
@@ -48,6 +45,10 @@ class Utils {
     this.initialized = true;
   }
 
+  setProgressCallback(cb) {
+    this.progressCallback = cb;
+  }
+
   softmax(vec) {
     const sum = vec.map(z => Math.exp(z)).reduce((x, y) => x + y);
     return vec.map(v => Math.exp(v) / sum);
@@ -64,28 +65,20 @@ class Utils {
     let elapsed = performance.now() - start;
     if (this.postOptions.softmax)
       this.outputTensor = this.softmax(this.outputTensor);
-    let classes = this.getTopClasses(this.outputTensor, this.labels, 3);
-    console.log(`Inference time: ${elapsed.toFixed(2)} ms`);
-    let inferenceTimeElement = document.getElementById('inferenceTime');
-    inferenceTimeElement.innerHTML = `inference time: <em style="color:green;font-weight:bloder;">${elapsed.toFixed(2)} </em>ms`;
-    console.log(`Classes: `);
-    classes.forEach((c, i) => {
-      console.log(`\tlabel: ${c.label}, probability: ${c.prob}%`);
-      let labelElement = document.getElementById(`label${i}`);
-      let probElement = document.getElementById(`prob${i}`);
-      labelElement.innerHTML = `${c.label}`;
-      probElement.innerHTML = `${c.prob}%`;
-    });
+    return {
+      time: elapsed.toFixed(2),
+      classes: this.getTopClasses(this.outputTensor, this.labels, 3)
+    };
   }
 
   async loadModelAndLabels(modelUrl, labelsUrl) {
-    let arrayBuffer = await this.loadUrl(modelUrl, true, true);
+    let arrayBuffer = await this.loadUrl(modelUrl, true);
     let bytes = new Uint8Array(arrayBuffer);
     let text = await this.loadUrl(labelsUrl);
     return {bytes: bytes, text: text};
   }
 
-  async loadUrl(url, binary, progress) {
+  async loadUrl(url, binary) {
     return new Promise((resolve, reject) => {
       let request = new XMLHttpRequest();
       request.open('GET', url, true);
@@ -101,17 +94,9 @@ class Utils {
           }
         }
       };
-      if (progress) {
-        let self = this;
-        request.onprogress = function(ev) {
-          if (ev.lengthComputable) {
-            let percentComplete = ev.loaded / ev.total * 100;
-            percentComplete = percentComplete.toFixed(0);
-            self.progressBar.style = `width: ${percentComplete}%`;
-            self.progressBar.innerHTML = `${percentComplete}%`;
-          }
-        };
-      }
+      if (typeof this.progressCallback !== 'undefined')
+        request.onprogress = this.progressCallback;
+
       request.send();
     });
   }

@@ -1,31 +1,32 @@
+const squeezenet = {
+  modelFile: './model/squeezenet.onnx',
+  labelsFile: 'labels.json',
+  inputSize: [224, 224, 3],
+  outputSize: 1000,
+  preOptions: {
+    mean: [122.67891434, 116.66876762, 104.00698793],
+  }
+};
+
+const mobilenetv2 = {
+  modelFile: './model/mobilenetv2.onnx',
+  labelsFile: 'labels.json',
+  inputSize: [224, 224, 3],
+  outputSize: 1000,
+  preOptions: {
+    mean: [0.485, 0.456, 0.406],
+    std: [0.229, 0.224, 0.225],
+    norm: true
+  },
+  postOptions: {
+    softmax: true,
+  }
+};
+
+
 function main(camera) {
 
-
-  let utils = new Utils(model = {
-    modelFile: './model/squeezenet.onnx',
-    labelsFile: 'labels.json',
-    inputSize: [224, 224, 3],
-    outputSize: 1000,
-  },
-  preOptions = {
-    mean: [122.67891434, 116.66876762, 104.00698793],
-  });
-
-  // let utils = new Utils(model = {
-  //   modelFile: './model/mobilenetv2.onnx',
-  //   labelsFile: 'labels.json',
-  //   inputSize: [224, 224, 3],
-  //   outputSize: 1000,
-  // },
-  // preOptions = {
-  //   mean: [0.485, 0.456, 0.406],
-  //   std: [0.229, 0.224, 0.225],
-  //   norm: true
-  // },
-  // postOptions = {
-  //   softmax: true,
-  // });
-
+  const canvasElement = document.getElementById('canvas');
   const videoElement = document.getElementById('video');
   let streaming = false;
   const imageElement = document.getElementById('image');
@@ -36,6 +37,9 @@ function main(camera) {
   const webgl = document.getElementById('webgl');
   const webml = document.getElementById('webml');
   let currentBackend = '';
+
+  let utils = new Utils(squeezenet, canvasElement);
+  utils.setProgressCallback(updateProgress);
 
   function checkPreferParam() {
     if (getOS() === 'Mac OS') {
@@ -105,7 +109,7 @@ function main(camera) {
     setTimeout(() => {
       utils.init(newBackend).then(() => {
         updateBackend();
-        utils.predict(imageElement);
+        utils.predict(imageElement).then(ret => updateResult(ret));
       }).catch((e) => {
         console.warn(`Failed to change backend ${newBackend}, switch back to ${currentBackend}`);
         console.log(e);
@@ -115,6 +119,35 @@ function main(camera) {
     }, 10);
   }
  
+  function updateProgress(ev) {
+    const progressBar = document.getElementById('progressBar');
+    if (ev.lengthComputable && progressBar) {
+      let percentComplete = ev.loaded / ev.total * 100;
+      percentComplete = percentComplete.toFixed(0);
+      progressBar.style = `width: ${percentComplete}%`;
+      progressBar.innerHTML = `${percentComplete}%`;
+      if (percentComplete === '100') {
+        const container = document.getElementById('container');
+        const progressContainer = document.getElementById('progressContainer');
+        container.removeChild(progressContainer);
+      }
+    }
+  }
+
+  function updateResult(result) {
+    console.log(`Inference time: ${result.time} ms`);
+    let inferenceTimeElement = document.getElementById('inferenceTime');
+    inferenceTimeElement.innerHTML = `inference time: <em style="color:green;font-weight:bloder;">${result.time} </em>ms`;
+    console.log(`Classes: `);
+    result.classes.forEach((c, i) => {
+      console.log(`\tlabel: ${c.label}, probability: ${c.prob}%`);
+      let labelElement = document.getElementById(`label${i}`);
+      let probElement = document.getElementById(`prob${i}`);
+      labelElement.innerHTML = `${c.label}`;
+      probElement.innerHTML = `${c.prob}%`;
+    });
+  }
+
   if (nnNative) {
     webml.setAttribute('class', 'dropdown-item');
     webml.onclick = function (e) {
@@ -149,12 +182,12 @@ function main(camera) {
     }, false);
 
     imageElement.onload = function() {
-      utils.predict(imageElement);
+      utils.predict(imageElement).then(ret => updateResult(ret));
     }
 
     utils.init().then(() => {
       updateBackend();
-      utils.predict(imageElement);
+      utils.predict(imageElement).then(ret => updateResult(ret));
     }).catch((e) => {
       console.warn(`Failed to init ${utils.model._backend}, try to use WASM`);
       console.log(e);
@@ -185,7 +218,8 @@ function main(camera) {
 
     function startPredict() {
       stats.begin();
-      utils.predict(videoElement).then(() => {
+      utils.predict(videoElement).then(ret => {
+        updateResult(ret);
         stats.end();
         if (streaming) {
           setTimeout(startPredict, 0);
