@@ -56,7 +56,7 @@ export default class Model {
   execute(inputs, outputs) {
     let inputShape = this._model._operands[inputs.get(0).index].dimensions;
     let outputShape = this._model._operands[outputs.get(0).index].dimensions;
-    if (inputShape.length === 4) {
+    if (inputShape.length === 4 && inputShape[0] != 1) {
       let inputIndex = 0;
       let outputIndex = 0;
       let inputSize = 0;
