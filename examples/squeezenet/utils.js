@@ -1,20 +1,17 @@
 class Utils {
-  constructor(model, canvas) {
+  constructor(canvas) {
     this.onnxModel;
     this.labels;
     this.model;
     this.inputTensor;
     this.outputTensor;
     this.progressCallback;
-
-    this.modelFile = model.modelFile;
-    this.labelsFile = model.labelsFile;
-    this.inputSize = model.inputSize;
-    this.outputSize = model.outputSize;
-    this.preOptions = model.preOptions || {};
-    this.postOptions = model.postOptions || {};
-    this.inputTensor = new Float32Array(product(model.inputSize));
-    this.outputTensor = new Float32Array(model.outputSize);
+    this.modelFile;
+    this.labelsFile;
+    this.inputSize;
+    this.outputSize;
+    this.preOptions;
+    this.postOptions;
     this.canvasElement = canvas;
     this.canvasContext = this.canvasElement.getContext('2d');
 
@@ -109,7 +106,7 @@ class Utils {
     const mean = this.preOptions.mean || [0, 0, 0, 0];
     const std  = this.preOptions.std  || [1, 1, 1, 1];
     const norm = this.preOptions.norm || false;
-    // The RGB mean values are from
+
     if (canvas.width !== width || canvas.height !== height) {
       throw new Error(`canvas.width(${canvas.width}) or canvas.height(${canvas.height}) is not 224`);
     }
@@ -147,5 +144,24 @@ class Utils {
       classes.push(c);
     }
     return classes;
+  }
+
+  deleteAll() {
+    this.model._compilation._preparedModel._deleteAll();
+  }
+
+  changeModelParam(newModel) {
+    this.inputSize = newModel.inputSize;
+    this.outputSize = newModel.outputSize;
+    this.modelFile = newModel.modelFile;
+    this.labelsFile = newModel.labelsFile;
+    this.preOptions = newModel.preOptions || {};
+    this.postOptions = newModel.postOptions || {};
+    this.inputTensor = new Float32Array(newModel.inputSize.reduce((x,y) => x*y));
+    this.outputTensor = new Float32Array(newModel.outputSize);
+    this.onnxModel = null;
+
+    // this.canvasElement.width = newModel.inputSize[1];
+    // this.canvasElement.height = newModel.inputSize[0];
   }
 }
