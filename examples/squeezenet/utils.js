@@ -69,13 +69,13 @@ class Utils {
   }
 
   async loadModelAndLabels(modelUrl, labelsUrl) {
-    let arrayBuffer = await this.loadUrl(modelUrl, true);
+    let arrayBuffer = await this.loadUrl(modelUrl, true, true);
     let bytes = new Uint8Array(arrayBuffer);
     let text = await this.loadUrl(labelsUrl);
     return {bytes: bytes, text: text};
   }
 
-  async loadUrl(url, binary) {
+  async loadUrl(url, binary, progress) {
     return new Promise((resolve, reject) => {
       let request = new XMLHttpRequest();
       request.open('GET', url, true);
@@ -91,7 +91,7 @@ class Utils {
           }
         }
       };
-      if (typeof this.progressCallback !== 'undefined')
+      if (progress && typeof this.progressCallback !== 'undefined')
         request.onprogress = this.progressCallback;
 
       request.send();
