@@ -79,6 +79,7 @@ function main() {
     if (currentBackend === newBackend) {
       return;
     }
+    utils.deleteAll();
     backend.innerHTML = 'Setting...';
     setTimeout(() => {
       utils.init(newBackend).then(() => {
@@ -98,6 +99,7 @@ function main() {
     if (currentModel === newModel.MODEL_NAME) {
       return;
     }
+    utils.deleteAll();
     INPUT_SIZE = newModel.INPUT_SIZE;
     OUTPUT_TENSOR_SIZE = newModel.OUTPUT_SIZE;
     MODEL_FILE = newModel.MODEL_FILE;

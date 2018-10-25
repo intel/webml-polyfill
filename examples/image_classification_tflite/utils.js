@@ -172,4 +172,8 @@ class Utils {
     }
     return classes;
   }
+
+  deleteAll() {
+    this.model._compilation._preparedModel._deleteAll();
+  }
 }
