@@ -1,4 +1,4 @@
-class MobileNet {
+class ImageClassificationModel {
   constructor(tfModel, backend) {
     this._tfModel = tfModel;
     this._model = null;
@@ -188,10 +188,33 @@ class MobileNet {
           inputs.push(this._addScalarInt32(fuseCode));
           opType = this._nn.AVERAGE_POOL_2D;
         } break;
+        case tflite.BuiltinOperator.MAX_POOL_2D: {
+          let options = operator.builtinOptions(new tflite.Pool2DOptions());
+          let paddingCode = PaddingCodeMap.get(options.padding());
+          if (typeof paddingCode === 'undefined') {
+            throw new Error(`Padding code ${options.padding()} is not supported.`);
+          }
+          inputs.push(this._addScalarInt32(paddingCode));
+          inputs.push(this._addScalarInt32(options.strideW()));
+          inputs.push(this._addScalarInt32(options.strideH()));
+          inputs.push(this._addScalarInt32(options.filterWidth()));
+          inputs.push(this._addScalarInt32(options.filterHeight()));
+          let fuseCode = FuseCodeMap.get(options.fusedActivationFunction());
+          if (typeof fuseCode === 'undefined') {
+            throw new Error(`Fuse code ${options.fusedActivationFunction()} is not supported.`);
+          }
+          inputs.push(this._addScalarInt32(fuseCode));
+          opType = this._nn.MAX_POOL_2D;
+        } break;
         case tflite.BuiltinOperator.SOFTMAX: {
           let options = operator.builtinOptions(new tflite.SoftmaxOptions());
           inputs.push(this._addScalarFloat32(options.beta()));
           opType = this._nn.SOFTMAX;
+        } break;
+        case tflite.BuiltinOperator.CONCATENATION: {
+          let options = operator.builtinOptions(new tflite.ConcatenationOptions());
+          inputs.push(this._addScalarInt32(options.axis()));
+          opType = this._nn.CONCATENATION;
         } break;
         case tflite.BuiltinOperator.RESHAPE: {
           let options = operator.builtinOptions(new tflite.ReshapeOptions());

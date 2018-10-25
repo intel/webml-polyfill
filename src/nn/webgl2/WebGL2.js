@@ -336,6 +336,9 @@ class WebGL2 {
     this.toDelete.shaders.forEach(shader => gl.deleteShader(shader));
     this.toDelete.programs.forEach(program => gl.deleteProgram(program));
     this.toDelete.framebuffers.forEach(Framebuffer => gl.deleteFramebuffer(Framebuffer));
+    this.framebuffer = null;
+    this.readFramebuffer = null;
+    this.concateFramebuffer = null;
 
     this.toDelete = { 
       textures: [], 

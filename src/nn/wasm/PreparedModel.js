@@ -9,6 +9,7 @@ export default class PreparedModel {
     this._operands = [];
     this._prepared = false;
     this._nn_ops = null;
+    this._model;
   }
 
   /**
@@ -17,6 +18,7 @@ export default class PreparedModel {
    * @param {Object} model - A model object built by user.
    */
   async prepare(model) {
+    this._model = model;
     this._nn_ops = await getNNOpsInstance();
     this._operations = model._operations;
     for (let i = 0; i < model._operands.length; ++i) {
@@ -440,5 +442,17 @@ export default class PreparedModel {
     shape.type = OperandTypeMap.get(operand.type);
     shape.dimensions = operand.dimensions;
     return shape;
+  }
+
+  _deleteAll() {
+    this._operands.forEach(operand => {
+      if (operand.type === 3 || operand.type === 4) {
+        this._nn_ops._free(operand.value);
+        this._nn_ops._free(operand.shape);
+      }
+    });
+    this._model._operands.forEach(operand => {
+      operand.value = null;
+    })
   }
 }

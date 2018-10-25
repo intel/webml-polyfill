@@ -1,7 +1,31 @@
-const INPUT_TENSOR_SIZE = 224*224*3;
-const OUTPUT_TENSOR_SIZE = 1001;
-const MODEL_FILE = './model/mobilenet_v1_1.0_224.tflite';
-const LABELS_FILE = './model/labels.txt';
+const mobilenet_v1 = {
+  MODEL_NAME : 'Mobilenet_V1',
+  INPUT_SIZE : 224,
+  OUTPUT_SIZE : 1001,
+  MODEL_FILE : './model/mobilenet_v1_1.0_224.tflite',
+  LABELS_FILE : './model/labels.txt'
+};
+const mobilenet_v2 = {
+  MODEL_NAME : 'Mobilenet_V2',
+  INPUT_SIZE : 224,
+  OUTPUT_SIZE : 1001,
+  MODEL_FILE : './model/mobilenet_v2_1.0_224.tflite',
+  LABELS_FILE : './model/labels.txt'
+};
+const inception_v3 = {
+  MODEL_NAME : 'Inception_V3',
+  INPUT_SIZE : 299,
+  OUTPUT_SIZE : 1001,
+  MODEL_FILE : './model/inception_v3.tflite',
+  LABELS_FILE : './model/labels.txt'
+};
+const squeezenet = {
+  MODEL_NAME : 'Squeezenet',
+  INPUT_SIZE : 224,
+  OUTPUT_SIZE : 1001,
+  MODEL_FILE : './model/squeezenet.tflite',
+  LABELS_FILE : './model/labels.txt'
+}
 
 class Utils {
   constructor() {
@@ -11,8 +35,6 @@ class Utils {
     this.inputTensor;
     this.outputTensor;
 
-    this.inputTensor = new Float32Array(INPUT_TENSOR_SIZE);
-    this.outputTensor = new Float32Array(OUTPUT_TENSOR_SIZE);
     this.container = document.getElementById('container');
     this.progressBar = document.getElementById('progressBar');
     this.progressContainer = document.getElementById('progressContainer');
@@ -27,14 +49,16 @@ class Utils {
     let result;
     if (!this.tfModel) {
       result = await this.loadModelAndLabels(MODEL_FILE, LABELS_FILE);
-      this.container.removeChild(progressContainer);
+      progressContainer.style.display = "none";
+      progressBar.style = `width: 0%`;
+      progressBar.innerHTML = `0%`;
       this.labels = result.text.split('\n');
       console.log(`labels: ${this.labels}`);
       let flatBuffer = new flatbuffers.ByteBuffer(result.bytes);
       this.tfModel = tflite.Model.getRootAsModel(flatBuffer);
       printTfLiteModel(this.tfModel);
     }
-    this.model = new MobileNet(this.tfModel, backend);
+    this.model = new ImageClassificationModel(this.tfModel, backend);
     result = await this.model.createCompiledModel();
     console.log(`compilation result: ${result}`);
     let start = performance.now();
@@ -106,14 +130,14 @@ class Utils {
   }
 
   prepareInputTensor(tensor, canvas) {
-    const width = 224;
-    const height = 224;
+    const width = INPUT_SIZE;
+    const height = INPUT_SIZE;
     const channels = 3;
     const imageChannels = 4; // RGBA
     const mean = 127.5;
     const std = 127.5;
     if (canvas.width !== width || canvas.height !== height) {
-      throw new Error(`canvas.width(${canvas.width}) or canvas.height(${canvas.height}) is not 224`);
+      throw new Error(`canvas.width(${canvas.width}) or canvas.height(${canvas.height}) is not ${INPUT_SIZE}`);
     }
     let context = canvas.getContext('2d');
     let pixels = context.getImageData(0, 0, width, height).data;
@@ -147,5 +171,9 @@ class Utils {
       classes.push(c);
     }
     return classes;
+  }
+
+  deleteAll() {
+    this.model._compilation._preparedModel._deleteAll();
   }
 }
