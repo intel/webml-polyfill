@@ -174,6 +174,8 @@ class Utils {
   }
 
   deleteAll() {
-    this.model._compilation._preparedModel._deleteAll();
+    if (this.model._backend != 'WebML') {
+      this.model._compilation._preparedModel._deleteAll();
+    }
   }
 }
