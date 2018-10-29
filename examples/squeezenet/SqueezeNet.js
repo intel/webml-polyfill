@@ -299,8 +299,6 @@ class SqueezeNet {
             const variance = bnNode.input[4];
             const attributes = bnNode.attribute;
             const epsilon = getObjectByName(attributes, 'epsilon').f;
-            const is_test = getObjectByName(attributes, 'is_test');
-            const momentum = getObjectByName(attributes, 'momentum').f;
 
             const scaleTensor = this._getOperandValueByName(scale);
             const meanTensor = this._getOperandValueByName(mean);
@@ -312,7 +310,6 @@ class SqueezeNet {
             const nPixels = product(dims.slice(1));
             for (let c = 0; c < nChannels; c++) {
               const w = scaleTensor[c] / Math.sqrt(varTensor[c] + epsilon);
-              // convBiasTensor[c] += bnBiasTensor[c] - w * meanTensor[c];
               convBiasTensor[c] = bnBiasTensor[c] + (convBiasTensor[c] - meanTensor[c]) * w;
               for (let p = c * nPixels; p < (c+1) * nPixels; p++)
                 convFilterTensor[p] *= w;
@@ -388,8 +385,6 @@ class SqueezeNet {
 
           const attributes = node.attribute;
           const epsilon = getObjectByName(attributes, 'epsilon').f;
-          const is_test = getObjectByName(attributes, 'is_test');
-          const momentum = getObjectByName(attributes, 'momentum').f; //TODO
 
           const scaleTensor = this._getOperandValueByName(scale);
           const meanTensor = this._getOperandValueByName(mean);
@@ -628,7 +623,7 @@ class SqueezeNet {
           const axis = getObjectByName(attributes, 'axis');
           if (axis && axis.i !== 1)
             throw new Error('Invalid axis ${axis.i}');
-          console.log(`  axis: ${axis.i}]`);
+          console.log(`  axis: [${axis.i}]`);
           // C axis is 3 in NHWC layout
           const concatAxis = 3;
           inputs.push(this._addScalarInt32(concatAxis));
