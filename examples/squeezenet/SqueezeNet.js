@@ -62,7 +62,7 @@ class SqueezeNet {
   _getOperandValueByName(name) {
     return this._getOperandValue(this._getTensorIdByName(name));
   }
-  
+
   _getInputByName(name) {
     return getObjectByName(this._onnxModel.graph.input, name);
   }
@@ -108,7 +108,7 @@ class SqueezeNet {
       dims[2] = nchw[3];
       dims[3] = nchw[1];
     }
-    
+
     let type;
     switch (tensorType.elemType) {
       case onnx.TensorProto.DataType.FLOAT: {
@@ -273,7 +273,7 @@ class SqueezeNet {
           inputs.push(this._addScalarInt32(paddingWidthEnd));
           inputs.push(this._addScalarInt32(paddingHeightBegin));
           inputs.push(this._addScalarInt32(paddingHeightEnd));
-          
+
           const strides = getObjectByName(attributes, 'strides');
           if (!strides || strides.ints.length !== 2)
             throw new Error('Invalid strides');
@@ -514,7 +514,7 @@ class SqueezeNet {
               in1Dims.unshift(1);
             console.log(`  extend ${in1} dimensions to [${in1Dims}]`);
           }
-          
+
           const outputDims = in1Dims.map((e, i) => Math.max(e, in2Dims[i]));
           const outputType = {type: this._nn.TENSOR_FLOAT32, dimensions: Array.from(outputDims)};
           const outputId = this._addNewTensorOperand(output, outputType);
@@ -727,7 +727,7 @@ class SqueezeNet {
           const shapeId = this._getTensorIdByName(shape);
           inputs.push(inputId);
           inputs.push(shapeId);
-          
+
           let inputDims = this._getTensorTypeByName(input).dimensions;
           let outputDims = this._getOperandValue(shapeId);
           // dim == 0 means actual dim is unchanged, i.e. taken from the inputDim
@@ -800,7 +800,7 @@ class SqueezeNet {
         const outputType = {type: this._nn.TENSOR_FLOAT32, dimensions: inputType.dimensions};
         const outputId = this._addNewTensorOperand('softmax', outputType);
         outputs.push(outputId);
-        
+
         this._model.addOperation(this._nn.SOFTMAX, inputs, outputs);
       }
     }
