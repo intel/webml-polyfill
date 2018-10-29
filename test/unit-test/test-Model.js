@@ -300,7 +300,7 @@ describe('Unit Test/Model Test', function() {
       });
     });
 
-    it('setting a Float32Array data which length equals 1 for a FLOAT32 scalar is ok', function() {
+    it('setting a Float32Array data which length is 1 for a FLOAT32 scalar is ok', function() {
       return nn.createModel(options).then((model)=>{
         model.addOperand({type: nn.FLOAT32});
         assert.doesNotThrow(() => {
@@ -383,7 +383,7 @@ describe('Unit Test/Model Test', function() {
       });
     });
 
-    it('setting an Int32Array data which length equals 1 for an INT32 scalar is ok', function() {
+    it('setting an Int32Array data which length is 1 for an INT32 scalar is ok', function() {
       return nn.createModel(options).then((model)=>{
         model.addOperand({type: nn.INT32});
         assert.doesNotThrow(() => {
@@ -493,7 +493,7 @@ describe('Unit Test/Model Test', function() {
       });
     });
 
-    it('setting an Uint32Array data which length equals 1 for an UINT32 scalar is ok', function() {
+    it('setting an Uint32Array data which length is 1 for an UINT32 scalar is ok', function() {
       return nn.createModel(options).then((model)=>{
         model.addOperand({type: nn.UINT32});
         assert.doesNotThrow(() => {
@@ -1175,7 +1175,19 @@ describe('Unit Test/Model Test', function() {
       });
     });
 
-    it('raise error when the length of outputs is greater than 2 for "ADD" operation', function() {
+    it('raise error when the length of inputs is less than 3 for "ADD" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let op = {type: nn.TENSOR_FLOAT32, dimensions: [4, 1, 2]};
+        model.addOperand(op);
+        model.addOperand(op);
+        model.addOperand(op);
+        assert.throws(() => {
+          model.addOperation(nn.ADD, [0, 1], [2]);
+        });
+      });
+    });
+
+    it('raise error when the length of outputs is greater than 1 for "ADD" operation', function() {
       return nn.createModel(options).then((model)=>{
         let op = {type: nn.TENSOR_FLOAT32, dimensions: [4, 1, 2]};
         model.addOperand(op);
@@ -1186,6 +1198,19 @@ describe('Unit Test/Model Test', function() {
         model.addOperand(op);
         assert.throws(() => {
           model.addOperation(nn.ADD, [0, 1, 2], [3, 4]);
+        });
+      });
+    });
+
+    it('raise error when the length of outputs is 0 not 1 for "ADD" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let op = {type: nn.TENSOR_FLOAT32, dimensions: [4, 1, 2]};
+        model.addOperand(op);
+        model.addOperand(op);
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(2, new Int32Array([nn.FUSED_NONE]));
+        assert.throws(() => {
+          model.addOperation(nn.ADD, [0, 1, 2], []);
         });
       });
     });
@@ -1496,6 +1521,40 @@ describe('Unit Test/Model Test', function() {
         model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: RANK3_DIMENSIONS});
         assert.throws(() => {
           model.addOperation(nn.AVERAGE_POOL_2D, [0, 1, 2, 3, 4, 5, 6], [7]);
+        });
+      });
+    });
+
+    it('raise error when the length of outputs is greater than 1 for "AVERAGE_POOL_2D" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 7, 7, 3]});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(6, new Int32Array([nn.FUSED_NONE]));
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 7, 7, 3]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 7, 7, 3]});
+        assert.throw(() => {
+          model.addOperation(nn.AVERAGE_POOL_2D, [0, 1, 2, 3, 4, 5, 6], [7, 8]);
+        });
+      });
+    });
+
+    it('raise error when the length of outputs is 0 not 1 for "AVERAGE_POOL_2D" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 7, 7, 3]});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(6, new Int32Array([nn.FUSED_NONE]));
+        assert.doesNotThrow(() => {
+          model.addOperation(nn.AVERAGE_POOL_2D, [0, 1, 2, 3, 4, 5, 6], []);
         });
       });
     });
@@ -1858,6 +1917,20 @@ describe('Unit Test/Model Test', function() {
         model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [4, 2, 2, 2]});
         assert.throws(() => {
           model.addOperation(nn.CONCATENATION, [0, 1, 2], [3, 4]);
+        });
+      });
+    });
+
+    it('raise error when the length of outputs is 0 not 1 for "CONCATENATION" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let op = {type: nn.TENSOR_FLOAT32, dimensions: TENSOR_DIMENSIONS};
+        model.addOperand(op);
+        model.addOperand(op);
+        model.addOperand({type: nn.INT32});
+        let axis = 0;
+        model.setOperandValue(2, new Int32Array([axis]));
+        assert.throws(() => {
+          model.addOperation(nn.CONCATENATION, [0, 1, 2], []);
         });
       });
     });
@@ -2430,7 +2503,7 @@ describe('Unit Test/Model Test', function() {
       });
     });
 
-    it('raise error when the length of output is greater than 1 for "CONV_2D" operation', function() {
+    it('raise error when the length of outputs is greater than 1 for "CONV_2D" operation', function() {
       return nn.createModel(options).then((model)=>{
         model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 32, 32, 3]});
         model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [6, 5, 5, 3]});
@@ -2445,6 +2518,22 @@ describe('Unit Test/Model Test', function() {
         model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 28, 28, 5]});
         assert.throws(() => {
           model.addOperation(nn.CONV_2D, [0, 1, 2, 3, 4, 5, 6], [7, 8]);
+        });
+      });
+    });
+
+    it('raise error when the length of outputs is 0 not 1 for "CONV_2D" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 32, 32, 3]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [6, 5, 5, 3]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [6]});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(6, new Int32Array([nn.FUSED_NONE]));
+        assert.throws(() => {
+          model.addOperation(nn.CONV_2D, [0, 1, 2, 3, 4, 5, 6], []);
         });
       });
     });
@@ -2885,7 +2974,7 @@ describe('Unit Test/Model Test', function() {
       });
     });
 
-    it('raise error when the length of output is greater than 1 for "DEPTHWISE_CONV_2D" operation', function() {
+    it('raise error when the length of outputs is greater than 1 for "DEPTHWISE_CONV_2D" operation', function() {
       return nn.createModel(options).then((model)=>{
         model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 32, 32, 3]});
         model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [1, 5, 5, 3]});
@@ -2901,6 +2990,23 @@ describe('Unit Test/Model Test', function() {
         model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 28, 28, 5]});
         assert.throws(() => {
           model.addOperation(nn.DEPTHWISE_CONV_2D, [0, 1, 2, 3, 4, 5, 6, 7], [8, 9]);
+        });
+      });
+    });
+
+    it('raise error when the length of outputs is 0 not 1 for "DEPTHWISE_CONV_2D" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 32, 32, 3]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [1, 5, 5, 3]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [1]});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(7, new Int32Array([nn.FUSED_NONE]));
+        assert.throws(() => {
+          model.addOperation(nn.DEPTHWISE_CONV_2D, [0, 1, 2, 3, 4, 5, 6, 7], []);
         });
       });
     });
@@ -2950,138 +3056,6 @@ describe('Unit Test/Model Test', function() {
         model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 28, 28, depth_out]});
         assert.throws(() => {
           model.addOperation(nn.DEPTHWISE_CONV_2D, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], [11]);
-        });
-      });
-    });
-
-    it('"the length of inputs(explicit padding) being 10, 4-D tensor as input0, the type of intput1 to input8 being INT32 type, input9 also having INT32 type with value of 0-3, 4-D tensor as output" are ok for "MAX_POOL_2D" operation', function() {
-      return nn.createModel(options).then((model)=>{
-        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 7, 7, 3]});
-        model.addOperand({type: nn.INT32});
-        model.addOperand({type: nn.INT32});
-        model.addOperand({type: nn.INT32});
-        model.addOperand({type: nn.INT32});
-        model.addOperand({type: nn.INT32});
-        model.addOperand({type: nn.INT32});
-        model.addOperand({type: nn.INT32});
-        model.addOperand({type: nn.INT32});
-        model.addOperand({type: nn.INT32});
-        model.setOperandValue(9, new Int32Array([nn.FUSED_NONE]));
-        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 7, 7, 3]});
-        assert.doesNotThrow(() => {
-          model.addOperation(nn.MAX_POOL_2D, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [10]);
-        });
-      });
-    });
-
-    it('raise error when the value of fuse code is invalid(out of 0-3) as "4" for "MAX_POOL_2D" operation with explicit padding', function() {
-      return nn.createModel(options).then((model)=>{
-        let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [100, 7, 7, 3]};
-        let type0_length = product(type0.dimensions);
-        let type1 = {type: nn.INT32};
-        let operandIndex = 0;
-        let op0 = operandIndex++;
-        model.addOperand(type0);
-        let pad = operandIndex++;
-        model.addOperand(type1);
-        let stride = operandIndex++;
-        model.addOperand(type1);
-        let filter = operandIndex++;
-        model.addOperand(type1);
-        let fusecode = operandIndex++;
-        model.addOperand(type1);
-        let op1 = operandIndex++;
-        model.addOperand(type0);
-        model.setOperandValue(pad, new Int32Array([0]));
-        model.setOperandValue(stride, new Int32Array([1]));
-        model.setOperandValue(filter, new Int32Array([2]));
-        model.setOperandValue(fusecode, new Int32Array([4]));
-        assert.throws(() => {
-          model.addOperation(nn.MAX_POOL_2D, [op0, pad, pad, pad, pad, stride, stride, filter, filter, fusecode], [op1]);
-        });
-      });
-    });
-
-    it('raise error when the value of fuse code is invalid(out of 0-3) as "-1" for "MAX_POOL_2D" operation with explicit padding', function() {
-      return nn.createModel(options).then((model)=>{
-        let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [100, 7, 7, 3]};
-        let type0_length = product(type0.dimensions);
-        let type1 = {type: nn.INT32};
-        let operandIndex = 0;
-        let op0 = operandIndex++;
-        model.addOperand(type0);
-        let pad = operandIndex++;
-        model.addOperand(type1);
-        let stride = operandIndex++;
-        model.addOperand(type1);
-        let filter = operandIndex++;
-        model.addOperand(type1);
-        let fusecode = operandIndex++;
-        model.addOperand(type1);
-        let op1 = operandIndex++;
-        model.addOperand(type0);
-        model.setOperandValue(pad, new Int32Array([0]));
-        model.setOperandValue(stride, new Int32Array([1]));
-        model.setOperandValue(filter, new Int32Array([2]));
-        model.setOperandValue(fusecode, new Int32Array([-1]));
-        assert.throws(() => {
-          model.addOperation(nn.MAX_POOL_2D, [op0, pad, pad, pad, pad, stride, stride, filter, filter, fusecode], [op1]);
-        });
-      });
-    });
-
-    it('raise error when the value of fuse code is invalid(out of 0-3) as "4" for "MAX_POOL_2D" operation with implicit padding', function() {
-      return nn.createModel(options).then((model)=>{
-        let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [100, 7, 7, 3]};
-        let type0_length = product(type0.dimensions);
-        let type1 = {type: nn.INT32};
-        let operandIndex = 0;
-        let op0 = operandIndex++;
-        model.addOperand(type0);
-        let padingcode = operandIndex++;
-        model.addOperand(type1);
-        let stride = operandIndex++;
-        model.addOperand(type1);
-        let filter = operandIndex++;
-        model.addOperand(type1);
-        let fusecode = operandIndex++;
-        model.addOperand(type1);
-        let op1 = operandIndex++;
-        model.addOperand(type0);
-        model.setOperandValue(padingcode, new Int32Array([nn.PADDING_SAME]));
-        model.setOperandValue(stride, new Int32Array([1]));
-        model.setOperandValue(filter, new Int32Array([2]));
-        model.setOperandValue(fusecode, new Int32Array([4]));
-        assert.throws(() => {
-          model.addOperation(nn.MAX_POOL_2D, [op0, padingcode, stride, stride, filter, filter, fusecode], [op1]);
-        });
-      });
-    });
-
-    it('raise error when the value of fuse code is invalid(out of 0-3) as "-1" for "MAX_POOL_2D" operation with implicit padding', function() {
-      return nn.createModel(options).then((model)=>{
-        let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [100, 7, 7, 3]};
-        let type0_length = product(type0.dimensions);
-        let type1 = {type: nn.INT32};
-        let operandIndex = 0;
-        let op0 = operandIndex++;
-        model.addOperand(type0);
-        let padingcode = operandIndex++;
-        model.addOperand(type1);
-        let stride = operandIndex++;
-        model.addOperand(type1);
-        let filter = operandIndex++;
-        model.addOperand(type1);
-        let fusecode = operandIndex++;
-        model.addOperand(type1);
-        let op1 = operandIndex++;
-        model.addOperand(type0);
-        model.setOperandValue(padingcode, new Int32Array([nn.PADDING_SAME]));
-        model.setOperandValue(stride, new Int32Array([1]));
-        model.setOperandValue(filter, new Int32Array([2]));
-        model.setOperandValue(fusecode, new Int32Array([-1]));
-        assert.throws(() => {
-          model.addOperation(nn.MAX_POOL_2D, [op0, padingcode, stride, stride, filter, filter, fusecode], [op1]);
         });
       });
     });
@@ -3250,6 +3224,509 @@ describe('Unit Test/Model Test', function() {
         model.setOperandValue(fusecode, new Int32Array([-1]));
         assert.throws(() => {
           model.addOperation(nn.DEPTHWISE_CONV_2D, [op0, op1, op2, padingcode, stride, stride, channelMultiplier, fusecode], [op3]);
+        });
+      });
+    });
+
+    it('"input0 TENSOR_FLOAT32 tensor(RANK <= 4) can be converted as 2-D TENSOR_FLOAT32 tensor of shape [batch_size, input_size], input1 as 2-D TENSOR_FLOAT32 tensor of shape [num_units, input_size], input2 as 1-D TENSOR_FLOAT32 tensor of shape [num_units], input3 as INT32 scalar with value of 0-3, output TENSOR_FLOAT32 tensor of shape [batch_size, num_units]" are ok for "FULLY_CONNECTED" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let batch_size = 3;
+        let input_size = 1;
+        let num_units = 1;
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [batch_size, input_size]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [num_units, input_size]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [num_units]});
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(3, new Int32Array([nn.FUSED_NONE]));
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [batch_size, num_units]});
+        assert.doesNotThrow(() => {
+          model.addOperation(nn.FULLY_CONNECTED, [0, 1, 2, 3], [4]);
+        });
+      });
+    });
+
+    it('"input0 TENSOR_QUANT8_ASYMM tensor(RANK <= 4) can be converted as 2-D TENSOR_QUANT8_ASYMM tensor of shape [batch_size, input_size] and its scale being \'input_scale\', input1 as 2-D TENSOR_QUANT8_ASYMM tensor of shape [num_units, input_size] and its scale being \'filter_scale\', input2 as 1-D TENSOR_QUANT8_ASYMM tensor of shape [num_units] with zeroPoint of "0" and its scale being \'bias_scale\' which is equal to the product of \'input_scale\' and \'filter_scale\', input3 as INT32 scalar with value of 0-3, output TENSOR_QUANT8_ASYMM tensor of shape [batch_size, num_units] and its scale being \'output_scale\' which is greater than the product of \'input_scale\' and \'filter_scale\'" are ok for "FULLY_CONNECTED" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let batch_size = 3;
+        let input_size = 1;
+        let num_units = 1;
+        let input_scale = 0.5;
+        let filter_scale = 0.8;
+        let bias_scale = input_scale * filter_scale;
+        let output_scale = input_scale * filter_scale + 0.1;
+        model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [batch_size, input_size], scale: input_scale, zeroPoint: 10});
+        model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [num_units, input_size], scale: filter_scale, zeroPoint: 20});
+        model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [num_units], scale: bias_scale, zeroPoint: 0});
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(3, new Int32Array([nn.FUSED_NONE]));
+        model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [batch_size, num_units], scale: output_scale, zeroPoint: 40});
+        assert.doesNotThrow(() => {
+          model.addOperation(nn.FULLY_CONNECTED, [0, 1, 2, 3], [4]);
+        });
+      });
+    });
+
+    it('raise error when the rank of input0 is greater than 5 for "FULLY_CONNECTED" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let batch_size = 3;
+        let input_size = 1;
+        let num_units = 1;
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [batch_size, input_size, 1, 1, 1]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [num_units, input_size]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [num_units]});
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(3, new Int32Array([nn.FUSED_NONE]));
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [batch_size, num_units]});
+        assert.throws(() => {
+          model.addOperation(nn.FULLY_CONNECTED, [0, 1, 2, 3], [4]);
+        });
+      });
+    });
+
+    it('raise error when the type of input0 is TENSOR_INT32 not TENSOR_FLOAT32 or TENSOR_QUANT8_ASYMM for "FULLY_CONNECTED" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let batch_size = 3;
+        let input_size = 1;
+        let num_units = 1;
+        model.addOperand({type: nn.TENSOR_INT32, dimensions: [batch_size, input_size]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [num_units, input_size]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [num_units]});
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(3, new Int32Array([nn.FUSED_NONE]));
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [batch_size, num_units]});
+        assert.throws(() => {
+          model.addOperation(nn.FULLY_CONNECTED, [0, 1, 2, 3], [4]);
+        });
+      });
+    });
+
+    it('raise error when input1 is 1-D tensor not 2-D tensor for "FULLY_CONNECTED" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let batch_size = 3;
+        let input_size = 1;
+        let num_units = 1;
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [batch_size, input_size]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [input_size]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [num_units]});
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(3, new Int32Array([nn.FUSED_NONE]));
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [batch_size, num_units]});
+        assert.throws(() => {
+          model.addOperation(nn.FULLY_CONNECTED, [0, 1, 2, 3], [4]);
+        });
+      });
+    });
+
+    it('raise error when input1 is 3-D tensor not 2-D tensor for "FULLY_CONNECTED" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let batch_size = 3;
+        let input_size = 1;
+        let num_units = 1;
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [batch_size, input_size]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [num_units, input_size, 1]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [num_units]});
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(3, new Int32Array([nn.FUSED_NONE]));
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [batch_size, num_units]});
+        assert.throws(() => {
+          model.addOperation(nn.FULLY_CONNECTED, [0, 1, 2, 3], [4]);
+        });
+      });
+    });
+
+    it('raise error when the type of input1 is TENSOR_INT32 not TENSOR_FLOAT32 or TENSOR_QUANT8_ASYMM for "FULLY_CONNECTED" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let batch_size = 3;
+        let input_size = 1;
+        let num_units = 1;
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [batch_size, input_size]});
+        model.addOperand({type: nn.TENSOR_INT32, dimensions: [num_units, input_size]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [num_units]});
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(3, new Int32Array([nn.FUSED_NONE]));
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [batch_size, num_units]});
+        assert.throws(() => {
+          model.addOperation(nn.FULLY_CONNECTED, [0, 1, 2, 3], [4]);
+        });
+      });
+    });
+
+    it('raise error when the \'input_size_filter\' in dimensions([num_units, input_size_filter]) of input1 is not equal to the \'input_size\' in dimensions([batch_size, input_size]) of converted 2-D input0 for "FULLY_CONNECTED" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let batch_size = 3;
+        let input_size = 1;
+        let input_size_filter = input_size + 1;
+        let num_units = 1;
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [batch_size, input_size]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [num_units, input_size_filter]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [num_units]});
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(3, new Int32Array([nn.FUSED_NONE]));
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [batch_size, num_units]});
+        assert.throws(() => {
+          model.addOperation(nn.FULLY_CONNECTED, [0, 1, 2, 3], [4]);
+        });
+      });
+    });
+
+    it('raise error when the \'num_units_filter\' in dimensions([num_units_filter, input_size]) of input1 is not equal to the \'num_units\' in dimensions([batch_size, num_units]) of output tensor for "FULLY_CONNECTED" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let batch_size = 3;
+        let input_size = 1;
+        let num_units = 1;
+        let num_units_filter = num_units + 1;
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [batch_size, input_size]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [num_units, num_units_filter]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [num_units]});
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(3, new Int32Array([nn.FUSED_NONE]));
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [batch_size, num_units]});
+        assert.throws(() => {
+          model.addOperation(nn.FULLY_CONNECTED, [0, 1, 2, 3], [4]);
+        });
+      });
+    });
+
+    it('raise error when input2 is 2-D tensor not 1-D tensor for "FULLY_CONNECTED" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let batch_size = 3;
+        let input_size = 1;
+        let num_units = 1;
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [batch_size, input_size]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [num_units, input_size, 1]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [num_units, 1]});
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(3, new Int32Array([nn.FUSED_NONE]));
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [batch_size, num_units]});
+        assert.throws(() => {
+          model.addOperation(nn.FULLY_CONNECTED, [0, 1, 2, 3], [4]);
+        });
+      });
+    });
+
+    it('raise error when the type of input2 is TENSOR_INT32 not TENSOR_FLOAT32 or TENSOR_QUANT8_ASYMM for "FULLY_CONNECTED" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let batch_size = 3;
+        let input_size = 1;
+        let num_units = 1;
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [batch_size, input_size]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [num_units, input_size]});
+        model.addOperand({type: nn.TENSOR_INT32, dimensions: [num_units]});
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(3, new Int32Array([nn.FUSED_NONE]));
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [batch_size, num_units]});
+        assert.throws(() => {
+          model.addOperation(nn.FULLY_CONNECTED, [0, 1, 2, 3], [4]);
+        });
+      });
+    });
+
+    it('raise error when the \'num_units_bias\' in dimensions([num_units_bias]) of input2 is not equal to the \'num_units\' in dimensions([batch_size, num_units]) of output tensor for "FULLY_CONNECTED" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let batch_size = 3;
+        let input_size = 1;
+        let num_units = 1;
+        let num_units_bias = num_units + 1;
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [batch_size, input_size]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [num_units, num_units]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [num_units_bias]});
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(3, new Int32Array([nn.FUSED_NONE]));
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [batch_size, num_units]});
+        assert.throws(() => {
+          model.addOperation(nn.FULLY_CONNECTED, [0, 1, 2, 3], [4]);
+        });
+      });
+    });
+
+    it('raise error when the input3 for fuse code is invalid(out of 0-3) as "-1" for "FULLY_CONNECTED" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let batch_size = 3;
+        let input_size = 1;
+        let num_units = 1;
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [batch_size, input_size]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [num_units, input_size]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [num_units]});
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(3, new Int32Array([-1]));
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [batch_size, num_units]});
+        assert.throws(() => {
+          model.addOperation(nn.FULLY_CONNECTED, [0, 1, 2, 3], [4]);
+        });
+      });
+    });
+
+    it('raise error when the input3 for fuse code is invalid(out of 0-3) as "4" for "FULLY_CONNECTED" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let batch_size = 3;
+        let input_size = 1;
+        let num_units = 1;
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [batch_size, input_size]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [num_units, input_size]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [num_units]});
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(3, new Int32Array([4]));
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [batch_size, num_units]});
+        assert.throws(() => {
+          model.addOperation(nn.FULLY_CONNECTED, [0, 1, 2, 3], [4]);
+        });
+      });
+    });
+
+    it('raise error when the type of input3 is FLOAT32 not INT32 for "FULLY_CONNECTED" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let batch_size = 3;
+        let input_size = 1;
+        let num_units = 1;
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [batch_size, input_size]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [num_units, input_size]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [num_units]});
+        model.addOperand({type: nn.FLOAT32});
+        model.setOperandValue(3, new Float32Array([nn.FUSED_NONE]));
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [batch_size, num_units]});
+        assert.throws(() => {
+          model.addOperation(nn.FULLY_CONNECTED, [0, 1, 2, 3], [4]);
+        });
+      });
+    });
+
+    it('raise error when output is 1-D tensor not 2-D tensor for "FULLY_CONNECTED" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let batch_size = 3;
+        let input_size = 1;
+        let num_units = 1;
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [batch_size, input_size]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [num_units, input_size]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [num_units]});
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(3, new Int32Array([nn.FUSED_NONE]));
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [batch_size]});
+        assert.throws(() => {
+          model.addOperation(nn.FULLY_CONNECTED, [0, 1, 2, 3], [4]);
+        });
+      });
+    });
+
+    it('raise error when output is 3-D tensor not 2-D tensor for "FULLY_CONNECTED" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let batch_size = 3;
+        let input_size = 1;
+        let num_units = 1;
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [batch_size, input_size]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [num_units, input_size]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [num_units]});
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(3, new Int32Array([nn.FUSED_NONE]));
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [batch_size, num_units, 1]});
+        assert.throws(() => {
+          model.addOperation(nn.FULLY_CONNECTED, [0, 1, 2, 3], [4]);
+        });
+      });
+    });
+
+    it('raise error when the type of output is TENSOR_INT32 not TENSOR_FLOAT32 or TENSOR_QUANT8_ASYMM for "FULLY_CONNECTED" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let batch_size = 3;
+        let input_size = 1;
+        let num_units = 1;
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [batch_size, input_size]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [num_units, input_size]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [num_units]});
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(3, new Int32Array([nn.FUSED_NONE]));
+        model.addOperand({type: nn.TENSOR_INT32, dimensions: [batch_size, num_units]});
+        assert.throws(() => {
+          model.addOperation(nn.FULLY_CONNECTED, [0, 1, 2, 3], [4]);
+        });
+      });
+    });
+
+    it('raise error when the \'batch_size_output\' in dimensions([batch_size_output, num_units]) of output tensor is not equal to the \'batch_size\' in dimensions([batch_size, input_size]) of converted 2-D input0 for "FULLY_CONNECTED" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let batch_size = 3;
+        let input_size = 1;
+        let num_units = 1;
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [batch_size, input_size]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [num_units, input_size]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [num_units]});
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(3, new Int32Array([nn.FUSED_NONE]));
+        model.addOperand({type: nn.TENSOR_INT32, dimensions: [batch_size_output, num_units]});
+        assert.throws(() => {
+          model.addOperation(nn.FULLY_CONNECTED, [0, 1, 2, 3], [4]);
+        });
+      });
+    });
+
+    it('raise error when input0 TENSOR_QUANT8_ASYMM tensor(RANK <= 4) with its scale being \'input_scale\', input1 as 2-D TENSOR_QUANT8_ASYMM tensor with its scale being \'filter_scale\', input2 as 1-D TENSOR_QUANT8_ASYMM tensor with zeroPoint of 0 and its scale being \'bias_scale\' which isn\'t equal to the product of \'input_scale\' and \'filter_scale\' for "FULLY_CONNECTED" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let batch_size = 3;
+        let input_size = 1;
+        let num_units = 1;
+        let input_scale = 0.5;
+        let filter_scale = 0.8;
+        let bias_scale = input_scale * filter_scale + 0.1;
+        let output_scale = input_scale * filter_scale + 0.1;
+        model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [batch_size, input_size], scale: input_scale, zeroPoint: 10});
+        model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [num_units, input_size], scale: filter_scale, zeroPoint: 20});
+        model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [num_units], scale: bias_scale, zeroPoint: 0});
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(3, new Int32Array([nn.FUSED_NONE]));
+        model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [batch_size, num_units], scale: output_scale, zeroPoint: 40});
+        assert.throws(() => {
+          model.addOperation(nn.FULLY_CONNECTED, [0, 1, 2, 3], [4]);
+        });
+      });
+    });
+
+    it('raise error when input0 TENSOR_QUANT8_ASYMM tensor(RANK <= 4) with its scale being \'input_scale\', input1 as 2-D TENSOR_QUANT8_ASYMM tensor with its scale being \'filter_scale\', input2 as 1-D TENSOR_QUANT8_ASYMM tensor with zeroPoint being not of "0" and its scale being \'bias_scale\' which is equal to the product of \'input_scale\' and \'filter_scale\' for "FULLY_CONNECTED" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let batch_size = 3;
+        let input_size = 1;
+        let num_units = 1;
+        let input_scale = 0.5;
+        let filter_scale = 0.8;
+        let input2_zeropoint = 1;
+        let bias_scale = input_scale * filter_scale;
+        let output_scale = input_scale * filter_scale + 0.1;
+        model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [batch_size, input_size], scale: input_scale, zeroPoint: 10});
+        model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [num_units, input_size], scale: filter_scale, zeroPoint: 20});
+        model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [num_units], scale: bias_scale, zeroPoint: input2_zeropoint});
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(3, new Int32Array([nn.FUSED_NONE]));
+        model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [batch_size, num_units], scale: output_scale, zeroPoint: 40});
+        assert.throws(() => {
+          model.addOperation(nn.FULLY_CONNECTED, [0, 1, 2, 3], [4]);
+        });
+      });
+    });
+
+    it('raise error when input0 TENSOR_QUANT8_ASYMM tensor(RANK <= 4) with its scale being \'input_scale\', input1 as 2-D TENSOR_QUANT8_ASYMM tensor with its scale being \'filter_scale\', output TENSOR_QUANT8_ASYMM tensor of shape [batch_size, num_units] and its scale being \'output_scale\' which is equal to the product of \'input_scale\' and \'filter_scale\' for "FULLY_CONNECTED" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let batch_size = 3;
+        let input_size = 1;
+        let num_units = 1;
+        let input_scale = 0.5;
+        let filter_scale = 0.8;
+        let bias_scale = input_scale * filter_scale;
+        let output_scale = input_scale * filter_scale - 0.1;
+        model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [batch_size, input_size], scale: input_scale, zeroPoint: 10});
+        model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [num_units, input_size], scale: filter_scale, zeroPoint: 20});
+        model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [num_units], scale: bias_scale, zeroPoint: 0});
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(3, new Int32Array([nn.FUSED_NONE]));
+        model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [batch_size, num_units], scale: output_scale, zeroPoint: 40});
+        assert.throws(() => {
+          model.addOperation(nn.FULLY_CONNECTED, [0, 1, 2, 3], [4]);
+        });
+      });
+    });
+
+    it('raise error when input0 TENSOR_QUANT8_ASYMM tensor(RANK <= 4) with its scale being \'input_scale\', input1 as 2-D TENSOR_QUANT8_ASYMM tensor with its scale being \'filter_scale\', output TENSOR_QUANT8_ASYMM tensor of shape [batch_size, num_units] and its scale being \'output_scale\' which is less than the product of \'input_scale\' and \'filter_scale\' for "FULLY_CONNECTED" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let batch_size = 3;
+        let input_size = 1;
+        let num_units = 1;
+        let input_scale = 0.5;
+        let filter_scale = 0.8;
+        let bias_scale = input_scale * filter_scale;
+        let output_scale = input_scale * filter_scale;
+        model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [batch_size, input_size], scale: input_scale, zeroPoint: 10});
+        model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [num_units, input_size], scale: filter_scale, zeroPoint: 20});
+        model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [num_units], scale: bias_scale, zeroPoint: 0});
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(3, new Int32Array([nn.FUSED_NONE]));
+        model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [batch_size, num_units], scale: output_scale, zeroPoint: 40});
+        assert.throws(() => {
+          model.addOperation(nn.FULLY_CONNECTED, [0, 1, 2, 3], [4]);
+        });
+      });
+    });
+
+    it('raise error when the length of inputs is less than 4 for "FULLY_CONNECTED" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let batch_size = 3;
+        let input_size = 1;
+        let num_units = 1;
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [batch_size, input_size]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [num_units, input_size]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [num_units]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [batch_size, num_units]});
+        assert.throws(() => {
+          model.addOperation(nn.FULLY_CONNECTED, [0, 1, 2], [3]);
+        });
+      });
+    });
+
+    it('raise error when the length of inputs is greater than 4 for "FULLY_CONNECTED" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let batch_size = 3;
+        let input_size = 1;
+        let num_units = 1;
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [batch_size, input_size]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [num_units, input_size]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [num_units]});
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(3, new Int32Array([nn.FUSED_NONE]));
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(4, new Int32Array([nn.FUSED_NONE]));
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [batch_size, num_units]});
+        assert.throws(() => {
+          model.addOperation(nn.FULLY_CONNECTED, [0, 1, 2, 3, 4], [5]);
+        });
+      });
+    });
+
+    it('raise error when the length of outputs is 0 not 1 for "FULLY_CONNECTED" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let batch_size = 3;
+        let input_size = 1;
+        let num_units = 1;
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [batch_size, input_size]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [num_units, input_size]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [num_units]});
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(3, new Int32Array([nn.FUSED_NONE]));
+        assert.throws(() => {
+          model.addOperation(nn.FULLY_CONNECTED, [0, 1, 2, 3], []);
+        });
+      });
+    });
+
+    it('raise error when the length of outputs is greater than 1 for "FULLY_CONNECTED" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let batch_size = 3;
+        let input_size = 1;
+        let num_units = 1;
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [batch_size, input_size]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [num_units, input_size]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [num_units]});
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(3, new Int32Array([nn.FUSED_NONE]));
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [batch_size, num_units]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [batch_size, num_units]});
+        assert.throws(() => {
+          model.addOperation(nn.FULLY_CONNECTED, [0, 1, 2, 3], [4, 5]);
+        });
+      });
+    });
+
+    it('"the length of inputs(explicit padding) being 10, 4-D tensor as input0, the type of intput1 to input8 being INT32 type, input9 also having INT32 type with value of 0-3, 4-D tensor as output" are ok for "MAX_POOL_2D" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 7, 7, 3]});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(9, new Int32Array([nn.FUSED_NONE]));
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 7, 7, 3]});
+        assert.doesNotThrow(() => {
+          model.addOperation(nn.MAX_POOL_2D, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [10]);
         });
       });
     });
@@ -3428,6 +3905,174 @@ describe('Unit Test/Model Test', function() {
         model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: RANK3_DIMENSIONS});
         assert.throws(() => {
           model.addOperation(nn.MAX_POOL_2D, [0, 1, 2, 3, 4, 5, 6], [7]);
+        });
+      });
+    });
+
+    it('raise error when the value of fuse code is invalid(out of 0-3) as "4" for "MAX_POOL_2D" operation with explicit padding', function() {
+      return nn.createModel(options).then((model)=>{
+        let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [100, 7, 7, 3]};
+        let type0_length = product(type0.dimensions);
+        let type1 = {type: nn.INT32};
+        let operandIndex = 0;
+        let op0 = operandIndex++;
+        model.addOperand(type0);
+        let pad = operandIndex++;
+        model.addOperand(type1);
+        let stride = operandIndex++;
+        model.addOperand(type1);
+        let filter = operandIndex++;
+        model.addOperand(type1);
+        let fusecode = operandIndex++;
+        model.addOperand(type1);
+        let op1 = operandIndex++;
+        model.addOperand(type0);
+        model.setOperandValue(pad, new Int32Array([0]));
+        model.setOperandValue(stride, new Int32Array([1]));
+        model.setOperandValue(filter, new Int32Array([2]));
+        model.setOperandValue(fusecode, new Int32Array([4]));
+        assert.throws(() => {
+          model.addOperation(nn.MAX_POOL_2D, [op0, pad, pad, pad, pad, stride, stride, filter, filter, fusecode], [op1]);
+        });
+      });
+    });
+
+    it('raise error when the value of fuse code is invalid(out of 0-3) as "-1" for "MAX_POOL_2D" operation with explicit padding', function() {
+      return nn.createModel(options).then((model)=>{
+        let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [100, 7, 7, 3]};
+        let type0_length = product(type0.dimensions);
+        let type1 = {type: nn.INT32};
+        let operandIndex = 0;
+        let op0 = operandIndex++;
+        model.addOperand(type0);
+        let pad = operandIndex++;
+        model.addOperand(type1);
+        let stride = operandIndex++;
+        model.addOperand(type1);
+        let filter = operandIndex++;
+        model.addOperand(type1);
+        let fusecode = operandIndex++;
+        model.addOperand(type1);
+        let op1 = operandIndex++;
+        model.addOperand(type0);
+        model.setOperandValue(pad, new Int32Array([0]));
+        model.setOperandValue(stride, new Int32Array([1]));
+        model.setOperandValue(filter, new Int32Array([2]));
+        model.setOperandValue(fusecode, new Int32Array([-1]));
+        assert.throws(() => {
+          model.addOperation(nn.MAX_POOL_2D, [op0, pad, pad, pad, pad, stride, stride, filter, filter, fusecode], [op1]);
+        });
+      });
+    });
+
+    it('raise error when the value of fuse code is invalid(out of 0-3) as "4" for "MAX_POOL_2D" operation with implicit padding', function() {
+      return nn.createModel(options).then((model)=>{
+        let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [100, 7, 7, 3]};
+        let type0_length = product(type0.dimensions);
+        let type1 = {type: nn.INT32};
+        let operandIndex = 0;
+        let op0 = operandIndex++;
+        model.addOperand(type0);
+        let padingcode = operandIndex++;
+        model.addOperand(type1);
+        let stride = operandIndex++;
+        model.addOperand(type1);
+        let filter = operandIndex++;
+        model.addOperand(type1);
+        let fusecode = operandIndex++;
+        model.addOperand(type1);
+        let op1 = operandIndex++;
+        model.addOperand(type0);
+        model.setOperandValue(padingcode, new Int32Array([nn.PADDING_SAME]));
+        model.setOperandValue(stride, new Int32Array([1]));
+        model.setOperandValue(filter, new Int32Array([2]));
+        model.setOperandValue(fusecode, new Int32Array([4]));
+        assert.throws(() => {
+          model.addOperation(nn.MAX_POOL_2D, [op0, padingcode, stride, stride, filter, filter, fusecode], [op1]);
+        });
+      });
+    });
+
+    it('raise error when the value of fuse code is invalid(out of 0-3) as "-1" for "MAX_POOL_2D" operation with implicit padding', function() {
+      return nn.createModel(options).then((model)=>{
+        let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [100, 7, 7, 3]};
+        let type0_length = product(type0.dimensions);
+        let type1 = {type: nn.INT32};
+        let operandIndex = 0;
+        let op0 = operandIndex++;
+        model.addOperand(type0);
+        let padingcode = operandIndex++;
+        model.addOperand(type1);
+        let stride = operandIndex++;
+        model.addOperand(type1);
+        let filter = operandIndex++;
+        model.addOperand(type1);
+        let fusecode = operandIndex++;
+        model.addOperand(type1);
+        let op1 = operandIndex++;
+        model.addOperand(type0);
+        model.setOperandValue(padingcode, new Int32Array([nn.PADDING_SAME]));
+        model.setOperandValue(stride, new Int32Array([1]));
+        model.setOperandValue(filter, new Int32Array([2]));
+        model.setOperandValue(fusecode, new Int32Array([-1]));
+        assert.throws(() => {
+          model.addOperation(nn.MAX_POOL_2D, [op0, padingcode, stride, stride, filter, filter, fusecode], [op1]);
+        });
+      });
+    });
+
+    it('raise error when the length of outputs is greater than 1 for "MAX_POOL_2D" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [100, 7, 7, 3]};
+        let type0_length = product(type0.dimensions);
+        let type1 = {type: nn.INT32};
+        let operandIndex = 0;
+        let op0 = operandIndex++;
+        model.addOperand(type0);
+        let padingcode = operandIndex++;
+        model.addOperand(type1);
+        let stride = operandIndex++;
+        model.addOperand(type1);
+        let filter = operandIndex++;
+        model.addOperand(type1);
+        let fusecode = operandIndex++;
+        model.addOperand(type1);
+        let op1 = operandIndex++;
+        model.addOperand(type0);
+        model.setOperandValue(padingcode, new Int32Array([nn.PADDING_SAME]));
+        model.setOperandValue(stride, new Int32Array([1]));
+        model.setOperandValue(filter, new Int32Array([2]));
+        model.setOperandValue(fusecode, new Int32Array([nn.FUSED_NONE]));
+        let op2 = operandIndex++;
+        model.addOperand(type0);
+        assert.throws(() => {
+          model.addOperation(nn.MAX_POOL_2D, [op0, padingcode, stride, stride, filter, filter, fusecode], [op1, op2]);
+        });
+      });
+    });
+
+    it('raise error when the length of outputs is 0 not 1 for "MAX_POOL_2D" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [100, 7, 7, 3]};
+        let type0_length = product(type0.dimensions);
+        let type1 = {type: nn.INT32};
+        let operandIndex = 0;
+        let op0 = operandIndex++;
+        model.addOperand(type0);
+        let padingcode = operandIndex++;
+        model.addOperand(type1);
+        let stride = operandIndex++;
+        model.addOperand(type1);
+        let filter = operandIndex++;
+        model.addOperand(type1);
+        let fusecode = operandIndex++;
+        model.addOperand(type1);
+        model.setOperandValue(padingcode, new Int32Array([nn.PADDING_SAME]));
+        model.setOperandValue(stride, new Int32Array([1]));
+        model.setOperandValue(filter, new Int32Array([2]));
+        model.setOperandValue(fusecode, new Int32Array([nn.FUSED_NONE]));
+        assert.throws(() => {
+          model.addOperation(nn.MAX_POOL_2D, [op0, padingcode, stride, stride, filter, filter, fusecode], []);
         });
       });
     });
@@ -3632,6 +4277,18 @@ describe('Unit Test/Model Test', function() {
       });
     });
 
+    it('raise error when the length of outputs is 0 not 1 for "MUL" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [5, 4, 3, 1]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [4, 1, 2]});
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(2, new Int32Array([nn.FUSED_NONE]));
+        assert.throws(() => {
+          model.addOperation(nn.MUL, [0, 1, 2], []);
+        });
+      });
+    });
+
     it('"input0 as a tensor (rank <= 4) of TENSOR_FLOAT32 type, input1 as a 1-D tensor of TENSOR_INT32 type" are ok for "RESHAPE" operation', function() {
       return nn.createModel(options).then((model)=>{
         model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [1, 4]});
@@ -3703,6 +4360,17 @@ describe('Unit Test/Model Test', function() {
         model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [2, 3]});
         assert.throws(() => {
           model.addOperation(nn.RESHAPE, [0, 1], [2, 3]);
+        });
+      });
+    });
+
+    it('raise error when the length of outputs is 0 not 1 for "RESHAPE" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [1, 4]});
+        model.addOperand({type: nn.TENSOR_INT32, dimensions: [2]});
+        model.setOperandValue(1, new Int32Array([2, 3]));
+        assert.throws(() => {
+          model.addOperation(nn.RESHAPE, [0, 1], []);
         });
       });
     });
@@ -3887,6 +4555,17 @@ describe('Unit Test/Model Test', function() {
       });
     });
 
+    it('raise error when the length of outputs is 0 not 1 for "SOFTMAX" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let op = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2]};
+        model.addOperand(op);
+        model.addOperand({type: nn.FLOAT32});
+        model.setOperandValue(1, new Float32Array([0.000001]));
+        assert.throws(() => {
+          model.addOperation(nn.SOFTMAX, [0, 1], []);
+        });
+      });
+    });
 
     it('raise error when attempting to reset the operation of the finished model', function() {
       return nn.createModel(options).then((model)=>{
