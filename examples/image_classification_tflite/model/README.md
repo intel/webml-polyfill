@@ -7,7 +7,7 @@ Download the four model packages, then uncompress them and move the model files 
 The model files are:
 ```
 mobilenet_v1_1.0_224.tflite
-mobilenet_v1_1.0_224.tflite
+mobilenet_v2_1.0_224.tflite
 inception_v3.tflite
 squeezenet.tflite
 ```
