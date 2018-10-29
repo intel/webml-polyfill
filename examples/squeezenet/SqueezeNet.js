@@ -78,11 +78,6 @@ class SqueezeNet {
   _addTensorOperands() {
     const graph = this._onnxModel.graph;
     for (let i = 0; i < graph.input.length; ++i) {
-      // delete useless empty node in the graph
-      if (graph.input[i].type.tensorType.elemType === 7 && graph.input[i].type.tensorType.shape.dim.length === 0) {
-        graph.input.splice(i--, 1);
-        continue;
-      }
       this._addTensorByValueInfo(graph.input[i]);
     }
     for (let i = 0; i < graph.output.length; ++i) {
@@ -116,15 +111,10 @@ class SqueezeNet {
     
     let type;
     switch (tensorType.elemType) {
-      case onnx.TensorProto.DataType.FLOAT16:
-        tensorType.elemType = onnx.TensorProto.DataType.FLOAT; // Fall through
       case onnx.TensorProto.DataType.FLOAT: {
         type = this._nn.TENSOR_FLOAT32;
       } break;
-      case onnx.TensorProto.DataType.INT8:
-      case onnx.TensorProto.DataType.INT16:
-      case onnx.TensorProto.DataType.INT64:   // Warning: treat int64 as int32
-        tensorType.elemType = onnx.TensorProto.DataType.INT32; // Fall through
+      case onnx.TensorProto.DataType.INT64:
       case onnx.TensorProto.DataType.INT32: {
         type = this._nn.TENSOR_INT32;
       } break;
@@ -132,8 +122,8 @@ class SqueezeNet {
         throw new Error(`tensor type ${tensorType.elemType} is not supproted.`);
       }
     }
-    const operandType = {type: type, dimensions: Array.from(dims)};
-
+    dims = dims.length ? Array.from(dims) : [1]; // scalars have shape []
+    const operandType = {type: type, dimensions: dims};
     const tensorId = this._addNewTensorOperand(name, operandType);
 
     // set operand value
@@ -145,12 +135,24 @@ class SqueezeNet {
           data = new Float32Array(initializer.floatData);
         } else if (initializer.rawData && initializer.rawData.length > 0) {
           let dataView = new DataView(initializer.rawData.buffer, initializer.rawData.byteOffset, initializer.rawData.byteLength);
-          let length = product(initializer.dims);
+          let length = initializer.dims.length ? product(initializer.dims) : 1;
           data = new Float32Array(length);
           for (let i = 0; i < length; ++i) {
             // raw data is stored in little-endian order
             data[i] = dataView.getFloat32(i*Float32Array.BYTES_PER_ELEMENT, true);
           }
+        }
+      } else if (initializer.dataType == onnx.TensorProto.DataType.INT64) {
+        console.warn(`Operand ${name} has 64-bit data. Cast to a 32-bit array.`);
+        if (initializer.int64Data && initializer.int64Data.length > 0) {
+          data = new Int32Array(initializer.int64Data);
+        } else if (initializer.rawData && initializer.rawData.length > 0) {
+          let dataView = new DataView(initializer.rawData.buffer, initializer.rawData.byteOffset, initializer.rawData.byteLength);
+          let length = initializer.dims.length ? product(initializer.dims) : 1;
+          data = new Int32Array(length);
+          for (let i = 0; i < length; ++i)
+            // raw data is stored in little-endian order
+            data[i] = dataView.getInt32(i*BigInt64Array.BYTES_PER_ELEMENT, true);
         }
       }
       if (initializer.dims.length === 4) {
@@ -172,10 +174,6 @@ class SqueezeNet {
         data = nhwcData;
       }
 
-      // shape tensor for reshape
-      if (initializer.dims.length === 1 && initializer.int64Data.length) {
-        data = new Int32Array(initializer.int64Data);
-      }
       this._setOperandValue(tensorId, data);
       console.log(`set operand ${name} data ${data.length}`);
     }
@@ -500,7 +498,24 @@ class SqueezeNet {
 
           // Add outputs
           const in1Type = this._getTensorTypeByName(in1);
-          const outputDims = Array.from(in1Type.dimensions);
+          const in2Type = this._getTensorTypeByName(in2);
+          const in1Dims = in1Type.dimensions;
+          const in2Dims = in2Type.dimensions;
+          const lenDiff = in1Dims.length - in2Dims.length;
+
+          // Multidirectional Broadcasting
+          if (lenDiff > 0) {   // in1Dims.length > in2Dims.length;
+            for (let i = 0; i < lenDiff; i++)
+              in2Dims.unshift(1);
+            console.log(`  extend ${in2} dimensions to [${in2Dims}]`);
+          }
+          if (lenDiff < 0) {   // in1Dims.length < in2Dims.length;
+            for (let i = 0; i < lenDiff; i++)
+              in1Dims.unshift(1);
+            console.log(`  extend ${in1} dimensions to [${in1Dims}]`);
+          }
+          
+          const outputDims = in1Dims.map((e, i) => Math.max(e, in2Dims[i]));
           const outputType = {type: this._nn.TENSOR_FLOAT32, dimensions: Array.from(outputDims)};
           const outputId = this._addNewTensorOperand(output, outputType);
           outputs.push(outputId);
@@ -734,6 +749,25 @@ class SqueezeNet {
           outputs.push(outputId);
           console.log(`  output ${output}: [${outputDims}]`);
           opCode = this._nn.RESHAPE;
+        } break;
+        case 'Unsqueeze': {
+          console.log(`  inputs: [${node.input}]`);
+          const input = node.input[0];
+
+          const inputDims = this._getTensorTypeByName(input).dimensions;
+          const attributes = node.attribute;
+          const axes = getObjectByName(attributes, 'axes').ints;
+          for (let i of axes)
+            inputDims.splice(i, 0, 1);
+
+          // (N)CHW -> (N)HWC
+          const C = inputDims.splice(inputDims.length-3, 1)[0];
+          inputDims.push(C);
+
+          const output = node.output[0];
+          this._tensorIds[output] = this._tensorIds[input];
+
+          console.log(`  output ${output}: [${inputDims}]`);
         } break;
         case 'Softmax': {
           console.log(`  inputs: [${node.input}]`);

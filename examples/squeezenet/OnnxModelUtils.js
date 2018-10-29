@@ -46,6 +46,7 @@ function printOnnxModel(model) {
         }
       } break;
       case 'Relu': {} break;
+      case 'AveragePool':
       case 'MaxPool': {
         let attributes = node.attribute;
         let attr = null;
@@ -68,6 +69,8 @@ function printOnnxModel(model) {
       case 'Mul': {} break;
       case 'Constant': {} break;
       case 'Reshape': {} break;
+      case 'Gemm': {} break;
+      case 'Unsqueeze': {} break;
       default: {
         console.warn(`    ${node.opType} is not supported.}`);
       }
