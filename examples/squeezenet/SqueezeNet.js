@@ -5,6 +5,7 @@ class SqueezeNet {
     this._compilation;
     this._execution;
     this._tensorIds = [];
+    this._operands = [];
     this._operandIndex = 0;
     if (typeof backend !== 'undefined') {
       this._backend = backend;
@@ -34,6 +35,7 @@ class SqueezeNet {
 
     this._addTensorOperands();
     this._addOpsAndParams();
+    this._addInputsOutputs();
 
     await this._model.finish();
     this._compilation = await this._model.createCompilation();
@@ -54,7 +56,7 @@ class SqueezeNet {
   }
 
   _getOperandValue(id) {
-    return this._model._operands[id].value;
+    return this._operands[id];
   }
 
   _getOperandValueByName(name) {
@@ -86,8 +88,14 @@ class SqueezeNet {
     for (let i = 0; i < graph.output.length; ++i) {
       this._addTensorByValueInfo(graph.output[i]);
     }
+  }
+
+  _addInputsOutputs() {
+    const graph = this._onnxModel.graph;
     let inputs = [this._getTensorIdByName(graph.node[0].input[0])];
     let outputs = [this._getTensorIdByName(graph.output[0].name)];
+    if (graph.node[graph.node.length-1].opType !== 'Softmax')
+      outputs = [this._getTensorIdByName('softmax')];
     this._model.identifyInputsAndOutputs(inputs, outputs);
   }
 
@@ -125,8 +133,8 @@ class SqueezeNet {
       }
     }
     const operandType = {type: type, dimensions: Array.from(dims)};
-    const tensorId = this._addOperand(operandType);
-    this._tensorIds[name] = {id: tensorId, type: operandType};
+
+    const tensorId = this._addNewTensorOperand(name, operandType);
 
     // set operand value
     const initializer = getObjectByName(this._onnxModel.graph.initializer, name);
@@ -168,17 +176,28 @@ class SqueezeNet {
       if (initializer.dims.length === 1 && initializer.int64Data.length) {
         data = new Int32Array(initializer.int64Data);
       }
-      this._model.setOperandValue(tensorId, data);
+      this._setOperandValue(tensorId, data);
       console.log(`set operand ${name} data ${data.length}`);
     }
     return tensorId;
+  }
+
+  _setOperandValue(index, value) {
+    this._model.setOperandValue(index, value);
+    this._operands[index] = value;
   }
 
   _addOperand(type, value) {
     let index = this._operandIndex++;
     this._model.addOperand(type);
     if (typeof value !== 'undefined')
-      this._model.setOperandValue(index, value);
+      this._setOperandValue(index, value); 
+    return index;
+  }
+
+  _addNewTensorOperand(name, type, value) {
+    let index = this._addOperand(type, value);
+    this._tensorIds[name] = {id: index, type: type};
     return index;
   }
 
@@ -335,7 +354,7 @@ class SqueezeNet {
                 for (let w = 0; w < W; ++w)
                   chwnData[h*W*N + w*N + n] = nhwc[n*H*W + h*W + w];
 
-            this._model.setOperandValue(convFilterId, chwnData);
+            this._setOperandValue(convFilterId, chwnData);
             convFilterType.dimensions[0] = 1;
             convFilterType.dimensions[3] = nGroups;
 
@@ -351,11 +370,8 @@ class SqueezeNet {
           const outputWidth = Math.floor((inputWidth - kernelWidth + paddingWidthBegin + paddingWidthEnd)/strideX + 1);
           const outputChannels = isDepthWiseConv ? nGroups : nChannels;
           const outputDims = [batch, outputHeight, outputWidth, outputChannels];
-          let operandType = {type: this._nn.TENSOR_FLOAT32, dimensions: outputDims};
-          let outputId = (i === graph.node.length - 1) ? // last node in graph?
-            this._getTensorIdByName(output) :
-            this._addOperand(operandType);
-          this._tensorIds[output] = {id: outputId, type: operandType};
+          const outputType = {type: this._nn.TENSOR_FLOAT32, dimensions: outputDims};
+          const outputId = this._addNewTensorOperand(output, outputType);
           outputs.push(outputId);
           console.log(`  output ${output}: [${outputDims}]`);
 
@@ -419,12 +435,9 @@ class SqueezeNet {
           }
 
           // Add outputs
-          let outputDims = Array.from(inputType.dimensions);
-          let operandType = {type: this._nn.TENSOR_FLOAT32, dimensions: outputDims};
-          let outputId = (i === graph.node.length - 1) ? // last node in graph?
-            this._getTensorIdByName(output) :
-            this._addOperand(operandType);
-          this._tensorIds[output] = {id: outputId, type: operandType};
+          const outputDims = Array.from(inputType.dimensions);
+          const outputType = {type: this._nn.TENSOR_FLOAT32, dimensions: outputDims};
+          const outputId = this._addNewTensorOperand(output, outputType);
           outputs.push(outputId);
           console.log(`  output ${output}: [${outputDims}]`);
 
@@ -460,13 +473,10 @@ class SqueezeNet {
           inputs.push(this._addScalarInt32(this._nn.FUSED_RELU));
 
           // Add outputs
-          let output = node.output[0];
-          let outputDims = Array.from(inputType.dimensions);
-          let operandType = {type: this._nn.TENSOR_FLOAT32, dimensions: outputDims};
-          let outputId = (i === graph.node.length - 1) ? // last node in graph?
-            this._getTensorIdByName(output) :
-            this._addOperand(operandType);
-          this._tensorIds[output] = {id: outputId, type: operandType};
+          const output = node.output[0];
+          const outputDims = Array.from(inputType.dimensions);
+          const outputType = {type: this._nn.TENSOR_FLOAT32, dimensions: outputDims};
+          const outputId = this._addNewTensorOperand(output, outputType);
           outputs.push(outputId);
           console.log(`  output ${output}: [${outputDims}]`);
 
@@ -495,12 +505,9 @@ class SqueezeNet {
 
           // Add outputs
           const in1Type = this._getTensorTypeByName(in1);
-          let outputDims = Array.from(in1Type.dimensions);
-          let operandType = {type: this._nn.TENSOR_FLOAT32, dimensions: outputDims};
-          let outputId = (i === graph.node.length - 1) ? // last node in graph?
-            this._getTensorIdByName(output) :
-            this._addOperand(operandType);
-          this._tensorIds[output] = {id: outputId, type: operandType};
+          const outputDims = Array.from(in1Type.dimensions);
+          const outputType = {type: this._nn.TENSOR_FLOAT32, dimensions: Array.from(outputDims)};
+          const outputId = this._addNewTensorOperand(output, outputType);
           outputs.push(outputId);
           console.log(`  output ${output}: [${outputDims}]`);
 
@@ -546,12 +553,9 @@ class SqueezeNet {
           const weightsType = this._getTensorTypeByName(weights);
           const nUnits = weightsType.dimensions[0];
           const batchSize = product(inputType.dimensions) / weightsType.dimensions[1];
-          let outputDims = [batchSize, nUnits];
-          let operandType = {type: this._nn.TENSOR_FLOAT32, dimensions: outputDims};
-          let outputId = (i === graph.node.length - 1) ? // last node in graph?
-            this._getTensorIdByName(output) :
-            this._addOperand(operandType);
-          this._tensorIds[output] = {id: outputId, type: operandType};
+          const outputDims = [batchSize, nUnits];
+          const outputType = {type: this._nn.TENSOR_FLOAT32, dimensions: outputDims};
+          const outputId = this._addNewTensorOperand(output, outputType);
           outputs.push(outputId);
           console.log(`  output ${output}: [${outputDims}]`);
 
@@ -605,11 +609,8 @@ class SqueezeNet {
           const outputHeight = Math.floor((inputHeight - kernelHeight + paddingHeightBegin + paddingHeightEnd)/strideY + 1);
           const outputWidth = Math.floor((inputWidth - kernelWidth + paddingWidthBegin + paddingWidthEnd)/strideX + 1);
           const outputDims = [batch, outputHeight, outputWidth, inputChannels];
-          let operandType = {type: this._nn.TENSOR_FLOAT32, dimensions: outputDims};
-          let outputId = (i === graph.node.length - 1) ? // last node in graph?
-            this._getTensorIdByName(output) :
-            this._addOperand(operandType);
-          this._tensorIds[output] = {id: outputId, type: operandType};
+          const outputType = {type: this._nn.TENSOR_FLOAT32, dimensions: outputDims};
+          const outputId = this._addNewTensorOperand(output, outputType);
           outputs.push(outputId);
           console.log(`  output ${output}: [${outputDims}]`);
 
@@ -640,11 +641,8 @@ class SqueezeNet {
             const inputType = this._getTensorTypeByName(node.input[i]);
             outputDims[concatAxis] += inputType.dimensions[concatAxis];
           }
-          let operandType = {type: this._nn.TENSOR_FLOAT32, dimensions: outputDims};
-          let outputId = (i === graph.node.length - 1) ? // last node in graph?
-            this._getTensorIdByName(output) :
-            this._addOperand(operandType);
-          this._tensorIds[output] = {id: outputId, type: operandType};
+          const outputType = {type: this._nn.TENSOR_FLOAT32, dimensions: outputDims};
+          const outputId = this._addNewTensorOperand(output, outputType);
           outputs.push(outputId);
           console.log(`  output ${output}: [${outputDims}]`);
 
@@ -683,11 +681,8 @@ class SqueezeNet {
           const outputHeight = 1;
           const outputWidth = 1;
           const outputDims = [batch, outputHeight, outputWidth, inputChannels];
-          let operandType = {type: this._nn.TENSOR_FLOAT32, dimensions: outputDims};
-          let outputId = (i === graph.node.length - 1) ? // last node in graph?
-            this._getTensorIdByName(output) :
-            this._addOperand(operandType);
-          this._tensorIds[output] = {id: outputId, type: operandType};
+          const outputType = {type: this._nn.TENSOR_FLOAT32, dimensions: outputDims};
+          const outputId = this._addNewTensorOperand(output, outputType);
           outputs.push(outputId);
           console.log(`  output ${output}: [${outputDims}]`);
 
@@ -709,8 +704,7 @@ class SqueezeNet {
           }
 
           let shapeType = {type: this._nn.TENSOR_INT32, dimensions: Array.from(shapeTensor.dims)};
-          let shapeId = this._addOperand(shapeType, shapeData);
-          this._tensorIds[name] = {id: shapeId, type: shapeType};    
+          this._addNewTensorOperand(name, shapeType, shapeData);  
         } break;
         case 'Reshape': {
           console.log(`  inputs: [${node.input}]`);
@@ -733,23 +727,20 @@ class SqueezeNet {
             outputDims[adaptDimIdx] = product(inputDims) / product(nonAdaptDim);
           } else if (minusOneCnt !== 0)
             throw new Error(`Invalid shape ${outputDims}`); 
-          this._model.setOperandValue(shapeId, outputDims);
+          this._setOperandValue(shapeId, outputDims);
 
           // Add outputs
           const output = node.output[0];
-          let operandType = {type: this._nn.TENSOR_FLOAT32, dimensions: Array.from(outputDims)};
-          let outputId = (i === graph.node.length - 1) ? // last node in graph?
-            this._getTensorIdByName(output) :
-            this._addOperand(operandType);
-          this._tensorIds[output] = {id: outputId, type: operandType};
+          const outputType = {type: this._nn.TENSOR_FLOAT32, dimensions: outputDims};
+          const outputId = this._addNewTensorOperand(output, outputType);
           outputs.push(outputId);
           console.log(`  output ${output}: [${outputDims}]`);
           opCode = this._nn.RESHAPE;
         } break;
         case 'Softmax': {
           console.log(`  inputs: [${node.input}]`);
-          const x = node.input[0];
-          inputs.push(this._getTensorIdByName(x));
+          const input = node.input[0];
+          inputs.push(this._getTensorIdByName(input));
           // Set beta to 1.0
           inputs.push(this._addScalarFloat32(1.0));
           const output = node.output[0];
@@ -763,6 +754,22 @@ class SqueezeNet {
       }
       if (typeof opCode !== 'undefined') {
         this._model.addOperation(opCode, inputs, outputs);
+      }
+      if (i === graph.node.length - 1 && node.opType !== 'Softmax') { // last node in graph?
+        // Add inputs
+        inputs = [];
+        inputs.push(outputs[0]);
+        // Set beta to 1.0
+        inputs.push(this._addScalarFloat32(1.0));
+
+        // Add outputs
+        outputs = [];
+        const inputType = this._getTensorTypeByName(node.output[0]);
+        const outputType = {type: this._nn.TENSOR_FLOAT32, dimensions: inputType.dimensions};
+        const outputId = this._addNewTensorOperand('softmax', outputType);
+        outputs.push(outputId);
+        
+        this._model.addOperation(this._nn.SOFTMAX, inputs, outputs);
       }
     }
   }
