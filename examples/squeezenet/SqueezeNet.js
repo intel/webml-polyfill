@@ -518,14 +518,17 @@ class SqueezeNet {
           const weights = node.input[1];  // B
           const bias = node.input[2];     // C
           const attributes = node.attribute;
-          const alpha = getObjectByName(attributes, 'alpha').f;
-          const beta = getObjectByName(attributes, 'beta').f;
-          const transA = getObjectByName(attributes, 'transA').i === 1;
-          const transB = getObjectByName(attributes, 'transB').i === 1;
-          if (alpha !== 1 || beta !== 1 || transA || !transB) {
-            console.warn('Only support fc-like Gemm oprations, i.e. alpha == beta == 1 && !transA && transB');
-            break;
-          }
+          let alpha = getObjectByName(attributes, 'alpha');
+          let beta = getObjectByName(attributes, 'beta');
+          let transA = getObjectByName(attributes, 'transA');
+          let transB = getObjectByName(attributes, 'transB');
+          alpha = alpha ? alpha.f : 1;
+          beta = beta ? beta.f : 1;
+          transA = transA ? transA.i : 0;
+          transB = transB ? transB.i : 0;
+
+          if (alpha !== 1 || beta !== 1 || transA || !transB)
+            throw new Error('Only support fc-like Gemm oprations, i.e. alpha == beta == 1 && !transA && transB');
 
           inputs.push(this._getTensorIdByName(input));
           inputs.push(this._getTensorIdByName(weights));
