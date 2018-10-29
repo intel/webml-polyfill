@@ -3,6 +3,7 @@ This is an automation tool kit to check regression easily for developers when su
 
 ## Prerequisites
 * Chromium build is required to be installed on the target device before the test
+* For checking PRs relevant to Android platform, host pc needs install chrome or chromium browser firstly.
 
 ## Install
 ```sh
@@ -28,8 +29,8 @@ This is an automation tool kit to check regression easily for developers when su
    }
 ```
    You need modify these two fields for the different platforms:
-   + `platform`: `{string}`, target platform, support Android, Mac, Linux and Windows
-   + `chromiumPath`: `{string}`, the installed chromium path on the target device. If the platform is `Android`, there is no need to set `chromiumPath`.
+   + **_platform_**: `{string}`, target platform, support **Android**, **Mac**, **Linux** and **Windows**
+   + **_chromiumPath_**: `{string}`,**Mac**/**Linux**/**Windows**: the target chromium path   **Android**: the chrome or chromium path in above Prerequisites to show the final checking results
 
 ## Run Tests
 

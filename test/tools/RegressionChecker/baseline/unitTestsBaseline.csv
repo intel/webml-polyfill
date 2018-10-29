@@ -98,7 +98,7 @@ Unit Test/Model Test,addOperation API/3,raise error when passing no parameter,Pa
 Unit Test/Model Test,addOperation API/4,raise error when passing only two parameter,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 Unit Test/Model Test,addOperation API/5,raise error when passing more than 3 parameter,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 Unit Test/Model Test,addOperation API/6,raise error when passing first parameter as undefined,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-Unit Test/Model Test,addOperation API/7,raise error when passing 2nd and 3rd parameters of 'number' type,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+Unit Test/Model Test,addOperation API/7,"raise error when passing 2nd and 3rd parameters of 'number' type",Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 Unit Test/Model Test,addOperation API/8,"first two input tensors (rank<=4) of compatible dimensions having identical TENSOR_FLOAT32 type as the output tensor with third input tensor of INT32 type having value of 0-3 are ok for ""ADD"" operation",Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 Unit Test/Model Test,addOperation API/9,"first two input tensors (rank<=4) of compatible dimensions having identical TENSOR_QUANT8_ASYMM type as the output tensor with third input tensor of INT32 type having value of 0-3 are ok for ""ADD"" operation",Pass,Pass,Fail,Fail,Pass,Fail,Fail,Pass,Fail,Fail,Pass,Fail,Fail
 Unit Test/Model Test,addOperation API/10,"raise error when one of first two input tensors doesn't have type of TENSOR_FLOAT32 or TENSOR_QUANT8_ASYMM for ""ADD"" operation",Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail
@@ -256,12 +256,12 @@ Unit Test/Model Test,addOperation API/161,raise error when attempting to reset t
 Unit Test/Model Test,identifyInputsAndOutputs API/1,"check ""identifyInputsAndOutputs"" is a function",Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 Unit Test/Model Test,identifyInputsAndOutputs API/2,"check return value is of ""void"" type",Pass,Pass,Fail,Fail,Pass,Fail,Fail,Pass,Fail,Fail,Pass,Fail,Fail
 Unit Test/Model Test,identifyInputsAndOutputs API/3,raise error when letting input tensor be output tensor,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail
-Unit Test/Model Test,identifyInputsAndOutputs API/4,raise error when target input(s) wasn't(or weren't) previously added,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-Unit Test/Model Test,identifyInputsAndOutputs API/5,raise error when target output(s) wasn't(or weren't) previously added,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+Unit Test/Model Test,identifyInputsAndOutputs API/4,"raise error when target input(s) wasn't(or weren't) previously added",Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+Unit Test/Model Test,identifyInputsAndOutputs API/5,"raise error when target output(s) wasn't(or weren't) previously added",Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 Unit Test/Model Test,identifyInputsAndOutputs API/6,raise error when passing no parameter,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 Unit Test/Model Test,identifyInputsAndOutputs API/7,raise error when passing only one parameter,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 Unit Test/Model Test,identifyInputsAndOutputs API/8,raise error when passing more than two parameter,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail
-Unit Test/Model Test,identifyInputsAndOutputs API/9,raise error when passing two parameter of 'number' type,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+Unit Test/Model Test,identifyInputsAndOutputs API/9,"raise error when passing two parameter of 'number' type",Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 Unit Test/Model Test,identifyInputsAndOutputs API/10,raise error when attempting to modify inputs/outputs of the finished model,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 Unit Test/Model Test,finish API/1,"check ""finish"" is a function",Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 Unit Test/Model Test,finish API/2,raise error when passing a parameter,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail
@@ -274,7 +274,7 @@ Unit Test/Compilation Test,setPreference API/1,"check ""setPreference"" is a fun
 Unit Test/Compilation Test,setPreference API/2,"check return value is of ""void"" type",Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 Unit Test/Compilation Test,setPreference API/3,passing a parameter with value being in 0-2 is ok,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 Unit Test/Compilation Test,setPreference API/4,raise error when passing a parameter with value being out of 0-2,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-Unit Test/Compilation Test,setPreference API/5,raise error when passing a parameter with 'string' type value,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+Unit Test/Compilation Test,setPreference API/5,"raise error when passing a parameter with 'string' type value",Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 Unit Test/Compilation Test,setPreference API/6,raise error when passing two parameters with values both being in 0-2,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 Unit Test/Compilation Test,setPreference API/7,raise error when attempting to reset the preference of the finished compilation,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 Unit Test/Compilation Test,finish API/1,"check ""finish"" is a function",Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
@@ -286,23 +286,23 @@ Unit Test/Compilation Test,createExecution API/2,raise error when passing a para
 Unit Test/Compilation Test,createExecution API/3,raise error when calling this function with compilation not being finished,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 Unit Test/Execution Test,setInput API/1,"check ""setInput"" is a function",Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 Unit Test/Execution Test,setInput API/2,"check return value is of ""void"" type",Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-Unit Test/Execution Test,setInput API/3,raise error when the value being set to 'index' is equal or greater than the size of inputs,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-Unit Test/Execution Test,setInput API/4,raise error when the input tensor type is 'TENSOR_FLOAT32' and input data is not of 'Float32Arrary',Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-Unit Test/Execution Test,setInput API/5,raise error when the input tensor type is 'TENSOR_QUANT8_ASYMM' and input data is not of 'Uint8Arrary',Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+Unit Test/Execution Test,setInput API/3,"raise error when the value being set to 'index' is equal or greater than the size of inputs",Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+Unit Test/Execution Test,setInput API/4,"raise error when the input tensor type is 'TENSOR_FLOAT32' and input data is not of 'Float32Arrary'",Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+Unit Test/Execution Test,setInput API/5,"raise error when the input tensor type is 'TENSOR_QUANT8_ASYMM' and input data is not of 'Uint8Arrary'",Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 Unit Test/Execution Test,setInput API/6,raise error when passing no parameter,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 Unit Test/Execution Test,setInput API/7,raise error when passing one parameter,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 Unit Test/Execution Test,setInput API/8,raise error when passing more than two parameters,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-Unit Test/Execution Test,setInput API/9,raise error when passing first parameter is of 'string' type,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+Unit Test/Execution Test,setInput API/9,"raise error when passing first parameter is of 'string' type",Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 Unit Test/Execution Test,setInput API/10,raise error when setting invalid data to second parameter,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 Unit Test/Execution Test,setOutput API/1,"check ""setOutput"" is a function",Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 Unit Test/Execution Test,setOutput API/2,"check return value is of ""void"" type",Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-Unit Test/Execution Test,setOutput API/3,raise error when the value being set to 'index' is equal or greater than the size of outputs,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-Unit Test/Execution Test,setOutput API/4,raise error when the output tensor type is 'TENSOR_FLOAT32' and input data is not of 'Float32Arrary',Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-Unit Test/Execution Test,setOutput API/5,raise error when the output tensor type is 'TENSOR_QUANT8_ASYMM' and output data is not of 'Uint8Arrary',Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+Unit Test/Execution Test,setOutput API/3,"raise error when the value being set to 'index' is equal or greater than the size of outputs",Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+Unit Test/Execution Test,setOutput API/4,"raise error when the output tensor type is 'TENSOR_FLOAT32' and input data is not of 'Float32Arrary'",Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+Unit Test/Execution Test,setOutput API/5,"raise error when the output tensor type is 'TENSOR_QUANT8_ASYMM' and output data is not of 'Uint8Arrary'",Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 Unit Test/Execution Test,setOutput API/6,raise error when passing no parameter,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 Unit Test/Execution Test,setOutput API/7,raise error when passing one parameter,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 Unit Test/Execution Test,setOutput API/8,raise error when passing more than two parameters,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-Unit Test/Execution Test,setOutput API/9,raise error when passing first parameter is of 'string' type,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+Unit Test/Execution Test,setOutput API/9,"raise error when passing first parameter is of 'string' type",Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 Unit Test/Execution Test,setOutput API/10,raise error when setting invalid data to second parameter,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 Unit Test/Execution Test,startCompute API/1,"check ""startCompute"" is a function",Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 Unit Test/Execution Test,startCompute API/2,"check return value is of ""void"" type",Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
@@ -321,32 +321,32 @@ CTS,CTS/9,check result for Conv 1 h3 w2 same example-1,Pass,Pass,Pass,Pass,Pass,
 CTS,CTS/10,check result for Conv 1 h3 w2 same example-2,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/11,check result for Conv 1 h3 w2 same relu example-1,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/12,check result for Conv 1 h3 w2 same relu example-2,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS,CTS/13,check result for Conv 1 h3 w2 same relu1 example-1,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Fail,Pass,Fail,Fail,Pass,Fail
-CTS,CTS/14,check result for Conv 1 h3 w2 same relu1 example-2,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Fail,Pass,Fail,Fail,Pass,Fail
+CTS,CTS/13,check result for Conv 1 h3 w2 same relu1 example-1,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass
+CTS,CTS/14,check result for Conv 1 h3 w2 same relu1 example-2,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass
 CTS,CTS/15,check result for Conv 1 h3 w2 same relu6 example-1,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/16,check result for Conv 1 h3 w2 same relu6 example-2,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/17,check result for Conv 1 h3 w2 valid example-1,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/18,check result for Conv 1 h3 w2 valid example-2,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/19,check result for Conv 1 h3 w2 valid relu example-1,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/20,check result for Conv 1 h3 w2 valid relu example-2,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS,CTS/21,check result for Conv 1 h3 w2 valid relu1 example-1,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Fail,Pass,Fail,Fail,Pass,Fail
-CTS,CTS/22,check result for Conv 1 h3 w2 valid relu1 example-2,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Fail,Pass,Fail,Fail,Pass,Fail
+CTS,CTS/21,check result for Conv 1 h3 w2 valid relu1 example-1,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass
+CTS,CTS/22,check result for Conv 1 h3 w2 valid relu1 example-2,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass
 CTS,CTS/23,check result for Conv 1 h3 w2 valid relu6 example-1,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/24,check result for Conv 1 h3 w2 valid relu6 example-2,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/25,check result for Conv 3 h3 w2 same example-1,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/26,check result for Conv 3 h3 w2 same example-2,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/27,check result for Conv 3 h3 w2 same relu example-1,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/28,check result for Conv 3 h3 w2 same relu example-2,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS,CTS/29,check result for Conv 3 h3 w2 same relu1 example-1,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Fail,Pass,Fail,Fail,Pass,Fail
-CTS,CTS/30,check result for Conv 3 h3 w2 same relu1 example-2,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Fail,Pass,Fail,Fail,Pass,Fail
+CTS,CTS/29,check result for Conv 3 h3 w2 same relu1 example-1,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass
+CTS,CTS/30,check result for Conv 3 h3 w2 same relu1 example-2,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass
 CTS,CTS/31,check result for Conv 3 h3 w2 same relu6 example-1,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/32,check result for Conv 3 h3 w2 same relu6 example-2,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/33,check result for Conv 3 h3 w2 valid example-1,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/34,check result for Conv 3 h3 w2 valid example-2,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/35,check result for Conv 3 h3 w2 valid relu example-1,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/36,check result for Conv 3 h3 w2 valid relu example-2,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS,CTS/37,check result for Conv 3 h3 w2 valid relu1 example-1,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Fail,Pass,Fail,Fail,Pass,Fail
-CTS,CTS/38,check result for Conv 3 h3 w2 valid relu1 example-2,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Fail,Pass,Fail,Fail,Pass,Fail
+CTS,CTS/37,check result for Conv 3 h3 w2 valid relu1 example-1,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass
+CTS,CTS/38,check result for Conv 3 h3 w2 valid relu1 example-2,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass
 CTS,CTS/39,check result for Conv 3 h3 w2 valid relu6 example-1,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/40,check result for Conv 3 h3 w2 valid relu6 example-2,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/41,check result for Conv float example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
@@ -377,8 +377,8 @@ CTS,CTS/65,check result for Depthwise conv example-1,Pass,Fail,Pass,Pass,Pass,Pa
 CTS,CTS/66,check result for Depthwise conv example-2,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/67,check result for Depthwise conv relu example-1,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/68,check result for Depthwise conv relu example-2,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS,CTS/69,check result for Depthwise conv relu1 example-1,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Fail,Pass,Fail,Fail,Pass,Fail
-CTS,CTS/70,check result for Depthwise conv relu1 example-2,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Fail,Pass,Fail,Fail,Pass,Fail
+CTS,CTS/69,check result for Depthwise conv relu1 example-1,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass
+CTS,CTS/70,check result for Depthwise conv relu1 example-2,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass
 CTS,CTS/71,check result for Depthwise conv relu6 example-1,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/72,check result for Depthwise conv relu6 example-2,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/73,check result for Depthwise conv2d float example,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass
