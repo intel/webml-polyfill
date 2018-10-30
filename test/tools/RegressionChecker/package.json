@@ -1,0 +1,19 @@
+{
+  "name": "RegressionChecker",
+  "version": "0.0.1",
+  "description": "Test tool for checking regression when submitting Web ML PR.",
+  "main": "./src/main.js",
+  "scripts": {
+    "start": "node ./src/main.js"
+  },
+  "directories": {
+    "output": "output",
+    "baseline": "baseline",
+    "src": "src"
+  },
+  "devDependencies": {
+    "chromedriver": "^2.41.0",
+    "fast-csv": "^2.4.1",
+    "selenium-webdriver": "^4.0.0-alpha.1"
+  }
+}

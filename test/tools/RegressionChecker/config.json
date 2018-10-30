@@ -1,0 +1,4 @@
+{
+    "platform": "Linux",
+    "chromiumPath": "/usr/bin/chromium-browser-unstable"
+}
