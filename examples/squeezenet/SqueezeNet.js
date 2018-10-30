@@ -788,6 +788,8 @@ class SqueezeNet {
         this._model.addOperation(opCode, inputs, outputs);
       }
       if (i === graph.node.length - 1 && node.opType !== 'Softmax') { // last node in graph?
+        console.log(`opType: Softmax (appended automatically)`);
+        console.log(`  inputs: [${node.output[0]}]`);
         // Add inputs
         inputs = [];
         inputs.push(outputs[0]);

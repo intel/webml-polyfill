@@ -48,11 +48,6 @@ class Utils {
     this.initialized = true;
   }
 
-  softmax(vec) {
-    const sum = vec.map(z => Math.exp(z)).reduce((x, y) => x + y);
-    return vec.map(v => Math.exp(v) / sum);
-  }
-
   async predict(imageSource) {
     if (!this.initialized) return;
     this.canvasContext.drawImage(imageSource, 0, 0,
@@ -62,8 +57,6 @@ class Utils {
     let start = performance.now();
     let result = await this.model.compute(this.inputTensor, this.outputTensor);
     let elapsed = performance.now() - start;
-    if (this.postOptions.softmax)
-      this.outputTensor = this.softmax(this.outputTensor);
     let classes = this.getTopClasses(this.outputTensor, this.labels, 3);
     console.log(`Inference time: ${elapsed.toFixed(2)} ms`);
     let inferenceTimeElement = document.getElementById('inferenceTime');
