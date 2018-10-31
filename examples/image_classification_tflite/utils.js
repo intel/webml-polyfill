@@ -1,46 +1,17 @@
-const mobilenet_v1 = {
-  MODEL_NAME : 'Mobilenet_V1',
-  INPUT_SIZE : 224,
-  OUTPUT_SIZE : 1001,
-  MODEL_FILE : './model/mobilenet_v1_1.0_224.tflite',
-  LABELS_FILE : './model/labels.txt'
-};
-const mobilenet_v2 = {
-  MODEL_NAME : 'Mobilenet_V2',
-  INPUT_SIZE : 224,
-  OUTPUT_SIZE : 1001,
-  MODEL_FILE : './model/mobilenet_v2_1.0_224.tflite',
-  LABELS_FILE : './model/labels.txt'
-};
-const inception_v3 = {
-  MODEL_NAME : 'Inception_V3',
-  INPUT_SIZE : 299,
-  OUTPUT_SIZE : 1001,
-  MODEL_FILE : './model/inception_v3.tflite',
-  LABELS_FILE : './model/labels.txt'
-};
-const squeezenet = {
-  MODEL_NAME : 'Squeezenet',
-  INPUT_SIZE : 224,
-  OUTPUT_SIZE : 1001,
-  MODEL_FILE : './model/squeezenet.tflite',
-  LABELS_FILE : './model/labels.txt'
-}
-
 class Utils {
-  constructor() {
+  constructor(canvas) {
     this.tfModel;
     this.labels;
     this.model;
     this.inputTensor;
     this.outputTensor;
-
-    this.container = document.getElementById('container');
-    this.progressBar = document.getElementById('progressBar');
-    this.progressContainer = document.getElementById('progressContainer');
-    this.canvasElement = document.getElementById('canvas');
+    this.MODEL_FILE;
+    this.LABELS_FILE;
+    this.INPUT_SIZE;
+    this.OUTPUT_SIZE;
+    this.canvasElement = canvas;
     this.canvasContext = this.canvasElement.getContext('2d');
-
+    this.updateProgress;
     this.initialized = false;
   }
 
@@ -48,10 +19,7 @@ class Utils {
     this.initialized = false;
     let result;
     if (!this.tfModel) {
-      result = await this.loadModelAndLabels(MODEL_FILE, LABELS_FILE);
-      progressContainer.style.display = "none";
-      progressBar.style = `width: 0%`;
-      progressBar.innerHTML = `0%`;
+      result = await this.loadModelAndLabels(this.MODEL_FILE, this.LABELS_FILE);
       this.labels = result.text.split('\n');
       console.log(`labels: ${this.labels}`);
       let flatBuffer = new flatbuffers.ByteBuffer(result.bytes);
@@ -77,18 +45,10 @@ class Utils {
     let start = performance.now();
     let result = await this.model.compute(this.inputTensor, this.outputTensor);
     let elapsed = performance.now() - start;
-    let classes = this.getTopClasses(this.outputTensor, this.labels, 3);
-    console.log(`Inference time: ${elapsed.toFixed(2)} ms`);
-    let inferenceTimeElement = document.getElementById('inferenceTime');
-    inferenceTimeElement.innerHTML = `inference time: <em style="color:green;font-weight:bloder;">${elapsed.toFixed(2)} </em>ms`;
-    console.log(`Classes: `);
-    classes.forEach((c, i) => {
-      console.log(`\tlabel: ${c.label}, probability: ${c.prob}%`);
-      let labelElement = document.getElementById(`label${i}`);
-      let probElement = document.getElementById(`prob${i}`);
-      labelElement.innerHTML = `${c.label}`;
-      probElement.innerHTML = `${c.prob}%`;
-    });
+    return {
+      time: elapsed.toFixed(2),
+      classes: this.getTopClasses(this.outputTensor, this.labels, 3)
+    }
   }
 
   async loadModelAndLabels(modelUrl, labelsUrl) {
@@ -117,27 +77,24 @@ class Utils {
       if (progress) {
         let self = this;
         request.onprogress = function(ev) {
-          if (ev.lengthComputable) {
-            let percentComplete = ev.loaded / ev.total * 100;
-            percentComplete = percentComplete.toFixed(0);
-            self.progressBar.style = `width: ${percentComplete}%`;
-            self.progressBar.innerHTML = `${percentComplete}%`;
-          }
+          if (self.updateProgress) {
+            self.updateProgress(ev);
         }
+        };
       }
       request.send();
     });
   }
 
   prepareInputTensor(tensor, canvas) {
-    const width = INPUT_SIZE;
-    const height = INPUT_SIZE;
+    const width = this.INPUT_SIZE[1];
+    const height = this.INPUT_SIZE[0];
     const channels = 3;
     const imageChannels = 4; // RGBA
     const mean = 127.5;
     const std = 127.5;
     if (canvas.width !== width || canvas.height !== height) {
-      throw new Error(`canvas.width(${canvas.width}) or canvas.height(${canvas.height}) is not ${INPUT_SIZE}`);
+      throw new Error(`canvas.width(${canvas.width}) is not ${this.INPUT_SIZE[1]} or canvas.height(${canvas.height}) is not ${this.INPUT_SIZE[0]}`);
     }
     let context = canvas.getContext('2d');
     let pixels = context.getImageData(0, 0, width, height).data;
@@ -177,5 +134,18 @@ class Utils {
     if (this.model._backend != 'WebML') {
       this.model._compilation._preparedModel._deleteAll();
     }
+  }
+
+  changeModelParam (newModel) {
+    this.INPUT_SIZE = newModel.INPUT_SIZE;
+    this.OUTPUT_SIZE = newModel.OUTPUT_SIZE;
+    this.MODEL_FILE = newModel.MODEL_FILE;
+    this.LABELS_FILE = newModel.LABELS_FILE;
+    this.inputTensor = new Float32Array(this.INPUT_SIZE.reduce((a, b) => a * b));
+    this.outputTensor = new Float32Array(this.OUTPUT_SIZE);
+    this.tfModel = null;
+
+    this.canvasElement.width = newModel.INPUT_SIZE[1];
+    this.canvasElement.height = newModel.INPUT_SIZE[0];
   }
 }

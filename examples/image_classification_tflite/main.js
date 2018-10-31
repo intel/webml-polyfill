@@ -1,7 +1,41 @@
-var INPUT_SIZE, OUTPUT_TENSOR_SIZE, MODEL_FILE, LABELS_FILE;
+const mobilenet_v1 = {
+  MODEL_NAME: 'Mobilenet_V1',
+  INPUT_SIZE: [224, 224, 3],
+  OUTPUT_SIZE: 1001,
+  MODEL_FILE: './model/mobilenet_v1_1.0_224.tflite',
+  LABELS_FILE: './model/labels.txt'
+};
+const mobilenet_v2 = {
+  MODEL_NAME: 'Mobilenet_V2',
+  INPUT_SIZE: [224, 224, 3],
+  OUTPUT_SIZE: 1001,
+  MODEL_FILE: './model/mobilenet_v2_1.0_224.tflite',
+  LABELS_FILE: './model/labels.txt'
+};
+const inception_v3 = {
+  MODEL_NAME: 'Inception_V3',
+  INPUT_SIZE: [299, 299, 3],
+  OUTPUT_SIZE: 1001,
+  MODEL_FILE: './model/inception_v3.tflite',
+  LABELS_FILE: './model/labels.txt'
+};
+const squeezenet = {
+  MODEL_NAME: 'Squeezenet',
+  INPUT_SIZE: [224, 224, 3],
+  OUTPUT_SIZE: 1001,
+  MODEL_FILE: './model/squeezenet.tflite',
+  LABELS_FILE: './model/labels.txt'
+};
 
-function main() {
-  let utils = new Utils();
+function main(camera) {
+  const availableModels = [
+    mobilenet_v1,
+    mobilenet_v2,
+    inception_v3,
+    squeezenet,
+  ];
+
+  const videoElement = document.getElementById('video');
   const imageElement = document.getElementById('image');
   const inputElement = document.getElementById('input');
   const buttonEelement = document.getElementById('button');
@@ -11,15 +45,15 @@ function main() {
   const webgl = document.getElementById('webgl');
   const webml = document.getElementById('webml');
   const canvasElement = document.getElementById('canvas');
-  var progressContainer = document.getElementById('progressContainer');
-  const Mobilenet_V1 = document.getElementById('Mobilenet_V1');
-  const Mobilenet_V2 = document.getElementById('Mobilenet_V2');
-  const Inception_V3 = document.getElementById('Inception_V3');
-  const Squeezenet = document.getElementById('Squeezenet');
+  const progressContainer = document.getElementById('progressContainer');
+  const progressBar = document.getElementById('progressBar');
 
   let currentBackend = '';
   let currentModel = '';
-  let chooseFirstModel = true;
+  let streaming = false;
+
+  let utils = new Utils(canvasElement);
+  utils.updateProgress = updateProgress;    //register updateProgress function if progressBar element exist
 
   function checkPreferParam() {
     if (getOS() === 'Mac OS') {
@@ -75,22 +109,27 @@ function main() {
     }
   }
 
-  function changeBackend(newBackend) {
-    if (currentBackend === newBackend) {
+  function changeBackend(newBackend, force) {
+    if (!force && currentBackend === newBackend) {
       return;
     }
+    streaming = false;
     utils.deleteAll();
     backend.innerHTML = 'Setting...';
     setTimeout(() => {
       utils.init(newBackend).then(() => {
         updateBackend();
-        utils.predict(imageElement);
+        if (!camera) {
+          utils.predict(imageElement).then(ret => updateResult(ret));
+        } else {
+          streaming = true;
+          startPredict();
+        }
       }).catch((e) => {
-        console.warn(`Failed to init ${utils.model._backend}, try to use WASM`);
-        console.error(e);
-        showAlert(utils.model._backend);
-        changeBackend('WASM');
-        backend.innerHTML = 'WASM';
+        console.warn(`Failed to change backend ${newBackend}, switch back to ${currentBackend}`);
+        console.log(e);
+        showAlert(newBackend);
+        changeBackend(currentBackend, true);
       });
     }, 10);
   }
@@ -99,25 +138,27 @@ function main() {
     if (currentModel === newModel.MODEL_NAME) {
       return;
     }
+    streaming = false;
     utils.deleteAll();
-    INPUT_SIZE = newModel.INPUT_SIZE;
-    OUTPUT_TENSOR_SIZE = newModel.OUTPUT_SIZE;
-    MODEL_FILE = newModel.MODEL_FILE;
-    LABELS_FILE = newModel.LABELS_FILE;
-    utils.inputTensor = new Float32Array(INPUT_SIZE * INPUT_SIZE * 3);
-    utils.outputTensor = new Float32Array(OUTPUT_TENSOR_SIZE);
-    canvasElement.width = newModel.INPUT_SIZE;
-    canvasElement.height = newModel.INPUT_SIZE;
+    utils.changeModelParam(newModel);
     progressContainer.style.display = "inline";
-    utils.tfModel = null;
     selectModel.innerHTML = 'Setting...';
     setTimeout(() => {
       utils.init(utils.model._backend).then(() => {
         currentModel = newModel.MODEL_NAME;
-        selectModel.innerHTML = currentModel;
-        utils.predict(imageElement);
+        unpdateModel();
+        if (!camera) {
+          utils.predict(imageElement).then(ret => updateResult(ret));
+        } else {
+          streaming = true;
+          startPredict();
+        }
       });
     }, 10);
+  }
+
+  function unpdateModel() {
+    selectModel.innerHTML = currentModel;
   }
 
   function fileExists(url) {
@@ -134,6 +175,34 @@ function main() {
     } else {
       return false;
     }
+  }
+
+  function updateProgress(ev) {
+    if (ev.lengthComputable) {
+      let percentComplete = ev.loaded / ev.total * 100;
+      percentComplete = percentComplete.toFixed(0);
+      progressBar.style = `width: ${percentComplete}%`;
+      progressBar.innerHTML = `${percentComplete}%`;
+      if (ev.loaded === ev.total) {
+        progressContainer.style.display = "none";
+        progressBar.style = `width: 0%`;
+        progressBar.innerHTML = `0%`;
+      }
+    }
+  }
+
+  function updateResult(result) {
+    console.log(`Inference time: ${result.time} ms`);
+    let inferenceTimeElement = document.getElementById('inferenceTime');
+    inferenceTimeElement.innerHTML = `inference time: <em style="color:green;font-weight:bloder;">${result.time} </em>ms`;
+    console.log(`Classes: `);
+    result.classes.forEach((c, i) => {
+      console.log(`\tlabel: ${c.label}, probability: ${c.prob}%`);
+      let labelElement = document.getElementById(`label${i}`);
+      let probElement = document.getElementById(`prob${i}`);
+      labelElement.innerHTML = `${c.label}`;
+      probElement.innerHTML = `${c.prob}%`;
+    });
   }
  
   if (nnNative) {
@@ -161,91 +230,77 @@ function main() {
     }
   }
 
-  //check if the model file exist and choose the first model
-  if (fileExists(mobilenet_v1.MODEL_FILE)) {
-    Mobilenet_V1.setAttribute('class', 'dropdown-item');
-    Mobilenet_V1.onclick = function(e) {
-      changeModel(mobilenet_v1);
+  // register models
+  for (let model of availableModels) {
+    if (!fileExists(model.MODEL_FILE)) {
+      continue;
     }
-    if (chooseFirstModel) {
-      INPUT_SIZE = mobilenet_v1.INPUT_SIZE;
-      OUTPUT_TENSOR_SIZE = mobilenet_v1.OUTPUT_SIZE;
-      MODEL_FILE = mobilenet_v1.MODEL_FILE;
-      LABELS_FILE = mobilenet_v1.LABELS_FILE;
-      currentModel = "Mobilenet_V1";
-      chooseFirstModel = false;
-    }
-  }
-  if (fileExists(mobilenet_v2.MODEL_FILE)) {
-    Mobilenet_V2.setAttribute('class', 'dropdown-item');
-    Mobilenet_V2.onclick = function(e) {
-      changeModel(mobilenet_v2);
-    }
-    if (chooseFirstModel) {
-      INPUT_SIZE = mobilenet_v2.INPUT_SIZE;
-      OUTPUT_TENSOR_SIZE = mobilenet_v2.OUTPUT_SIZE;
-      MODEL_FILE = mobilenet_v2.MODEL_FILE;
-      LABELS_FILE = mobilenet_v2.LABELS_FILE;
-      currentModel = "Mobilenet_V2";
-      chooseFirstModel = false;
-    }
-  }
-  if (fileExists(inception_v3.MODEL_FILE)) {
-    Inception_V3.setAttribute('class', 'dropdown-item');
-    Inception_V3.onclick = function(e) {
-      changeModel(inception_v3);
-    }
-    if (chooseFirstModel) {
-      INPUT_SIZE = inception_v3.INPUT_SIZE;
-      OUTPUT_TENSOR_SIZE = inception_v3.OUTPUT_SIZE;
-      MODEL_FILE = inception_v3.MODEL_FILE;
-      LABELS_FILE = inception_v3.LABELS_FILE;
-      currentModel = "Inception_V3";
-      chooseFirstModel = false;
-    }
-  }
-  
-  if (fileExists(squeezenet.MODEL_FILE)) {
-    Squeezenet.setAttribute('class', 'dropdown-item');
-    Squeezenet.onclick = function(e) {
-      changeModel(squeezenet);
-    }
-    if (chooseFirstModel) {
-      INPUT_SIZE = squeezenet.INPUT_SIZE;
-      OUTPUT_TENSOR_SIZE = squeezenet.OUTPUT_SIZE;
-      MODEL_FILE = squeezenet.MODEL_FILE;
-      LABELS_FILE = squeezenet.LABELS_FILE;
-      currentModel = "Squeezenet";
-      chooseFirstModel = false;
+    let dropdownBtn = $('<button class="dropdown-item"/>')
+      .text(model.MODEL_NAME)
+      .click(_ => changeModel(model));
+    $('.available-models').append(dropdownBtn);
+    if (!currentModel) {
+      utils.changeModelParam(model);
+      currentModel = model.MODEL_NAME;
     }
   }
 
-  inputElement.addEventListener('change', (e) => {
-    let files = e.target.files;
-    if (files.length > 0) {
-      imageElement.src = URL.createObjectURL(files[0]);
+  //image or camera
+  if (!camera) {
+    inputElement.addEventListener('change', (e) => {
+      let files = e.target.files;
+      if (files.length > 0) {
+        imageElement.src = URL.createObjectURL(files[0]);
+      }
+    }, false);
+
+    imageElement.onload = function() {
+      utils.predict(imageElement).then(ret => updateResult(ret));
     }
-  }, false);
 
-  imageElement.onload = function() {
-    utils.predict(imageElement);
+    utils.init().then(() => {
+      updateBackend();
+      unpdateModel();
+      utils.predict(imageElement).then(ret => updateResult(ret));
+      buttonEelement.setAttribute('class', 'btn btn-primary');
+      inputElement.removeAttribute('disabled');
+    }).catch((e) => {
+      console.warn(`Failed to init ${utils.model._backend}, try to use WASM`);
+      console.error(e);
+      showAlert(utils.model._backend);
+      changeBackend('WASM');
+    });
+  } else {
+    let stats = new Stats();
+    stats.dom.style.cssText = 'position:fixed;top:60px;left:10px;cursor:pointer;opacity:0.9;z-index:10000';
+    stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
+    document.body.appendChild(stats.dom);
+
+    navigator.mediaDevices.getUserMedia({audio: false, video: {facingMode: "environment"}}).then((stream) => {
+      video.srcObject = stream;
+      utils.init().then(() => {
+        updateBackend();
+        unpdateModel();
+        streaming = true;
+        startPredict();
+      }).catch((e) => {
+        console.warn(`Failed to init ${utils.model._backend}, try to use WASM`);
+        console.error(e);
+        showAlert(utils.model._backend);
+        changeBackend('WASM');
+      });
+    }).catch((error) => {
+      console.log('getUserMedia error: ' + error.name, error);
+    });
+
+    function startPredict() {
+      if (streaming) {
+        stats.begin();
+        utils.predict(videoElement).then(ret => updateResult(ret)).then(() => {
+          stats.end();
+          setTimeout(startPredict, 0);
+        });
+      }
+    }
   }
-
-  utils.inputTensor = new Float32Array(INPUT_SIZE * INPUT_SIZE * 3);
-  utils.outputTensor = new Float32Array(OUTPUT_TENSOR_SIZE);
-  canvasElement.width = INPUT_SIZE;
-  canvasElement.height = INPUT_SIZE;
-
-  utils.init().then(() => {
-    updateBackend();
-    selectModel.innerHTML = currentModel;
-    utils.predict(imageElement);
-    button.setAttribute('class', 'btn btn-primary');
-    input.removeAttribute('disabled');
-  }).catch((e) => {
-    console.warn(`Failed to init ${utils.model._backend}, try to use WASM`);
-    console.error(e);
-    showAlert(utils.model._backend);
-    changeBackend('WASM');
-  });
 }
