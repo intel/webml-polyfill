@@ -3245,7 +3245,7 @@ describe('Unit Test/Model Test', function() {
       });
     });
 
-    it('"input0 TENSOR_QUANT8_ASYMM tensor(RANK <= 4) can be converted as 2-D TENSOR_QUANT8_ASYMM tensor of shape [batch_size, input_size] and its scale being \'input_scale\', input1 as 2-D TENSOR_QUANT8_ASYMM tensor of shape [num_units, input_size] and its scale being \'filter_scale\', input2 as 1-D TENSOR_QUANT8_ASYMM tensor of shape [num_units] with zeroPoint of "0" and its scale being \'bias_scale\' which is equal to the product of \'input_scale\' and \'filter_scale\', input3 as INT32 scalar with value of 0-3, output TENSOR_QUANT8_ASYMM tensor of shape [batch_size, num_units] and its scale being \'output_scale\' which is greater than the product of \'input_scale\' and \'filter_scale\'" are ok for "FULLY_CONNECTED" operation', function() {
+    it('"input0 TENSOR_QUANT8_ASYMM tensor(RANK <= 4) can be converted as 2-D TENSOR_QUANT8_ASYMM tensor of shape [batch_size, input_size] and its scale being \'input_scale\', input1 as 2-D TENSOR_QUANT8_ASYMM tensor of shape [num_units, input_size] and its scale being \'filter_scale\', input2 as 1-D TENSOR_INT32 tensor of shape [num_units] with zeroPoint of "0" and its scale being \'bias_scale\' which is equal to the product of \'input_scale\' and \'filter_scale\', input3 as INT32 scalar with value of 0-3, output TENSOR_QUANT8_ASYMM tensor of shape [batch_size, num_units] and its scale being \'output_scale\' which is greater than the product of \'input_scale\' and \'filter_scale\'" are ok for "FULLY_CONNECTED" operation', function() {
       return nn.createModel(options).then((model)=>{
         let batch_size = 3;
         let input_size = 1;
@@ -3256,7 +3256,7 @@ describe('Unit Test/Model Test', function() {
         let output_scale = input_scale * filter_scale + 0.1;
         model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [batch_size, input_size], scale: input_scale, zeroPoint: 10});
         model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [num_units, input_size], scale: filter_scale, zeroPoint: 20});
-        model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [num_units], scale: bias_scale, zeroPoint: 0});
+        model.addOperand({type: nn.TENSOR_INT32, dimensions: [num_units], scale: bias_scale, zeroPoint: 0});
         model.addOperand({type: nn.INT32});
         model.setOperandValue(3, new Int32Array([nn.FUSED_NONE]));
         model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [batch_size, num_units], scale: output_scale, zeroPoint: 40});
@@ -3266,7 +3266,24 @@ describe('Unit Test/Model Test', function() {
       });
     });
 
-    it('raise error when the rank of input0 is greater than 5 for "FULLY_CONNECTED" operation', function() {
+    it('raise error when input0 is 1-D tensor for "FULLY_CONNECTED" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let batch_size = 3;
+        let input_size = 1;
+        let num_units = 1;
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [input_size]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [num_units, input_size]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [num_units]});
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(3, new Int32Array([nn.FUSED_NONE]));
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [batch_size, num_units]});
+        assert.throws(() => {
+          model.addOperation(nn.FULLY_CONNECTED, [0, 1, 2, 3], [4]);
+        });
+      });
+    });
+
+    it('raise error when the rank of input0 is greater than 4 for "FULLY_CONNECTED" operation', function() {
       return nn.createModel(options).then((model)=>{
         let batch_size = 3;
         let input_size = 1;
@@ -3283,7 +3300,7 @@ describe('Unit Test/Model Test', function() {
       });
     });
 
-    it('raise error when the type of input0 is TENSOR_INT32 not TENSOR_FLOAT32 or TENSOR_QUANT8_ASYMM for "FULLY_CONNECTED" operation', function() {
+    it('raise error when the type of input0 is not TENSOR_FLOAT32 or TENSOR_QUANT8_ASYMM for "FULLY_CONNECTED" operation', function() {
       return nn.createModel(options).then((model)=>{
         let batch_size = 3;
         let input_size = 1;
@@ -3334,7 +3351,7 @@ describe('Unit Test/Model Test', function() {
       });
     });
 
-    it('raise error when the type of input1 is TENSOR_INT32 not TENSOR_FLOAT32 or TENSOR_QUANT8_ASYMM for "FULLY_CONNECTED" operation', function() {
+    it('raise error when input0 is a TENSOR_FLOAT32 tensor and input1 is not a TENSOR_FLOAT32 tensor for "FULLY_CONNECTED" operation', function() {
       return nn.createModel(options).then((model)=>{
         let batch_size = 3;
         let input_size = 1;
@@ -3345,6 +3362,27 @@ describe('Unit Test/Model Test', function() {
         model.addOperand({type: nn.INT32});
         model.setOperandValue(3, new Int32Array([nn.FUSED_NONE]));
         model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [batch_size, num_units]});
+        assert.throws(() => {
+          model.addOperation(nn.FULLY_CONNECTED, [0, 1, 2, 3], [4]);
+        });
+      });
+    });
+
+    it('raise error when input0 is a TENSOR_QUANT8_ASYMM tensor and input1 is not a TENSOR_QUANT8_ASYMM tensor for "FULLY_CONNECTED" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let batch_size = 3;
+        let input_size = 1;
+        let num_units = 1;
+        let input_scale = 0.5;
+        let filter_scale = 0.8;
+        let bias_scale = input_scale * filter_scale;
+        let output_scale = input_scale * filter_scale + 0.1;
+        model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [batch_size, input_size], scale: input_scale, zeroPoint: 10});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [num_units, input_size], scale: filter_scale, zeroPoint: 20});
+        model.addOperand({type: nn.TENSOR_INT32, dimensions: [num_units], scale: bias_scale, zeroPoint: 0});
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(3, new Int32Array([nn.FUSED_NONE]));
+        model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [batch_size, num_units], scale: output_scale, zeroPoint: 40});
         assert.throws(() => {
           model.addOperation(nn.FULLY_CONNECTED, [0, 1, 2, 3], [4]);
         });
@@ -3404,7 +3442,7 @@ describe('Unit Test/Model Test', function() {
       });
     });
 
-    it('raise error when the type of input2 is TENSOR_INT32 not TENSOR_FLOAT32 or TENSOR_QUANT8_ASYMM for "FULLY_CONNECTED" operation', function() {
+    it('raise error when input0 is a TENSOR_FLOAT32 tensor and input2 is not a TENSOR_FLOAT32 tensor for "FULLY_CONNECTED" operation', function() {
       return nn.createModel(options).then((model)=>{
         let batch_size = 3;
         let input_size = 1;
@@ -3415,6 +3453,27 @@ describe('Unit Test/Model Test', function() {
         model.addOperand({type: nn.INT32});
         model.setOperandValue(3, new Int32Array([nn.FUSED_NONE]));
         model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [batch_size, num_units]});
+        assert.throws(() => {
+          model.addOperation(nn.FULLY_CONNECTED, [0, 1, 2, 3], [4]);
+        });
+      });
+    });
+
+    it('raise error when input0 is a TENSOR_QUANT8_ASYMM tensor and input2 is not a TENSOR_INT32 tensor for "FULLY_CONNECTED" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let batch_size = 3;
+        let input_size = 1;
+        let num_units = 1;
+        let input_scale = 0.5;
+        let filter_scale = 0.8;
+        let bias_scale = input_scale * filter_scale;
+        let output_scale = input_scale * filter_scale + 0.1;
+        model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [batch_size, input_size], scale: input_scale, zeroPoint: 10});
+        model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [num_units, input_size], scale: filter_scale, zeroPoint: 20});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [num_units], scale: bias_scale, zeroPoint: 0});
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(3, new Int32Array([nn.FUSED_NONE]));
+        model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [batch_size, num_units], scale: output_scale, zeroPoint: 40});
         assert.throws(() => {
           model.addOperation(nn.FULLY_CONNECTED, [0, 1, 2, 3], [4]);
         });
@@ -3473,7 +3532,7 @@ describe('Unit Test/Model Test', function() {
       });
     });
 
-    it('raise error when the type of input3 is FLOAT32 not INT32 for "FULLY_CONNECTED" operation', function() {
+    it('raise error when the type of input3 is not INT32 for "FULLY_CONNECTED" operation', function() {
       return nn.createModel(options).then((model)=>{
         let batch_size = 3;
         let input_size = 1;
@@ -3524,7 +3583,7 @@ describe('Unit Test/Model Test', function() {
       });
     });
 
-    it('raise error when the type of output is TENSOR_INT32 not TENSOR_FLOAT32 or TENSOR_QUANT8_ASYMM for "FULLY_CONNECTED" operation', function() {
+    it('raise error when input0 is a TENSOR_FLOAT32 tensor and output is not a TENSOR_FLOAT32 tensor for "FULLY_CONNECTED" operation', function() {
       return nn.createModel(options).then((model)=>{
         let batch_size = 3;
         let input_size = 1;
@@ -3535,6 +3594,27 @@ describe('Unit Test/Model Test', function() {
         model.addOperand({type: nn.INT32});
         model.setOperandValue(3, new Int32Array([nn.FUSED_NONE]));
         model.addOperand({type: nn.TENSOR_INT32, dimensions: [batch_size, num_units]});
+        assert.throws(() => {
+          model.addOperation(nn.FULLY_CONNECTED, [0, 1, 2, 3], [4]);
+        });
+      });
+    });
+
+    it('raise error when input0 is a TENSOR_QUANT8_ASYMM tensor and output is not a TENSOR_QUANT8_ASYMM tensor for "FULLY_CONNECTED" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let batch_size = 3;
+        let input_size = 1;
+        let num_units = 1;
+        let input_scale = 0.5;
+        let filter_scale = 0.8;
+        let bias_scale = input_scale * filter_scale;
+        let output_scale = input_scale * filter_scale + 0.1;
+        model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [batch_size, input_size], scale: input_scale, zeroPoint: 10});
+        model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [num_units, input_size], scale: filter_scale, zeroPoint: 20});
+        model.addOperand({type: nn.TENSOR_INT32, dimensions: [num_units], scale: bias_scale, zeroPoint: 0});
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(3, new Int32Array([nn.FUSED_NONE]));
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [batch_size, num_units], scale: output_scale, zeroPoint: 40});
         assert.throws(() => {
           model.addOperation(nn.FULLY_CONNECTED, [0, 1, 2, 3], [4]);
         });
@@ -3558,7 +3638,7 @@ describe('Unit Test/Model Test', function() {
       });
     });
 
-    it('raise error when input0 TENSOR_QUANT8_ASYMM tensor(RANK <= 4) with its scale being \'input_scale\', input1 as 2-D TENSOR_QUANT8_ASYMM tensor with its scale being \'filter_scale\', input2 as 1-D TENSOR_QUANT8_ASYMM tensor with zeroPoint of 0 and its scale being \'bias_scale\' which isn\'t equal to the product of \'input_scale\' and \'filter_scale\' for "FULLY_CONNECTED" operation', function() {
+    it('raise error when input0 TENSOR_QUANT8_ASYMM tensor(RANK <= 4) with its scale being \'input_scale\', input1 as 2-D TENSOR_QUANT8_ASYMM tensor with its scale being \'filter_scale\', input2 as 1-D TENSOR_INT32 tensor with zeroPoint of 0 and its scale being \'bias_scale\' which isn\'t equal to the product of \'input_scale\' and \'filter_scale\' for "FULLY_CONNECTED" operation', function() {
       return nn.createModel(options).then((model)=>{
         let batch_size = 3;
         let input_size = 1;
@@ -3569,7 +3649,7 @@ describe('Unit Test/Model Test', function() {
         let output_scale = input_scale * filter_scale + 0.1;
         model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [batch_size, input_size], scale: input_scale, zeroPoint: 10});
         model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [num_units, input_size], scale: filter_scale, zeroPoint: 20});
-        model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [num_units], scale: bias_scale, zeroPoint: 0});
+        model.addOperand({type: nn.TENSOR_INT32, dimensions: [num_units], scale: bias_scale, zeroPoint: 0});
         model.addOperand({type: nn.INT32});
         model.setOperandValue(3, new Int32Array([nn.FUSED_NONE]));
         model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [batch_size, num_units], scale: output_scale, zeroPoint: 40});
@@ -3579,7 +3659,7 @@ describe('Unit Test/Model Test', function() {
       });
     });
 
-    it('raise error when input0 TENSOR_QUANT8_ASYMM tensor(RANK <= 4) with its scale being \'input_scale\', input1 as 2-D TENSOR_QUANT8_ASYMM tensor with its scale being \'filter_scale\', input2 as 1-D TENSOR_QUANT8_ASYMM tensor with zeroPoint being not of "0" and its scale being \'bias_scale\' which is equal to the product of \'input_scale\' and \'filter_scale\' for "FULLY_CONNECTED" operation', function() {
+    it('raise error when input0 TENSOR_QUANT8_ASYMM tensor(RANK <= 4) with its scale being \'input_scale\', input1 as 2-D TENSOR_QUANT8_ASYMM tensor with its scale being \'filter_scale\', input2 as 1-D TENSOR_INT32 tensor with zeroPoint being not of "0" and its scale being \'bias_scale\' which is equal to the product of \'input_scale\' and \'filter_scale\' for "FULLY_CONNECTED" operation', function() {
       return nn.createModel(options).then((model)=>{
         let batch_size = 3;
         let input_size = 1;
@@ -3591,7 +3671,7 @@ describe('Unit Test/Model Test', function() {
         let output_scale = input_scale * filter_scale + 0.1;
         model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [batch_size, input_size], scale: input_scale, zeroPoint: 10});
         model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [num_units, input_size], scale: filter_scale, zeroPoint: 20});
-        model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [num_units], scale: bias_scale, zeroPoint: input2_zeropoint});
+        model.addOperand({type: nn.TENSOR_INT32, dimensions: [num_units], scale: bias_scale, zeroPoint: input2_zeropoint});
         model.addOperand({type: nn.INT32});
         model.setOperandValue(3, new Int32Array([nn.FUSED_NONE]));
         model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [batch_size, num_units], scale: output_scale, zeroPoint: 40});
@@ -3612,7 +3692,7 @@ describe('Unit Test/Model Test', function() {
         let output_scale = input_scale * filter_scale - 0.1;
         model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [batch_size, input_size], scale: input_scale, zeroPoint: 10});
         model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [num_units, input_size], scale: filter_scale, zeroPoint: 20});
-        model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [num_units], scale: bias_scale, zeroPoint: 0});
+        model.addOperand({type: nn.TENSOR_INT32, dimensions: [num_units], scale: bias_scale, zeroPoint: 0});
         model.addOperand({type: nn.INT32});
         model.setOperandValue(3, new Int32Array([nn.FUSED_NONE]));
         model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [batch_size, num_units], scale: output_scale, zeroPoint: 40});
@@ -3633,7 +3713,7 @@ describe('Unit Test/Model Test', function() {
         let output_scale = input_scale * filter_scale;
         model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [batch_size, input_size], scale: input_scale, zeroPoint: 10});
         model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [num_units, input_size], scale: filter_scale, zeroPoint: 20});
-        model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [num_units], scale: bias_scale, zeroPoint: 0});
+        model.addOperand({type: nn.TENSOR_INT32, dimensions: [num_units], scale: bias_scale, zeroPoint: 0});
         model.addOperand({type: nn.INT32});
         model.setOperandValue(3, new Int32Array([nn.FUSED_NONE]));
         model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [batch_size, num_units], scale: output_scale, zeroPoint: 40});
