@@ -1,30 +1,30 @@
 const mobilenet_v1 = {
-  MODEL_NAME : 'Mobilenet_V1',
-  INPUT_SIZE : [224, 224, 3],
-  OUTPUT_SIZE : 1001,
-  MODEL_FILE : './model/mobilenet_v1_1.0_224.tflite',
-  LABELS_FILE : './model/labels.txt'
+  MODEL_NAME: 'Mobilenet_V1',
+  INPUT_SIZE: [224, 224, 3],
+  OUTPUT_SIZE: 1001,
+  MODEL_FILE: './model/mobilenet_v1_1.0_224.tflite',
+  LABELS_FILE: './model/labels.txt'
 };
 const mobilenet_v2 = {
-  MODEL_NAME : 'Mobilenet_V2',
-  INPUT_SIZE : [224, 224, 3],
-  OUTPUT_SIZE : 1001,
-  MODEL_FILE : './model/mobilenet_v2_1.0_224.tflite',
-  LABELS_FILE : './model/labels.txt'
+  MODEL_NAME: 'Mobilenet_V2',
+  INPUT_SIZE: [224, 224, 3],
+  OUTPUT_SIZE: 1001,
+  MODEL_FILE: './model/mobilenet_v2_1.0_224.tflite',
+  LABELS_FILE: './model/labels.txt'
 };
 const inception_v3 = {
-  MODEL_NAME : 'Inception_V3',
-  INPUT_SIZE : [299, 299, 3],
-  OUTPUT_SIZE : 1001,
-  MODEL_FILE : './model/inception_v3.tflite',
-  LABELS_FILE : './model/labels.txt'
+  MODEL_NAME: 'Inception_V3',
+  INPUT_SIZE: [299, 299, 3],
+  OUTPUT_SIZE: 1001,
+  MODEL_FILE: './model/inception_v3.tflite',
+  LABELS_FILE: './model/labels.txt'
 };
 const squeezenet = {
-  MODEL_NAME : 'Squeezenet',
-  INPUT_SIZE : [224, 224, 3],
-  OUTPUT_SIZE : 1001,
-  MODEL_FILE : './model/squeezenet.tflite',
-  LABELS_FILE : './model/labels.txt'
+  MODEL_NAME: 'Squeezenet',
+  INPUT_SIZE: [224, 224, 3],
+  OUTPUT_SIZE: 1001,
+  MODEL_FILE: './model/squeezenet.tflite',
+  LABELS_FILE: './model/labels.txt'
 };
 
 function main(camera) {
@@ -232,8 +232,9 @@ function main(camera) {
 
   // register models
   for (let model of availableModels) {
-    if (!fileExists(model.MODEL_FILE))
+    if (!fileExists(model.MODEL_FILE)) {
       continue;
+    }
     let dropdownBtn = $('<button class="dropdown-item"/>')
       .text(model.MODEL_NAME)
       .click(_ => changeModel(model));
