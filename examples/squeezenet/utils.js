@@ -23,7 +23,7 @@ class Utils {
     let result;
     if (!this.onnxModel) {
       result = await this.loadModelAndLabels(this.modelFile, this.labelsFile);
-      this.labels = JSON.parse(result.text);
+      this.labels = result.text.split('\n');
       console.log(`labels: ${this.labels}`);
       let err = onnx.ModelProto.verify(result.bytes);
       if (err) {
@@ -40,10 +40,6 @@ class Utils {
     let elapsed = performance.now() - start;
     console.log(`warmup time: ${elapsed.toFixed(2)} ms`);
     this.initialized = true;
-  }
-
-  setProgressCallback(cb) {
-    this.progressCallback = cb;
   }
 
   async predict(imageSource) {
@@ -101,7 +97,7 @@ class Utils {
     const norm = this.preOptions.norm || false;
 
     if (canvas.width !== width || canvas.height !== height) {
-      throw new Error(`canvas.width(${canvas.width}) or canvas.height(${canvas.height}) is not 224`);
+      throw new Error(`canvas.width(${canvas.width}) is not ${width} or canvas.height(${canvas.height}) is not ${height}`);
     }
     let context = canvas.getContext('2d');
     let pixels = context.getImageData(0, 0, width, height).data;
@@ -140,7 +136,9 @@ class Utils {
   }
 
   deleteAll() {
-    this.model._compilation._preparedModel._deleteAll();
+    if (this.model._backend != 'WebML') {
+      this.model._compilation._preparedModel._deleteAll();
+    }
   }
 
   changeModelParam(newModel) {
@@ -154,7 +152,7 @@ class Utils {
     this.outputTensor = new Float32Array(newModel.outputSize);
     this.onnxModel = null;
 
-    // this.canvasElement.width = newModel.inputSize[1];
-    // this.canvasElement.height = newModel.inputSize[0];
+    this.canvasElement.height = newModel.inputSize[0];
+    this.canvasElement.width = newModel.inputSize[1];
   }
 }

@@ -1,7 +1,7 @@
 const squeezenet = {
   modelName: 'SqueezeNet',
   modelFile: './model/squeezenet.onnx',
-  labelsFile: 'labels.json',
+  labelsFile: './model/labels.txt',
   inputSize: [224, 224, 3],
   outputSize: 1000,
   preOptions: {
@@ -12,7 +12,7 @@ const squeezenet = {
 const mobilenetv2 = {
   modelName: 'Mobilenet v2',
   modelFile: './model/mobilenetv2.onnx',
-  labelsFile: 'labels.json',
+  labelsFile: './model/labels.txt',
   inputSize: [224, 224, 3],
   outputSize: 1000,
   preOptions: {
@@ -25,7 +25,7 @@ const mobilenetv2 = {
 const resnet152v1 = {
   modelName: 'Resnet v1',
   modelFile: './model/resnet152v1.onnx',
-  labelsFile: 'labels.json',
+  labelsFile: './model/labels.txt',
   inputSize: [224, 224, 3],
   outputSize: 1000,
   preOptions: {
@@ -38,7 +38,7 @@ const resnet152v1 = {
 const resnet152v2 = {
   modelName: 'Resnet v2',
   modelFile: './model/resnet152v2.onnx',
-  labelsFile: 'labels.json',
+  labelsFile: './model/labels.txt',
   inputSize: [224, 224, 3],
   outputSize: 1000,
   preOptions: {
@@ -48,6 +48,13 @@ const resnet152v2 = {
   }
 };
 
+const inceptionv2 = {
+  modelName: 'Inception v2',
+  modelFile: './model/inception_v2.onnx',
+  labelsFile: './model/ilsvrc2012labels.txt',
+  inputSize: [224, 224, 3],
+  outputSize: 1000,
+};
 
 function main(camera) {
 
@@ -56,6 +63,7 @@ function main(camera) {
     mobilenetv2,
     resnet152v1,
     resnet152v2,
+    inceptionv2,
   ];
   const canvasElement = document.getElementById('canvas');
   const videoElement = document.getElementById('video');
@@ -74,7 +82,7 @@ function main(camera) {
   let streaming = false;
 
   let utils = new Utils(canvasElement);
-  utils.setProgressCallback(updateProgress);
+  utils.progressCallback = updateProgress;    //register updateProgress function if progressBar element exist
 
   function checkPreferParam() {
     if (getOS() === 'Mac OS') {
@@ -130,10 +138,6 @@ function main(camera) {
     }
   }
 
-  function updateModel() {
-    selectModel.innerHTML = currentModel;
-  }
-
   function changeBackend(newBackend, force) {
     if (!force && currentBackend === newBackend) {
       return;
@@ -158,7 +162,11 @@ function main(camera) {
       });
     }, 10);
   }
- 
+
+  function updateModel() {
+    selectModel.innerHTML = currentModel;
+  }
+
   function changeModel(newModel) {
     if (currentModel === newModel.modelName) {
       return;
