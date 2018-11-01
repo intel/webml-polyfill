@@ -1,6 +1,6 @@
 # API Documentation
 ## Introduction
-This is the API doc of WebML Polyfill. The current API is modeled from [NN API](https://developer.android.com/ndk/guides/neuralnetworks/index.html) to JavaScript. It only serves as a proof-of-concept (POC) for Web Machine Learning API proposal.
+This is the API doc of WebML Polyfill. The current API is modeled from [NN API](https://developer.android.com/ndk/guides/neuralnetworks/index.html) to JavaScript. It only serves as a proof-of-concept (POC) for Web Neural Networks API proposal.
 ## IDL
 ### Navigator
 ```webidl
