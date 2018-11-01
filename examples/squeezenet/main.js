@@ -1,6 +1,6 @@
 const squeezenet = {
   modelName: 'SqueezeNet',
-  modelFile: './model/squeezenet.onnx',
+  modelFile: './model/squeezenet1.1.onnx',
   labelsFile: './model/labels.txt',
   inputSize: [224, 224, 3],
   outputSize: 1000,
@@ -11,7 +11,7 @@ const squeezenet = {
 
 const mobilenetv2 = {
   modelName: 'Mobilenet v2',
-  modelFile: './model/mobilenetv2.onnx',
+  modelFile: './model/mobilenetv2-1.0.onnx',
   labelsFile: './model/labels.txt',
   inputSize: [224, 224, 3],
   outputSize: 1000,
@@ -22,9 +22,9 @@ const mobilenetv2 = {
   }
 };
 
-const resnet152v1 = {
+const resnet18v1 = {
   modelName: 'Resnet v1',
-  modelFile: './model/resnet152v1.onnx',
+  modelFile: './model/resnet18v1.onnx',
   labelsFile: './model/labels.txt',
   inputSize: [224, 224, 3],
   outputSize: 1000,
@@ -35,9 +35,9 @@ const resnet152v1 = {
   }
 };
 
-const resnet152v2 = {
+const resnet18v2 = {
   modelName: 'Resnet v2',
-  modelFile: './model/resnet152v2.onnx',
+  modelFile: './model/resnet18v2.onnx',
   labelsFile: './model/labels.txt',
   inputSize: [224, 224, 3],
   outputSize: 1000,
@@ -50,7 +50,7 @@ const resnet152v2 = {
 
 const inceptionv2 = {
   modelName: 'Inception v2',
-  modelFile: './model/inception_v2.onnx',
+  modelFile: './model/inceptionv2.onnx',
   labelsFile: './model/ilsvrc2012labels.txt',
   inputSize: [224, 224, 3],
   outputSize: 1000,
@@ -61,8 +61,8 @@ function main(camera) {
   const availableModels = [
     squeezenet,
     mobilenetv2,
-    resnet152v1,
-    resnet152v2,
+    resnet18v1,
+    resnet18v2,
     inceptionv2,
   ];
   const canvasElement = document.getElementById('canvas');
@@ -269,7 +269,7 @@ function main(camera) {
       currentModel = model.modelName;
     }
   }
-  
+
   // picture or camera
   if (!camera) {
     inputElement.addEventListener('change', (e) => {
