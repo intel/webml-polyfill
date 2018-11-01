@@ -25,8 +25,9 @@
     <script src="./cts/test/cts-all.js"></script>
     <script src="./cts/test_supplement/cts_supplement-all.js"></script>
     <script>
+      window.mochaFinish = false;
       mocha.globals(['jQuery']);
-      mocha.run();
+      mocha.run(function() {window.mochaFinish = true});
     </script>
   </body>
 </html>

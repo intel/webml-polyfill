@@ -53,19 +53,19 @@ csvStream.pipe(fs.createWriteStream(csvFilePath));
 
 var remoteURL, driver, backendModel, chromeOption, command, androidSN, adbPath, htmlPath;
 var backendModels = [
-    "Mac-MPS",
-    "Mac-BNNS",
     "Mac-WASM",
     "Mac-WebGL2",
-    "Android-NNAPI",
+    "Mac-MPS",
+    "Mac-BNNS",
     "Android-WASM",
     "Android-WebGL2",
-    "Windows-clDNN",
+    "Android-NNAPI",
     "Windows-WASM",
     "Windows-WebGL2",
-    "Linux-clDNN",
+    "Windows-clDNN",
     "Linux-WASM",
-    "Linux-WebGL2"
+    "Linux-WebGL2",
+    "Linux-clDNN"
 ];
 
 var RCjson = JSON.parse(fs.readFileSync("./config.json"));
@@ -975,28 +975,12 @@ var numberTotal = 0;
             throw new Error("failed to load web page");
         });
 
-        let loadString = null;
-        let loadCount = 0;
-        await driver.wait(async function() {
-            if (until.elementLocated(By.xpath("//ul[@id='mocha-stats']/li[@class='duration']"))) {
-                let loadStringTmp = await driver.findElement(By.xpath("//ul[@id='mocha-stats']/li[@class='duration']//em")).getText();
-                if (loadStringTmp == loadString) {
-                    loadCount = loadCount + 1;
-                } else {
-                    loadString = loadStringTmp;
-                    loadCount = 0;
-                }
+        await driver.wait(function() {
+            driver.executeScript("return window.mochaFinish;").then(function(flag) {
+                RClog("debug", flag);
+            });
 
-                RClog("debug", "loadCount: " + loadCount);
-
-                if (loadCount >= 100) {
-                    return true;
-                } else {
-                    return false;
-                }
-            } else {
-                return false;
-            }
+            return driver.executeScript("return window.mochaFinish;");
         }, 200000).then(function() {
             RClog("console", "load remote URL is completed, no crash");
         }).catch(function(err) {
