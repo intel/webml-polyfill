@@ -13,6 +13,61 @@ function getObjectByName(array, name) {
   return ret;
 }
 
+function getTensorData(tensor) {
+  let data;
+  switch (tensor.dataType) {
+    case onnx.TensorProto.DataType.FLOAT: {
+      if (tensor.floatData && tensor.floatData.length > 0) {
+        data = new Float32Array(tensor.floatData);
+      } else if (tensor.rawData && tensor.rawData.length > 0) {
+        let dataView = new DataView(tensor.rawData.buffer, tensor.rawData.byteOffset, tensor.rawData.byteLength);
+        let length = tensor.dims.length ? product(tensor.dims) : 1;
+        data = new Float32Array(length);
+        for (let i = 0; i < length; ++i) {
+          // raw data is stored in little-endian order
+          data[i] = dataView.getFloat32(i*Float32Array.BYTES_PER_ELEMENT, true);
+        }
+      }
+    } break;
+    case onnx.TensorProto.DataType.INT64: {
+      console.info(`Tensor ${tensor.name} has 64-bit data. Cast to a 32-bit array.`);
+      if (tensor.int64Data && tensor.int64Data.length > 0) {
+        data = new Int32Array(tensor.int64Data);
+      } else if (tensor.rawData && tensor.rawData.length > 0) {
+        let dataView = new DataView(tensor.rawData.buffer, tensor.rawData.byteOffset, tensor.rawData.byteLength);
+        let length = tensor.dims.length ? product(tensor.dims) : 1;
+        data = new Int32Array(length);
+        for (let i = 0; i < length; ++i)
+          // raw data is stored in little-endian order
+          data[i] = dataView.getInt32(i*BigInt64Array.BYTES_PER_ELEMENT, true);
+      }
+    } break;
+    default: {
+      throw new Error(`tensor type ${tensor.dataType} is not supproted.`);
+    }
+  }
+
+  if (tensor.dims.length === 4) {
+    // NCHW -> NHWC
+    let nhwcData = new Float32Array(data.length);
+    const N = tensor.dims[0];
+    const C = tensor.dims[1];
+    const H = tensor.dims[2];
+    const W = tensor.dims[3];
+    for (let n = 0; n < N; ++n) {
+      for (let c = 0; c < C; ++c) {
+        for (let h = 0; h < H; ++h) {
+          for (let w = 0; w < W; ++w) {
+            nhwcData[n*H*W*C + h*W*C + w*C + c] = data[n*C*H*W + c*H*W + h*W + w];
+          }
+        }
+      }
+    }
+    data = nhwcData;
+  }
+  return data;
+}
+
 async function loadOnnxModel(modelName) {
   let response = await fetch(modelName);
   let bytes = await response.arrayBuffer();

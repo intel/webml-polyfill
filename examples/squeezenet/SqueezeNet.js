@@ -99,7 +99,7 @@ class SqueezeNet {
     if (this._tensorIds[name])
       throw new Error(`Tensor ${name} is already added`);
     let tensorType = valueInfo.type.tensorType;
-    let dims = tensorType.shape.dim.map(dim => {return dim.dimValue;});
+    let dims = tensorType.shape.dim.map(dim => dim.dimValue);
     if (dims.length == 4) {
       // NCHW -> NHWC
       let nchw = Array.from(dims);
@@ -129,51 +129,7 @@ class SqueezeNet {
     // set operand value
     const initializer = getObjectByName(this._onnxModel.graph.initializer, name);
     if (initializer) {
-      let data;
-      if (initializer.dataType == onnx.TensorProto.DataType.FLOAT) {
-        if (initializer.floatData && initializer.floatData.length > 0) {
-          data = new Float32Array(initializer.floatData);
-        } else if (initializer.rawData && initializer.rawData.length > 0) {
-          let dataView = new DataView(initializer.rawData.buffer, initializer.rawData.byteOffset, initializer.rawData.byteLength);
-          let length = initializer.dims.length ? product(initializer.dims) : 1;
-          data = new Float32Array(length);
-          for (let i = 0; i < length; ++i) {
-            // raw data is stored in little-endian order
-            data[i] = dataView.getFloat32(i*Float32Array.BYTES_PER_ELEMENT, true);
-          }
-        }
-      } else if (initializer.dataType == onnx.TensorProto.DataType.INT64) {
-        console.warn(`Operand ${name} has 64-bit data. Cast to a 32-bit array.`);
-        if (initializer.int64Data && initializer.int64Data.length > 0) {
-          data = new Int32Array(initializer.int64Data);
-        } else if (initializer.rawData && initializer.rawData.length > 0) {
-          let dataView = new DataView(initializer.rawData.buffer, initializer.rawData.byteOffset, initializer.rawData.byteLength);
-          let length = initializer.dims.length ? product(initializer.dims) : 1;
-          data = new Int32Array(length);
-          for (let i = 0; i < length; ++i)
-            // raw data is stored in little-endian order
-            data[i] = dataView.getInt32(i*BigInt64Array.BYTES_PER_ELEMENT, true);
-        }
-      }
-      if (initializer.dims.length === 4) {
-        // NCHW -> NHWC
-        let nhwcData = new Float32Array(data.length);
-        const N = initializer.dims[0];
-        const C = initializer.dims[1];
-        const H = initializer.dims[2];
-        const W = initializer.dims[3];
-        for (let n = 0; n < N; ++n) {
-          for (let c = 0; c < C; ++c) {
-            for (let h = 0; h < H; ++h) {
-              for (let w = 0; w < W; ++w) {
-                nhwcData[n*H*W*C + h*W*C + w*C + c] = data[n*C*H*W + c*H*W + h*W + w];
-              }
-            }
-          }
-        }
-        data = nhwcData;
-      }
-
+      let data = getTensorData(initializer);
       this._setOperandValue(tensorId, data);
       console.log(`set operand ${name} data ${data.length}`);
     }
@@ -335,26 +291,31 @@ class SqueezeNet {
           const inputChannels = inputType.dimensions[3];
           const groups = getObjectByName(attributes, 'group');
           const nGroups = typeof groups !== 'undefined' ? groups.i : 1;
-          const isDepthWiseConv = nGroups > 1 && nGroups === inputChannels;
-          if (isDepthWiseConv) {
-            console.log(`  groups: ${nGroups} (depthwise convolution)`);
-            let nhwc = this._getOperandValueByName(convFilter);
-            // NHWC -> CHWN where C === 1
-            let chwnData = new Float32Array(nhwc.length);
-            const N = dims[0];
-            const H = dims[1];
-            const W = dims[2];
-            for (let n = 0; n < N; ++n)
-              for (let h = 0; h < H; ++h)
-                for (let w = 0; w < W; ++w)
-                  chwnData[h*W*N + w*N + n] = nhwc[n*H*W + h*W + w];
+          let isDepthWiseConv = false;
+          if (nGroups > 1) {
+            if (nGroups !== inputChannels)
+              throw new Error('Group convolution is not supported.');
+            else {
+              isDepthWiseConv = true;
+              console.log(`  groups: ${nGroups} (depthwise convolution)`);
+              let nhwc = this._getOperandValueByName(convFilter);
+              // NHWC -> CHWN where C === 1
+              let chwnData = new Float32Array(nhwc.length);
+              const N = dims[0];
+              const H = dims[1];
+              const W = dims[2];
+              for (let n = 0; n < N; ++n)
+                for (let h = 0; h < H; ++h)
+                  for (let w = 0; w < W; ++w)
+                    chwnData[h*W*N + w*N + n] = nhwc[n*H*W + h*W + w];
 
-            this._setOperandValue(convFilterId, chwnData);
-            convFilterType.dimensions[0] = 1;
-            convFilterType.dimensions[3] = nGroups;
+              this._setOperandValue(convFilterId, chwnData);
+              convFilterType.dimensions[0] = 1;
+              convFilterType.dimensions[3] = nGroups;
 
-            // set multiplier to 1, not used in onnx model
-            inputs.splice(9, 0, this._addScalarInt32(1));
+              // set multiplier to 1, not used in onnx model
+              inputs.splice(9, 0, this._addScalarInt32(1));
+            }
           }
 
           // Add outputs
@@ -501,21 +462,17 @@ class SqueezeNet {
           const in2Type = this._getTensorTypeByName(in2);
           const in1Dims = in1Type.dimensions;
           const in2Dims = in2Type.dimensions;
-          const lenDiff = in1Dims.length - in2Dims.length;
 
-          // Multidirectional Broadcasting
-          if (lenDiff > 0) {   // in1Dims.length > in2Dims.length;
-            for (let i = 0; i < lenDiff; i++)
-              in2Dims.unshift(1);
-            console.log(`  extend ${in2} dimensions to [${in2Dims}]`);
-          }
-          if (lenDiff < 0) {   // in1Dims.length < in2Dims.length;
-            for (let i = 0; i < lenDiff; i++)
-              in1Dims.unshift(1);
-            console.log(`  extend ${in1} dimensions to [${in1Dims}]`);
+          // Compatible dims (multidirectional broadcasting)
+          const outputDims = new Array(Math.max(in1Dims.length, in2Dims.length));
+          for (let i = in1Dims.length - 1, j = in2Dims.length - 1, k = outputDims.length - 1; k >= 0;) {
+            let dim1 = in1Dims[i--] || 1;
+            let dim2 = in2Dims[j--] || 1;
+            if (dim1 !== dim2 && dim1 !== 1 && dim2 !== 1)
+              throw new Error(`Dimensions of ${in1} and ${in2} are not compatible`);
+            outputDims[k--] = Math.max(dim1, dim2);
           }
 
-          const outputDims = in1Dims.map((e, i) => Math.max(e, in2Dims[i]));
           const outputType = {type: this._nn.TENSOR_FLOAT32, dimensions: Array.from(outputDims)};
           const outputId = this._addNewTensorOperand(output, outputType);
           outputs.push(outputId);
@@ -706,17 +663,8 @@ class SqueezeNet {
           const attributes = node.attribute;
           const value = getObjectByName(attributes, 'value');
           const shapeTensor = value.t;
-
-          // warning: cast a int64 array to an int32 tensor
-          let dataView = new DataView(shapeTensor.rawData.buffer, shapeTensor.rawData.byteOffset, shapeTensor.rawData.byteLength);
-          let length = shapeTensor.rawData.byteLength / BigUint64Array.BYTES_PER_ELEMENT;
-          let shapeData = new Int32Array(length);
-          for (let i = 0; i < length; ++i) {
-            // raw data is stored in little-endian order
-            shapeData[i] = dataView.getInt32(i * BigUint64Array.BYTES_PER_ELEMENT, true);
-          }
-
-          let shapeType = {type: this._nn.TENSOR_INT32, dimensions: Array.from(shapeTensor.dims)};
+          const shapeData = getTensorData(shapeTensor);
+          const shapeType = {type: this._nn.TENSOR_INT32, dimensions: Array.from(shapeTensor.dims)};
           this._addNewTensorOperand(name, shapeType, shapeData);  
         } break;
         case 'Reshape': {
