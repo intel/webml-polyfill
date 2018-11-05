@@ -1,12 +1,10 @@
 # Web Machine Learning (ML) API polyfill and examples
 
------------------
 
 Linux/MacOS |
 -------- |
 [![Build Status](https://api.travis-ci.com/intel/webml-polyfill.svg?branch=master)](https://travis-ci.com/intel/webml-polyfill) |
 
------------------
 
 ## Development / Testing
 
