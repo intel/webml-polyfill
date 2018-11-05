@@ -1,5 +1,9 @@
 guiState.scaleFactor = 0.75;
 
+const prefer = {
+  MPS: 'sustained',
+  BNNS: 'fast',
+};
 const util = new Utils();
 const canvasSingle = document.getElementById('canvasSingle');
 const ctxSingle = canvasSingle.getContext('2d');
@@ -15,7 +19,9 @@ const wasm = document.getElementById('wasm');
 const webgl = document.getElementById('webgl');
 const webml = document.getElementById('webml');
 const inputImage = document.getElementById('image');
+const selectPrefer = document.getElementById('selectPrefer');
 let currentBackend = '';
+let currentPrefer = '';
 
 function checkPreferParam() {
   if (getOS() === 'Mac OS') {
@@ -74,6 +80,11 @@ function changeBackend(newBackend) {
   if (currentBackend === newBackend) {
     return;
   }
+  if (newBackend !== "WebML") {
+    selectPrefer.style.display = 'none';
+  } else {
+    selectPrefer.style.display = 'inline';
+  }
   backend.innerHTML = 'Setting...';
   setTimeout(() => {
     util.init(newBackend, inputSize).then(() => {
@@ -87,6 +98,26 @@ function changeBackend(newBackend) {
       backend.innerHTML = 'WASM';
     });
   }, 10);
+}
+
+function changePrefer(newPrefer) {
+  if (currentPrefer === newPrefer) {
+    return;
+  }
+  util.deleteAll();
+  selectPrefer.dataset.prefer = newPrefer;
+  selectPrefer.innerHTML = 'Setting...';
+  setTimeout(() => {
+    util.init(util.model._backend, inputSize).then(() => {
+      currentPrefer = newPrefer;
+      updatePrefer();
+      drawResult();
+    });
+  }, 10);
+}
+
+function updatePrefer() {
+  selectPrefer.innerHTML = currentPrefer === "sustained"? "MPS" : "BNNS";
 }
 
 function main() {
@@ -117,6 +148,31 @@ function main() {
     }
   }
 
+  if (currentBackend === '') {
+    if (nnNative) {
+      currentBackend = 'WebML';
+    } else {
+      currentBackend = 'WASM';
+    }
+  }
+
+  //register prefers
+  if (getOS() === 'Mac OS' && currentBackend === 'WebML') {
+    $('.prefer').css("display","inline");
+    let MPS = $('<button class="dropdown-item"/>')
+      .text('MPS')
+      .click(_ => changePrefer(prefer.MPS));
+    $('.preference').append(MPS);
+    let BNNS = $('<button class="dropdown-item"/>')
+      .text('BNNS')
+      .click(_ => changePrefer(prefer.BNNS));
+    $('.preference').append(BNNS);
+    if (!currentPrefer) {
+      selectPrefer.dataset.prefer = "sustained";
+      currentPrefer = "sustained";
+    }
+  }
+
   initModel(true);
 }
 
@@ -125,8 +181,9 @@ function initModel(first = false) {
     console.warn('not initialized');
     return;
   }
-  util.init(currentBackend == '' ? undefined : currentBackend, inputSize).then(() => {
+  util.init(currentBackend, inputSize).then(() => {
     updateBackend();
+    updatePrefer()
     drawResult();
     button.setAttribute('class', 'btn btn-primary');
     image.removeAttribute('disabled');

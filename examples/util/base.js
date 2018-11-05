@@ -42,7 +42,7 @@ function getNativeAPI() {
   let backend;
 
   if (os === 'Mac OS') {
-    let prefer = getPreferParam();
+    let prefer = getPreferParamfromSwitch();
     if (prefer === 'fast') {
       backend = 'BNNS';
     } else if (prefer === 'sustained') {
@@ -86,6 +86,18 @@ function getPreferParam() {
   return prefer;
 }
 
+function getPreferParamfromSwitch() {
+  // workaround for using MPS backend on Mac OS when choosing "MPS" for HTML switch button "selectPrefer"
+  // workaround for using BNNS backend on Mac OS when choosing "BNNS" for HTML switch button "selectPrefer"
+  // use 'sustained' as default for Mac OS
+  let prefer = 'sustained';
+  const selectPrefer = document.getElementById('selectPrefer');
+  if (selectPrefer.dataset.prefer != null) {
+    prefer = selectPrefer.dataset.prefer;
+  }
+  return prefer;
+}
+
 function getPrefer(backend) {
   let nn = navigator.ml.getNeuralNetworkContext();
   let prefer = nn.PREFER_FAST_SINGLE_ANSWER;
@@ -94,6 +106,20 @@ function getPrefer(backend) {
       if (urlPrefer === 'sustained') {
         prefer = nn.PREFER_SUSTAINED_SPEED;
       } else if (urlPrefer === 'fast') {
+        prefer = nn.PREFER_FAST_SINGLE_ANSWER;
+      }
+  }
+  return prefer;
+}
+
+function getPreferfromSwitch(backend) {
+  let nn = navigator.ml.getNeuralNetworkContext();
+  let prefer = nn.PREFER_FAST_SINGLE_ANSWER;
+  if (getOS() === 'Mac OS' && backend === 'WebML') {
+      let switchPrefer = getPreferParamfromSwitch();
+      if (switchPrefer === 'sustained') {
+        prefer = nn.PREFER_SUSTAINED_SPEED;
+      } else if (switchPrefer === 'fast') {
         prefer = nn.PREFER_FAST_SINGLE_ANSWER;
       }
   }

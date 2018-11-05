@@ -15,6 +15,11 @@ const squeezenet = {
   }
 };
 
+const prefer = {
+  MPS: 'sustained',
+  BNNS: 'fast',
+};
+
 function main(camera) {
 
   const availableModels = [
@@ -29,11 +34,13 @@ function main(camera) {
   const progressBar = document.getElementById('progressBar');
   const backend = document.getElementById('backend');
   const selectModel = document.getElementById('selectModel');
+  const selectPrefer = document.getElementById('selectPrefer');
   const wasm = document.getElementById('wasm');
   const webgl = document.getElementById('webgl');
   const webml = document.getElementById('webml');
   let currentBackend = '';
   let currentModel = '';
+  let currentPrefer = '';
   let streaming = false;
 
   let utils = new Utils(canvasElement);
@@ -98,6 +105,11 @@ function main(camera) {
       return;
     }
     streaming = false;
+    if (newBackend !== "WebML") {
+      selectPrefer.style.display = 'none';
+    } else {
+      selectPrefer.style.display = 'inline';
+    }
     utils.deleteAll();
     backend.innerHTML = 'Setting...';
     setTimeout(() => {
@@ -135,6 +147,32 @@ function main(camera) {
       utils.init(utils.model._backend).then(() => {
         currentModel = newModel.modelName;
         updateModel();
+        if (!camera) {
+          utils.predict(imageElement).then(ret => updateResult(ret));
+        } else {
+          streaming = true;
+          startPredict();
+        }
+      });
+    }, 10);
+  }
+
+  function updatePrefer() {
+    selectPrefer.innerHTML = currentPrefer === "sustained"? "MPS" : "BNNS";
+  }
+
+  function changePrefer(newPrefer) {
+    if (currentPrefer === newPrefer) {
+      return;
+    }
+    streaming = false;
+    utils.deleteAll();
+    selectPrefer.dataset.prefer = newPrefer;
+    selectPrefer.innerHTML = 'Setting...';
+    setTimeout(() => {
+      utils.init(utils.model._backend).then(() => {
+        currentPrefer = newPrefer;
+        updatePrefer();
         if (!camera) {
           utils.predict(imageElement).then(ret => updateResult(ret));
         } else {
@@ -211,6 +249,14 @@ function main(camera) {
     };
   }
 
+  if (currentBackend === '') {
+    if (nnNative) {
+      currentBackend = 'WebML';
+    } else {
+      currentBackend = 'WASM';
+    }
+  }
+
   // register models
   for (let model of availableModels) {
     if (!_fileExists(model.modelFile))
@@ -222,6 +268,23 @@ function main(camera) {
     if (!currentModel) {
       utils.changeModelParam(model);
       currentModel = model.modelName;
+    }
+  }
+
+  //register prefers
+  if (getOS() === 'Mac OS' && currentBackend === 'WebML') {
+    $('.prefer').css("display","inline");
+    let MPS = $('<button class="dropdown-item"/>')
+      .text('MPS')
+      .click(_ => changePrefer(prefer.MPS));
+    $('.preference').append(MPS);
+    let BNNS = $('<button class="dropdown-item"/>')
+      .text('BNNS')
+      .click(_ => changePrefer(prefer.BNNS));
+    $('.preference').append(BNNS);
+    if (!currentPrefer) {
+      selectPrefer.dataset.prefer = "sustained";
+      currentPrefer = "sustained";
     }
   }
 
@@ -238,9 +301,10 @@ function main(camera) {
       utils.predict(imageElement).then(ret => updateResult(ret));
     };
 
-    utils.init().then(() => {
+    utils.init(currentBackend).then(() => {
       updateBackend();
       updateModel();
+      updatePrefer();
       utils.predict(imageElement).then(ret => updateResult(ret));
       buttonEelement.setAttribute('class', 'btn btn-primary');
       inputElement.removeAttribute('disabled');
@@ -258,9 +322,10 @@ function main(camera) {
 
     navigator.mediaDevices.getUserMedia({audio: false, video: {facingMode: "environment"}}).then((stream) => {
       video.srcObject = stream;
-      utils.init().then(() => {
+      utils.init(currentBackend).then(() => {
         updateBackend();
         updateModel();
+        updatePrefer();
         streaming = true;
         startPredict();
       }).catch((e) => {

@@ -1,3 +1,8 @@
+const prefer = {
+  MPS: 'sustained',
+  BNNS: 'fast',
+};
+
 function main() {
     let utils = new Utils();
     const videoElement = document.getElementById('video');
@@ -6,7 +11,9 @@ function main() {
     const wasm = document.getElementById('wasm');
     const webgl = document.getElementById('webgl');
     const webml = document.getElementById('webml');
+    const selectPrefer = document.getElementById('selectPrefer');
     let currentBackend = '';
+    let currentPrefer = '';
   
     function checkPreferParam() {
       if (getOS() === 'Mac OS') {
@@ -66,6 +73,11 @@ function main() {
       if (currentBackend === newBackend) {
         return;
       }
+      if (newBackend !== "WebML") {
+        selectPrefer.style.display = 'none';
+      } else {
+        selectPrefer.style.display = 'inline';
+      }
       backend.innerHTML = 'Setting...';
       setTimeout(() => {
         utils.init(newBackend).then(() => {
@@ -76,6 +88,28 @@ function main() {
           showAlert(utils.model._backend);
           changeBackend('WASM');
           backend.innerHTML = 'WASM';
+        });
+      }, 10);
+    }
+
+    function updatePrefer() {
+      selectPrefer.innerHTML = currentPrefer === "sustained"? "MPS" : "BNNS";
+    }
+
+    function changePrefer(newPrefer) {
+      if (currentPrefer === newPrefer) {
+        return;
+      }
+      streaming = false;
+      utils.deleteAll();
+      selectPrefer.dataset.prefer = newPrefer;
+      selectPrefer.innerHTML = 'Setting...';
+      setTimeout(() => {
+        utils.init(utils.model._backend).then(() => {
+          currentPrefer = newPrefer;
+          updatePrefer();
+          streaming = true;
+          startPredict();
         });
       }, 10);
     }
@@ -104,6 +138,31 @@ function main() {
         changeBackend('WASM');
       }
     }
+
+    if (currentBackend === '') {
+      if (nnNative) {
+        currentBackend = 'WebML';
+      } else {
+        currentBackend = 'WASM';
+      }
+    }
+  
+     //register prefers
+    if (getOS() === 'Mac OS' && currentBackend === 'WebML') {
+      $('.prefer').css("display","inline");
+      let MPS = $('<button class="dropdown-item"/>')
+        .text('MPS')
+        .click(_ => changePrefer(prefer.MPS));
+      $('.preference').append(MPS);
+      let BNNS = $('<button class="dropdown-item"/>')
+        .text('BNNS')
+        .click(_ => changePrefer(prefer.BNNS));
+      $('.preference').append(BNNS);
+      if (!currentPrefer) {
+        selectPrefer.dataset.prefer = "sustained";
+        currentPrefer = "sustained";
+      }
+    }
   
     let stats = new Stats();
     stats.dom.style.cssText = 'position:fixed;top:60px;left:10px;cursor:pointer;opacity:0.9;z-index:10000';
@@ -112,8 +171,9 @@ function main() {
   
     navigator.mediaDevices.getUserMedia({audio: false, video: {facingMode: "environment"}}).then((stream) => {
       video.srcObject = stream;
-      utils.init().then(() => {
+      utils.init(currentBackend).then(() => {
         updateBackend();
+        updatePrefer();
         streaming = true;
         startPredict();
       }).catch((e) => {
@@ -127,13 +187,13 @@ function main() {
     });
   
     function startPredict() {
-      stats.begin();
-      utils.predict(videoElement).then(() => {
-        stats.end();
-        if (streaming) {
+      if (streaming) {
+        stats.begin();
+        utils.predict(videoElement).then(() => {
+          stats.end();
           setTimeout(startPredict, 0);
-        }
-      });
+        });
+      }
     }
   }
   

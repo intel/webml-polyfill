@@ -1,3 +1,8 @@
+const prefer = {
+  MPS: 'sustained',
+  BNNS: 'fast',
+};
+
 function main() {
     let utils = new Utils();
     const imageElement = document.getElementById('image');
@@ -7,7 +12,9 @@ function main() {
     const wasm = document.getElementById('wasm');
     const webgl = document.getElementById('webgl');
     const webml = document.getElementById('webml');
+    const selectPrefer = document.getElementById('selectPrefer');
     let currentBackend = '';
+    let currentPrefer = '';
   
     function checkPreferParam() {
       if (getOS() === 'Mac OS') {
@@ -67,6 +74,11 @@ function main() {
       if (currentBackend === newBackend) {
         return;
       }
+      if (newBackend !== "WebML") {
+        selectPrefer.style.display = 'none';
+      } else {
+        selectPrefer.style.display = 'inline';
+      }
       backend.innerHTML = 'Setting...';
       setTimeout(() => {
         utils.init(newBackend).then(() => {
@@ -78,6 +90,26 @@ function main() {
           showAlert(utils.model._backend);
           changeBackend('WASM');
           backend.innerHTML = 'WASM';
+        });
+      }, 10);
+    }
+
+    function updatePrefer() {
+      selectPrefer.innerHTML = currentPrefer === "sustained"? "MPS" : "BNNS";
+    }
+
+    function changePrefer(newPrefer) {
+      if (currentPrefer === newPrefer) {
+        return;
+      }
+      //utils.deleteAll();
+      selectPrefer.dataset.prefer = newPrefer;
+      selectPrefer.innerHTML = 'Setting...';
+      setTimeout(() => {
+        utils.init(utils.model._backend).then(() => {
+          currentPrefer = newPrefer;
+          updatePrefer();
+          utils.predict(imageElement);
         });
       }, 10);
     }
@@ -106,7 +138,32 @@ function main() {
         changeBackend('WASM');
       }
     }
+
+    if (currentBackend === '') {
+      if (nnNative) {
+        currentBackend = 'WebML';
+      } else {
+        currentBackend = 'WASM';
+      }
+    }
   
+     //register prefers
+    if (getOS() === 'Mac OS' && backend === 'WebML') {
+      $('.prefer').css("display","inline");
+      let MPS = $('<button class="dropdown-item"/>')
+        .text('MPS')
+        .click(_ => changePrefer(prefer.MPS));
+      $('.preference').append(MPS);
+      let BNNS = $('<button class="dropdown-item"/>')
+        .text('BNNS')
+        .click(_ => changePrefer(prefer.BNNS));
+      $('.preference').append(BNNS);
+      if (!currentPrefer) {
+        selectPrefer.dataset.prefer = "sustained";
+        currentPrefer = "sustained";
+      }
+    }
+
     inputElement.addEventListener('change', (e) => {
       let files = e.target.files;
       if (files.length > 0) {
@@ -118,8 +175,9 @@ function main() {
       utils.predict(imageElement);
     }
   
-    utils.init().then(() => {
+    utils.init(currentBackend).then(() => {
       updateBackend();
+      updatePrefer();
       utils.predict(imageElement);
       button.setAttribute('class', 'btn btn-primary');
       input.removeAttribute('disabled');

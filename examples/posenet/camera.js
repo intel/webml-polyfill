@@ -6,10 +6,16 @@ const backend = document.getElementById('backend');
 const wasm = document.getElementById('wasm');
 const webgl = document.getElementById('webgl');
 const webml = document.getElementById('webml');
+const selectPrefer = document.getElementById('selectPrefer');
 let currentBackend = '';
+let currentPrefer = '';
 
 guiState.scoreThreshold = 0.15;
 
+const prefer = {
+  MPS: 'sustained',
+  BNNS: 'fast',
+};
 const util = new Utils();
 const videoWidth = 500;
 const videoHeight = 500;
@@ -82,6 +88,11 @@ function changeBackend(newBackend) {
   if (currentBackend === newBackend) {
     return;
   }
+  if (newBackend !== "WebML") {
+    selectPrefer.style.display = 'none';
+  } else {
+    selectPrefer.style.display = 'inline';
+  }
   backend.innerHTML = 'Setting...';
   setTimeout(() => {
     util.init(newBackend, inputSize).then(() => {
@@ -116,8 +127,11 @@ async function initModel(first = false) {
     console.warn('not initialized');
     return;
   }
-  util.init(currentBackend == '' ? undefined : currentBackend, inputSize).then(() => {
+  streaming = true;
+  util.init(currentBackend, inputSize).then(() => {
     updateBackend();
+    updatePrefer();
+    //streaming = true;
   }).catch((e) => {
     console.warn(`Failed to init ${util.model._backend}, try to use WASM`);
     console.error(e);
@@ -169,6 +183,28 @@ function removeAlertElement() {
   }
 }
 
+function changePrefer(newPrefer) {
+  if (currentPrefer === newPrefer) {
+    return;
+  }
+  streaming = false;
+  util.deleteAll();
+  selectPrefer.dataset.prefer = newPrefer;
+  selectPrefer.innerHTML = 'Setting...';
+  setTimeout(() => {
+    util.init(util.model._backend, inputSize).then(() => {
+      currentPrefer = newPrefer;
+      updatePrefer();
+      initModel();
+      poseDetectionFrame();
+    });
+  }, 10);
+}
+
+function updatePrefer() {
+  selectPrefer.innerHTML = currentPrefer === "sustained"? "MPS" : "BNNS";
+}
+
 async function main() {
   checkPreferParam();
 
@@ -194,6 +230,31 @@ async function main() {
     wasm.onclick = function(e) {
       removeAlertElement();
       changeBackend('WASM');
+    }
+  }
+
+  if (currentBackend === '') {
+    if (nnNative) {
+      currentBackend = 'WebML';
+    } else {
+      currentBackend = 'WASM';
+    }
+  }
+
+  //register prefers
+  if (getOS() === 'Mac OS' && currentBackend === 'WebML') {
+    $('.prefer').css("display","inline");
+    let MPS = $('<button class="dropdown-item"/>')
+      .text('MPS')
+      .click(_ => changePrefer(prefer.MPS));
+    $('.preference').append(MPS);
+    let BNNS = $('<button class="dropdown-item"/>')
+      .text('BNNS')
+      .click(_ => changePrefer(prefer.BNNS));
+    $('.preference').append(BNNS);
+    if (!currentPrefer) {
+      selectPrefer.dataset.prefer = "sustained";
+      currentPrefer = "sustained";
     }
   }
 
@@ -224,10 +285,12 @@ function drawVideo(video, canvas, w, h) {
 }
 
 async function poseDetectionFrame() {
-  if (util.initialized) {
-    await predict(video);
+  if (streaming) {
+    if (util.initialized) {
+      await predict(video);
+    }
+    setTimeout(poseDetectionFrame, 0);
   }
-  setTimeout(poseDetectionFrame, 0);
 }
 
 async function predict(video) {
