@@ -3624,6 +3624,7 @@ describe('Unit Test/Model Test', function() {
     it('raise error when the \'batch_size_output\' in dimensions([batch_size_output, num_units]) of output tensor is not equal to the \'batch_size\' in dimensions([batch_size, input_size]) of converted 2-D input0 for "FULLY_CONNECTED" operation', function() {
       return nn.createModel(options).then((model)=>{
         let batch_size = 3;
+        let batch_size_output = 4;
         let input_size = 1;
         let num_units = 1;
         model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [batch_size, input_size]});
