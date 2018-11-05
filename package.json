@@ -9,7 +9,8 @@
   "scripts": {
     "watch": "webpack --watch",
     "start": "npm run build && http-server .",
-    "build": "webpack"
+    "build": "webpack",
+    "test": "node travis-ci.js"
   },
   "repository": {
     "type": "git",
@@ -27,11 +28,14 @@
     "babel-loader": "^7.1.1",
     "babel-polyfill": "^6.26.0",
     "babel-preset-env": "^1.6.1",
+    "chromedriver": "^2.43.1",
+    "fast-csv": "^2.4.1",
     "http-server": "^0.10.0",
-    "webpack": "^3.5.5",
     "ndarray": "^1.0.18",
     "ndarray-ops": "^1.2.2",
-    "ndarray-squeeze": "^1.0.2"
+    "ndarray-squeeze": "^1.0.2",
+    "selenium-webdriver": "^3.1.0",
+    "webpack": "^3.5.5"
   },
   "dependencies": {}
 }
