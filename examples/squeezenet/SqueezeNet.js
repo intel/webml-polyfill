@@ -200,6 +200,7 @@ class SqueezeNet {
           const convFilter = node.input[1];
           const convBias = node.input[2];
           const convFilterType = this._getTensorTypeByName(convFilter);
+          const nGroups = getAttributeValue(node, 'group', 1);
           const dims = convFilterType.dimensions;
           const nChannels = dims[0];
           const convFilterId = this._getTensorIdByName(convFilter);
@@ -210,32 +211,31 @@ class SqueezeNet {
           inputs.push(convFilterId);
           inputs.push(convBiasId);
 
-          const attributes = node.attribute;
-          const kernelShape = getObjectByName(attributes, 'kernel_shape');
-          if (!kernelShape || kernelShape.ints.length !== 2)
+          const kernelShape = getAttributeValue(node, 'kernel_shape');
+          if (!kernelShape || kernelShape.length !== 2)
             throw new Error('Invalid kernelShape');
-          const kernelHeight = kernelShape.ints[0];
-          const kernelWidth = kernelShape.ints[1];
+          const kernelHeight = kernelShape[0];
+          const kernelWidth = kernelShape[1];
 
-          const pads = getObjectByName(attributes, 'pads');
-          if (!pads || pads.ints.length !== 4)
+          const pads = getAttributeValue(node, 'pads');
+          if (!pads || pads.length !== 4)
             throw new Error('Invalid pads');
-          console.log(`  pads: [${pads.ints}]`);
-          const paddingHeightBegin = pads.ints[0];
-          const paddingWidthBegin = pads.ints[1];
-          const paddingHeightEnd = pads.ints[2];
-          const paddingWidthEnd = pads.ints[3];
+          console.log(`  pads: [${pads}]`);
+          const paddingHeightBegin = pads[0];
+          const paddingWidthBegin = pads[1];
+          const paddingHeightEnd = pads[2];
+          const paddingWidthEnd = pads[3];
           inputs.push(this._addScalarInt32(paddingWidthBegin));
           inputs.push(this._addScalarInt32(paddingWidthEnd));
           inputs.push(this._addScalarInt32(paddingHeightBegin));
           inputs.push(this._addScalarInt32(paddingHeightEnd));
 
-          const strides = getObjectByName(attributes, 'strides');
-          if (!strides || strides.ints.length !== 2)
+          const strides = getAttributeValue(node, 'strides');
+          if (!strides || strides.length !== 2)
             throw new Error('Invalid strides');
-          console.log(`  strides: [${strides.ints}]`);
-          const strideY = strides.ints[0];
-          const strideX = strides.ints[1];
+          console.log(`  strides: [${strides}]`);
+          const strideY = strides[0];
+          const strideX = strides[1];
           inputs.push(this._addScalarInt32(strideX));
           inputs.push(this._addScalarInt32(strideY));
 
@@ -251,8 +251,7 @@ class SqueezeNet {
             const bnBias = bnNode.input[2];
             const mean = bnNode.input[3];
             const variance = bnNode.input[4];
-            const attributes = bnNode.attribute;
-            const epsilon = getObjectByName(attributes, 'epsilon').f;
+            const epsilon = getAttributeValue(bnNode, 'epsilon');
 
             const scaleTensor = this._getOperandValueByName(scale);
             const meanTensor = this._getOperandValueByName(mean);
@@ -289,8 +288,6 @@ class SqueezeNet {
           // reshape kernel for depthwise conv
           const inputType = this._getTensorTypeByName(input);
           const inputChannels = inputType.dimensions[3];
-          const groups = getObjectByName(attributes, 'group');
-          const nGroups = typeof groups !== 'undefined' ? groups.i : 1;
           let isDepthWiseConv = false;
           if (nGroups > 1) {
             if (nGroups !== inputChannels)
@@ -341,9 +338,7 @@ class SqueezeNet {
           const bnBias = node.input[2];
           const mean = node.input[3];
           const variance = node.input[4];
-
-          const attributes = node.attribute;
-          const epsilon = getObjectByName(attributes, 'epsilon').f;
+          const epsilon = getAttributeValue(node, 'epsilon');
 
           const scaleTensor = this._getOperandValueByName(scale);
           const meanTensor = this._getOperandValueByName(mean);
@@ -489,15 +484,10 @@ class SqueezeNet {
           const input = node.input[0];    // A
           const weights = node.input[1];  // B
           const bias = node.input[2];     // C
-          const attributes = node.attribute;
-          let alpha = getObjectByName(attributes, 'alpha');
-          let beta = getObjectByName(attributes, 'beta');
-          let transA = getObjectByName(attributes, 'transA');
-          let transB = getObjectByName(attributes, 'transB');
-          alpha = alpha ? alpha.f : 1;
-          beta = beta ? beta.f : 1;
-          transA = transA ? transA.i : 0;
-          transB = transB ? transB.i : 0;
+          let alpha  = getAttributeValue(node, 'alpha',  1);
+          let beta   = getAttributeValue(node, 'beta',   1);
+          let transA = getAttributeValue(node, 'transA', 0);
+          let transB = getAttributeValue(node, 'transB', 0);
 
           if (alpha !== 1 || beta !== 1 || transA || !transB)
             throw new Error('Only support fc-like Gemm oprations, i.e. alpha == beta == 1 && !transA && transB');
@@ -537,34 +527,33 @@ class SqueezeNet {
           const x = node.input[0];
           inputs.push(this._getTensorIdByName(x));
 
-          const attributes = node.attribute;
-          const pads = getObjectByName(attributes, 'pads');
-          if (!pads || pads.ints.length !== 4)
+          const pads = getAttributeValue(node, 'pads');
+          if (!pads || pads.length !== 4)
             throw new Error('Invalid pads');
           console.log(`  pads: [${pads.ints}]`);
-          const paddingHeightBegin = pads.ints[0];
-          const paddingWidthBegin = pads.ints[1];
-          const paddingHeightEnd = pads.ints[2];
-          const paddingWidthEnd = pads.ints[3];
+          const paddingHeightBegin = pads[0];
+          const paddingWidthBegin = pads[1];
+          const paddingHeightEnd = pads[2];
+          const paddingWidthEnd = pads[3];
           inputs.push(this._addScalarInt32(paddingWidthBegin));
           inputs.push(this._addScalarInt32(paddingWidthEnd));
           inputs.push(this._addScalarInt32(paddingHeightBegin));
           inputs.push(this._addScalarInt32(paddingHeightEnd));
 
-          const strides = getObjectByName(attributes, 'strides');
-          if (!strides || strides.ints.length !== 2)
+          const strides = getAttributeValue(node, 'strides');
+          if (!strides || strides.length !== 2)
             throw new Error('Invalid strides');
-          console.log(`  strides: [${strides.ints}]`);
-          const strideY = strides.ints[0];
-          const strideX = strides.ints[1];
+          console.log(`  strides: [${strides}]`);
+          const strideY = strides[0];
+          const strideX = strides[1];
           inputs.push(this._addScalarInt32(strideX));
           inputs.push(this._addScalarInt32(strideY));
 
-          const kernelShape = getObjectByName(attributes, 'kernel_shape');
-          if (!kernelShape || kernelShape.ints.length !== 2)
+          const kernelShape = getAttributeValue(node, 'kernel_shape');
+          if (!kernelShape || kernelShape.length !== 2)
             throw new Error('Invalid kernelShape');
-          const kernelHeight = kernelShape.ints[0];
-          const kernelWidth = kernelShape.ints[1];
+          const kernelHeight = kernelShape[0];
+          const kernelWidth = kernelShape[1];
           inputs.push(this._addScalarInt32(kernelWidth));
           inputs.push(this._addScalarInt32(kernelHeight));
           inputs.push(this._addScalarInt32(this._nn.FUSED_NONE));
@@ -594,11 +583,10 @@ class SqueezeNet {
           for (let i = 0; i < node.input.length; ++i) {
             inputs.push(this._getTensorIdByName(node.input[i]));
           }
-          const attributes = node.attribute;
-          const axis = getObjectByName(attributes, 'axis');
-          if (axis && axis.i !== 1)
-            throw new Error('Invalid axis ${axis.i}');
-          console.log(`  axis: [${axis.i}]`);
+          const axis = getAttributeValue(node, 'axis');
+          if (axis && axis !== 1)
+            throw new Error(`Invalid axis ${axis}`);
+          console.log(`  axis: [${axis}]`);
           // C axis is 3 in NHWC layout
           const concatAxis = 3;
           inputs.push(this._addScalarInt32(concatAxis));
@@ -660,9 +648,7 @@ class SqueezeNet {
         } break;
         case 'Constant': {
           const name = node.output[0];
-          const attributes = node.attribute;
-          const value = getObjectByName(attributes, 'value');
-          const shapeTensor = value.t;
+          const shapeTensor = getAttributeValue(node, 'value');
           const shapeData = getTensorData(shapeTensor);
           const shapeType = {type: this._nn.TENSOR_INT32, dimensions: Array.from(shapeTensor.dims)};
           this._addNewTensorOperand(name, shapeType, shapeData);  
@@ -703,8 +689,7 @@ class SqueezeNet {
           const input = node.input[0];
 
           const inputDims = this._getTensorTypeByName(input).dimensions;
-          const attributes = node.attribute;
-          const axes = getObjectByName(attributes, 'axes').ints;
+          const axes = getAttributeValue(node, 'axes');
           for (let i of axes)
             inputDims.splice(i, 0, 1);
 
