@@ -272,6 +272,29 @@ function GetConcatenationAttrs(nnOperands, inputs, outputs) {
   return attrs;
 }
 
+/**
+ * Get FullyConnected attributes.
+ * 
+ * @param {Object[]} nnOperands - An array of operands.
+ * @param {number[]} inputs - [inputCode, kernelCode, biasCode, fuseCode].
+ * @param {number[]} outputs - [outputCode].
+ */
+function GetFullyConnectedAttrs(nnOperands, inputs, outputs) {
+  let kernel = nnOperands[inputs[1]];
+  let bias = nnOperands[inputs[2]];
+  let kernelTensor = new Tensor(kernel.value, kernel.dimensions, OperandCodeMap.get(kernel.type));
+  let biasTensor = new Tensor(bias.value, bias.dimensions, OperandCodeMap.get(bias.type));
+  let activation = FuseCodeMap.get(nnOperands[inputs[3]].value[0]);
+  let attrs = {
+    inputs: [inputs[0]],
+    outputs: outputs,
+    activation: activation,
+    use_bias: true,
+    weights: [kernelTensor, biasTensor]
+  };
+  return attrs;
+}
+
 export const OperationCodeToLayersMap = new Map([
   [OperationCode.ADD, layers.Add],
   [OperationCode.MUL, layers.Mul],
@@ -281,7 +304,8 @@ export const OperationCodeToLayersMap = new Map([
   [OperationCode.AVERAGE_POOL_2D, layers.AveragePool2D],
   [OperationCode.SOFTMAX, layers.Activation],
   [OperationCode.RESHAPE, layers.Reshape],
-  [OperationCode.CONCATENATION, layers.Concatenation]
+  [OperationCode.CONCATENATION, layers.Concatenation],
+  [OperationCode.FULLY_CONNECTED, layers.FullyConnected]
 ]);
 
 export const OperationCodeAttrsMap = new Map([
@@ -293,7 +317,8 @@ export const OperationCodeAttrsMap = new Map([
   [OperationCode.AVERAGE_POOL_2D, GetPool2DAttrs],
   [OperationCode.SOFTMAX, GetSoftmaxAttrs],
   [OperationCode.RESHAPE, GetReshapeAttrs],
-  [OperationCode.CONCATENATION, GetConcatenationAttrs]
+  [OperationCode.CONCATENATION, GetConcatenationAttrs],
+  [OperationCode.FULLY_CONNECTED, GetFullyConnectedAttrs]
 ]);
 
 export const WebGL2SpecialLayers = {

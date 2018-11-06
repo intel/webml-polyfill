@@ -6,6 +6,7 @@ import TopClasses from './TopClasses'
 import Reshape from './Reshape'
 import Concatenation from './Concatenation'
 import FeatureMapConcate from './FeatureMapConcate'
+import FullyConnected from './FullyConnected'
 
 export {
   Input,
@@ -15,5 +16,6 @@ export {
   TopClasses,
   Reshape,
   Concatenation,
-  FeatureMapConcate
+  FeatureMapConcate,
+  FullyConnected
 }
