@@ -1,4 +1,2 @@
-Files in this folder are modified from keras-js and are licensed under the MIT License.
-
-Here is the MIT License of keras-js:
-[MIT License](https://github.com/transcranial/keras-js/blob/master/LICENSE)
+The WebGL2Model.js imports [tfjs-core](https://github.com/tensorflow/tfjs-core), 
+which is licensed under the Apache License, Version 2.0.

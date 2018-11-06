@@ -2,7 +2,7 @@ import {PreferenceCode,ResultCode} from './Enums'
 import Device from './wasm/Device'
 import * as utils from './utils'
 import Execution from './Execution'
-import webgl2Model from './webgl2/Model'
+import WebGL2Model from './webgl2/WebGL2Model'
 
 export default class Compilation {
   /**
@@ -53,7 +53,7 @@ export default class Compilation {
    */
   async finish() {
     if (this._useWebGL2) {
-      this._preparedModel = new webgl2Model(this._model);
+      this._preparedModel = new WebGL2Model(this._model);
       await this._preparedModel.prepareModel();
     } else {
       this._preparedModel = await this._device.prepareModel(this._model);
