@@ -87,6 +87,16 @@ class ImageClassificationModel {
 
     let inputs = Array.from(graph.inputsArray());
     let outputs = Array.from(graph.outputsArray());
+
+    //use for inception_resnet_v2 to add a new outputTensor
+    if (graph.tensors(0).name() === "InceptionResnetV2/AuxLogits/Conv2d_1a_3x3/AvgPool") {
+      let tensorType = {type: this._nn.TENSOR_FLOAT32, dimensions: [1, 1001]};
+      let tensorId = this._operandIndex++;
+      this._model.addOperand(tensorType);
+      this._tensorIds.push(tensorId);
+      outputs = [tensorId];
+    }
+
     this._model.identifyInputsAndOutputs(inputs, outputs);
   }
 
@@ -228,14 +238,31 @@ class ImageClassificationModel {
           let tensorId = this._operandIndex++;
           this._model.addOperand(tensorType);
           this._tensorIds.push(tensorId);
-          this._model.setOperandValue(tensorId, new Int32Array([1,1001]));
+          this._model.setOperandValue(tensorId, new Int32Array([1, 1001]));
           inputs.push(tensorId);
           opType = this._nn.RESHAPE;
+        } break;
+        case tflite.BuiltinOperator.FULLY_CONNECTED: {
+          let options = operator.builtinOptions(new tflite.FullyConnectedOptions());
+          let fuseCode = FuseCodeMap.get(options.fusedActivationFunction());
+          if (typeof fuseCode === 'undefined') {
+            throw new Error(`Fuse code ${options.fusedActivationFunction()} is not supported.`);
+          }
+          inputs.push(this._addScalarInt32(fuseCode));
+          opType = this._nn.FULLY_CONNECTED;
         } break;
         default: {
           throw new Error(`operator type ${opCode} is not supported.`);
         }
       }
+      this._model.addOperation(opType, inputs, outputs);
+    }
+    //use for inception_resnet_v2 to add softmax layer in the end of the model
+    if (this._tfModel.subgraphs(0).tensors(0).name() === "InceptionResnetV2/AuxLogits/Conv2d_1a_3x3/AvgPool") {
+      let inputs = [7];
+      let outputs = [635];
+      inputs.push(this._addScalarFloat32(1));
+      let opType = this._nn.SOFTMAX;
       this._model.addOperation(opType, inputs, outputs);
     }
   }
