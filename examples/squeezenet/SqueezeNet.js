@@ -1,11 +1,12 @@
 class SqueezeNet {
-  constructor(onnxModel, backend) {
+  constructor(onnxModel, backend, modelOptions) {
     this._onnxModel = onnxModel;
     this._model = null;
     this._compilation;
     this._execution;
     this._tensorIds = [];
     this._operands = [];
+    this._options = modelOptions || {};
     this._operandIndex = 0;
     if (typeof backend !== 'undefined') {
       this._backend = backend;
@@ -89,8 +90,9 @@ class SqueezeNet {
     const graph = this._onnxModel.graph;
     let inputs = [this._getTensorIdByName(graph.node[0].input[0])];
     let outputs = [this._getTensorIdByName(graph.output[0].name)];
-    if (graph.node[graph.node.length-1].opType !== 'Softmax')
-      outputs = [this._getTensorIdByName('softmax')];
+    if (this._options.softmax &&
+        graph.node[graph.node.length-1].opType !== 'Softmax')
+      outputs = [this._getTensorIdByName('softmax_appended')];
     this._model.identifyInputsAndOutputs(inputs, outputs);
   }
 
@@ -711,33 +713,51 @@ class SqueezeNet {
           const output = node.output[0];
           outputs.push(this._getTensorIdByName(output));
 
+          const inputType = this._getTensorTypeByName(input);
+          const outputType = {type: this._nn.TENSOR_FLOAT32, dimensions: inputType.dimensions};
+          const outputId = this._addNewTensorOperand(output, outputType);
+          outputs.push(outputId);
+
           opCode = this._nn.SOFTMAX;
         } break;
         default: {
           console.warn(`    ${node.opType} is not supported.}`);
         }
       }
-      if (typeof opCode !== 'undefined') {
-        this._model.addOperation(opCode, inputs, outputs);
-      }
-      if (i === graph.node.length - 1 && node.opType !== 'Softmax') { // last node in graph?
-        console.log(`opType: Softmax (appended automatically)`);
-        console.log(`  inputs: [${node.output[0]}]`);
-        // Add inputs
-        inputs = [];
-        inputs.push(outputs[0]);
-        // Set beta to 1.0
-        inputs.push(this._addScalarFloat32(1.0));
 
-        // Add outputs
-        outputs = [];
-        const inputType = this._getTensorTypeByName(node.output[0]);
-        const outputType = {type: this._nn.TENSOR_FLOAT32, dimensions: inputType.dimensions};
-        const outputId = this._addNewTensorOperand('softmax', outputType);
-        outputs.push(outputId);
+      // skip NOP, e.g. Unsqueeze
+      if (typeof opCode === 'undefined')
+        continue;
 
-        this._model.addOperation(this._nn.SOFTMAX, inputs, outputs);
+      if (i === graph.node.length - 1) { 
+
+        // redirect the output of the last node to the existing tensor bound to
+        // the node in the graph, i.e. output tensor given by the user
+        outputs = [this._getTensorIdByName(graph.output[0].name)];
+
+        if (this._options.softmax && node.opType !== 'Softmax') {
+          this._model.addOperation(opCode, inputs, outputs);
+
+          console.log(`opType: Softmax (appended automatically)`);
+          console.log(`  inputs: [${node.output[0]}]`);
+          // Add inputs
+          inputs = [];
+          inputs.push(outputs[0]);
+          // Set beta to 1.0
+          inputs.push(this._addScalarFloat32(1.0));
+
+          // Add outputs
+          outputs = [];
+          const inputType = this._getTensorTypeByName(node.output[0]);
+          const outputType = {type: this._nn.TENSOR_FLOAT32, dimensions: inputType.dimensions};
+          const outputId = this._addNewTensorOperand('softmax_appended', outputType);
+          outputs.push(outputId);
+
+          opCode = this._nn.SOFTMAX;
+        }
       }
+
+      this._model.addOperation(opCode, inputs, outputs);      
     }
   }
 }

@@ -38,7 +38,8 @@ class Utils {
       this.onnxModel = onnx.ModelProto.decode(result.bytes);
       printOnnxModel(this.onnxModel);
     }
-    this.model = new SqueezeNet(this.onnxModel, backend);
+    let autoSoftmax = this.postOptions.softmax || false;
+    this.model = new SqueezeNet(this.onnxModel, backend, {softmax: autoSoftmax});
     result = await this.model.createCompiledModel();
     console.log(`compilation result: ${result}`);
     let start = performance.now();
