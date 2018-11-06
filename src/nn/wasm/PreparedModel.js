@@ -397,10 +397,10 @@ export default class PreparedModel {
           throw new Error('fullyConnectedPrepare fails');
         }
         success = nn_ops.fullyConnectedFloat32(input.value, input.shape,
-                                    weights.value, weights.shape,
-                                    bias.value, bias.shape,
-                                    activation,
-                                    output.value, output.shape);
+                                               weights.value, weights.shape,
+                                               bias.value, bias.shape,
+                                               activation,
+                                               output.value, output.shape);
         if (!success) {
           throw new Error('fullyConnectedFloat32 fails');
         }
