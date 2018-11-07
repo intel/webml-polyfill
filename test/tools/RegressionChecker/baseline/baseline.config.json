@@ -1,7 +1,7 @@
 {
     "Version": {
         "chromium": "b7ce158",
-        "polyfill": "ccfcf03"
+        "polyfill": "301be4a"
     },
     "Android-NNAPI": {
         "total": 486,
@@ -11,14 +11,14 @@
     },
     "Android-WASM": {
         "total": 486,
-        "pass": 296,
-        "fail": 190,
+        "pass": 307,
+        "fail": 179,
         "block": 0
     },
     "Android-WebGL2": {
         "total": 486,
-        "pass": 291,
-        "fail": 195,
+        "pass": 295,
+        "fail": 191,
         "block": 0
     },
     "Linux-clDNN": {
@@ -29,14 +29,14 @@
     },
     "Linux-WASM": {
         "total": 486,
-        "pass": 296,
-        "fail": 190,
+        "pass": 307,
+        "fail": 179,
         "block": 0
     },
     "Linux-WebGL2": {
         "total": 486,
-        "pass": 293,
-        "fail": 193,
+        "pass": 297,
+        "fail": 189,
         "block": 0
     },
     "Mac-BNNS": {
@@ -53,14 +53,14 @@
     },
     "Mac-WASM": {
         "total": 486,
-        "pass": 296,
-        "fail": 190,
+        "pass": 307,
+        "fail": 179,
         "block": 0
     },
     "Mac-WebGL2": {
         "total": 486,
-        "pass": 293,
-        "fail": 193,
+        "pass": 297,
+        "fail": 189,
         "block": 0
     },
     "Windows-clDNN": {
@@ -71,14 +71,14 @@
     },
     "Windows-WASM": {
         "total": 486,
-        "pass": 296,
-        "fail": 190,
+        "pass": 307,
+        "fail": 179,
         "block": 0
     },
     "Windows-WebGL2": {
         "total": 486,
-        "pass": 293,
-        "fail": 193,
+        "pass": 297,
+        "fail": 189,
         "block": 0
     }
 }
