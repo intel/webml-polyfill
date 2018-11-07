@@ -128,9 +128,9 @@ CTS Supplement Test,CTS Supplement Test/2,check result for Concatenation axis 0 
 CTS Supplement Test,CTS Supplement Test/3,check result for Concatenation axis 1 example,Pass,Fail,Pass,Fail,Pass,Fail,Pass,Fail
 CTS Supplement Test,CTS Supplement Test/4,check result for Concatenation axis 2 example,Pass,Fail,Pass,Fail,Pass,Fail,Pass,Fail
 CTS Supplement Test,CTS Supplement Test/5,check result for Concatenation axis 3 example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS Supplement Test,CTS Supplement Test/7,check result for Fully connected float 3D input example,Pass,Fail,Pass,Fail,Pass,Fail,Pass,Fail
-CTS Supplement Test,CTS Supplement Test/8,check result for Fully connected float 3D input example/2,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS Supplement Test,CTS Supplement Test/9,check result for Fully connected float 4D input example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS Supplement Test,CTS Supplement Test/10,check result for Mul example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS Supplement Test,CTS Supplement Test/11,check result for Reshape example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS Supplement Test,CTS Supplement Test/12,check result for Softmax example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+CTS Supplement Test,CTS Supplement Test/6,check result for Fully connected float 3D input example,Pass,Fail,Pass,Fail,Pass,Fail,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/7,check result for Fully connected float 3D input example/2,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+CTS Supplement Test,CTS Supplement Test/8,check result for Fully connected float 4D input example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+CTS Supplement Test,CTS Supplement Test/9,check result for Mul example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+CTS Supplement Test,CTS Supplement Test/10,check result for Reshape example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+CTS Supplement Test,CTS Supplement Test/11,check result for Softmax example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
