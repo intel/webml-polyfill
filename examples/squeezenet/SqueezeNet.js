@@ -78,8 +78,16 @@ class SqueezeNet {
 
   _addTensorOperands() {
     const graph = this._onnxModel.graph;
+
+    // key: unsqueeze node name, val: unsqueeze axes array
+    const unsqueezeAxes = {}; 
+    graph.node.filter(n => n.opType === 'Unsqueeze').forEach(n => 
+      unsqueezeAxes[n.input[0]] = getAttributeValue(n, 'axes')
+    );
+
     for (let i = 0; i < graph.input.length; ++i) {
-      this._addTensorByValueInfo(graph.input[i]);
+      const input = graph.input[i];
+      this._addTensorByValueInfo(input, unsqueezeAxes[input.name]);
     }
     for (let i = 0; i < graph.output.length; ++i) {
       this._addTensorByValueInfo(graph.output[i]);
@@ -96,11 +104,13 @@ class SqueezeNet {
     this._model.identifyInputsAndOutputs(inputs, outputs);
   }
 
-  _addTensorByValueInfo(valueInfo) {
+  _addTensorByValueInfo(valueInfo, unsqueezeAxes) {
     const name = valueInfo.name;
     if (this._tensorIds[name])
       throw new Error(`Tensor ${name} is already added`);
-    let tensorType = valueInfo.type.tensorType;
+
+    const initializer = getObjectByName(this._onnxModel.graph.initializer, name);
+    const tensorType = valueInfo.type.tensorType;
     let dims = tensorType.shape.dim.map(dim => dim.dimValue);
     if (dims.length == 4) {
       // NCHW -> NHWC
@@ -109,6 +119,19 @@ class SqueezeNet {
       dims[1] = nchw[2];
       dims[2] = nchw[3];
       dims[3] = nchw[1];
+    }
+
+    if (typeof unsqueezeAxes !== 'undefined') {
+      if (!initializer)
+        throw new Error(`Unsqueeze an non-initializer is not supproted.`);
+
+      for (let i of unsqueezeAxes)
+        // insert dim 1 to position i
+        dims.splice(i, 0, 1);
+
+      // (N)CHW -> (N)HWC
+      const C = dims.splice(dims.length-3, 1)[0];
+      dims.push(C);
     }
 
     let type;
@@ -129,7 +152,7 @@ class SqueezeNet {
     const tensorId = this._addNewTensorOperand(name, operandType);
 
     // set operand value
-    const initializer = getObjectByName(this._onnxModel.graph.initializer, name);
+    
     if (initializer) {
       let data = getTensorData(initializer);
       this._setOperandValue(tensorId, data);
@@ -687,22 +710,8 @@ class SqueezeNet {
           opCode = this._nn.RESHAPE;
         } break;
         case 'Unsqueeze': {
-          console.log(`  inputs: [${node.input}]`);
-          const input = node.input[0];
-
-          const inputDims = this._getTensorTypeByName(input).dimensions;
-          const axes = getAttributeValue(node, 'axes');
-          for (let i of axes)
-            inputDims.splice(i, 0, 1);
-
-          // (N)CHW -> (N)HWC
-          const C = inputDims.splice(inputDims.length-3, 1)[0];
-          inputDims.push(C);
-
-          const output = node.output[0];
-          this._tensorIds[output] = this._tensorIds[input];
-
-          console.log(`  output ${output}: [${inputDims}]`);
+          this._tensorIds[node.output[0]] = this._tensorIds[node.input[0]];
+          console.log(`Skip Unsqueeze: ${node.input[0]} -> ${node.output[0]}`);
         } break;
         case 'Softmax': {
           console.log(`  inputs: [${node.input}]`);
