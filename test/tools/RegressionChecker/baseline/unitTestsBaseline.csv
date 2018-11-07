@@ -454,14 +454,14 @@ CTS,CTS/99,check result for Depthwise conv2d float weights as inputs example,Fai
 CTS,CTS/100,check result for Depthwise conv2d float weights as inputs relu example,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass
 CTS,CTS/101,check result for Depthwise conv2d float weights as inputs relu1 example,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass
 CTS,CTS/102,check result for Depthwise conv2d float weights as inputs relu6 example,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass
-CTS,CTS/103,check result for Fully connected float example,Fail,Fail,Fail,Fail,Pass,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail
-CTS,CTS/104,check result for Fully connected float relu example,Fail,Fail,Fail,Fail,Pass,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail
-CTS,CTS/105,check result for Fully connected float relu1 example,Fail,Fail,Fail,Fail,Pass,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail
-CTS,CTS/106,check result for Fully connected float relu6 example,Fail,Fail,Fail,Fail,Pass,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail
-CTS,CTS/107,check result for Fully connected float example/2,Fail,Fail,Fail,Fail,Pass,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail
-CTS,CTS/108,check result for Fully connected float weights as inputs example,Fail,Fail,Fail,Fail,Pass,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail
-CTS,CTS/109,check result for Fully connected float large example,Fail,Fail,Fail,Fail,Pass,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail
-CTS,CTS/110,check result for Fully connected float large weights as inputs example,Fail,Fail,Fail,Fail,Pass,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail
+CTS,CTS/103,check result for Fully connected float example,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Fail,Pass,Fail,Fail,Pass,Fail
+CTS,CTS/104,check result for Fully connected float relu example,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Fail,Pass,Fail,Fail,Pass,Fail
+CTS,CTS/105,check result for Fully connected float relu1 example,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Fail,Pass,Fail,Fail,Pass,Fail
+CTS,CTS/106,check result for Fully connected float relu6 example,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Fail,Pass,Fail,Fail,Pass,Fail
+CTS,CTS/107,check result for Fully connected float example/2,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Fail,Pass,Fail,Fail,Pass,Fail
+CTS,CTS/108,check result for Fully connected float weights as inputs example,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Fail,Pass,Fail,Fail,Pass,Fail
+CTS,CTS/109,check result for Fully connected float large example,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass
+CTS,CTS/110,check result for Fully connected float large weights as inputs example,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass
 CTS,CTS/111,check result for Max pool float example/1,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/112,check result for Max pool float relu example/1,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/113,check result for Max pool float relu1 example/1,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass
@@ -479,9 +479,9 @@ CTS Supplement Test,CTS Supplement Test/2,check result for Concatenation axis 0 
 CTS Supplement Test,CTS Supplement Test/3,check result for Concatenation axis 1 example,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Fail,Pass,Fail,Fail,Pass,Fail
 CTS Supplement Test,CTS Supplement Test/4,check result for Concatenation axis 2 example,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Fail,Pass,Fail,Fail,Pass,Fail
 CTS Supplement Test,CTS Supplement Test/5,check result for Concatenation axis 3 example,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass
-CTS Supplement Test,CTS Supplement Test/6,check result for Fully connected float 3D input example,Fail,Fail,Fail,Fail,Pass,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail
-CTS Supplement Test,CTS Supplement Test/7,check result for Fully connected float 3D input example/2,Fail,Fail,Fail,Fail,Pass,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail
-CTS Supplement Test,CTS Supplement Test/8,check result for Fully connected float 4D input example,Fail,Fail,Fail,Fail,Pass,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail
+CTS Supplement Test,CTS Supplement Test/6,check result for Fully connected float 3D input example,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Fail,Pass,Fail,Fail,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/7,check result for Fully connected float 3D input example/2,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass
+CTS Supplement Test,CTS Supplement Test/8,check result for Fully connected float 4D input example,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass
 CTS Supplement Test,CTS Supplement Test/9,check result for Mul example,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS Supplement Test,CTS Supplement Test/10,check result for Reshape example,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS Supplement Test,CTS Supplement Test/11,check result for Softmax example,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass
