@@ -1,23 +1,18 @@
 class Utils {
-  constructor(model, preOptions = {}, postOptions = {}) {
+  constructor(canvas) {
     this.onnxModel;
     this.labels;
     this.model;
     this.inputTensor;
     this.outputTensor;
-
-    this.modelFile = model.modelFile;
-    this.labelsFile = model.labelsFile;
-    this.inputSize = model.inputSize;
-    this.outputSize = model.outputSize;
-    this.preOptions = preOptions;
-    this.postOptions = postOptions;
-    this.inputTensor = new Float32Array(product(model.inputSize));
-    this.outputTensor = new Float32Array(model.outputSize);
-    this.container = document.getElementById('container');
-    this.progressBar = document.getElementById('progressBar');
-    this.progressContainer = document.getElementById('progressContainer');
-    this.canvasElement = document.getElementById('canvas');
+    this.progressCallback;
+    this.modelFile;
+    this.labelsFile;
+    this.inputSize;
+    this.outputSize;
+    this.preOptions;
+    this.postOptions;
+    this.canvasElement = canvas;
     this.canvasContext = this.canvasElement.getContext('2d');
 
     this.initialized = false;
@@ -28,8 +23,7 @@ class Utils {
     let result;
     if (!this.onnxModel) {
       result = await this.loadModelAndLabels(this.modelFile, this.labelsFile);
-      this.container.removeChild(progressContainer);
-      this.labels = JSON.parse(result.text);
+      this.labels = result.text.split('\n');
       console.log(`labels: ${this.labels}`);
       let err = onnx.ModelProto.verify(result.bytes);
       if (err) {
@@ -58,18 +52,10 @@ class Utils {
     let start = performance.now();
     let result = await this.model.compute(this.inputTensor, this.outputTensor);
     let elapsed = performance.now() - start;
-    let classes = this.getTopClasses(this.outputTensor, this.labels, 3);
-    console.log(`Inference time: ${elapsed.toFixed(2)} ms`);
-    let inferenceTimeElement = document.getElementById('inferenceTime');
-    inferenceTimeElement.innerHTML = `inference time: <em style="color:green;font-weight:bloder;">${elapsed.toFixed(2)} </em>ms`;
-    console.log(`Classes: `);
-    classes.forEach((c, i) => {
-      console.log(`\tlabel: ${c.label}, probability: ${c.prob}%`);
-      let labelElement = document.getElementById(`label${i}`);
-      let probElement = document.getElementById(`prob${i}`);
-      labelElement.innerHTML = `${c.label}`;
-      probElement.innerHTML = `${c.prob}%`;
-    });
+    return {
+      time: elapsed.toFixed(2),
+      classes: this.getTopClasses(this.outputTensor, this.labels, 3)
+    };
   }
 
   async loadModelAndLabels(modelUrl, labelsUrl) {
@@ -95,17 +81,9 @@ class Utils {
           }
         }
       };
-      if (progress) {
-        let self = this;
-        request.onprogress = function(ev) {
-          if (ev.lengthComputable) {
-            let percentComplete = ev.loaded / ev.total * 100;
-            percentComplete = percentComplete.toFixed(0);
-            self.progressBar.style = `width: ${percentComplete}%`;
-            self.progressBar.innerHTML = `${percentComplete}%`;
-          }
-        };
-      }
+      if (progress && typeof this.progressCallback !== 'undefined')
+        request.onprogress = this.progressCallback;
+
       request.send();
     });
   }
@@ -118,9 +96,9 @@ class Utils {
     const mean = this.preOptions.mean || [0, 0, 0, 0];
     const std  = this.preOptions.std  || [1, 1, 1, 1];
     const norm = this.preOptions.norm || false;
-    // The RGB mean values are from
+
     if (canvas.width !== width || canvas.height !== height) {
-      throw new Error(`canvas.width(${canvas.width}) or canvas.height(${canvas.height}) is not 224`);
+      throw new Error(`canvas.width(${canvas.width}) is not ${width} or canvas.height(${canvas.height}) is not ${height}`);
     }
     let context = canvas.getContext('2d');
     let pixels = context.getImageData(0, 0, width, height).data;
@@ -156,5 +134,26 @@ class Utils {
       classes.push(c);
     }
     return classes;
+  }
+
+  deleteAll() {
+    if (this.model._backend != 'WebML') {
+      this.model._compilation._preparedModel._deleteAll();
+    }
+  }
+
+  changeModelParam(newModel) {
+    this.inputSize = newModel.inputSize;
+    this.outputSize = newModel.outputSize;
+    this.modelFile = newModel.modelFile;
+    this.labelsFile = newModel.labelsFile;
+    this.preOptions = newModel.preOptions || {};
+    this.postOptions = newModel.postOptions || {};
+    this.inputTensor = new Float32Array(newModel.inputSize.reduce((x,y) => x*y));
+    this.outputTensor = new Float32Array(newModel.outputSize);
+    this.onnxModel = null;
+
+    this.canvasElement.height = newModel.inputSize[0];
+    this.canvasElement.width = newModel.inputSize[1];
   }
 }

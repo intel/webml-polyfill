@@ -2,7 +2,7 @@ node_modules/
 dist/
 examples/mobilenet/model/
 !examples/mobilenet/model/README.md
-examples/squeezenet/model/
+examples/squeezenet/model/*.onnx
 !examples/squeezenet/model/README.md
 examples/ssd_mobilenet/model/
 !examples/ssd_mobilenet/model/README.md
