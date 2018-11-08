@@ -132,10 +132,10 @@ export default class DepthwiseConv2D extends Layer {
     const kernelWDilated = kernelW + (kernelW - 1) * (this.dilationRate[1] - 1);
 
     if (Array.isArray(this.padding)) {
-      const outputHeight = (inputHeight - kernelHDilated + this.padding[0] + 
-                          this.padding[1] + this.strides[0]) / this.strides[0];
-      const outputWidth = (inputWidth - kernelWDilated + this.padding[2] + 
-                          this.padding[3] + this.strides[1]) / this.strides[1];
+      const outputHeight = Math.floor((inputHeight - kernelHDilated + this.padding[0] + 
+                          this.padding[1] + this.strides[0]) / this.strides[0]);
+      const outputWidth = Math.floor((inputWidth - kernelWDilated + this.padding[2] + 
+                          this.padding[3] + this.strides[1]) / this.strides[1]);
       this.outputShape = [outputHeight, outputWidth, this.weights['kernel'].tensor.shape[1]];
       this.inputPadding = this.padding;
     } else {

@@ -1,18 +1,19 @@
-const INPUT_TENSOR_SIZE = 224*224*3;
-const OUTPUT_TENSOR_SIZE = 1000;
-const MODEL_FILE = './model/model.onnx';
-const LABELS_FILE = 'labels.json';
-
 class Utils {
-  constructor() {
+  constructor(model, preOptions = {}, postOptions = {}) {
     this.onnxModel;
     this.labels;
     this.model;
     this.inputTensor;
     this.outputTensor;
 
-    this.inputTensor = new Float32Array(INPUT_TENSOR_SIZE);
-    this.outputTensor = new Float32Array(OUTPUT_TENSOR_SIZE);
+    this.modelFile = model.modelFile;
+    this.labelsFile = model.labelsFile;
+    this.inputSize = model.inputSize;
+    this.outputSize = model.outputSize;
+    this.preOptions = preOptions;
+    this.postOptions = postOptions;
+    this.inputTensor = new Float32Array(product(model.inputSize));
+    this.outputTensor = new Float32Array(model.outputSize);
     this.container = document.getElementById('container');
     this.progressBar = document.getElementById('progressBar');
     this.progressContainer = document.getElementById('progressContainer');
@@ -26,7 +27,7 @@ class Utils {
     this.initialized = false;
     let result;
     if (!this.onnxModel) {
-      result = await this.loadModelAndLabels(MODEL_FILE, LABELS_FILE);
+      result = await this.loadModelAndLabels(this.modelFile, this.labelsFile);
       this.container.removeChild(progressContainer);
       this.labels = JSON.parse(result.text);
       console.log(`labels: ${this.labels}`);
@@ -37,7 +38,8 @@ class Utils {
       this.onnxModel = onnx.ModelProto.decode(result.bytes);
       printOnnxModel(this.onnxModel);
     }
-    this.model = new SqueezeNet(this.onnxModel, backend);
+    let autoSoftmax = this.postOptions.softmax || false;
+    this.model = new SqueezeNet(this.onnxModel, backend, {softmax: autoSoftmax});
     result = await this.model.createCompiledModel();
     console.log(`compilation result: ${result}`);
     let start = performance.now();
@@ -102,31 +104,34 @@ class Utils {
             self.progressBar.style = `width: ${percentComplete}%`;
             self.progressBar.innerHTML = `${percentComplete}%`;
           }
-        }
+        };
       }
       request.send();
     });
   }
 
   prepareInputTensor(tensor, canvas) {
-    const width = 224;
-    const height = 224;
-    const channels = 3;
+    const height = this.inputSize[0];
+    const width = this.inputSize[1];
+    const channels = this.inputSize[2];
     const imageChannels = 4; // RGBA
+    const mean = this.preOptions.mean || [0, 0, 0, 0];
+    const std  = this.preOptions.std  || [1, 1, 1, 1];
+    const norm = this.preOptions.norm || false;
     // The RGB mean values are from
-    // https://github.com/caffe2/AICamera/blob/master/app/src/main/cpp/native-lib.cpp#L108
-    const mean = [122.67891434, 116.66876762, 104.00698793];
     if (canvas.width !== width || canvas.height !== height) {
       throw new Error(`canvas.width(${canvas.width}) or canvas.height(${canvas.height}) is not 224`);
     }
     let context = canvas.getContext('2d');
     let pixels = context.getImageData(0, 0, width, height).data;
+    if (norm)
+      pixels = new Float32Array(pixels).map(p => p / 255);
     // NHWC layout
     for (let y = 0; y < height; ++y) {
       for (let x = 0; x < width; ++x) {
         for (let c = 0; c < channels; ++c) {
           let value = pixels[y*width*imageChannels + x*imageChannels + c];
-          tensor[y*width*channels + x*channels + c] = value - mean[c];
+          tensor[y*width*channels + x*channels + c] = (value - mean[c]) / std[c];
         }
       }
     }
@@ -147,7 +152,7 @@ class Utils {
       let c = {
         label: labels[index],
         prob: (prob * 100).toFixed(2)
-      }
+      };
       classes.push(c);
     }
     return classes;
