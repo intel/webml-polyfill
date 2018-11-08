@@ -1,4 +1,4 @@
-class SqueezeNet {
+class OnnxModelImporter {
   constructor(onnxModel, backend, modelOptions) {
     this._onnxModel = onnxModel;
     this._model = null;

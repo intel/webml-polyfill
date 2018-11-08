@@ -33,7 +33,7 @@ class Utils {
       printOnnxModel(this.onnxModel);
     }
     let autoSoftmax = this.postOptions.softmax || false;
-    this.model = new SqueezeNet(this.onnxModel, backend, {softmax: autoSoftmax});
+    this.model = new OnnxModelImporter(this.onnxModel, backend, {softmax: autoSoftmax});
     result = await this.model.createCompiledModel();
     console.log(`compilation result: ${result}`);
     let start = performance.now();
