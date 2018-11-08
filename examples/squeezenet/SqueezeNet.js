@@ -79,7 +79,7 @@ class SqueezeNet {
   _addTensorOperands() {
     const graph = this._onnxModel.graph;
 
-    // key: unsqueeze node name, val: unsqueeze axes array
+    // key: input name of unsqueeze node, val: unsqueeze axes array
     const unsqueezeAxes = {}; 
     graph.node.filter(n => n.opType === 'Unsqueeze').forEach(n => 
       unsqueezeAxes[n.input[0]] = getAttributeValue(n, 'axes')
@@ -123,7 +123,7 @@ class SqueezeNet {
 
     if (typeof unsqueezeAxes !== 'undefined') {
       if (!initializer)
-        throw new Error(`Unsqueeze an non-initializer is not supproted.`);
+        throw new Error(`Unsqueezing an non-initializer is not supported.`);
 
       for (let i of unsqueezeAxes)
         // insert dim 1 to position i
@@ -152,7 +152,6 @@ class SqueezeNet {
     const tensorId = this._addNewTensorOperand(name, operandType);
 
     // set operand value
-    
     if (initializer) {
       let data = getTensorData(initializer);
       this._setOperandValue(tensorId, data);
@@ -734,7 +733,7 @@ class SqueezeNet {
         }
       }
 
-      // skip NOP, e.g. Unsqueeze
+      // skip NOP, e.g. Constant
       if (typeof opCode === 'undefined')
         continue;
 
