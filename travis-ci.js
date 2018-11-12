@@ -10,7 +10,7 @@ const builder = new webdriver.Builder();
 builder.forBrowser('chrome');
 builder.setChromeOptions(options);
 const driver = builder.build();
-// const csv = require('./node_modules/fast-csv');
+const csv = require('./node_modules/fast-csv');
 const fs = require('fs');
 const os = require('os');
 
@@ -24,8 +24,6 @@ let csvName = null;
 let csvPass = null;
 let csvFail = null;
 let csvNA = null;
-let csvExecution = 'auto';
-let csvSuite = 'tests';
 
 (async function() {
   let baselinejson = JSON.parse(fs.readFileSync('./test/tools/CI/baseline/baseline.config.json'));
@@ -75,24 +73,54 @@ let csvSuite = 'tests';
   //   let Text = await element.findElement(By.xpath('./pre[last()]')).getText();
   //   return Text;
   // };
+  let backendModel;
+  let baseLineData = new Map();
+  let lists = [
+    'Feature',
+    'Case Id',
+    'Test Case',
+    'Mac-WASM',
+    'Mac-WebGL2',
+    'Android-WASM',
+    'Android-WebGL2',
+    'Windows-WASM',
+    'Windows-WebGL2',
+    'Linux-WASM',
+    'Linux-WebGL2',
+  ];
+  let checkStatus = async function(backendModel, results) {
+    for (let i=0; i< lists.length; i++) {
+      if (lists[i] == backendModel) {
+        csv.fromPath('test/tools/CI/baseline/unitTestsBaseline.csv').on('data', function(data) {
+          baseLineData.set(data[0] + data[2] + data[i]);
+        }).on('end', function() {
+          if (results['Pass'] != 1 && baseLineData.has(results['Feature'] + results['TestCase'] + 'Pass')) {
+            let str = 'Feature: ' + results['Feature'] + ', TestCase: ' + results['TestCase'];
+            failCaseList.push(str);
+          }
+        });
+      }
+    }
+  };
 
   let getInfo = async function(element) {
-    let array = await element.findElements(By.xpath('./ul/li[@class="test pass fast" or @class="test pass slow" or @class="test fail" or @class="test pass pending" or @class="test pass medium"]'));
+    let array = await element.findElements(By.xpath('./ul/li[@class="test fail"]'));
+    // just check fail test case, save time.
 
     for (let i = 1; i <= array.length; i++) {
       await array[i - 1].getAttribute('class')
         .then(function(message) {
-        if (message == 'test pass pending') {
-          flagPending = true;
-        } else {
-          flagPending = false;
-        }
-      });
+          if (message == 'test pass pending') {
+            flagPending = true;
+          } else {
+            flagPending = false;
+          }
+        });
 
       await getName(array[i - 1])
         .then(function(message) {
-        csvName = message;
-      });
+          csvName = message;
+        });
 
       if (flagPending) {
         csvPass = null;
@@ -118,54 +146,20 @@ let csvSuite = 'tests';
         csvModule = csvTitle;
       }
 
-      // let DataFormat = {
-      //   Feature: csvTitle,
-      //   CaseId: csvModule + '/' + i,
-      //   TestCase: csvName,
-      //   Pass : csvPass,
-      //   Fail: csvFail,
-      //   NA: csvNA,
-      //   ExecutionType: csvExecution,
-      //   SuiteName: csvSuite
-      // };
+      let DataFormat = {
+        Feature: csvTitle,
+        CaseId: csvModule + '/' + i,
+        TestCase: csvName,
+        Pass: csvPass,
+        Fail: csvFail,
+        NA: csvNA,
+      };
+      await checkStatus(backendModel, DataFormat);
       csvName = null;
       csvPass = null;
       csvFail = null;
       csvNA = null;
     }
-  };
-
-  let check = async function() {
-    await driver.findElement(By.xpath('//ul[@id="mocha-stats"]/li[@class="passes"]//em')).getText()
-      .then(function(message) {
-        let getPasses = message;
-        // console.log('    Web passes: ' + getPasses);
-        // console.log('  Check passes: ' + countPasses);
-
-        if (getPasses != countPasses) {
-          throw new Error('It\'s wrong to passed result!');
-        }
-      });
-
-    await driver.findElement(By.xpath('//ul[@id="mocha-stats"]/li[@class="failures"]//em')).getText()
-      .then(function(message) {
-        let getFailures = message;
-        // console.log('  Web failures: ' + getFailures);
-        // console.log('Check failures: ' + countFailures);
-
-        if (getFailures != countFailures) {
-          throw new Error('It\'s wrong to failed result!');
-        }
-      });
-
-    // console.log('       Pending: ' + countPending);
-    // console.log('         TOTAL: ' + (countPasses + countFailures + countPending));
-
-    await driver.findElement(By.xpath('//ul[@id="mocha-stats"]/li[@class="duration"]//em')).getText()
-      .then(function(message) {
-        let Duration = message;
-        // console.log('      Duration: ' + Duration + ' ms');
-      });
   };
 
   let grasp = async function() {
@@ -188,7 +182,6 @@ let csvSuite = 'tests';
       }
       await getInfo(arrayTitles[i - 1]);
     }
-    await check();
   };
 
   let testResult = async function() {
@@ -219,6 +212,7 @@ let csvSuite = 'tests';
       let totalResult;
       for (let i of backendModels) {
         if ((i.indexOf(platform) != -1) && (i.indexOf(j) != -1)) {
+          backendModel = i;
           console.log('Begin test with : ' + i + ' backend.');
           totalResult = baselinejson[i];
           // let testlink = path.join('file:\/\/', __dirname, 'test', 'cts.html?backend=');
@@ -229,6 +223,17 @@ let csvSuite = 'tests';
             await driver.sleep(10000);
             let time_end = await driver.findElement(By.xpath('//ul[@id="mocha-stats"]/li[@class="duration"]//em')).getText();
             if (time_begin === time_end) {
+              // add check, if pass/fail not match baseline will exit.
+              let passResult = await driver.findElement(By.xpath('//*[@id="mocha-stats"]/li[2]/em')).getText();
+              let failResult = await driver.findElement(By.xpath('//*[@id="mocha-stats"]/li[3]/em')).getText();
+              if (totalResult.pass > passResult) {
+                let str = 'Expect pass is :' + totalResult.pass + ' and actual result is : ' + passResult + ' will exit process !';
+                throw new Error(str);
+              }
+              if (totalResult.fail < failResult) {
+                let str = 'Expect fail is :' + totalResult.fail + ' and actual result is : ' + failResult + ' will exit process !';
+                throw new Error(str);
+              }
               break;
             };
           }
@@ -238,21 +243,17 @@ let csvSuite = 'tests';
           await grasp();
         }
       }
-      if (totalResult.pass !== countPasses) {
-        let str = 'Expect pass is : ' + totalResult.pass + ' and actual result is : ' + countPasses + ' not equal will exit !';
-        throw new Error(str);
-      } else if (totalResult.fail !== countFailures) {
-        let str = 'Expect fail is : ' + totalResult.fail + ' and actual result is : ' + countFailures + ' not equal will exit !';
-        throw new Error(str);
-      } else if (totalResult.block !== countPending) {
-        let str = 'Expect block is : ' + totalResult.block + ' and actual result is : ' + countPending + ' not equal will exit !';
-        throw new Error(str);
-      } else {
-        let str = 'Result match with baseline, test pass. ' + '\n Pass : ' + countPasses + '\n Fail : ' + countFailures + '\n Block : ' + countPending;
-        console.log(str);
+    }
+    if (failCaseList.length > 0) {
+      console.log('Test fail, below case get different result with expect data : ');
+      for (let i = 0; i< failCaseList.length; i++ ) {
+        console.log(failCaseList[i]);
       }
+      await driver.quit();
+      throw new Error('Test Fail');
     }
   };
+  let failCaseList = [];
   await testResult();
   await driver.quit();
 })().then(function() {
