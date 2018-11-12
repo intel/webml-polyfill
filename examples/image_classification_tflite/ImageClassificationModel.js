@@ -89,7 +89,7 @@ class ImageClassificationModel {
     let outputs = Array.from(graph.outputsArray());
 
     //use for inception_resnet_v2 to add a new outputTensor
-    if (graph.tensors(0).name() === "InceptionResnetV2/AuxLogits/Conv2d_1a_3x3/AvgPool") {
+    if (graph.tensors(0).name().slice(0, 17) === "InceptionResnetV2") {
       let tensorType = {type: this._nn.TENSOR_FLOAT32, dimensions: [1, 1001]};
       let tensorId = this._operandIndex++;
       this._model.addOperand(tensorType);
@@ -232,15 +232,14 @@ class ImageClassificationModel {
           opType = this._nn.RESHAPE;
         } break;
         case tflite.BuiltinOperator.SQUEEZE: {
-          let options = operator.builtinOptions(new tflite.ReshapeOptions());
-          //targetShape is in tensor
+          let options = operator.builtinOptions(new tflite.SqueezeOptions());
           let tensorType = {type: this._nn.TENSOR_INT32, dimensions: [2]};
           let tensorId = this._operandIndex++;
           this._model.addOperand(tensorType);
           this._tensorIds.push(tensorId);
           this._model.setOperandValue(tensorId, new Int32Array([1, 1001]));
           inputs.push(tensorId);
-          opType = this._nn.RESHAPE;
+          opType = this._nn.RESHAPE;         
         } break;
         case tflite.BuiltinOperator.FULLY_CONNECTED: {
           let options = operator.builtinOptions(new tflite.FullyConnectedOptions());
@@ -258,7 +257,7 @@ class ImageClassificationModel {
       this._model.addOperation(opType, inputs, outputs);
     }
     //use for inception_resnet_v2 to add softmax layer in the end of the model
-    if (this._tfModel.subgraphs(0).tensors(0).name() === "InceptionResnetV2/AuxLogits/Conv2d_1a_3x3/AvgPool") {
+    if (graph.tensors(0).name().slice(0, 17) === "InceptionResnetV2") {
       let inputs = [7];
       let outputs = [635];
       inputs.push(this._addScalarFloat32(1));

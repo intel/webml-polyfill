@@ -13,7 +13,7 @@ mobilenet_v2_1.0_224.tflite
 inception_v3.tflite
 inception_v4.tflite
 squeezenet.tflite
-inception_resnet_V2
+inception_resnet_v2
 ```
 And we have provided the labels files:
 ```
