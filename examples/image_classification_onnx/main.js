@@ -9,70 +9,10 @@ const squeezenet = {
   }
 };
 
-const mobilenetv2 = {
-  modelName: 'Mobilenet v2',
-  modelFile: './model/mobilenetv2-1.0.onnx',
-  labelsFile: './model/labels.txt',
-  inputSize: [224, 224, 3],
-  outputSize: 1000,
-  preOptions: {
-    mean: [0.485, 0.456, 0.406],
-    std: [0.229, 0.224, 0.225],
-    norm: true
-  },
-  postOptions: {
-    softmax: true,
-  }
-};
-
-const resnet18v1 = {
-  modelName: 'Resnet v1',
-  modelFile: './model/resnet18v1.onnx',
-  labelsFile: './model/labels.txt',
-  inputSize: [224, 224, 3],
-  outputSize: 1000,
-  preOptions: {
-    mean: [0.485, 0.456, 0.406],
-    std: [0.229, 0.224, 0.225],
-    norm: true
-  },
-  postOptions: {
-    softmax: true,
-  }
-};
-
-const resnet18v2 = {
-  modelName: 'Resnet v2',
-  modelFile: './model/resnet18v2.onnx',
-  labelsFile: './model/labels.txt',
-  inputSize: [224, 224, 3],
-  outputSize: 1000,
-  preOptions: {
-    mean: [0.485, 0.456, 0.406],
-    std: [0.229, 0.224, 0.225],
-    norm: true
-  },
-  postOptions: {
-    softmax: true,
-  }
-};
-
-const inceptionv2 = {
-  modelName: 'Inception v2',
-  modelFile: './model/inceptionv2.onnx',
-  labelsFile: './model/ilsvrc2012labels.txt',
-  inputSize: [224, 224, 3],
-  outputSize: 1000,
-};
-
 function main(camera) {
 
   const availableModels = [
     squeezenet,
-    mobilenetv2,
-    resnet18v1,
-    resnet18v2,
-    inceptionv2,
   ];
   const canvasElement = document.getElementById('canvas');
   const videoElement = document.getElementById('video');
