@@ -38,7 +38,10 @@ const inception_resnet_v2 = {
   INPUT_SIZE: [299, 299, 3],
   OUTPUT_SIZE: 1001,
   MODEL_FILE: './model/inception_resnet_v2.tflite',
-  LABELS_FILE: './model/labels.txt'
+  LABELS_FILE: './model/labels.txt',
+  postOptions: {
+    softmax: true,
+  }
 }
 
 function main(camera) {
