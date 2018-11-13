@@ -10,7 +10,7 @@
     "watch": "webpack --watch",
     "start": "npm run build && http-server .",
     "build": "webpack",
-    "test": "node travis-ci.js"
+    "test": "node test-ci.js"
   },
   "repository": {
     "type": "git",
