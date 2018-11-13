@@ -5,6 +5,7 @@ const squeezenet = {
   inputSize: [224, 224, 3],
   outputSize: 1000,
   preOptions: {
+    // https://github.com/onnx/models/tree/master/models/image_classification/squeezenet#preprocessing
     mean: [0.485, 0.456, 0.406],
     std: [0.229, 0.224, 0.225],
     norm: true
