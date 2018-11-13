@@ -5,7 +5,12 @@ const squeezenet = {
   inputSize: [224, 224, 3],
   outputSize: 1000,
   preOptions: {
-    mean: [122.67891434, 116.66876762, 104.00698793],
+    mean: [0.485, 0.456, 0.406],
+    std: [0.229, 0.224, 0.225],
+    norm: true
+  },
+  postOptions: {
+    softmax: true,
   }
 };
 
