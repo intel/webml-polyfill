@@ -93,7 +93,7 @@ class Utils {
   }
 
   prepareInputTensor(tensor, image) {
-    
+
     const height = this.inputSize[0];
     const width = this.inputSize[1];
     const channels = this.inputSize[2];
@@ -113,26 +113,38 @@ class Utils {
 
     // padding (replicate)
     // right
-    for (let y = 0; y < adjustedHeight; y++) {
-      let pixelData = ctx.getImageData(adjustedWidth-1, y, adjustedWidth, y+1);
+    let padWidth = width - adjustedWidth;
+    let padHeight = height - adjustedHeight;
+
+    if (padWidth > 0) {
+      let rightEdge = ctx.getImageData(adjustedWidth-1, 0, 1, adjustedHeight);
       for (let x = adjustedWidth; x < width; x++)
-        ctx.putImageData(pixelData, x, y);
+        ctx.putImageData(rightEdge, x, 0);
     }
+
     // bottom
-    for (let x = 0; x < adjustedWidth; x++) {
-      let pixelData = ctx.getImageData(x, adjustedHeight-1, x+1, adjustedHeight);
+    if (padHeight > 0) {
+      let bottomEdge = ctx.getImageData(0, adjustedHeight-1, adjustedWidth, 1);
       for (let y = adjustedHeight; y < height; y++)
-        ctx.putImageData(pixelData, x, y);
+        ctx.putImageData(bottomEdge, 0, y);
     }
+
     // corner
-    let pixelData = ctx.getImageData(adjustedWidth-1, adjustedHeight-1,
-                                     adjustedWidth, adjustedHeight);
-    for (let x = adjustedWidth; x < width; x++)
-      for (let y = adjustedHeight; y < height; y++)
-        ctx.putImageData(pixelData, x, y);
+    if (padWidth > 0 && padHeight > 0) {
+      let pixel = ctx.getImageData(adjustedWidth-1, adjustedHeight-1, 1, 1);
+      let cornerPixel = pixel.data;
+      let cornerPad = new Uint8ClampedArray(padWidth * padHeight * imageChannels);
+      for (let i = 0; i < padWidth * padHeight * imageChannels; i += imageChannels) {
+        cornerPad[i] = cornerPixel[0];
+        cornerPad[i+1] = cornerPixel[1];
+        cornerPad[i+2] = cornerPixel[2];
+        cornerPad[i+3] = cornerPixel[3];
+      }
+      let cornerData = new ImageData(cornerPad, padWidth, padHeight);
+      ctx.putImageData(cornerData, adjustedWidth, adjustedHeight);
+    }
 
     let pixels = ctx.getImageData(0, 0, width, height).data;
-
     // NHWC layout
     for (let y = 0; y < height; ++y) {
       for (let x = 0; x < width; ++x) {
