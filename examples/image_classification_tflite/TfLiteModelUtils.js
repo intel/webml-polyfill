@@ -87,6 +87,10 @@ function printTfLiteModel(model) {
           `squeezeDimsLength: ${options.squeezeDimsLength()}, ` +
           `squeezeDimsArray: ${options.squeezeDimsArray()}}}`);
       } break;
+      case 'FULLY_CONNECTED': {
+        let options = operator.builtinOptions(new tflite.FullyConnectedOptions());
+        console.log(`\t\t\t  builtin_options: {fused_activation_function: ${ActivationFunctionTypes[options.fusedActivationFunction()]}}}`);
+      } break;
       default: {
         console.warn(`\t\t\t  builtin_options: ${op} is not supported.}`);
       }

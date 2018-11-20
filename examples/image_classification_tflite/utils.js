@@ -9,6 +9,7 @@ class Utils {
     this.LABELS_FILE;
     this.INPUT_SIZE;
     this.OUTPUT_SIZE;
+    this.postOptions;
     this.canvasElement = canvas;
     this.canvasContext = this.canvasElement.getContext('2d');
     this.updateProgress;
@@ -26,7 +27,8 @@ class Utils {
       this.tfModel = tflite.Model.getRootAsModel(flatBuffer);
       printTfLiteModel(this.tfModel);
     }
-    this.model = new ImageClassificationModel(this.tfModel, backend);
+    let autoSoftmax = this.postOptions.softmax || false;
+    this.model = new ImageClassificationModel(this.tfModel, backend, {softmax: autoSoftmax});
     result = await this.model.createCompiledModel();
     console.log(`compilation result: ${result}`);
     let start = performance.now();
@@ -141,6 +143,7 @@ class Utils {
     this.OUTPUT_SIZE = newModel.OUTPUT_SIZE;
     this.MODEL_FILE = newModel.MODEL_FILE;
     this.LABELS_FILE = newModel.LABELS_FILE;
+    this.postOptions = newModel.postOptions || {};
     this.inputTensor = new Float32Array(this.INPUT_SIZE.reduce((a, b) => a * b));
     this.outputTensor = new Float32Array(this.OUTPUT_SIZE);
     this.tfModel = null;

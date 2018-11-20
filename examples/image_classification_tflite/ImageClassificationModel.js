@@ -1,11 +1,12 @@
 class ImageClassificationModel {
-  constructor(tfModel, backend) {
+  constructor(tfModel, backend, modelOptions) {
     this._tfModel = tfModel;
     this._model = null;
     this._compilation;
     this._execution;
     this._tensorIds = [];
     this._operandIndex = 0;
+    this._options = modelOptions || {};
     if (typeof backend !== 'undefined') {
       this._backend = backend;
     } else {
@@ -34,6 +35,7 @@ class ImageClassificationModel {
 
     this._addTensorOperands();
     this._addOpsAndParams();
+    this._addInputsOutputs()
 
     await this._model.finish();
     this._compilation = await this._model.createCompilation();
@@ -84,9 +86,16 @@ class ImageClassificationModel {
         this._model.setOperandValue(tensorId, data);
       }
     }
+  }
 
+  _addInputsOutputs() {
+    let graph = this._tfModel.subgraphs(0);
     let inputs = Array.from(graph.inputsArray());
     let outputs = Array.from(graph.outputsArray());
+    let operator = graph.operators(graph.operatorsLength()-1);
+    let opCode = this._tfModel.operatorCodes(operator.opcodeIndex()).builtinCode();
+    if (this._options.softmax && opCode != tflite.BuiltinOperator.SOFTMAX)
+      outputs = [this._operandIndex-1];
     this._model.identifyInputsAndOutputs(inputs, outputs);
   }
 
@@ -218,24 +227,54 @@ class ImageClassificationModel {
         } break;
         case tflite.BuiltinOperator.RESHAPE: {
           let options = operator.builtinOptions(new tflite.ReshapeOptions());
-          //targetShape is in tensor
+          // targetShape is in tensor
           opType = this._nn.RESHAPE;
         } break;
         case tflite.BuiltinOperator.SQUEEZE: {
-          let options = operator.builtinOptions(new tflite.ReshapeOptions());
-          //targetShape is in tensor
+          let options = operator.builtinOptions(new tflite.SqueezeOptions());
           let tensorType = {type: this._nn.TENSOR_INT32, dimensions: [2]};
           let tensorId = this._operandIndex++;
           this._model.addOperand(tensorType);
           this._tensorIds.push(tensorId);
-          this._model.setOperandValue(tensorId, new Int32Array([1,1001]));
+          this._model.setOperandValue(tensorId, new Int32Array([1, 1001]));
           inputs.push(tensorId);
-          opType = this._nn.RESHAPE;
+          opType = this._nn.RESHAPE;         
+        } break;
+        case tflite.BuiltinOperator.FULLY_CONNECTED: {
+          let options = operator.builtinOptions(new tflite.FullyConnectedOptions());
+          let fuseCode = FuseCodeMap.get(options.fusedActivationFunction());
+          if (typeof fuseCode === 'undefined') {
+            throw new Error(`Fuse code ${options.fusedActivationFunction()} is not supported.`);
+          }
+          inputs.push(this._addScalarInt32(fuseCode));
+          opType = this._nn.FULLY_CONNECTED;
         } break;
         default: {
           throw new Error(`operator type ${opCode} is not supported.`);
         }
       }
+
+      if (i === operatorsLength - 1) { 
+        if (this._options.softmax && opCode != tflite.BuiltinOperator.SOFTMAX) {
+          this._model.addOperation(opType, inputs, outputs);
+          let outputTensor = graph.tensors(outputs[0]);
+          // Add inputs
+          inputs = [];
+          inputs.push(outputs[0]);
+          // Set beta to 1.0
+          inputs.push(this._addScalarFloat32(1.0));
+          // Add outputs
+          outputs = [];
+          let tensorType = {type: this._nn.TENSOR_FLOAT32, dimensions: Array.from(outputTensor.shapeArray())};
+          let tensorId = this._operandIndex++;
+          this._model.addOperand(tensorType);
+          this._tensorIds.push(tensorId);
+          outputs.push(tensorId);
+
+          opType = this._nn.SOFTMAX;
+        }
+      }
+
       this._model.addOperation(opType, inputs, outputs);
     }
   }

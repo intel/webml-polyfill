@@ -19,6 +19,13 @@ const inception_v3 = {
   MODEL_FILE: './model/inception_v3.tflite',
   LABELS_FILE: './model/labels.txt'
 };
+const inception_v4 = {
+  MODEL_NAME: 'Inception_V4',
+  INPUT_SIZE: [299, 299, 3],
+  OUTPUT_SIZE: 1001,
+  MODEL_FILE: './model/inception_v4.tflite',
+  LABELS_FILE: './model/labels.txt'
+}
 const squeezenet = {
   MODEL_NAME: 'Squeezenet',
   INPUT_SIZE: [224, 224, 3],
@@ -26,13 +33,25 @@ const squeezenet = {
   MODEL_FILE: './model/squeezenet.tflite',
   LABELS_FILE: './model/labels.txt'
 };
+const inception_resnet_v2 = {
+  MODEL_NAME: 'Inception_Resnet_V2',
+  INPUT_SIZE: [299, 299, 3],
+  OUTPUT_SIZE: 1001,
+  MODEL_FILE: './model/inception_resnet_v2.tflite',
+  LABELS_FILE: './model/labels.txt',
+  postOptions: {
+    softmax: true,
+  }
+}
 
 function main(camera) {
   const availableModels = [
     mobilenet_v1,
     mobilenet_v2,
     inception_v3,
+    inception_v4,
     squeezenet,
+    inception_resnet_v2,
   ];
 
   const videoElement = document.getElementById('video');
@@ -119,6 +138,7 @@ function main(camera) {
     setTimeout(() => {
       utils.init(newBackend).then(() => {
         updateBackend();
+        updateModel();
         if (!camera) {
           utils.predict(imageElement).then(ret => updateResult(ret));
         } else {
@@ -143,10 +163,11 @@ function main(camera) {
     utils.changeModelParam(newModel);
     progressContainer.style.display = "inline";
     selectModel.innerHTML = 'Setting...';
+    currentModel = newModel.MODEL_NAME;
     setTimeout(() => {
       utils.init(utils.model._backend).then(() => {
-        currentModel = newModel.MODEL_NAME;
-        unpdateModel();
+        updateModel();
+        updateBackend();
         if (!camera) {
           utils.predict(imageElement).then(ret => updateResult(ret));
         } else {
@@ -157,7 +178,7 @@ function main(camera) {
     }, 10);
   }
 
-  function unpdateModel() {
+  function updateModel() {
     selectModel.innerHTML = currentModel;
   }
 
@@ -260,7 +281,7 @@ function main(camera) {
 
     utils.init().then(() => {
       updateBackend();
-      unpdateModel();
+      updateModel();
       utils.predict(imageElement).then(ret => updateResult(ret));
       buttonEelement.setAttribute('class', 'btn btn-primary');
       inputElement.removeAttribute('disabled');
@@ -280,7 +301,7 @@ function main(camera) {
       video.srcObject = stream;
       utils.init().then(() => {
         updateBackend();
-        unpdateModel();
+        updateModel();
         streaming = true;
         startPredict();
       }).catch((e) => {
