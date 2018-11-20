@@ -79,6 +79,7 @@ function main() {
       } else {
         selectPrefer.style.display = 'inline';
       }
+      utils.deleteAll();
       backend.innerHTML = 'Setting...';
       setTimeout(() => {
         utils.init(newBackend).then(() => {
@@ -102,7 +103,7 @@ function main() {
       if (currentPrefer === newPrefer) {
         return;
       }
-      //utils.deleteAll();
+      utils.deleteAll();
       selectPrefer.dataset.prefer = newPrefer;
       selectPrefer.innerHTML = 'Setting...';
       setTimeout(() => {

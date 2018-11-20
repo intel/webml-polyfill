@@ -93,6 +93,7 @@ function changeBackend(newBackend) {
   } else {
     selectPrefer.style.display = 'inline';
   }
+  util.deleteAll();
   backend.innerHTML = 'Setting...';
   setTimeout(() => {
     util.init(newBackend, inputSize).then(() => {

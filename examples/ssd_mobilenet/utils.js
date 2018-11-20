@@ -135,4 +135,10 @@ class Utils {
       }
     }
   }
+
+  deleteAll() {
+    if (this.model._backend != 'WebML') {
+      this.model._compilation._preparedModel._deleteAll();
+    }
+  }
 }

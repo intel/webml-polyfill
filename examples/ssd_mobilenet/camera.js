@@ -78,6 +78,7 @@ function main() {
       } else {
         selectPrefer.style.display = 'inline';
       }
+      utils.deleteAll();
       backend.innerHTML = 'Setting...';
       setTimeout(() => {
         utils.init(newBackend).then(() => {
