@@ -149,7 +149,7 @@ function main() {
     }
   
      //register prefers
-    if (getOS() === 'Mac OS' && backend === 'WebML') {
+    if (getOS() === 'Mac OS' && currentBackend === 'WebML') {
       $('.prefer').css("display","inline");
       let MPS = $('<button class="dropdown-item"/>')
         .text('MPS')

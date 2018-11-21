@@ -78,11 +78,14 @@ function main() {
       } else {
         selectPrefer.style.display = 'inline';
       }
+      streaming = false;
       utils.deleteAll();
       backend.innerHTML = 'Setting...';
       setTimeout(() => {
         utils.init(newBackend).then(() => {
           updateBackend();
+          streaming = true;
+          startPredict();
         }).catch((e) => {
           console.warn(`Failed to init ${utils.model._backend}, try to use WASM`);
           console.error(e);

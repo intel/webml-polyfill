@@ -15,15 +15,6 @@ class PoseNet{
     this._outputTensorId;
     this._cacheMap = cacheMap;
     this._backend = backend;
-    /*if (typeof backend !== 'undefined') {
-      this._backend = backend;
-    } else {
-      if (nnNative && getPreferParam() !== 'invalid') {
-        this._backend = 'WebML';
-      } else {
-        this._backend = 'WASM';
-      }
-    }*/
     if (this._backend === 'WebML') {
       if (nnNative === null) {
         throw Error('Fails to initialize neural network context');
@@ -42,7 +33,7 @@ class PoseNet{
     await this._addTensorOperands();
     await this._model.finish();
     this._compilation = await this._model.createCompilation();
-    this._compilation.setPreference(getPrefer(this._backend));
+    this._compilation.setPreference(getPreferfromSwitch(this._backend));
     await this._compilation.finish();
     this._execution = await this._compilation.createExecution();
   }

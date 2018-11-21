@@ -93,11 +93,14 @@ function changeBackend(newBackend) {
   } else {
     selectPrefer.style.display = 'inline';
   }
+  streaming = false;
   util.deleteAll();
   backend.innerHTML = 'Setting...';
   setTimeout(() => {
     util.init(newBackend, inputSize).then(() => {
       updateBackend();
+      streaming = true;
+      poseDetectionFrame();
     });
   }, 10);
 }

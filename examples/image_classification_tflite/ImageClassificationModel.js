@@ -6,6 +6,7 @@ class ImageClassificationModel {
     this._execution;
     this._tensorIds = [];
     this._operandIndex = 0;
+    this._options = modelOptions || {};
     this._backend = backend;
     if (this._backend === 'WebML') {
       if (nnNative === null) {

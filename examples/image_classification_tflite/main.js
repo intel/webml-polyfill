@@ -343,7 +343,7 @@ function main(camera) {
     }
     utils.init(currentBackend).then(() => {
       updateBackend();
-      unpdateModel();
+      updateModel();
       updatePrefer();
       utils.predict(imageElement).then(ret => updateResult(ret));
       buttonEelement.setAttribute('class', 'btn btn-primary');
@@ -364,7 +364,7 @@ function main(camera) {
       video.srcObject = stream;
       utils.init(currentBackend).then(() => {
         updateBackend();
-        unpdateModel();
+        updateModel();
         updatePrefer();
         streaming = true;
         startPredict();
