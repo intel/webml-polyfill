@@ -83,6 +83,7 @@ function main() {
       backend.innerHTML = 'Setting...';
       setTimeout(() => {
         utils.init(newBackend).then(() => {
+          updatePrefer();
           updateBackend();
           streaming = true;
           startPredict();
@@ -91,6 +92,7 @@ function main() {
           console.error(e);
           showAlert(utils.model._backend);
           changeBackend('WASM');
+          updatePrefer();
           backend.innerHTML = 'WASM';
         });
       }, 10);
@@ -102,6 +104,7 @@ function main() {
 
     function changePrefer(newPrefer) {
       if (currentPrefer === newPrefer) {
+        selectPrefer.dataset.prefer = newPrefer;
         return;
       }
       streaming = false;
@@ -112,8 +115,18 @@ function main() {
         utils.init(utils.model._backend).then(() => {
           currentPrefer = newPrefer;
           updatePrefer();
+          updateBackend();
           streaming = true;
           startPredict();
+        }).catch((e) => {
+          let tmpNewPrefer = newPrefer === "sustained"? "MPS" : "BNNS";
+          let tmpCurrentPrefer = currentPrefer === "sustained"? "MPS" : "BNNS";
+          console.warn(`Failed to change backend ${tmpNewPrefer}, switch back to ${tmpCurrentPrefer}`);
+          console.error(e);
+          showAlert(tmpNewPrefer);
+          changePrefer(currentPrefer);
+          updatePrefer();
+          updateBackend();
         });
       }, 10);
     }

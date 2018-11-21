@@ -99,6 +99,7 @@ function changeBackend(newBackend) {
   setTimeout(() => {
     util.init(newBackend, inputSize).then(() => {
       updateBackend();
+      updatePrefer();
       streaming = true;
       poseDetectionFrame();
     });
@@ -199,8 +200,18 @@ function changePrefer(newPrefer) {
     util.init(util.model._backend, inputSize).then(() => {
       currentPrefer = newPrefer;
       updatePrefer();
+      updateBackend();
       initModel();
       poseDetectionFrame();
+    }).catch((e) => {
+      let tmpNewPrefer = newPrefer === "sustained"? "MPS" : "BNNS";
+      let tmpCurrentPrefer = currentPrefer === "sustained"? "MPS" : "BNNS";
+      console.warn(`Failed to change backend ${tmpNewPrefer}, switch back to ${tmpCurrentPrefer}`);
+      console.error(e);
+      showAlert(tmpNewPrefer);
+      changePrefer(currentPrefer);
+      updatePrefer();
+      updateBackend();
     });
   }, 10);
 }

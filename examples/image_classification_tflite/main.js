@@ -149,8 +149,9 @@ function main(camera) {
     backend.innerHTML = 'Setting...';
     setTimeout(() => {
       utils.init(newBackend).then(() => {
-        updateBackend();
+        updatePrefer();
         updateModel();
+        updateBackend();
         if (!camera) {
           utils.predict(imageElement).then(ret => updateResult(ret));
         } else {
@@ -162,6 +163,9 @@ function main(camera) {
         console.log(e);
         showAlert(newBackend);
         changeBackend(currentBackend, true);
+        updatePrefer();
+        updateModel();
+        updateBackend();
       });
     }, 10);
   }
@@ -178,6 +182,7 @@ function main(camera) {
     currentModel = newModel.MODEL_NAME;
     setTimeout(() => {
       utils.init(utils.model._backend).then(() => {
+        updatePrefer();
         updateModel();
         updateBackend();
         if (!camera) {
@@ -196,6 +201,7 @@ function main(camera) {
 
   function changePrefer(newPrefer) {
     if (currentPrefer === newPrefer) {
+      selectPrefer.dataset.prefer = currentPrefer;
       return;
     }
     streaming = false;
@@ -206,12 +212,24 @@ function main(camera) {
       utils.init(utils.model._backend).then(() => {
         currentPrefer = newPrefer;
         updatePrefer();
+        updateModel();
+        updateBackend();
         if (!camera) {
           utils.predict(imageElement).then(ret => updateResult(ret));
         } else {
           streaming = true;
           startPredict();
         }
+      }).catch((e) => {
+        let tmpNewPrefer = newPrefer === "sustained"? "MPS" : "BNNS";
+        let tmpCurrentPrefer = currentPrefer === "sustained"? "MPS" : "BNNS";
+        console.warn(`Failed to change backend ${tmpNewPrefer}, switch back to ${tmpCurrentPrefer}`);
+        console.error(e);
+        showAlert(tmpNewPrefer);
+        changePrefer(currentPrefer);
+        updatePrefer();
+        updateModel();
+        updateBackend();
       });
     }, 10);
   }
