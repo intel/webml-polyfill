@@ -1,6 +1,8 @@
-const prefer = {
-  MPS: 'sustained',
-  BNNS: 'fast',
+const preferMap = {
+  'MPS': 'sustained',
+  'BNNS': 'fast',
+  'sustained': 'MPS',
+  'fast': 'BNNS',
 };
 
 function main() {
@@ -62,7 +64,6 @@ function main() {
     }
   
     function updateBackend() {
-      currentBackend = utils.model._backend;
       if (getUrlParams('api_info') === 'true') {
         backend.innerHTML = currentBackend === 'WebML' ? currentBackend + '/' + getNativeAPI() : currentBackend;
       } else {
@@ -82,7 +83,8 @@ function main() {
       utils.deleteAll();
       backend.innerHTML = 'Setting...';
       setTimeout(() => {
-        utils.init(newBackend).then(() => {
+        utils.init(newBackend, currentPrefer).then(() => {
+          currentBackend = newBackend;
           updateBackend();
           updatePrefer();
           utils.predict(imageElement);
@@ -98,30 +100,26 @@ function main() {
     }
 
     function updatePrefer() {
-      selectPrefer.innerHTML = currentPrefer === "sustained"? "MPS" : "BNNS";
+      selectPrefer.innerHTML = preferMap[currentPrefer];
     }
 
-    function changePrefer(newPrefer) {
-      if (currentPrefer === newPrefer) {
-        selectPrefer.dataset.prefer = newPrefer;
+    function changePrefer(newPrefer, force) {
+      if (currentPrefer === newPrefer && !force) {
         return;
       }
       utils.deleteAll();
-      selectPrefer.dataset.prefer = newPrefer;
       selectPrefer.innerHTML = 'Setting...';
       setTimeout(() => {
-        utils.init(utils.model._backend).then(() => {
+        utils.init(currentBackend, newPrefer).then(() => {
           currentPrefer = newPrefer;
           updatePrefer();
           updateBackend();
           utils.predict(imageElement);
         }).catch((e) => {
-          let tmpNewPrefer = newPrefer === "sustained"? "MPS" : "BNNS";
-          let tmpCurrentPrefer = currentPrefer === "sustained"? "MPS" : "BNNS";
-          console.warn(`Failed to change backend ${tmpNewPrefer}, switch back to ${tmpCurrentPrefer}`);
+          console.warn(`Failed to change backend ${preferMap[newPrefer]}, switch back to ${preferMap[currentPrefer]}`);
           console.error(e);
-          showAlert(tmpNewPrefer);
-          changePrefer(currentPrefer);
+          showAlert(preferMap[newPrefer]);
+          changePrefer(currentPrefer, true);
           updatePrefer();
           updateBackend();
         });
@@ -161,19 +159,18 @@ function main() {
       }
     }
   
-     //register prefers
+     // register prefers
     if (getOS() === 'Mac OS' && currentBackend === 'WebML') {
       $('.prefer').css("display","inline");
       let MPS = $('<button class="dropdown-item"/>')
         .text('MPS')
-        .click(_ => changePrefer(prefer.MPS));
+        .click(_ => changePrefer(preferMap['MPS']));
       $('.preference').append(MPS);
       let BNNS = $('<button class="dropdown-item"/>')
         .text('BNNS')
-        .click(_ => changePrefer(prefer.BNNS));
+        .click(_ => changePrefer(preferMap['BNNS']));
       $('.preference').append(BNNS);
       if (!currentPrefer) {
-        selectPrefer.dataset.prefer = "sustained";
         currentPrefer = "sustained";
       }
     }
@@ -189,7 +186,7 @@ function main() {
       utils.predict(imageElement);
     }
   
-    utils.init(currentBackend).then(() => {
+    utils.init(currentBackend, currentPrefer).then(() => {
       updateBackend();
       updatePrefer();
       utils.predict(imageElement);

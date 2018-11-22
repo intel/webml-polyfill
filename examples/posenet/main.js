@@ -1,9 +1,12 @@
 guiState.scaleFactor = 0.75;
 
-const prefer = {
-  MPS: 'sustained',
-  BNNS: 'fast',
+const preferMap = {
+  'MPS': 'sustained',
+  'BNNS': 'fast',
+  'sustained': 'MPS',
+  'fast': 'BNNS',
 };
+
 const util = new Utils();
 const canvasSingle = document.getElementById('canvasSingle');
 const ctxSingle = canvasSingle.getContext('2d');
@@ -67,7 +70,6 @@ function removeAlertElement() {
 }
 
 function updateBackend() {
-  currentBackend = util.model._backend;
   if (getUrlParams('api_info') === 'true') {
     backend.innerHTML = currentBackend === 'WebML' ? currentBackend + '/' + getNativeAPI() : currentBackend;
   } else {
@@ -87,7 +89,8 @@ function changeBackend(newBackend) {
   util.deleteAll();
   backend.innerHTML = 'Setting...';
   setTimeout(() => {
-    util.init(newBackend, inputSize).then(() => {
+    util.init(newBackend, currentPrefer, inputSize).then(() => {
+      currentBackend = newBackend;
       updatePrefer();
       updateBackend();
       drawResult();
@@ -102,27 +105,23 @@ function changeBackend(newBackend) {
   }, 10);
 }
 
-function changePrefer(newPrefer) {
-  if (currentPrefer === newPrefer) {
-    selectPrefer.dataset.prefer = newPrefer;
+function changePrefer(newPrefer, force) {
+  if (currentPrefer === newPrefer && !force) {
     return;
   }
   util.deleteAll();
-  selectPrefer.dataset.prefer = newPrefer;
   selectPrefer.innerHTML = 'Setting...';
   setTimeout(() => {
-    util.init(util.model._backend, inputSize).then(() => {
+    util.init(currentBackend, newPrefer, inputSize).then(() => {
       currentPrefer = newPrefer;
       updatePrefer();
       updateBackend();
       drawResult();
     }).catch((e) => {
-      let tmpNewPrefer = newPrefer === "sustained"? "MPS" : "BNNS";
-      let tmpCurrentPrefer = currentPrefer === "sustained"? "MPS" : "BNNS";
-      console.warn(`Failed to change backend ${tmpNewPrefer}, switch back to ${tmpCurrentPrefer}`);
+      console.warn(`Failed to change backend ${preferMap[newPrefer]}, switch back to ${preferMap[currentPrefer]}`);
       console.error(e);
-      showAlert(tmpNewPrefer);
-      changePrefer(currentPrefer);
+      showAlert(preferMap[newPrefer]);
+      changePrefer(currentPrefer, true);
       updatePrefer();
       updateBackend();
     });
@@ -130,7 +129,7 @@ function changePrefer(newPrefer) {
 }
 
 function updatePrefer() {
-  selectPrefer.innerHTML = currentPrefer === "sustained"? "MPS" : "BNNS";
+  selectPrefer.innerHTML = preferMap[currentPrefer];
 }
 
 function main() {
@@ -169,19 +168,18 @@ function main() {
     }
   }
 
-  //register prefers
+  // register prefers
   if (getOS() === 'Mac OS' && currentBackend === 'WebML') {
     $('.prefer').css("display","inline");
     let MPS = $('<button class="dropdown-item"/>')
       .text('MPS')
-      .click(_ => changePrefer(prefer.MPS));
+      .click(_ => changePrefer(preferMap['MPS']));
     $('.preference').append(MPS);
     let BNNS = $('<button class="dropdown-item"/>')
       .text('BNNS')
-      .click(_ => changePrefer(prefer.BNNS));
+      .click(_ => changePrefer(preferMap['BNNS']));
     $('.preference').append(BNNS);
     if (!currentPrefer) {
-      selectPrefer.dataset.prefer = "sustained";
       currentPrefer = "sustained";
     }
   }
@@ -194,7 +192,7 @@ function initModel(first = false) {
     console.warn('not initialized');
     return;
   }
-  util.init(currentBackend, inputSize).then(() => {
+  util.init(currentBackend, currentPrefer, inputSize).then(() => {
     updateBackend();
     updatePrefer()
     drawResult();

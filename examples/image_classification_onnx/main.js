@@ -15,9 +15,11 @@ const squeezenet = {
   }
 };
 
-const prefer = {
-  MPS: 'sustained',
-  BNNS: 'fast',
+const preferMap = {
+  'MPS': 'sustained',
+  'BNNS': 'fast',
+  'sustained': 'MPS',
+  'fast': 'BNNS',
 };
 
 function main(camera) {
@@ -92,7 +94,6 @@ function main(camera) {
   }
 
   function updateBackend() {
-    currentBackend = utils.model._backend;
     if (getUrlParams('api_info') === 'true') {
       backend.innerHTML = currentBackend === 'WebML' ? currentBackend + '/' + getNativeAPI() : currentBackend;
     } else {
@@ -113,7 +114,8 @@ function main(camera) {
     utils.deleteAll();
     backend.innerHTML = 'Setting...';
     setTimeout(() => {
-      utils.init(newBackend).then(() => {
+      utils.init(newBackend, currentPrefer).then(() => {
+        currentBackend = newBackend;
         updatePrefer();
         updateModel();
         updateBackend();
@@ -147,9 +149,10 @@ function main(camera) {
     utils.deleteAll();
     utils.changeModelParam(newModel);
     progressContainer.style.display = "inline";
+    currentPrefer = "sustained";
     selectModel.innerHTML = 'Setting...';
     setTimeout(() => {
-      utils.init(utils.model._backend).then(() => {
+      utils.init(currentBackend, currentPrefer).then(() => {
         currentModel = newModel.modelName;
         updatePrefer();
         updateModel();
@@ -165,20 +168,18 @@ function main(camera) {
   }
 
   function updatePrefer() {
-    selectPrefer.innerHTML = currentPrefer === "sustained"? "MPS" : "BNNS";
+    selectPrefer.innerHTML = preferMap[currentPrefer];
   }
 
-  function changePrefer(newPrefer) {
-    if (currentPrefer === newPrefer) {
-      selectPrefer.dataset.prefer = currentPrefer;
+  function changePrefer(newPrefer, force) {
+    if (currentPrefer === newPrefer && !force) {
       return;
     }
     streaming = false;
     utils.deleteAll();
-    selectPrefer.dataset.prefer = newPrefer;
     selectPrefer.innerHTML = 'Setting...';
     setTimeout(() => {
-      utils.init(utils.model._backend).then(() => {
+      utils.init(currentBackend, newPrefer).then(() => {
         currentPrefer = newPrefer;
         updatePrefer();
         updateModel();
@@ -190,12 +191,10 @@ function main(camera) {
           startPredict();
         }
       }).catch((e) => {
-        let tmpNewPrefer = newPrefer === "sustained"? "MPS" : "BNNS";
-        let tmpCurrentPrefer = currentPrefer === "sustained"? "MPS" : "BNNS";
-        console.warn(`Failed to change backend ${tmpNewPrefer}, switch back to ${tmpCurrentPrefer}`);
+        console.warn(`Failed to change backend ${preferMap[newPrefer]}, switch back to ${preferMap[currentPrefer]}`);
         console.error(e);
-        showAlert(tmpNewPrefer);
-        changePrefer(currentPrefer);
+        showAlert(preferMap[newPrefer]);
+        changePrefer(currentPrefer, true);
         updatePrefer();
         updateModel();
         updateBackend();
@@ -291,19 +290,18 @@ function main(camera) {
     }
   }
 
-  //register prefers
+  // register prefers
   if (getOS() === 'Mac OS' && currentBackend === 'WebML') {
     $('.prefer').css("display","inline");
     let MPS = $('<button class="dropdown-item"/>')
       .text('MPS')
-      .click(_ => changePrefer(prefer.MPS));
+      .click(_ => changePrefer(preferMap['MPS']));
     $('.preference').append(MPS);
     let BNNS = $('<button class="dropdown-item"/>')
       .text('BNNS')
-      .click(_ => changePrefer(prefer.BNNS));
+      .click(_ => changePrefer(preferMap['BNNS']));
     $('.preference').append(BNNS);
     if (!currentPrefer) {
-      selectPrefer.dataset.prefer = "sustained";
       currentPrefer = "sustained";
     }
   }
@@ -321,7 +319,7 @@ function main(camera) {
       utils.predict(imageElement).then(ret => updateResult(ret));
     };
 
-    utils.init(currentBackend).then(() => {
+    utils.init(currentBackend, currentPrefer).then(() => {
       updateBackend();
       updateModel();
       updatePrefer();
@@ -342,7 +340,7 @@ function main(camera) {
 
     navigator.mediaDevices.getUserMedia({audio: false, video: {facingMode: "environment"}}).then((stream) => {
       video.srcObject = stream;
-      utils.init(currentBackend).then(() => {
+      utils.init(currentBackend, currentPrefer).then(() => {
         updateBackend();
         updateModel();
         updatePrefer();

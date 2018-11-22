@@ -1,14 +1,17 @@
 class OnnxModelImporter {
-  constructor(onnxModel, backend, modelOptions) {
-    this._onnxModel = onnxModel;
+  constructor(kwargs) {
+    this._onnxModel = kwargs.onnxModel;
     this._model = null;
     this._compilation;
     this._execution;
     this._tensorIds = [];
     this._operands = [];
-    this._options = modelOptions || {};
+    this._options = {
+      softmax: kwargs.softmax, 
+    };
     this._operandIndex = 0;
-    this._backend = backend;
+    this._backend = kwargs.backend;
+    this._prefer = kwargs.prefer
     if (this._backend === 'WebML') {
       if (nnNative === null) {
         throw Error('Fails to initialize neural network context');
@@ -32,7 +35,7 @@ class OnnxModelImporter {
 
     await this._model.finish();
     this._compilation = await this._model.createCompilation();
-    this._compilation.setPreference(getPreferfromSwitch(this._backend));
+    this._compilation.setPreference(getPreferCode(this._backend, this._prefer));
     await this._compilation.finish();
     this._execution = await this._compilation.createExecution();
   }

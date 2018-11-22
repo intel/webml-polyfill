@@ -12,10 +12,13 @@ let currentPrefer = '';
 
 guiState.scoreThreshold = 0.15;
 
-const prefer = {
-  MPS: 'sustained',
-  BNNS: 'fast',
+const preferMap = {
+  'MPS': 'sustained',
+  'BNNS': 'fast',
+  'sustained': 'MPS',
+  'fast': 'BNNS',
 };
+
 const util = new Utils();
 const videoWidth = 500;
 const videoHeight = 500;
@@ -76,7 +79,6 @@ showBoundingBox.onChange((showBoundingBox) => {
 });
 
 function updateBackend() {
-  currentBackend = util.model._backend;
   if (getUrlParams('api_info') === 'true') {
     backend.innerHTML = currentBackend === 'WebML' ? currentBackend + '/' + getNativeAPI() : currentBackend;
   } else {
@@ -97,13 +99,43 @@ function changeBackend(newBackend) {
   util.deleteAll();
   backend.innerHTML = 'Setting...';
   setTimeout(() => {
-    util.init(newBackend, inputSize).then(() => {
+    util.init(newBackend, currentPrefer, inputSize).then(() => {
+      currentBackend = newBackend;
       updateBackend();
       updatePrefer();
       streaming = true;
       poseDetectionFrame();
     });
   }, 10);
+}
+
+function changePrefer(newPrefer, force) {
+  if (currentPrefer === newPrefer && !force) {
+    return;
+  }
+  streaming = false;
+  util.deleteAll();
+  selectPrefer.innerHTML = 'Setting...';
+  setTimeout(() => {
+    util.init(currentBackend, newPrefer, inputSize).then(() => {
+      currentPrefer = newPrefer;
+      updatePrefer();
+      updateBackend();
+      streaming = true;
+      poseDetectionFrame();
+    }).catch((e) => {
+      console.warn(`Failed to change backend ${preferMap[newPrefer]}, switch back to ${preferMap[currentPrefer]}`);
+      console.error(e);
+      showAlert(preferMap[newPrefer]);
+      changePrefer(currentPrefer, true);
+      updatePrefer();
+      updateBackend();
+    });
+  }, 10);
+}
+
+function updatePrefer() {
+  selectPrefer.innerHTML = preferMap[currentPrefer];
 }
 
 async function setupCamera() {
@@ -133,7 +165,7 @@ async function initModel(first = false) {
     return;
   }
   streaming = true;
-  util.init(currentBackend, inputSize).then(() => {
+  util.init(currentBackend, currentPrefer, inputSize).then(() => {
     updateBackend();
     updatePrefer();
     //streaming = true;
@@ -188,38 +220,6 @@ function removeAlertElement() {
   }
 }
 
-function changePrefer(newPrefer) {
-  if (currentPrefer === newPrefer) {
-    return;
-  }
-  streaming = false;
-  util.deleteAll();
-  selectPrefer.dataset.prefer = newPrefer;
-  selectPrefer.innerHTML = 'Setting...';
-  setTimeout(() => {
-    util.init(util.model._backend, inputSize).then(() => {
-      currentPrefer = newPrefer;
-      updatePrefer();
-      updateBackend();
-      initModel();
-      poseDetectionFrame();
-    }).catch((e) => {
-      let tmpNewPrefer = newPrefer === "sustained"? "MPS" : "BNNS";
-      let tmpCurrentPrefer = currentPrefer === "sustained"? "MPS" : "BNNS";
-      console.warn(`Failed to change backend ${tmpNewPrefer}, switch back to ${tmpCurrentPrefer}`);
-      console.error(e);
-      showAlert(tmpNewPrefer);
-      changePrefer(currentPrefer);
-      updatePrefer();
-      updateBackend();
-    });
-  }, 10);
-}
-
-function updatePrefer() {
-  selectPrefer.innerHTML = currentPrefer === "sustained"? "MPS" : "BNNS";
-}
-
 async function main() {
   checkPreferParam();
 
@@ -256,19 +256,18 @@ async function main() {
     }
   }
 
-  //register prefers
+  // register prefers
   if (getOS() === 'Mac OS' && currentBackend === 'WebML') {
     $('.prefer').css("display","inline");
     let MPS = $('<button class="dropdown-item"/>')
       .text('MPS')
-      .click(_ => changePrefer(prefer.MPS));
+      .click(_ => changePrefer(preferMap['MPS']));
     $('.preference').append(MPS);
     let BNNS = $('<button class="dropdown-item"/>')
       .text('BNNS')
-      .click(_ => changePrefer(prefer.BNNS));
+      .click(_ => changePrefer(preferMap['BNNS']));
     $('.preference').append(BNNS);
     if (!currentPrefer) {
-      selectPrefer.dataset.prefer = "sustained";
       currentPrefer = "sustained";
     }
   }
