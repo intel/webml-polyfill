@@ -3,7 +3,7 @@ const deeplab513 = {
   modelFile: './model/deeplab_mobilenetv2_513.tflite',
   labelsFile: './model/labels.txt',
   inputSize: [513, 513, 3],
-  numClasses: 21,
+  outputSize: [513, 513, 21],
 };
 
 const deeplab224 = {
@@ -11,14 +11,14 @@ const deeplab224 = {
   modelFile: './model/deeplab_mobilenetv2_224.tflite',
   labelsFile: './model/labels.txt',
   inputSize: [224, 224, 3],
-  numClasses: 21,
+  outputSize: [224, 224, 21],
 };
 
 function main(camera) {
 
   const availableModels = [
-    deeplab513,
     deeplab224,
+    deeplab513,
   ];
   const videoElement = document.getElementById('video');
   const imageElement = document.getElementById('image');
@@ -31,13 +31,11 @@ function main(camera) {
   const webgl = document.getElementById('webgl');
   const webml = document.getElementById('webml');
   const segMapCanvas = document.getElementsByClassName('seg-map')[0];
-  let segMap = null;
   let currentBackend = '';
   let currentModel = '';
   let streaming = false;
 
   let utils = new Utils();
-  // utils.loadModelParam(deeplab);
   // register updateProgress function if progressBar element exist
   utils.progressCallback = updateProgress;
 
@@ -194,21 +192,9 @@ function main(camera) {
     let inferenceTimeElement = document.getElementById('inferenceTime');
     inferenceTimeElement.innerHTML = `inference time: <em style="color:green;font-weight:bloder;">${result.time} </em>ms`;
 
-    segMap = result.segMap;
-    drawSegMap(segMapCanvas, segMap);
-    $('.labels-wrapper').empty();
-    let labelSet = Array.from(new Set(segMap.data));
-    for (let labelId of labelSet) {
-      let rgb = palette[labelId].slice(0, 3);
-      let bullet = $(`<span style="color: rgb(${rgb})">⬤</span>`);
-      let labelDiv =
-        $(`<div class="col-12 seg-label" data-label-id="${labelId}"/>`)
-        .append(bullet)
-        .append(`${result.labels[labelId]}`);
-      labelDiv.mouseenter(_ => drawSegMap(segMapCanvas, segMap, labelId));
-      labelDiv.mouseleave(_ => drawSegMap(segMapCanvas, segMap));
-      $('.labels-wrapper').append(labelDiv);
-    }
+    let start = performance.now();
+    drawSegMap(segMapCanvas, result.segMap);
+    console.log(`[Main] Draw time: ${(performance.now() - start).toFixed(2)} ms`);
   }
 
   // register backends
@@ -291,12 +277,7 @@ function main(camera) {
     stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
     document.body.appendChild(stats.dom);
 
-    navigator.mediaDevices.getUserMedia({
-      audio: false,
-      video: {
-        facingMode: "environment"
-      }
-    }).then((stream) => {
+    navigator.mediaDevices.getUserMedia({audio: false, video: {facingMode: "environment"}}).then((stream) => {
       video.srcObject = stream;
       utils.init('WebGL').then(() => {
         updateBackend();

@@ -47,21 +47,12 @@ class Utils {
     return {
       time: elapsed.toFixed(2),
       segMap: {
-        data: this._argmax(this.outputTensor, 21),
+        data: this.outputTensor,
         scaledShape: scaledImageShape,
-        outputShape: this.inputSize.slice(0,2),
+        outputShape: this.outputSize,
+        labels: this.labels,
       },
-      labels: this.labels,
     };
-  }
-
-  _argmax(array, nLabels) {
-    let result = [];
-    for (let i = 0; i < array.length; i += nLabels) {
-      let chann = array.slice(i, i+nLabels);
-      result.push(chann.indexOf(Math.max(...chann)));
-    }
-    return result;
   }
 
   async loadModelAndLabels(modelUrl, labelsUrl) {
@@ -95,7 +86,8 @@ class Utils {
   }
 
   prepareInputTensor(tensor, image) {
-
+    let start = performance.now();
+    let timestamp = [start];
     const height = this.inputSize[0];
     const width = this.inputSize[1];
     const channels = this.inputSize[2];
@@ -109,45 +101,48 @@ class Utils {
     let imHeight = image.naturalHeight | image.videoHeight;
     // assume width == height
     let resizeRatio = Math.max(Math.max(imWidth, imHeight) / width, 1);
-    let adjustedWidth = Math.floor(imWidth / resizeRatio);
-    let adjustedHeight = Math.floor(imHeight / resizeRatio);
+    let scaledWidth = Math.floor(imWidth / resizeRatio);
+    let scaledHeight = Math.floor(imHeight / resizeRatio);
     let ctx = canvas.getContext('2d');
-    ctx.drawImage(image, 0, 0, adjustedWidth, adjustedHeight);
+    timestamp.push(performance.now());
+    ctx.drawImage(image, 0, 0, scaledWidth, scaledHeight);
+    timestamp.push(performance.now());
+    // // padding (replicate)
+    // // right
+    // let padWidth = width - scaledWidth;
+    // let padHeight = height - scaledHeight;
 
-    // padding (replicate)
-    // right
-    let padWidth = width - adjustedWidth;
-    let padHeight = height - adjustedHeight;
+    // if (padWidth > 0) {
+    //   let rightEdge = ctx.getImageData(scaledWidth-1, 0, 1, scaledHeight);
+    //   for (let x = scaledWidth; x < width; x++)
+    //     ctx.putImageData(rightEdge, x, 0);
+    // }
 
-    if (padWidth > 0) {
-      let rightEdge = ctx.getImageData(adjustedWidth-1, 0, 1, adjustedHeight);
-      for (let x = adjustedWidth; x < width; x++)
-        ctx.putImageData(rightEdge, x, 0);
-    }
+    // // bottom
+    // if (padHeight > 0) {
+    //   let bottomEdge = ctx.getImageData(0, scaledHeight-1, scaledWidth, 1);
+    //   for (let y = scaledHeight; y < height; y++)
+    //     ctx.putImageData(bottomEdge, 0, y);
+    // }
 
-    // bottom
-    if (padHeight > 0) {
-      let bottomEdge = ctx.getImageData(0, adjustedHeight-1, adjustedWidth, 1);
-      for (let y = adjustedHeight; y < height; y++)
-        ctx.putImageData(bottomEdge, 0, y);
-    }
-
-    // corner
-    if (padWidth > 0 && padHeight > 0) {
-      let pixel = ctx.getImageData(adjustedWidth-1, adjustedHeight-1, 1, 1);
-      let cornerPixel = pixel.data;
-      let cornerPad = new Uint8ClampedArray(padWidth * padHeight * imageChannels);
-      for (let i = 0; i < padWidth * padHeight * imageChannels; i += imageChannels) {
-        cornerPad[i] = cornerPixel[0];
-        cornerPad[i+1] = cornerPixel[1];
-        cornerPad[i+2] = cornerPixel[2];
-        cornerPad[i+3] = cornerPixel[3];
-      }
-      let cornerData = new ImageData(cornerPad, padWidth, padHeight);
-      ctx.putImageData(cornerData, adjustedWidth, adjustedHeight);
-    }
+    // // corner
+    // if (padWidth > 0 && padHeight > 0) {
+    //   let pixel = ctx.getImageData(scaledWidth-1, scaledHeight-1, 1, 1);
+    //   let cornerPixel = pixel.data;
+    //   let cornerPad = new Uint8ClampedArray(padWidth * padHeight * imageChannels);
+    //   for (let i = 0; i < padWidth * padHeight * imageChannels; i += imageChannels) {
+    //     cornerPad[i] = cornerPixel[0];
+    //     cornerPad[i+1] = cornerPixel[1];
+    //     cornerPad[i+2] = cornerPixel[2];
+    //     cornerPad[i+3] = cornerPixel[3];
+    //   }
+    //   let cornerData = new ImageData(cornerPad, padWidth, padHeight);
+    //   ctx.putImageData(cornerData, scaledWidth, scaledHeight);
+    // }
+    timestamp.push(performance.now());
 
     let pixels = ctx.getImageData(0, 0, width, height).data;
+    timestamp.push(performance.now());
     // NHWC layout
     for (let y = 0; y < height; ++y) {
       for (let x = 0; x < width; ++x) {
@@ -157,8 +152,12 @@ class Utils {
         }
       }
     }
-
-    return [adjustedWidth, adjustedHeight];
+    timestamp.push(performance.now());
+    let name = ['', 'init', 'scaledown', 'padding', 'getData', 'norm'];
+    for (let i = 1; i < timestamp.length; i++)
+      console.log(` ${i == 1 ? '┌' : '├'} ${name[i]}: ${(timestamp[i] - timestamp[i-1]).toFixed(2)} ms`);
+    console.log(`Prepare time: ${(timestamp[timestamp.length-1] - timestamp[0]).toFixed(2)} ms`);
+    return [scaledWidth, scaledHeight];
   }
 
   deleteAll() {
@@ -176,8 +175,7 @@ class Utils {
     this.postOptions = newModel.postOptions || {};
     this.numClasses = newModel.numClasses;
     this.inputTensor = new Float32Array(newModel.inputSize.reduce((x,y) => x*y));
-    this.outputTensor =
-      new Float32Array(this.inputSize[0] * this.inputSize[1] * this.numClasses);
+    this.outputTensor = new Float32Array(newModel.outputSize.reduce((x,y) => x*y));
     this.tfModel = null;
   }
 }
