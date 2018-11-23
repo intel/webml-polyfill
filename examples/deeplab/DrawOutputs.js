@@ -57,6 +57,6 @@ function _drawSegMap(canvas, segMap) {
   canvas.width = scaleWidth;
   canvas.height = scaleHeight;
   const ctx = canvas.getContext('2d');
-  const scaleSize = Math.max(scaleWidth, scaleWidth);
+  const scaleSize = Math.max(scaleWidth, scaleHeight);
   ctx.drawImage(outputCanvas, 0, 0, scaleSize, scaleSize);
 }

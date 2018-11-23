@@ -5,6 +5,7 @@ class DeepLabImporter {
     this._compilation;
     this._execution;
     this._tensorIds = [];
+    this._operands = [];
     this._operandIndex = 0;
     if (typeof backend !== 'undefined') {
       this._backend = backend;
@@ -80,6 +81,7 @@ class DeepLabImporter {
         let raw = buffer.dataArray();
         let data = new typedArray(raw.buffer, raw.byteOffset, raw.byteLength / typedArray.BYTES_PER_ELEMENT);
         this._model.setOperandValue(tensorId, data);
+        this._operands[tensorId] = data;
       }
     }
 
@@ -221,15 +223,24 @@ class DeepLabImporter {
           //targetShape is in tensor
           opType = this._nn.RESHAPE;
         } break;
-        case this._nn.RESIZE_BILINEAR: {
+        case tflite.BuiltinOperator.RESIZE_BILINEAR: {
 
+          let newSize = this._operands[inputs[1]];
           inputs = [inputs[0]];
-          const ones = new Float32Array(65 * 65).fill(1);
-          inputs.push(this._addTensorFloat32(ones, [1, 65, 65, 1]));
-          inputs.push(this._addScalarInt32(this._nn.FUSED_NONE));
-          opType = this._nn.MUL;
+          inputs.push(this._addScalarInt32(newSize[0]));
+          inputs.push(this._addScalarInt32(newSize[1]));
 
+          opType = this._nn.RESIZE_BILINEAR;
         } break;
+        // case this._nn.RESIZE_BILINEAR: {
+
+        //   inputs = [inputs[0]];
+        //   const ones = new Float32Array(65 * 65).fill(1);
+        //   inputs.push(this._addTensorFloat32(ones, [1, 65, 65, 1]));
+        //   inputs.push(this._addScalarInt32(this._nn.FUSED_NONE));
+        //   opType = this._nn.MUL;
+
+        // } break;
         // case this._nn.RESIZE_BILINEAR: {
 
         //   const inputId = inputs[0];

@@ -18,6 +18,7 @@ function main(camera) {
   const wasm = document.getElementById('wasm');
   const webgl = document.getElementById('webgl');
   const webml = document.getElementById('webml');
+  const segMapCanvas = document.getElementsByClassName('seg-map')[0];
   let segMap = null;
   let currentBackend = '';
   let streaming = false;
@@ -127,7 +128,6 @@ function main(camera) {
     inferenceTimeElement.innerHTML = `inference time: <em style="color:green;font-weight:bloder;">${result.time} </em>ms`;
 
     segMap = result.segMap;
-    let segMapCanvas = $('.seg-map')[0];
     drawSegMap(segMapCanvas, segMap);
     $('.labels-wrapper').empty();
     let labelSet = Array.from(new Set(segMap.data));
