@@ -3,12 +3,11 @@ const deeplab = {
   modelFile: './model/deeplab.tflite',
   labelsFile: './model/labels.txt',
   inputSize: [513, 513, 3],
-  outputSize: 65*65*21,
+  outputSize: 65 * 65 * 21,
 };
 
 function main(camera) {
 
-  const canvasElement = document.getElementById('canvas');
   const videoElement = document.getElementById('video');
   const imageElement = document.getElementById('image');
   const inputElement = document.getElementById('input');
@@ -19,11 +18,12 @@ function main(camera) {
   const wasm = document.getElementById('wasm');
   const webgl = document.getElementById('webgl');
   const webml = document.getElementById('webml');
+  let segMap = null;
   let currentBackend = '';
   let streaming = false;
 
-  let utils = new Utils(canvasElement);
-  utils.loadModelParam(deeplab); 
+  let utils = new Utils();
+  utils.loadModelParam(deeplab);
   // register updateProgress function if progressBar element exist
   utils.progressCallback = updateProgress;
 
@@ -63,11 +63,11 @@ function main(camera) {
   }
 
   function removeAlertElement() {
-    let backendAlertElem =  document.getElementById('backendAlert');
+    let backendAlertElem = document.getElementById('backendAlert');
     if (backendAlertElem !== null) {
       backendAlertElem.remove();
     }
-    let preferAlertElem =  document.getElementById('preferAlert');
+    let preferAlertElem = document.getElementById('preferAlert');
     if (preferAlertElem !== null) {
       preferAlertElem.remove();
     }
@@ -126,8 +126,22 @@ function main(camera) {
     let inferenceTimeElement = document.getElementById('inferenceTime');
     inferenceTimeElement.innerHTML = `inference time: <em style="color:green;font-weight:bloder;">${result.time} </em>ms`;
 
-    let segmapCanvas = document.getElementsByClassName('seg-map')[0];
-    drawSegMap(segmapCanvas, result.segMap);
+    segMap = result.segMap;
+    let segMapCanvas = $('.seg-map')[0];
+    drawSegMap(segMapCanvas, segMap);
+    $('.labels-wrapper').empty();
+    let labelSet = Array.from(new Set(segMap.data));
+    for (let labelId of labelSet) {
+      let rgb = palette[labelId].slice(0, 3);
+      let bullet = $(`<span style="color: rgb(${rgb})">⬤</span>`);
+      let labelDiv =
+        $(`<div class="col-12 seg-label" data-label-id="${labelId}"/>`)
+        .append(bullet)
+        .append(`${result.labels[labelId]}`);
+      labelDiv.mouseenter(_ => drawSegMap(segMapCanvas, segMap, labelId));
+      labelDiv.mouseleave(_ => drawSegMap(segMapCanvas, segMap));
+      $('.labels-wrapper').append(labelDiv);
+    }
   }
 
   // register backends
@@ -140,17 +154,17 @@ function main(camera) {
     };
   }
 
-  if (nnPolyfill.supportWebGL2) {
+  if (nnPolyfill.supportWebGL) {
     webgl.setAttribute('class', 'dropdown-item');
-    webgl.onclick = function(e) {
+    webgl.onclick = function (e) {
       removeAlertElement();
-      changeBackend('WebGL2');
+      changeBackend('WebGL');
     };
   }
 
   if (nnPolyfill.supportWasm) {
     wasm.setAttribute('class', 'dropdown-item');
-    wasm.onclick = function(e) {
+    wasm.onclick = function (e) {
       removeAlertElement();
       changeBackend('WASM');
     };
@@ -165,11 +179,11 @@ function main(camera) {
       }
     }, false);
 
-    imageElement.onload = function() {
+    imageElement.onload = function () {
       utils.predict(imageElement).then(ret => updateResult(ret));
     };
 
-    utils.init().then(() => {
+    utils.init('WebGL').then(() => {
       updateBackend();
       utils.predict(imageElement).then(ret => updateResult(ret));
       buttonEelement.setAttribute('class', 'btn btn-primary');
@@ -186,9 +200,14 @@ function main(camera) {
     stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
     document.body.appendChild(stats.dom);
 
-    navigator.mediaDevices.getUserMedia({audio: false, video: {facingMode: "environment"}}).then((stream) => {
+    navigator.mediaDevices.getUserMedia({
+      audio: false,
+      video: {
+        facingMode: "environment"
+      }
+    }).then((stream) => {
       video.srcObject = stream;
-      utils.init().then(() => {
+      utils.init('WebGL').then(() => {
         updateBackend();
         streaming = true;
         startPredict();

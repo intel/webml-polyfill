@@ -1,0 +1,42 @@
+#image {
+  max-width: 100%;
+}
+video {
+  width: 100%    !important;
+  height: auto   !important;
+  max-width: 513px;
+  max-height: 513px;
+}
+.seg-map {
+  position: absolute;
+  max-width: 100%;
+  opacity: 0.8;
+}
+.seg-label:hover {
+  color: #0070c9;
+  background: #f2f2f2;
+}
+.seg-label span {
+  margin-right: 5px;
+}
+.seg-label {
+  padding: 3px 10px 5px 10px;
+}
+.image-wrapper {
+  max-height: 513px !important;
+  max-width: 513px !important;
+  position: relative;
+}
+.progress-label {
+  float: left;
+  margin-right: 1em;
+  height: 1rem;
+  font-size: .75rem;
+}
+.labels-wrapper {
+  margin: 1em 0;
+  font-size: 14px;
+}
+.top-margin {
+  margin-top:10px;
+}

@@ -22,7 +22,23 @@ const palette = [
   [232, 67, 147, 255],
 ];
 
-function drawSegMap(canvas, segMap) {
+function drawSegMap(canvas, segMap, highlightId) {
+  let recover;
+  if (typeof highlightId !== 'undefined') {
+    let highlight = palette[highlightId];
+    recover = highlight.slice(0); // clone
+    highlight[0] = Math.max(highlight[0] - 30, 0);
+    highlight[1] = Math.max(highlight[1] - 30, 0);
+    highlight[2] = Math.max(highlight[2] - 30, 0);
+  }
+
+  _drawSegMap(canvas, segMap, highlightId);
+
+  if (typeof highlightId !== 'undefined')
+    palette[highlightId] = recover;
+}
+
+function _drawSegMap(canvas, segMap) {
   // colorize output seg map
   const outputWidth = 65;
   const outputHeight = 65;

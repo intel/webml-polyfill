@@ -49,7 +49,8 @@ class Utils {
       segMap: {
         data: this._argmax(this.outputTensor, 21),
         shape: adjustedImageShape
-      }
+      },
+      labels: this.labels,
     };
   }
 
@@ -103,8 +104,8 @@ class Utils {
     canvas.width = width;
     canvas.height = height;
 
-    let imWidth = image.naturalWidth;
-    let imHeight = image.naturalHeight;
+    let imWidth = image.naturalWidth | image.videoWidth;
+    let imHeight = image.naturalHeight | image.videoHeight;
     let resizeRatio = Math.max(Math.max(imWidth, imHeight) / 513, 1);
     let adjustedWidth = Math.floor(imWidth / resizeRatio);
     let adjustedHeight = Math.floor(imHeight / resizeRatio);
