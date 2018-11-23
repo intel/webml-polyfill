@@ -20,16 +20,14 @@ class DeepLabImporter {
         throw Error('Fails to initialize neural network context');
       }
       this._nn = nnNative;
-    } else if (this._backend === 'WASM' || this._backend === 'WebGL2') {
+    } else if (this._backend === 'WASM' || this._backend === 'WebGL') {
       this._nn = nnPolyfill;
     }
   }
 
   async createCompiledModel() {
     let options = {};
-    if (this._backend === 'WebGL2') {
-      options.useWebGL2 = true;
-    }
+    options.backend = this._backend;
     this._model = await this._nn.createModel(options);
 
     this._addTensorOperands();
@@ -225,38 +223,47 @@ class DeepLabImporter {
         } break;
         case this._nn.RESIZE_BILINEAR: {
 
-          const inputId = inputs[0];
+          inputs = [inputs[0]];
           const ones = new Float32Array(65 * 65).fill(1);
-          const bias = new Float32Array(256).fill(0);
-
-          inputs = [];
-          // ones as input
           inputs.push(this._addTensorFloat32(ones, [1, 65, 65, 1]));
-
-          // input as filter
-          this._model.setOperandValue(inputId, new Float32Array(256).fill(0)); 
-          inputs.push(inputId);
-
-          // zero bias
-          inputs.push(this._addTensorFloat32(bias, [256]));
-
-          // paddings
-          inputs.push(this._addScalarInt32(0));
-          inputs.push(this._addScalarInt32(0));
-          inputs.push(this._addScalarInt32(0));
-          inputs.push(this._addScalarInt32(0));
-
-          // strides
-          inputs.push(this._addScalarInt32(1));
-          inputs.push(this._addScalarInt32(1));
-
-          // depthwise multiplier
-          inputs.push(this._addScalarInt32(1));
-
           inputs.push(this._addScalarInt32(this._nn.FUSED_NONE));
+          opType = this._nn.MUL;
 
-          opType = this._nn.DEPTHWISE_CONV_2D;
         } break;
+        // case this._nn.RESIZE_BILINEAR: {
+
+        //   const inputId = inputs[0];
+        //   const ones = new Float32Array(65 * 65).fill(1);
+        //   const bias = new Float32Array(256).fill(0);
+
+        //   inputs = [];
+        //   // ones as input
+        //   inputs.push(this._addTensorFloat32(ones, [1, 65, 65, 1]));
+
+        //   // input as filter
+        //   this._model.setOperandValue(inputId, new Float32Array(256).fill(0)); 
+        //   inputs.push(inputId);
+
+        //   // zero bias
+        //   inputs.push(this._addTensorFloat32(bias, [256]));
+
+        //   // paddings
+        //   inputs.push(this._addScalarInt32(0));
+        //   inputs.push(this._addScalarInt32(0));
+        //   inputs.push(this._addScalarInt32(0));
+        //   inputs.push(this._addScalarInt32(0));
+
+        //   // strides
+        //   inputs.push(this._addScalarInt32(1));
+        //   inputs.push(this._addScalarInt32(1));
+
+        //   // depthwise multiplier
+        //   inputs.push(this._addScalarInt32(1));
+
+        //   inputs.push(this._addScalarInt32(this._nn.FUSED_NONE));
+
+        //   opType = this._nn.DEPTHWISE_CONV_2D;
+        // } break;
         default: {
           throw new Error(`operator type ${opCode} is not supported.`);
         }
