@@ -40,23 +40,16 @@ function drawSegMap(canvas, segMap, highlightId) {
 
 function _drawSegMap(canvas, segMap) {
   // colorize output seg map
-  const outputWidth = 65;
-  const outputHeight = 65;
-  const outputCanvas = document.createElement('canvas');
-  outputCanvas.width = outputWidth;
-  outputCanvas.height = outputHeight;
-  const outputCtx = outputCanvas.getContext('2d');
-  const imgData = outputCtx.getImageData(0, 0, outputWidth, outputHeight);
+  const outputWidth = segMap.outputShape[0];
+  const outputHeight = segMap.outputShape[1];
+  const scaledWidth = segMap.scaledShape[0];
+  const scaledHeight = segMap.scaledShape[1];
+
+  const ctx = canvas.getContext('2d');
+  canvas.width = scaledWidth;
+  canvas.height = scaledHeight;
+  const imgData = ctx.getImageData(0, 0, outputWidth, outputHeight);
   const colorSegMap = segMap.data.flatMap(c => palette[c]);
   imgData.data.set(new Uint8ClampedArray(colorSegMap));
-  outputCtx.putImageData(imgData, 0, 0);
-
-  // scale and draw
-  const scaleWidth = segMap.shape[0];
-  const scaleHeight = segMap.shape[1];
-  canvas.width = scaleWidth;
-  canvas.height = scaleHeight;
-  const ctx = canvas.getContext('2d');
-  const scaleSize = Math.max(scaleWidth, scaleHeight);
-  ctx.drawImage(outputCanvas, 0, 0, scaleSize, scaleSize);
+  ctx.putImageData(imgData, 0, 0, 0, 0, scaledWidth, scaledHeight);
 }

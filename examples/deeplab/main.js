@@ -1,13 +1,25 @@
-const deeplab = {
-  modelName: 'DeepLab',
-  modelFile: './model/deeplab.tflite',
+const deeplab513 = {
+  modelName: 'DeepLab 513',
+  modelFile: './model/deeplab_mobilenetv2_513.tflite',
   labelsFile: './model/labels.txt',
   inputSize: [513, 513, 3],
-  outputSize: 65 * 65 * 21,
+  numClasses: 21,
+};
+
+const deeplab224 = {
+  modelName: 'DeepLab 224',
+  modelFile: './model/deeplab_mobilenetv2_224.tflite',
+  labelsFile: './model/labels.txt',
+  inputSize: [224, 224, 3],
+  numClasses: 21,
 };
 
 function main(camera) {
 
+  const availableModels = [
+    deeplab513,
+    deeplab224,
+  ];
   const videoElement = document.getElementById('video');
   const imageElement = document.getElementById('image');
   const inputElement = document.getElementById('input');
@@ -21,10 +33,11 @@ function main(camera) {
   const segMapCanvas = document.getElementsByClassName('seg-map')[0];
   let segMap = null;
   let currentBackend = '';
+  let currentModel = '';
   let streaming = false;
 
   let utils = new Utils();
-  utils.loadModelParam(deeplab);
+  // utils.loadModelParam(deeplab);
   // register updateProgress function if progressBar element exist
   utils.progressCallback = updateProgress;
 
@@ -108,6 +121,60 @@ function main(camera) {
     }, 10);
   }
 
+  function clearCanvas() {
+    const context = segMapCanvas.getContext('2d');
+    context.clearRect(0, 0, segMapCanvas.width, segMapCanvas.height);
+  }
+
+  function updateModel() {
+    selectModel.innerHTML = currentModel;
+  }
+
+  function changeModel(newModel) {
+    if (currentModel === newModel.modelName) {
+      return;
+    }
+    streaming = false;
+    utils.deleteAll();
+    utils.changeModelParam(newModel);
+    clearCanvas();
+    progressContainer.style.display = "inline";
+    selectModel.innerHTML = 'Setting...';
+    if (camera) {
+      video.style.maxHeight = newModel.inputSize[0] + 'px';
+    } else {
+      image.style.maxHeight = newModel.inputSize[0] + 'px';
+    }
+    $('.image-wrapper').css({
+      'max-height': newModel.inputSize[0] + 'px',
+      'max-width': newModel.inputSize[0] + 'px',
+    });
+    setTimeout(() => {
+      utils.init(utils.model._backend).then(() => {
+        currentModel = newModel.modelName;
+        updateModel();
+        if (!camera) {
+          utils.predict(imageElement).then(ret => updateResult(ret));
+        } else {
+          streaming = true;
+          startPredict();
+        }
+      });
+    }, 10);
+  }
+
+  function _fileExists(url) {
+    var exists;
+    $.ajax({
+      url: url,
+      async: false,
+      type: 'HEAD',
+      error: function() { exists = 0; },
+      success: function() { exists = 1; }
+    });
+    return exists === 1;
+  }
+
   function updateProgress(ev) {
     if (ev.lengthComputable) {
       let percentComplete = ev.loaded / ev.total * 100;
@@ -170,6 +237,29 @@ function main(camera) {
     };
   }
 
+  // register models
+  for (let model of availableModels) {
+    if (!_fileExists(model.modelFile))
+      continue;
+    let dropdownBtn = $('<button class="dropdown-item"/>')
+      .text(model.modelName)
+      .click(_ => changeModel(model));
+    $('.available-models').append(dropdownBtn);
+    if (!currentModel) {
+      utils.changeModelParam(model);
+      if (camera) {
+        video.style.maxHeight = model.inputSize[0] + 'px';
+      } else {
+        image.style.maxHeight = model.inputSize[0] + 'px';
+      }
+      $('.image-wrapper').css({
+        'max-height': model.inputSize[0] + 'px',
+        'max-width': model.inputSize[0] + 'px',
+      });
+      currentModel = model.modelName;
+    }
+  }
+
   // picture or camera
   if (!camera) {
     inputElement.addEventListener('change', (e) => {
@@ -185,6 +275,7 @@ function main(camera) {
 
     utils.init('WebGL').then(() => {
       updateBackend();
+      updateModel();
       utils.predict(imageElement).then(ret => updateResult(ret));
       buttonEelement.setAttribute('class', 'btn btn-primary');
       inputElement.removeAttribute('disabled');
@@ -209,6 +300,7 @@ function main(camera) {
       video.srcObject = stream;
       utils.init('WebGL').then(() => {
         updateBackend();
+        updateModel();
         streaming = true;
         startPredict();
       }).catch((e) => {

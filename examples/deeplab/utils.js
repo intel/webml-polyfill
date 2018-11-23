@@ -40,7 +40,7 @@ class Utils {
 
   async predict(imageSource) {
     if (!this.initialized) return;
-    let adjustedImageShape = this.prepareInputTensor(this.inputTensor, imageSource);
+    let scaledImageShape = this.prepareInputTensor(this.inputTensor, imageSource);
     let start = performance.now();
     let result = await this.model.compute(this.inputTensor, this.outputTensor);
     let elapsed = performance.now() - start;
@@ -48,7 +48,8 @@ class Utils {
       time: elapsed.toFixed(2),
       segMap: {
         data: this._argmax(this.outputTensor, 21),
-        shape: adjustedImageShape
+        scaledShape: scaledImageShape,
+        outputShape: this.inputSize.slice(0,2),
       },
       labels: this.labels,
     };
@@ -106,7 +107,8 @@ class Utils {
 
     let imWidth = image.naturalWidth | image.videoWidth;
     let imHeight = image.naturalHeight | image.videoHeight;
-    let resizeRatio = Math.max(Math.max(imWidth, imHeight) / 513, 1);
+    // assume width == height
+    let resizeRatio = Math.max(Math.max(imWidth, imHeight) / width, 1);
     let adjustedWidth = Math.floor(imWidth / resizeRatio);
     let adjustedHeight = Math.floor(imHeight / resizeRatio);
     let ctx = canvas.getContext('2d');
@@ -165,15 +167,17 @@ class Utils {
     }
   }
 
-  loadModelParam(newModel) {
+  changeModelParam(newModel) {
     this.inputSize = newModel.inputSize;
     this.outputSize = newModel.outputSize;
     this.modelFile = newModel.modelFile;
     this.labelsFile = newModel.labelsFile;
     this.preOptions = newModel.preOptions || {};
     this.postOptions = newModel.postOptions || {};
+    this.numClasses = newModel.numClasses;
     this.inputTensor = new Float32Array(newModel.inputSize.reduce((x,y) => x*y));
-    this.outputTensor = new Float32Array(newModel.outputSize);
+    this.outputTensor =
+      new Float32Array(this.inputSize[0] * this.inputSize[1] * this.numClasses);
     this.tfModel = null;
   }
 }

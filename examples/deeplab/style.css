@@ -22,8 +22,8 @@ video {
   padding: 3px 10px 5px 10px;
 }
 .image-wrapper {
-  max-height: 513px !important;
-  max-width: 513px !important;
+  max-height: 513px;
+  max-width: 513px;
   position: relative;
 }
 .progress-label {
