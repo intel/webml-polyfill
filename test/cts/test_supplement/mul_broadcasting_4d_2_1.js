@@ -2,7 +2,7 @@ describe('CTS Supplement Test', function() {
   const assert = chai.assert;
   const nn = navigator.ml.getNeuralNetworkContext();
 
-  it('check result for Mul broadcasting 2D-4D example/2', async function() {
+  it('check result for Mul broadcasting 2D-4D example/1', async function() {
     let model = await nn.createModel(options);
     const type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2, 2]};
     const type1 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2]};
