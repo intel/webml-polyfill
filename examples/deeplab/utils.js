@@ -16,7 +16,7 @@ class Utils {
     this.initialized = false;
   }
 
-  async init(backend) {
+  async init(backend, prefer) {
     this.initialized = false;
     let result;
     if (!this.tfModel) {
@@ -27,7 +27,12 @@ class Utils {
       this.tfModel = tflite.Model.getRootAsModel(flatBuffer);
       printTfLiteModel(this.tfModel);
     }
-    this.model = new DeepLabImporter(this.tfModel, backend);
+    let kwargs = {
+      tfModel: this.tfModel,
+      backend: backend,
+      prefer: prefer,
+    };
+    this.model = new DeepLabImporter(kwargs);
     result = await this.model.createCompiledModel();
     console.log(`compilation result: ${result}`);
     let start = performance.now();
