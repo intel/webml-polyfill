@@ -52,6 +52,7 @@ function main(camera) {
   let currentBackend = '';
   let currentModel = '';
   let streaming = false;
+  let hoverPos = null;
 
   let utils = new Utils();
   // register updateProgress function if progressBar element exist
@@ -217,8 +218,16 @@ function main(camera) {
 
     let start = performance.now();
     drawSegMap(segMapCanvas, result.segMap);
-    console.log(`[Main] Draw time: ${(performance.now() - start).toFixed(2)} ms`);
+    highlightHoverLabel(hoverPos);
     console.log(`[Main]   Draw time: ${(performance.now() - start).toFixed(2)} ms`);
+  }
+
+  function getMousePos(canvas, evt) {
+    let rect = canvas.getBoundingClientRect();
+    return {
+      x: Math.ceil(evt.clientX - rect.left),
+      y: Math.ceil(evt.clientY - rect.top)
+    };
   }
 
   // register backends
@@ -273,6 +282,15 @@ function main(camera) {
       currentModel = model.modelName;
     }
   }
+
+  segMapCanvas.addEventListener('mousemove', (e) => {
+    hoverPos = getMousePos(segMapCanvas, e);
+    highlightHoverLabel(hoverPos);
+  });
+  segMapCanvas.addEventListener('mouseleave', (e) => {
+    hoverPos = null;
+    highlightHoverLabel(hoverPos);
+  });
 
   // picture or camera
   if (!camera) {

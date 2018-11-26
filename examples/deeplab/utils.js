@@ -31,6 +31,7 @@ class Utils {
     result = await this.model.createCompiledModel();
     console.log(`compilation result: ${result}`);
     let start = performance.now();
+    this.outputTensor = new Float32Array(this.outputSize.reduce((x,y) => x*y));
     result = await this.model.compute(this.inputTensor, this.outputTensor);
     let elapsed = performance.now() - start;
     console.log(`warmup time: ${elapsed.toFixed(2)} ms`);
@@ -40,7 +41,8 @@ class Utils {
 
   async predict(imageSource) {
     if (!this.initialized) return;
-    let scaledImageShape = this.prepareInputTensor(this.inputTensor, imageSource);
+    let scaledShape = this.prepareInputTensor(this.inputTensor, imageSource);
+    this.outputTensor = new Float32Array(this.outputSize.reduce((x,y) => x*y));
     let start = performance.now();
     let result = await this.model.compute(this.inputTensor, this.outputTensor);
     let elapsed = performance.now() - start;
@@ -48,7 +50,7 @@ class Utils {
       time: elapsed.toFixed(2),
       segMap: {
         data: this.outputTensor,
-        scaledShape: scaledImageShape,
+        scaledShape: scaledShape,
         outputShape: this.outputSize,
         labels: this.labels,
       },
