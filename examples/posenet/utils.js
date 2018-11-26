@@ -97,7 +97,7 @@ class Utils{
     this.progressContainer = document.getElementById('progressContainer');
   }
   
-  async init(backend, inputSize) {
+  async init(backend, prefer, inputSize) {
     this.initialized = false;
     // single input
     this._version = guiState.model;
@@ -132,7 +132,7 @@ class Utils{
     this.displacementFwd = new Float32Array(this.DISPLACEMENT_FWD_SIZE);
     this.displacementBwd = new Float32Array(this.DISPLACEMENT_BWD_SIZE);
     this.model = new PoseNet(this.modelArch, Number(this._version), Number(this._outputStride),
-                             this.scaleInputSize, this._type, this._cacheMap, backend);
+                             this.scaleInputSize, this._type, this._cacheMap, backend, prefer);
     let start = performance.now();
     result = await this.model.createCompiledModel();
     console.log('compilation result: ${result}');
@@ -212,5 +212,11 @@ class Utils{
       resolve(destImg.data);
     });
     return promise;
+  }
+
+  deleteAll() {
+    if (this.model._backend != 'WebML') {
+      this.model._compilation._preparedModel._deleteAll();
+    }
   }
 }

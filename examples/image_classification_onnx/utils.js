@@ -18,7 +18,7 @@ class Utils {
     this.initialized = false;
   }
 
-  async init(backend) {
+  async init(backend, prefer) {
     this.initialized = false;
     let result;
     if (!this.onnxModel) {
@@ -32,8 +32,13 @@ class Utils {
       this.onnxModel = onnx.ModelProto.decode(result.bytes);
       printOnnxModel(this.onnxModel);
     }
-    let autoSoftmax = this.postOptions.softmax || false;
-    this.model = new OnnxModelImporter(this.onnxModel, backend, {softmax: autoSoftmax});
+    let kwargs = {
+      onnxModel: this.onnxModel,
+      backend: backend,
+      prefer: prefer,
+      softmax: this.postOptions.softmax || false,
+    };
+    this.model = new OnnxModelImporter(kwargs);
     result = await this.model.createCompiledModel();
     console.log(`compilation result: ${result}`);
     let start = performance.now();

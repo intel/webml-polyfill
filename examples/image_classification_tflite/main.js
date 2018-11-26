@@ -44,6 +44,13 @@ const inception_resnet_v2 = {
   }
 }
 
+const preferMap = {
+  'MPS': 'sustained',
+  'BNNS': 'fast',
+  'sustained': 'MPS',
+  'fast': 'BNNS',
+};
+
 function main(camera) {
   const availableModels = [
     mobilenet_v1,
@@ -66,9 +73,11 @@ function main(camera) {
   const canvasElement = document.getElementById('canvas');
   const progressContainer = document.getElementById('progressContainer');
   const progressBar = document.getElementById('progressBar');
+  const selectPrefer = document.getElementById('selectPrefer');
 
   let currentBackend = '';
   let currentModel = '';
+  let currentPrefer = '';
   let streaming = false;
 
   let utils = new Utils(canvasElement);
@@ -120,7 +129,6 @@ function main(camera) {
   }
 
   function updateBackend() {
-    currentBackend = utils.model._backend;
     if (getUrlParams('api_info') === 'true') {
       backend.innerHTML = currentBackend === 'WebML' ? currentBackend + '/' + getNativeAPI() : currentBackend;
     } else {
@@ -133,12 +141,19 @@ function main(camera) {
       return;
     }
     streaming = false;
+    if (newBackend !== "WebML") {
+      selectPrefer.style.display = 'none';
+    } else {
+      selectPrefer.style.display = 'inline';
+    }
     utils.deleteAll();
     backend.innerHTML = 'Setting...';
     setTimeout(() => {
-      utils.init(newBackend).then(() => {
-        updateBackend();
+      utils.init(newBackend, currentPrefer).then(() => {
+        currentBackend = newBackend;
+        updatePrefer();
         updateModel();
+        updateBackend();
         if (!camera) {
           utils.predict(imageElement).then(ret => updateResult(ret));
         } else {
@@ -150,6 +165,9 @@ function main(camera) {
         console.log(e);
         showAlert(newBackend);
         changeBackend(currentBackend, true);
+        updatePrefer();
+        updateModel();
+        updateBackend();
       });
     }, 10);
   }
@@ -162,10 +180,12 @@ function main(camera) {
     utils.deleteAll();
     utils.changeModelParam(newModel);
     progressContainer.style.display = "inline";
+    currentPrefer = "sustained";
     selectModel.innerHTML = 'Setting...';
     currentModel = newModel.MODEL_NAME;
     setTimeout(() => {
-      utils.init(utils.model._backend).then(() => {
+      utils.init(currentBackend, currentPrefer).then(() => {
+        updatePrefer();
         updateModel();
         updateBackend();
         if (!camera) {
@@ -180,6 +200,41 @@ function main(camera) {
 
   function updateModel() {
     selectModel.innerHTML = currentModel;
+  }
+
+  function changePrefer(newPrefer, force) {
+    if (currentPrefer === newPrefer && !force) {
+      return;
+    }
+    streaming = false;
+    utils.deleteAll();
+    selectPrefer.innerHTML = 'Setting...';
+    setTimeout(() => {
+      utils.init(currentBackend, newPrefer).then(() => {
+        currentPrefer = newPrefer;
+        updatePrefer();
+        updateModel();
+        updateBackend();
+        if (!camera) {
+          utils.predict(imageElement).then(ret => updateResult(ret));
+        } else {
+          streaming = true;
+          startPredict();
+        }
+      }).catch((e) => {
+        console.warn(`Failed to change backend ${preferMap[newPrefer]}, switch back to ${preferMap[currentPrefer]}`);
+        console.error(e);
+        showAlert(preferMap[newPrefer]);
+        changePrefer(currentPrefer, true);
+        updatePrefer();
+        updateModel();
+        updateBackend();
+      });
+    }, 10);
+  }
+
+  function updatePrefer() {
+    selectPrefer.innerHTML = preferMap[currentPrefer];
   }
 
   function fileExists(url) {
@@ -251,6 +306,14 @@ function main(camera) {
     }
   }
 
+  if (currentBackend === '') {
+    if (nnNative) {
+      currentBackend = 'WebML';
+    } else {
+      currentBackend = 'WASM';
+    }
+  }
+
   // register models
   for (let model of availableModels) {
     if (!fileExists(model.MODEL_FILE)) {
@@ -266,7 +329,23 @@ function main(camera) {
     }
   }
 
-  //image or camera
+  // register prefers
+  if (getOS() === 'Mac OS' && currentBackend === 'WebML') {
+    $('.prefer').css("display","inline");
+    let MPS = $('<button class="dropdown-item"/>')
+      .text('MPS')
+      .click(_ => changePrefer(preferMap['MPS']));
+    $('.preference').append(MPS);
+    let BNNS = $('<button class="dropdown-item"/>')
+      .text('BNNS')
+      .click(_ => changePrefer(preferMap['BNNS']));
+    $('.preference').append(BNNS);
+    if (!currentPrefer) {
+      currentPrefer = "sustained";
+    }
+  }
+
+  // image or camera
   if (!camera) {
     inputElement.addEventListener('change', (e) => {
       let files = e.target.files;
@@ -278,10 +357,10 @@ function main(camera) {
     imageElement.onload = function() {
       utils.predict(imageElement).then(ret => updateResult(ret));
     }
-
-    utils.init().then(() => {
+    utils.init(currentBackend, currentPrefer).then(() => {
       updateBackend();
       updateModel();
+      updatePrefer();
       utils.predict(imageElement).then(ret => updateResult(ret));
       buttonEelement.setAttribute('class', 'btn btn-primary');
       inputElement.removeAttribute('disabled');
@@ -299,9 +378,10 @@ function main(camera) {
 
     navigator.mediaDevices.getUserMedia({audio: false, video: {facingMode: "environment"}}).then((stream) => {
       video.srcObject = stream;
-      utils.init().then(() => {
+      utils.init(currentBackend, currentPrefer).then(() => {
         updateBackend();
         updateModel();
+        updatePrefer();
         streaming = true;
         startPredict();
       }).catch((e) => {
