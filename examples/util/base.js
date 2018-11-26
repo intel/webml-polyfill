@@ -99,3 +99,16 @@ function getPrefer(backend) {
   }
   return prefer;
 }
+
+function getPreferCode(backend, prefer) {
+  let nn = navigator.ml.getNeuralNetworkContext();
+  let preferCode = nn.PREFER_FAST_SINGLE_ANSWER;
+  if (getOS() === 'Mac OS' && backend === 'WebML') {
+    if (prefer === 'sustained') {
+      preferCode = nn.PREFER_SUSTAINED_SPEED;
+    } else if (prefer === 'fast') {
+      preferCode = nn.PREFER_FAST_SINGLE_ANSWER;
+    }
+  }
+  return preferCode;
+}

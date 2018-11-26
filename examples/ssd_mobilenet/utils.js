@@ -25,7 +25,7 @@ class Utils {
     this.initialized = false;
   }
 
-  async init(backend) {
+  async init(backend, prefer) {
     this.initialized = false;
     let result;
     this.anchors = generateAnchors({});
@@ -38,7 +38,12 @@ class Utils {
       this.tfModel = tflite.Model.getRootAsModel(flatBuffer);
       // printTfLiteModel(this.tfModel);
     }
-    this.model = new SsdMobileNet(this.tfModel, backend);
+    let kwargs = {
+      tfModel: this.tfModel,
+      backend: backend,
+      prefer: prefer,
+    };
+    this.model = new SsdMobileNet(kwargs);
     result = await this.model.createCompiledModel();
     console.log(`compilation result: ${result}`);
     let start = performance.now();
@@ -133,6 +138,12 @@ class Utils {
           tensor[y*width*channels + x*channels + c] = (value - mean)/std;
         }
       }
+    }
+  }
+
+  deleteAll() {
+    if (this.model._backend != 'WebML') {
+      this.model._compilation._preparedModel._deleteAll();
     }
   }
 }

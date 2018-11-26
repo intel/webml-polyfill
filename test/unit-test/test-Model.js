@@ -1004,6 +1004,24 @@ describe('Unit Test/Model Test', function() {
       });
     });
 
+    it('first two input tensors (rank<=4) of compatible dimensions having identical TENSOR_FLOAT32 type as the output tensor with third input tensor of INT32 type having value of 0-3 are ok for "ADD" operation/2', function() {
+      return nn.createModel(options).then((model)=>{
+        let op = {type: nn.TENSOR_FLOAT32, dimensions: [4, 1, 2]};
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [5, 4, 3, 1]});
+        model.addOperand(op);
+        let data = new Float32Array(product(op.dimensions));
+        data.fill(0);
+        model.setOperandValue(1, data);
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(2, new Int32Array([nn.FUSED_NONE]));
+        model.addOperand(op);
+        assert.doesNotThrow(() => {
+          model.addOperation(nn.ADD, [0, 1, 2], [3]);
+        });
+      });
+    });
+
+
     it('first two input tensors (rank<=4) of compatible dimensions having identical TENSOR_QUANT8_ASYMM type as the output tensor with third input tensor of INT32 type having value of 0-3 are ok for "ADD" operation', function() {
       return nn.createModel(options).then((model)=>{
         let input0Opertions = {type: nn.TENSOR_QUANT8_ASYMM, dimensions: [4, 1, 2], scale: 0.8, zeroPoint: 0};
@@ -1089,6 +1107,23 @@ describe('Unit Test/Model Test', function() {
         model.addOperand({type: nn.INT32});
         model.setOperandValue(2, new Int32Array([nn.FUSED_NONE]));
         model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [5, 4, 3, 2], scale: 0.8, zeroPoint: 0});
+        assert.throws(() => {
+          model.addOperation(nn.ADD, [0, 1, 2], [3]);
+        });
+      });
+    });
+
+    it('raise error when first two input tensors whose rank are both <= 4 don\'t have compatible dimensions for "ADD" operation/2', function() {
+      return nn.createModel(options).then((model)=>{
+        let op = {type: nn.TENSOR_FLOAT32, dimensions: [4, 2, 2]};
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [5, 4, 3, 1]});
+        model.addOperand(op);
+        let data = new Float32Array(product(op.dimensions));
+        data.fill(0);
+        model.setOperandValue(1, data);
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(2, new Int32Array([nn.FUSED_NONE]));
+        model.addOperand(op);
         assert.throws(() => {
           model.addOperation(nn.ADD, [0, 1, 2], [3]);
         });
