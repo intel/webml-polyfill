@@ -309,49 +309,6 @@ class DeepLabImporter {
 
           opType = this._nn.RESIZE_BILINEAR;
         } break;
-        // case this._nn.RESIZE_BILINEAR: {
-
-        //   inputs = [inputs[0]];
-        //   const ones = new Float32Array(65 * 65).fill(1);
-        //   inputs.push(this._addTensorFloat32(ones, [1, 65, 65, 1]));
-        //   inputs.push(this._addScalarInt32(this._nn.FUSED_NONE));
-        //   opType = this._nn.MUL;
-
-        // } break;
-        // case this._nn.RESIZE_BILINEAR: {
-
-        //   const inputId = inputs[0];
-        //   const ones = new Float32Array(65 * 65).fill(1);
-        //   const bias = new Float32Array(256).fill(0);
-
-        //   inputs = [];
-        //   // ones as input
-        //   inputs.push(this._addTensorFloat32(ones, [1, 65, 65, 1]));
-
-        //   // input as filter
-        //   this._model.setOperandValue(inputId, new Float32Array(256).fill(0)); 
-        //   inputs.push(inputId);
-
-        //   // zero bias
-        //   inputs.push(this._addTensorFloat32(bias, [256]));
-
-        //   // paddings
-        //   inputs.push(this._addScalarInt32(0));
-        //   inputs.push(this._addScalarInt32(0));
-        //   inputs.push(this._addScalarInt32(0));
-        //   inputs.push(this._addScalarInt32(0));
-
-        //   // strides
-        //   inputs.push(this._addScalarInt32(1));
-        //   inputs.push(this._addScalarInt32(1));
-
-        //   // depthwise multiplier
-        //   inputs.push(this._addScalarInt32(1));
-
-        //   inputs.push(this._addScalarInt32(this._nn.FUSED_NONE));
-
-        //   opType = this._nn.DEPTHWISE_CONV_2D;
-        // } break;
         default: {
           throw new Error(`operator type ${opCode} is not supported.`);
         }

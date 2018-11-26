@@ -6,6 +6,14 @@ const deeplab513 = {
   outputSize: [513, 513, 21],
 };
 
+const deeplab513dilated = {
+  modelName: 'DeepLab 513 Atrous',
+  modelFile: './model/deeplab_mobilenetv2_513_dilated.tflite',
+  labelsFile: './model/labels.txt',
+  inputSize: [513, 513, 3],
+  outputSize: [513, 513, 21],
+};
+
 const deeplab224 = {
   modelName: 'DeepLab 224',
   modelFile: './model/deeplab_mobilenetv2_224.tflite',
@@ -14,11 +22,21 @@ const deeplab224 = {
   outputSize: [224, 224, 21],
 };
 
+const deeplab224dilated = {
+  modelName: 'DeepLab 224 Atrous',
+  modelFile: './model/deeplab_mobilenetv2_224_dilated.tflite',
+  labelsFile: './model/labels.txt',
+  inputSize: [224, 224, 3],
+  outputSize: [224, 224, 21],
+};
+
 function main(camera) {
 
   const availableModels = [
-    deeplab224,
     deeplab513,
+    deeplab224,
+    deeplab513dilated,
+    deeplab224dilated,
   ];
   const videoElement = document.getElementById('video');
   const imageElement = document.getElementById('image');
@@ -85,6 +103,23 @@ function main(camera) {
     }
   }
 
+  function clearCanvas() {
+    const context = segMapCanvas.getContext('2d');
+    context.clearRect(0, 0, segMapCanvas.width, segMapCanvas.height);
+  }
+
+  function adjustOutputArea(newHeight, newWidth) {
+    if (camera) {
+      video.style.maxHeight = newHeight + 'px';
+    } else {
+      image.style.maxHeight = newHeight + 'px';
+    }
+    $('.image-wrapper').css({
+      'max-height': newHeight + 'px',
+      'max-width': newWidth + 'px',
+    });
+  }
+
   function updateBackend() {
     currentBackend = utils.model._backend;
     if (getUrlParams('api_info') === 'true') {
@@ -119,11 +154,6 @@ function main(camera) {
     }, 10);
   }
 
-  function clearCanvas() {
-    const context = segMapCanvas.getContext('2d');
-    context.clearRect(0, 0, segMapCanvas.width, segMapCanvas.height);
-  }
-
   function updateModel() {
     selectModel.innerHTML = currentModel;
   }
@@ -136,17 +166,10 @@ function main(camera) {
     utils.deleteAll();
     utils.changeModelParam(newModel);
     clearCanvas();
+    adjustOutputArea(newModel.inputSize[0], newModel.inputSize[1]);
     progressContainer.style.display = "inline";
     selectModel.innerHTML = 'Setting...';
-    if (camera) {
-      video.style.maxHeight = newModel.inputSize[0] + 'px';
-    } else {
-      image.style.maxHeight = newModel.inputSize[0] + 'px';
-    }
-    $('.image-wrapper').css({
-      'max-height': newModel.inputSize[0] + 'px',
-      'max-width': newModel.inputSize[0] + 'px',
-    });
+
     setTimeout(() => {
       utils.init(utils.model._backend).then(() => {
         currentModel = newModel.modelName;
@@ -190,11 +213,12 @@ function main(camera) {
   function updateResult(result) {
     console.log(`Inference time: ${result.time} ms`);
     let inferenceTimeElement = document.getElementById('inferenceTime');
-    inferenceTimeElement.innerHTML = `inference time: <em style="color:green;font-weight:bloder;">${result.time} </em>ms`;
+    inferenceTimeElement.innerHTML = `inference time: <em style="color:green;font-weight:bloder">${result.time} </em>ms`;
 
     let start = performance.now();
     drawSegMap(segMapCanvas, result.segMap);
     console.log(`[Main] Draw time: ${(performance.now() - start).toFixed(2)} ms`);
+    console.log(`[Main]   Draw time: ${(performance.now() - start).toFixed(2)} ms`);
   }
 
   // register backends
@@ -226,22 +250,26 @@ function main(camera) {
   // register models
   for (let model of availableModels) {
     if (!_fileExists(model.modelFile))
-      continue;
-    let dropdownBtn = $('<button class="dropdown-item"/>')
-      .text(model.modelName)
-      .click(_ => changeModel(model));
+      return;
+
+    let dropdownBtn = $('<button class="dropdown-item d-flex"/>')
+      .append(
+        $('<div class="model-link"/>')
+          .text(model.modelName)
+          .click(_ => changeModel(model))
+      ).append(
+        $('<div class="netron-link ml-auto pl-2">')
+          .text('▶')
+          .click(_ => {
+            let modelUrl = new URL(model.modelFile, window.location.href).href;
+            window.open(`https://lutzroeder.github.io/netron/?url=${modelUrl}`);
+          })
+      );
+
     $('.available-models').append(dropdownBtn);
     if (!currentModel) {
       utils.changeModelParam(model);
-      if (camera) {
-        video.style.maxHeight = model.inputSize[0] + 'px';
-      } else {
-        image.style.maxHeight = model.inputSize[0] + 'px';
-      }
-      $('.image-wrapper').css({
-        'max-height': model.inputSize[0] + 'px',
-        'max-width': model.inputSize[0] + 'px',
-      });
+      adjustOutputArea(model.inputSize[0], model.inputSize[1]);
       currentModel = model.modelName;
     }
   }
@@ -254,6 +282,26 @@ function main(camera) {
         imageElement.src = URL.createObjectURL(files[0]);
       }
     }, false);
+    let imageWrapper = document.getElementsByClassName('image-wrapper')[0];
+    imageWrapper.ondragover = (e) => {
+      e.preventDefault();
+    };
+    imageWrapper.ondragenter = (e) => {
+      e.preventDefault();
+      $('.image-wrapper').addClass('show');
+    };
+    imageWrapper.ondragleave = (e) => {
+      e.preventDefault();
+      $('.image-wrapper').removeClass('show');
+    };
+    imageWrapper.ondrop = (e) => {
+      e.preventDefault();
+      $('.image-wrapper').removeClass('show');
+      let files = e.dataTransfer.files;
+      if (files.length > 0 && files[0].type.split('/')[0] === 'image') {
+        imageElement.src = URL.createObjectURL(files[0]);
+      }
+    };
 
     imageElement.onload = function () {
       utils.predict(imageElement).then(ret => updateResult(ret));
@@ -297,7 +345,8 @@ function main(camera) {
     function startPredict() {
       if (streaming) {
         stats.begin();
-        utils.predict(videoElement).then(ret => updateResult(ret)).then(() => {
+        utils.predict(videoElement).then(ret => {
+          updateResult(ret);
           stats.end();
           setTimeout(startPredict, 0);
         });

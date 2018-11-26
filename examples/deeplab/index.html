@@ -8,8 +8,8 @@
   </head>
   <body>
     <nav class="navbar navbar-expand-md navbar-dark bg-dark" style="width:100%">
-      <span class="navbar-brand mb-0 h1">WebML DeepLab Demo</span>
-      <div class="btn-group">
+      <span class="navbar-brand mb-0 pl-0 h1 col-sm-5 col-md-auto">WebML DeepLab Demo</span>
+      <div class="btn-group mr-1">
         <button id="backend" type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
           Setting...
         </button>
@@ -19,7 +19,7 @@
           <button class="dropdown-item disabled" type="button" id="webml">WebML</button>
         </div>
       </div>
-      <div class="btn-group" style="margin-left: 10px;">
+      <div class="btn-group mr-auto">
         <button id="selectModel" type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
           Setting...
         </button>
@@ -42,6 +42,7 @@
         <div class="col-md-12 col-lg-8 offset-lg-2" align="center">
           <div class="image-wrapper">
             <canvas class="seg-map"></canvas>
+            <div class="overlay">↓</div>
             <img id="image" crossorigin="anonymous" class="img-fluid" alt="Responsive image" src="./img/riding.jpg">
           </div>
         </div>
