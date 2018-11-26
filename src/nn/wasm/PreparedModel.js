@@ -407,6 +407,24 @@ export default class PreparedModel {
           throw new Error('fullyConnectedFloat32 fails');
         }
       } break;
+      case OperationCode.RESIZE_BILINEAR: {
+        allParametersPresent(3, 1);
+        let input = operands[inputs[0]];
+        let newHeight = operands[inputs[1]].value[0];
+        let newWidth = operands[inputs[2]].value[0];
+        let output = operands[outputs[0]];
+        success = nn_ops.resizeBilinearPrepare(input.shape,
+                                               newWidth, newHeight, 
+                                               output.shape);
+        if (!success) {
+          throw new Error('resizeBilinearPrepare fails');
+        }
+        success = nn_ops.resizeBilinearFloat32(input.value, input.shape,
+                                               output.value, output.shape);
+        if (!success) {
+          throw new Error('resizeBilinearFloat32 fails');
+        }
+      } break;
       default: {
         throw new Error(`Operation ${op} is not supported`);
       }
