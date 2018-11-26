@@ -1052,7 +1052,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
-  it('check result for Add broadcasting 1D-4D example/1', async function() {
+  it('check result for Add broadcasting 1D-4D example/2', async function() {
     let model = await nn.createModel(options);
     const type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2, 2]};
     const type1 = {type: nn.TENSOR_FLOAT32, dimensions: [2]};
@@ -1100,7 +1100,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
-  it('check result for Add broadcasting 2D-4D example/2', async function() {
+  it('check result for Add broadcasting 2D-4D example/1', async function() {
     let model = await nn.createModel(options);
     const type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2, 2]};
     const type1 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2]};
@@ -3349,7 +3349,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
-  it('check result for Mul broadcasting 1D-4D example/1', async function() {
+  it('check result for Mul broadcasting 1D-4D example/2', async function() {
     let model = await nn.createModel(options);
     const type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2, 2]};
     const type1 = {type: nn.TENSOR_FLOAT32, dimensions: [2]};
@@ -3397,7 +3397,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
-  it('check result for Mul broadcasting 2D-4D example/2', async function() {
+  it('check result for Mul broadcasting 2D-4D example/1', async function() {
     let model = await nn.createModel(options);
     const type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2, 2]};
     const type1 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2]};
