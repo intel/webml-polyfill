@@ -1,14 +1,15 @@
 class Utils {
   constructor(canvas) {
-    this.tfModel;
+    this.rawModel;
     this.labels;
     this.model;
     this.inputTensor;
     this.outputTensor;
-    this.MODEL_FILE;
-    this.LABELS_FILE;
-    this.INPUT_SIZE;
-    this.OUTPUT_SIZE;
+    this.modelFile;
+    this.labelsFile;
+    this.inputSize;
+    this.outputSize;
+    this.preOptions;
     this.postOptions;
     this.canvasElement = canvas;
     this.canvasContext = this.canvasElement.getContext('2d');
@@ -19,21 +20,38 @@ class Utils {
   async init(backend, prefer) {
     this.initialized = false;
     let result;
-    if (!this.tfModel) {
-      result = await this.loadModelAndLabels(this.MODEL_FILE, this.LABELS_FILE);
-      this.labels = result.text.split('\n');
-      console.log(`labels: ${this.labels}`);
-      let flatBuffer = new flatbuffers.ByteBuffer(result.bytes);
-      this.tfModel = tflite.Model.getRootAsModel(flatBuffer);
-      printTfLiteModel(this.tfModel);
-    }
     let kwargs = {
-      tfModel: this.tfModel,
+      rawModel: null,
       backend: backend,
       prefer: prefer,
       softmax: this.postOptions.softmax || false,
     };
-    this.model = new ImageClassificationModel(kwargs);
+    if (this.modelFile.split('.').pop() === 'tflite') {
+      if (!this.rawModel) {
+        result = await this.loadModelAndLabels(this.modelFile, this.labelsFile);
+        this.labels = result.text.split('\n');
+        console.log(`labels: ${this.labels}`);
+        let flatBuffer = new flatbuffers.ByteBuffer(result.bytes);
+        this.rawModel = tflite.Model.getRootAsModel(flatBuffer);
+        printTfLiteModel(this.rawModel);
+      }
+      kwargs.rawModel = this.rawModel;
+      this.model = new TFliteModelImporter(kwargs);
+    } else if (this.modelFile.split('.').pop() === 'onnx') {
+      if (!this.rawModel) {
+        result = await this.loadModelAndLabels(this.modelFile, this.labelsFile);
+        this.labels = result.text.split('\n');
+        console.log(`labels: ${this.labels}`);
+        let err = onnx.ModelProto.verify(result.bytes);
+        if (err) {
+          throw new Error(`Invalid model ${err}`);
+        }
+        this.rawModel = onnx.ModelProto.decode(result.bytes);
+        printOnnxModel(this.rawModel);
+      }
+      kwargs.rawModel = this.rawModel;
+      this.model = new OnnxModelImporter(kwargs);
+    }
     result = await this.model.createCompiledModel();
     console.log(`compilation result: ${result}`);
     let start = performance.now();
@@ -55,7 +73,7 @@ class Utils {
     return {
       time: elapsed.toFixed(2),
       classes: this.getTopClasses(this.outputTensor, this.labels, 3)
-    }
+    };
   }
 
   async loadModelAndLabels(modelUrl, labelsUrl) {
@@ -94,23 +112,27 @@ class Utils {
   }
 
   prepareInputTensor(tensor, canvas) {
-    const width = this.INPUT_SIZE[1];
-    const height = this.INPUT_SIZE[0];
-    const channels = 3;
+    const width = this.inputSize[1];
+    const height = this.inputSize[0];
+    const channels = this.inputSize[2];
     const imageChannels = 4; // RGBA
-    const mean = 127.5;
-    const std = 127.5;
+    const mean = this.preOptions.mean || [0, 0, 0, 0];
+    const std  = this.preOptions.std  || [1, 1, 1, 1];
+    const norm = this.preOptions.norm || false;
     if (canvas.width !== width || canvas.height !== height) {
-      throw new Error(`canvas.width(${canvas.width}) is not ${this.INPUT_SIZE[1]} or canvas.height(${canvas.height}) is not ${this.INPUT_SIZE[0]}`);
+      throw new Error(`canvas.width(${canvas.width}) is not ${width} or canvas.height(${canvas.height}) is not ${height}`);
     }
     let context = canvas.getContext('2d');
     let pixels = context.getImageData(0, 0, width, height).data;
+    if (norm) {
+      pixels = new Float32Array(pixels).map(p => p / 255);
+    }
     // NHWC layout
     for (let y = 0; y < height; ++y) {
       for (let x = 0; x < width; ++x) {
         for (let c = 0; c < channels; ++c) {
           let value = pixels[y*width*imageChannels + x*imageChannels + c];
-          tensor[y*width*channels + x*channels + c] = (value - mean)/std;
+          tensor[y*width*channels + x*channels + c] = (value - mean[c]) / std[c];
         }
       }
     }
@@ -143,17 +165,18 @@ class Utils {
     }
   }
 
-  changeModelParam (newModel) {
-    this.INPUT_SIZE = newModel.INPUT_SIZE;
-    this.OUTPUT_SIZE = newModel.OUTPUT_SIZE;
-    this.MODEL_FILE = newModel.MODEL_FILE;
-    this.LABELS_FILE = newModel.LABELS_FILE;
+  changeModelParam(newModel) {
+    this.inputSize = newModel.inputSize;
+    this.outputSize = newModel.outputSize;
+    this.modelFile = newModel.modelFile;
+    this.labelsFile = newModel.labelsFile;
+    this.preOptions = newModel.preOptions || {};
     this.postOptions = newModel.postOptions || {};
-    this.inputTensor = new Float32Array(this.INPUT_SIZE.reduce((a, b) => a * b));
-    this.outputTensor = new Float32Array(this.OUTPUT_SIZE);
-    this.tfModel = null;
+    this.inputTensor = new Float32Array(this.inputSize.reduce((a, b) => a * b));
+    this.outputTensor = new Float32Array(this.outputSize);
+    this.rawModel = null;
 
-    this.canvasElement.width = newModel.INPUT_SIZE[1];
-    this.canvasElement.height = newModel.INPUT_SIZE[0];
+    this.canvasElement.width = newModel.inputSize[1];
+    this.canvasElement.height = newModel.inputSize[0];
   }
 }
