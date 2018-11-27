@@ -99,13 +99,8 @@ class Utils {
           }
         }
       };
-      if (progress) {
-        let self = this;
-        request.onprogress = function(ev) {
-          if (self.updateProgress) {
-            self.updateProgress(ev);
-        }
-        };
+      if (progress && typeof this.updateProgress !== 'undefined') {
+        request.onprogress = this.updateProgress;
       }
       request.send();
     });
