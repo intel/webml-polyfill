@@ -414,7 +414,7 @@ export default class PreparedModel {
         let newWidth = operands[inputs[2]].value[0];
         let output = operands[outputs[0]];
         success = nn_ops.resizeBilinearPrepare(input.shape,
-                                               newWidth, newHeight, 
+                                               newHeight, newWidth,
                                                output.shape);
         if (!success) {
           throw new Error('resizeBilinearPrepare fails');
