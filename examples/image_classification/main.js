@@ -1,7 +1,76 @@
-const squeezenet = {
-  modelName: 'SqueezeNet',
+const mobilenet_v1_tflite = {
+  modelName: 'Mobilenet V1(TFlite)',
+  inputSize: [224, 224, 3],
+  outputSize: 1001,
+  modelFile: './model/mobilenet_v1_1.0_224.tflite',
+  labelsFile: './model/labels1001.txt',
+  preOptions: {
+    mean: [127.5, 127.5, 127.5],
+    std: [127.5, 127.5, 127.5],
+  }
+};
+const mobilenet_v2_tflite = {
+  modelName: 'Mobilenet V2(TFlite)',
+  inputSize: [224, 224, 3],
+  outputSize: 1001,
+  modelFile: './model/mobilenet_v2_1.0_224.tflite',
+  labelsFile: './model/labels1001.txt',
+  preOptions: {
+    mean: [127.5, 127.5, 127.5],
+    std: [127.5, 127.5, 127.5],
+  }
+};
+const inception_v3_tflite = {
+  modelName: 'Inception V3(TFlite)',
+  inputSize: [299, 299, 3],
+  outputSize: 1001,
+  modelFile: './model/inception_v3.tflite',
+  labelsFile: './model/labels1001.txt',
+  preOptions: {
+    mean: [127.5, 127.5, 127.5],
+    std: [127.5, 127.5, 127.5],
+  },
+};
+const inception_v4_tflite = {
+  modelName: 'Inception V4(TFlite)',
+  inputSize: [299, 299, 3],
+  outputSize: 1001,
+  modelFile: './model/inception_v4.tflite',
+  labelsFile: './model/labels1001.txt',
+  preOptions: {
+    mean: [127.5, 127.5, 127.5],
+    std: [127.5, 127.5, 127.5],
+  }
+}
+const squeezenet_tflite = {
+  modelName: 'Squeezenet(TFlite)',
+  inputSize: [224, 224, 3],
+  outputSize: 1001,
+  modelFile: './model/squeezenet.tflite',
+  labelsFile: './model/labels1001.txt',
+  preOptions: {
+    mean: [127.5, 127.5, 127.5],
+    std: [127.5, 127.5, 127.5],
+  }
+};
+const inception_resnet_v2_tflite = {
+  modelName: 'Incep. Res. V2(TFlite)',
+  inputSize: [299, 299, 3],
+  outputSize: 1001,
+  modelFile: './model/inception_resnet_v2.tflite',
+  labelsFile: './model/labels1001.txt',
+  preOptions: {
+    mean: [127.5, 127.5, 127.5],
+    std: [127.5, 127.5, 127.5],
+  },
+  postOptions: {
+    softmax: true,
+  }
+}
+const squeezenet_onnx = {
+  modelName: 'SqueezeNet(Onnx)',
   modelFile: './model/squeezenet1.1.onnx',
-  labelsFile: './model/labels.txt',
+  labelsFile: './model/labels1000.txt',
   inputSize: [224, 224, 3],
   outputSize: 1000,
   preOptions: {
@@ -14,7 +83,61 @@ const squeezenet = {
     softmax: true,
   }
 };
-
+const mobilenet_v2_onnx = {
+  modelName: 'Mobilenet v2(Onnx)',
+  modelFile: './model/mobilenetv2-1.0.onnx',
+  labelsFile: './model/labels1000.txt',
+  inputSize: [224, 224, 3],
+  outputSize: 1000,
+  preOptions: {
+    // https://github.com/onnx/models/tree/master/models/image_classification/mobilenet#preprocessing
+    mean: [0.485, 0.456, 0.406],
+    std: [0.229, 0.224, 0.225],
+    norm: true
+  },
+  postOptions: {
+    softmax: true,
+  }
+};
+const resnet18_v1_onnx = {
+  modelName: 'Resnet v1(Onnx)',
+  modelFile: './model/resnet18v1.onnx',
+  labelsFile: './model/labels1000.txt',
+  inputSize: [224, 224, 3],
+  outputSize: 1000,
+  preOptions: {
+    // https://github.com/onnx/models/tree/master/models/image_classification/resnet#preprocessing
+    mean: [0.485, 0.456, 0.406],
+    std: [0.229, 0.224, 0.225],
+    norm: true
+  },
+  postOptions: {
+    softmax: true,
+  }
+};
+const resnet18_v2_onnx = {
+  modelName: 'Resnet v2(Onnx)',
+  modelFile: './model/resnet18v2.onnx',
+  labelsFile: './model/labels1000.txt',
+  inputSize: [224, 224, 3],
+  outputSize: 1000,
+  preOptions: {
+    // https://github.com/onnx/models/tree/master/models/image_classification/resnet#preprocessing
+    mean: [0.485, 0.456, 0.406],
+    std: [0.229, 0.224, 0.225],
+    norm: true
+  },
+  postOptions: {
+    softmax: true,
+  }
+};
+const inceptionv2_onnx = {
+  modelName: 'Inception v2(Onnx)',
+  modelFile: './model/inceptionv2.onnx',
+  labelsFile: './model/ilsvrc2012labels.txt',
+  inputSize: [224, 224, 3],
+  outputSize: 1000,
+};
 const preferMap = {
   'MPS': 'sustained',
   'BNNS': 'fast',
@@ -23,30 +146,41 @@ const preferMap = {
 };
 
 function main(camera) {
-
   const availableModels = [
-    squeezenet,
+    mobilenet_v1_tflite,
+    mobilenet_v2_tflite,
+    inception_v3_tflite,
+    inception_v4_tflite,
+    squeezenet_tflite,
+    inception_resnet_v2_tflite,
+    squeezenet_onnx,
+    mobilenet_v2_onnx,
+    resnet18_v1_onnx,
+    resnet18_v2_onnx,
+    inceptionv2_onnx,
   ];
-  const canvasElement = document.getElementById('canvas');
+
   const videoElement = document.getElementById('video');
   const imageElement = document.getElementById('image');
   const inputElement = document.getElementById('input');
   const buttonEelement = document.getElementById('button');
-  const progressContainer = document.getElementById('progressContainer');
-  const progressBar = document.getElementById('progressBar');
   const backend = document.getElementById('backend');
   const selectModel = document.getElementById('selectModel');
-  const selectPrefer = document.getElementById('selectPrefer');
   const wasm = document.getElementById('wasm');
   const webgl = document.getElementById('webgl');
   const webml = document.getElementById('webml');
+  const canvasElement = document.getElementById('canvas');
+  const progressContainer = document.getElementById('progressContainer');
+  const progressBar = document.getElementById('progressBar');
+  const selectPrefer = document.getElementById('selectPrefer');
+
   let currentBackend = '';
   let currentModel = '';
   let currentPrefer = '';
   let streaming = false;
 
   let utils = new Utils(canvasElement);
-  utils.progressCallback = updateProgress;    //register updateProgress function if progressBar element exist
+  utils.updateProgress = updateProgress;    //register updateProgress function if progressBar element exist
 
   function checkPreferParam() {
     if (getOS() === 'Mac OS') {
@@ -137,10 +271,6 @@ function main(camera) {
     }, 10);
   }
 
-  function updateModel() {
-    selectModel.innerHTML = currentModel;
-  }
-
   function changeModel(newModel) {
     if (currentModel === newModel.modelName) {
       return;
@@ -151,9 +281,9 @@ function main(camera) {
     progressContainer.style.display = "inline";
     currentPrefer = "sustained";
     selectModel.innerHTML = 'Setting...';
+    currentModel = newModel.modelName;
     setTimeout(() => {
       utils.init(currentBackend, currentPrefer).then(() => {
-        currentModel = newModel.modelName;
         updatePrefer();
         updateModel();
         updateBackend();
@@ -167,8 +297,8 @@ function main(camera) {
     }, 10);
   }
 
-  function updatePrefer() {
-    selectPrefer.innerHTML = preferMap[currentPrefer];
+  function updateModel() {
+    selectModel.innerHTML = currentModel;
   }
 
   function changePrefer(newPrefer, force) {
@@ -202,16 +332,24 @@ function main(camera) {
     }, 10);
   }
 
-  function _fileExists(url) {
+  function updatePrefer() {
+    selectPrefer.innerHTML = preferMap[currentPrefer];
+  }
+
+  function fileExists(url) {
     var exists;
     $.ajax({
-      url: url,
-      async: false,
-      type: 'HEAD',
-      error: function() { exists = 0; },
-      success: function() { exists = 1; }
+      url:url,
+      async:false,
+      type:'HEAD',
+      error:function() { exists = 0; },
+      success:function() { exists = 1; }
     });
-    return exists === 1;
+    if (exists === 1) {
+      return true;
+    } else {
+      return false;
+    }
   }
 
   function updateProgress(ev) {
@@ -241,8 +379,7 @@ function main(camera) {
       probElement.innerHTML = `${c.prob}%`;
     });
   }
-
-  // register backends
+ 
   if (nnNative) {
     webml.setAttribute('class', 'dropdown-item');
     webml.onclick = function (e) {
@@ -278,8 +415,9 @@ function main(camera) {
 
   // register models
   for (let model of availableModels) {
-    if (!_fileExists(model.modelFile))
+    if (!fileExists(model.modelFile)) {
       continue;
+    }
     let dropdownBtn = $('<button class="dropdown-item"/>')
       .text(model.modelName)
       .click(_ => changeModel(model));
@@ -306,7 +444,7 @@ function main(camera) {
     }
   }
 
-  // picture or camera
+  // image or camera
   if (!camera) {
     inputElement.addEventListener('change', (e) => {
       let files = e.target.files;
@@ -317,8 +455,7 @@ function main(camera) {
 
     imageElement.onload = function() {
       utils.predict(imageElement).then(ret => updateResult(ret));
-    };
-
+    }
     utils.init(currentBackend, currentPrefer).then(() => {
       updateBackend();
       updateModel();

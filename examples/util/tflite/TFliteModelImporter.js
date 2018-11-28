@@ -1,6 +1,6 @@
-class ImageClassificationModel {
+class TFliteModelImporter {
   constructor(kwargs) {
-    this._tfModel = kwargs.tfModel;
+    this._rawModel = kwargs.rawModel;
     this._model = null;
     this._compilation;
     this._execution;
@@ -51,7 +51,7 @@ class ImageClassificationModel {
   }
 
   _addTensorOperands() {
-    let graph = this._tfModel.subgraphs(0);
+    let graph = this._rawModel.subgraphs(0);
     let tensorsLength = graph.tensorsLength();
     for (let i = 0; i < tensorsLength; ++i) {
       let tensor = graph.tensors(i);
@@ -74,7 +74,7 @@ class ImageClassificationModel {
       let tensorId = this._operandIndex++;
       this._model.addOperand(tensorType);
       this._tensorIds.push(tensorId);
-      let buffer = this._tfModel.buffers(tensor.buffer());
+      let buffer = this._rawModel.buffers(tensor.buffer());
       if (buffer.dataLength() > 0) {
         let raw = buffer.dataArray();
         let data = new typedArray(raw.buffer, raw.byteOffset, raw.byteLength / typedArray.BYTES_PER_ELEMENT);
@@ -84,11 +84,11 @@ class ImageClassificationModel {
   }
 
   _addInputsOutputs() {
-    let graph = this._tfModel.subgraphs(0);
+    let graph = this._rawModel.subgraphs(0);
     let inputs = Array.from(graph.inputsArray());
     let outputs = Array.from(graph.outputsArray());
     let operator = graph.operators(graph.operatorsLength()-1);
-    let opCode = this._tfModel.operatorCodes(operator.opcodeIndex()).builtinCode();
+    let opCode = this._rawModel.operatorCodes(operator.opcodeIndex()).builtinCode();
     if (this._options.softmax && opCode != tflite.BuiltinOperator.SOFTMAX)
       outputs = [this._operandIndex-1];
     this._model.identifyInputsAndOutputs(inputs, outputs);
@@ -123,11 +123,11 @@ class ImageClassificationModel {
       [tflite.ActivationFunctionType.RELU6, this._nn.FUSED_RELU6],
     ]);
 
-    let graph = this._tfModel.subgraphs(0);
+    let graph = this._rawModel.subgraphs(0);
     let operatorsLength = graph.operatorsLength();
     for (let i = 0; i < operatorsLength; ++i) {
       let operator = graph.operators(i);
-      let opCode = this._tfModel.operatorCodes(operator.opcodeIndex()).builtinCode();
+      let opCode = this._rawModel.operatorCodes(operator.opcodeIndex()).builtinCode();
       let opType;
       let inputs = Array.from(operator.inputsArray());
       let outputs = Array.from(operator.outputsArray());
