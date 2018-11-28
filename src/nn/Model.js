@@ -71,7 +71,7 @@ export default class Model {
       value: null
     }
     this._operands.push(operand);
-    return ResultCode.NO_ERROR;
+    // return ResultCode.NO_ERROR;
   }
 
   /**
@@ -94,7 +94,7 @@ export default class Model {
       operand.lifetime = OperandLifetime.CONSTANT_COPY;
     }
     operand.value = value;
-    return ResultCode.NO_ERROR;
+    // return ResultCode.NO_ERROR;
   }
 
   /**
@@ -127,7 +127,7 @@ export default class Model {
       this._operands[i].numberOfConsumers += 1;
     });
     this._operations.push(op);
-    return ResultCode.NO_ERROR;
+    // return ResultCode.NO_ERROR;
   }
 
   /**
@@ -151,7 +151,7 @@ export default class Model {
     this._outputs.forEach(i => {
       this._operands[i].lifetime = OperandLifetime.MODEL_OUTPUT;
     })
-    return ResultCode.NO_ERROR;
+    // return ResultCode.NO_ERROR;
   }
 
   // private methods

@@ -1,9 +1,9 @@
 # Web Machine Learning (ML) API polyfill and examples
 
 
-Linux/MacOS |
--------- |
-[![Build Status](https://api.travis-ci.com/intel/webml-polyfill.svg?branch=master)](https://travis-ci.com/intel/webml-polyfill) |
+MacOS | Linux | Windows
+-------- | -------- | --------
+[![Build Status](https://api.travis-ci.com/intel/webml-polyfill.svg?branch=master)](https://travis-ci.com/intel/webml-polyfill) | [![CircleCI](https://circleci.com/gh/intel/webml-polyfill/tree/master.svg?style=svg)](https://circleci.com/gh/intel/webml-polyfill/tree/master) | [![Build status](https://ci.appveyor.com/api/projects/status/6xjudmjja1mcyo1m/branch/master?svg=true)](https://ci.appveyor.com/project/ibelem/webml-polyfill-egsl9/branch/master)
 
 
 ## Development / Testing

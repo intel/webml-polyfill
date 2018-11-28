@@ -2,7 +2,7 @@ Feature,Case Id,Test Case,Mac-MPS,Mac-BNNS,Mac-WASM,Mac-WebGL2,Android-NNAPI,And
 Unit Test/Base Test,Unit Test/Base Test/1,check namespace,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 Unit Test/Base Test,Unit Test/Base Test/2,check getNeuralNetworkContext,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 Unit Test/Model Test,addOperand API/1,"check ""addOperand"" is a function",Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-Unit Test/Model Test,addOperand API/2,"check return value is of ""void"" type",Pass,Pass,Fail,Fail,Pass,Fail,Fail,Pass,Fail,Fail,Pass,Fail,Fail
+Unit Test/Model Test,addOperand API/2,"check return value is of ""void"" type",Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 Unit Test/Model Test,addOperand API/3,passing a FLOAT32 scalar is ok,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 Unit Test/Model Test,addOperand API/4,passing an INT32 scalar is ok,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 Unit Test/Model Test,addOperand API/5,passing an UINT32 scalar is ok,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
@@ -27,7 +27,7 @@ Unit Test/Model Test,addOperand API/23,raise error when passing two scalars,Fail
 Unit Test/Model Test,addOperand API/24,raise error when passing two tensors,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail
 Unit Test/Model Test,addOperand API/25,raise error when attempting to add an operand into the finished model,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 Unit Test/Model Test,setOperandValue API/1,"check ""setOperandValue"" is a function",Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-Unit Test/Model Test,setOperandValue API/2,"check return value is of ""void"" type",Pass,Pass,Fail,Fail,Pass,Fail,Fail,Pass,Fail,Fail,Pass,Fail,Fail
+Unit Test/Model Test,setOperandValue API/2,"check return value is of ""void"" type",Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 Unit Test/Model Test,setOperandValue API/3,raise error when setting an Int8Array data for a FLOAT32 scalar,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 Unit Test/Model Test,setOperandValue API/4,raise error when setting an Uint8Array data for a FLOAT32 scalar,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 Unit Test/Model Test,setOperandValue API/5,raise error when setting an Uint8ClampedArray data for a FLOAT32 scalar,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
@@ -36,7 +36,7 @@ Unit Test/Model Test,setOperandValue API/7,raise error when setting an Uint16Arr
 Unit Test/Model Test,setOperandValue API/8,raise error when setting an Int32Array data for a FLOAT32 scalar,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 Unit Test/Model Test,setOperandValue API/9,raise error when setting an Uint32Array data for a FLOAT32 scalar,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 Unit Test/Model Test,setOperandValue API/10,setting a Float32Array data which length is 1 for a FLOAT32 scalar is ok,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-Unit Test/Model Test,setOperandValue API/11,raise error when setting a Float32Array data which length > 1 for a FLOAT32 scalar,Fail,Fail,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass
+Unit Test/Model Test,setOperandValue API/11,raise error when setting a Float32Array data which length > 1 for a FLOAT32 scalar,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 Unit Test/Model Test,setOperandValue API/12,raise error when setting a Float64Array data for a FLOAT32 scalar,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 Unit Test/Model Test,setOperandValue API/13,raise error when setting a DataView data for a FLOAT32 scalar,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 Unit Test/Model Test,setOperandValue API/14,raise error when setting an Int8Array data for an INT32 scalar,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
@@ -45,7 +45,7 @@ Unit Test/Model Test,setOperandValue API/16,raise error when setting an Uint8Cla
 Unit Test/Model Test,setOperandValue API/17,raise error when setting an Int16Array data for an INT32 scalar,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 Unit Test/Model Test,setOperandValue API/18,raise error when setting an Uint16Array data for an INT32 scalar,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 Unit Test/Model Test,setOperandValue API/19,setting an Int32Array data which length is 1 for an INT32 scalar is ok,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-Unit Test/Model Test,setOperandValue API/20,raise error when setting an Int32Array data which length > 1 for an INT32 scalar,Fail,Fail,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass
+Unit Test/Model Test,setOperandValue API/20,raise error when setting an Int32Array data which length > 1 for an INT32 scalar,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 Unit Test/Model Test,setOperandValue API/21,raise error when setting an Uint32Array data for an INT32 scalar,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 Unit Test/Model Test,setOperandValue API/22,raise error when setting a Float32Array data for an INT32 scalar,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 Unit Test/Model Test,setOperandValue API/23,raise error when setting a Float64Array data for an INT32 scalar,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
@@ -57,7 +57,7 @@ Unit Test/Model Test,setOperandValue API/28,raise error when setting an Int16Arr
 Unit Test/Model Test,setOperandValue API/29,raise error when setting an Uint16Array data for an UINT32 scalar,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 Unit Test/Model Test,setOperandValue API/30,raise error when setting an Int32Array data for an UINT32 scalar,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 Unit Test/Model Test,setOperandValue API/31,setting an Uint32Array data which length is 1 for an UINT32 scalar is ok,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-Unit Test/Model Test,setOperandValue API/32,raise error when setting an Uint32Array data which length > 1 for an UINT32 scalar,Fail,Fail,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass
+Unit Test/Model Test,setOperandValue API/32,raise error when setting an Uint32Array data which length > 1 for an UINT32 scalar,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 Unit Test/Model Test,setOperandValue API/33,raise error when setting a Float32Array data for an UINT32 scalar,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 Unit Test/Model Test,setOperandValue API/34,raise error when setting a Float64Array data for an UINT32 scalar,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 Unit Test/Model Test,setOperandValue API/35,raise error when setting a DataView data for an UINT32 scalar,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
@@ -93,7 +93,7 @@ Unit Test/Model Test,setOperandValue API/64,raise error when setting a Float64Ar
 Unit Test/Model Test,setOperandValue API/65,raise error when setting a DataView data for a TENSOR_QUANT8_ASYMM tensor,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 Unit Test/Model Test,setOperandValue API/66,raise error when attempting to reset the value for an operand of the finished model,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 Unit Test/Model Test,addOperation API/1,"check ""addOperation"" is a function",Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-Unit Test/Model Test,addOperation API/2,"check return value is of ""void"" type",Pass,Pass,Fail,Fail,Pass,Fail,Fail,Pass,Fail,Fail,Pass,Fail,Fail
+Unit Test/Model Test,addOperation API/2,"check return value is of ""void"" type",Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 Unit Test/Model Test,addOperation API/3,raise error when passing no parameter,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 Unit Test/Model Test,addOperation API/4,raise error when passing only two parameter,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 Unit Test/Model Test,addOperation API/5,raise error when passing more than 3 parameter,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
@@ -297,7 +297,7 @@ Unit Test/Model Test,addOperation API/202,"raise error when the length of output
 Unit Test/Model Test,addOperation API/203,"raise error when the length of outputs is 0 not 1 for ""SOFTMAX"" operation",Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail
 Unit Test/Model Test,addOperation API/204,raise error when attempting to reset the operation of the finished model,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 Unit Test/Model Test,identifyInputsAndOutputs API/1,"check ""identifyInputsAndOutputs"" is a function",Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-Unit Test/Model Test,identifyInputsAndOutputs API/2,"check return value is of ""void"" type",Pass,Pass,Fail,Fail,Pass,Fail,Fail,Pass,Fail,Fail,Pass,Fail,Fail
+Unit Test/Model Test,identifyInputsAndOutputs API/2,"check return value is of ""void"" type",Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 Unit Test/Model Test,identifyInputsAndOutputs API/3,raise error when letting input tensor be output tensor,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail
 Unit Test/Model Test,identifyInputsAndOutputs API/4,"raise error when target input(s) wasn't(or weren't) previously added",Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 Unit Test/Model Test,identifyInputsAndOutputs API/5,"raise error when target output(s) wasn't(or weren't) previously added",Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
@@ -353,12 +353,12 @@ Unit Test/Execution Test,startCompute API/3,raise error when computing without i
 Unit Test/Execution Test,startCompute API/4,raise error when computing without outputs being ready,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 Unit Test/Execution Test,startCompute API/5,raise error when passing a parameter,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/1,check result for Add example,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS,CTS/2,check result for Add relu example,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS,CTS/3,check result for Add relu1 example,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass
-CTS,CTS/4,check result for Add relu6 example,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+CTS,CTS/2,check result for Add relu example,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+CTS,CTS/3,check result for Add relu1 example,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass
+CTS,CTS/4,check result for Add relu6 example,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/5,check result for Avg pool float example/1,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/6,check result for Avg pool float relu example/1,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS,CTS/7,check result for Avg pool float relu1 example/1,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass
+CTS,CTS/7,check result for Avg pool float relu1 example/1,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass
 CTS,CTS/8,check result for Avg pool float relu6 example/1,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/9,check result for Avg pool float example/2,Pass,Fail,Pass,Pass,Pass,Pass,Fail,Fail,Pass,Pass,Fail,Pass,Pass
 CTS,CTS/10,check result for Avg pool float example/3,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
@@ -370,34 +370,34 @@ CTS,CTS/15,check result for Conv 1 h3 w2 same example-1,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/16,check result for Conv 1 h3 w2 same example-2,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/17,check result for Conv 1 h3 w2 same relu example-1,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/18,check result for Conv 1 h3 w2 same relu example-2,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS,CTS/19,check result for Conv 1 h3 w2 same relu1 example-1,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass
-CTS,CTS/20,check result for Conv 1 h3 w2 same relu1 example-2,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass
+CTS,CTS/19,check result for Conv 1 h3 w2 same relu1 example-1,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass
+CTS,CTS/20,check result for Conv 1 h3 w2 same relu1 example-2,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass
 CTS,CTS/21,check result for Conv 1 h3 w2 same relu6 example-1,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/22,check result for Conv 1 h3 w2 same relu6 example-2,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/23,check result for Conv 1 h3 w2 valid example-1,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/24,check result for Conv 1 h3 w2 valid example-2,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/25,check result for Conv 1 h3 w2 valid relu example-1,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/26,check result for Conv 1 h3 w2 valid relu example-2,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS,CTS/27,check result for Conv 1 h3 w2 valid relu1 example-1,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass
-CTS,CTS/28,check result for Conv 1 h3 w2 valid relu1 example-2,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass
+CTS,CTS/27,check result for Conv 1 h3 w2 valid relu1 example-1,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass
+CTS,CTS/28,check result for Conv 1 h3 w2 valid relu1 example-2,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass
 CTS,CTS/29,check result for Conv 1 h3 w2 valid relu6 example-1,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/30,check result for Conv 1 h3 w2 valid relu6 example-2,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS,CTS/31,check result for Conv 3 h3 w2 same example-1,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS,CTS/32,check result for Conv 3 h3 w2 same example-2,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS,CTS/33,check result for Conv 3 h3 w2 same relu example-1,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS,CTS/34,check result for Conv 3 h3 w2 same relu example-2,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS,CTS/35,check result for Conv 3 h3 w2 same relu1 example-1,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass
-CTS,CTS/36,check result for Conv 3 h3 w2 same relu1 example-2,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass
-CTS,CTS/37,check result for Conv 3 h3 w2 same relu6 example-1,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS,CTS/38,check result for Conv 3 h3 w2 same relu6 example-2,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS,CTS/39,check result for Conv 3 h3 w2 valid example-1,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS,CTS/40,check result for Conv 3 h3 w2 valid example-2,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS,CTS/41,check result for Conv 3 h3 w2 valid relu example-1,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS,CTS/42,check result for Conv 3 h3 w2 valid relu example-2,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS,CTS/43,check result for Conv 3 h3 w2 valid relu1 example-1,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass
-CTS,CTS/44,check result for Conv 3 h3 w2 valid relu1 example-2,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass
-CTS,CTS/45,check result for Conv 3 h3 w2 valid relu6 example-1,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS,CTS/46,check result for Conv 3 h3 w2 valid relu6 example-2,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+CTS,CTS/31,check result for Conv 3 h3 w2 same example-1,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+CTS,CTS/32,check result for Conv 3 h3 w2 same example-2,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+CTS,CTS/33,check result for Conv 3 h3 w2 same relu example-1,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+CTS,CTS/34,check result for Conv 3 h3 w2 same relu example-2,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+CTS,CTS/35,check result for Conv 3 h3 w2 same relu1 example-1,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass
+CTS,CTS/36,check result for Conv 3 h3 w2 same relu1 example-2,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass
+CTS,CTS/37,check result for Conv 3 h3 w2 same relu6 example-1,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+CTS,CTS/38,check result for Conv 3 h3 w2 same relu6 example-2,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+CTS,CTS/39,check result for Conv 3 h3 w2 valid example-1,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+CTS,CTS/40,check result for Conv 3 h3 w2 valid example-2,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+CTS,CTS/41,check result for Conv 3 h3 w2 valid relu example-1,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+CTS,CTS/42,check result for Conv 3 h3 w2 valid relu example-2,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+CTS,CTS/43,check result for Conv 3 h3 w2 valid relu1 example-1,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass
+CTS,CTS/44,check result for Conv 3 h3 w2 valid relu1 example-2,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass
+CTS,CTS/45,check result for Conv 3 h3 w2 valid relu6 example-1,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+CTS,CTS/46,check result for Conv 3 h3 w2 valid relu6 example-2,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/47,check result for Conv float example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/48,check result for Conv float relu example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/49,check result for Conv float relu1 example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
@@ -410,12 +410,12 @@ CTS,CTS/55,check result for Conv float channels weights as inputs example,Pass,P
 CTS,CTS/56,check result for Conv float channels weights as inputs relu example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/57,check result for Conv float channels weights as inputs relu1 example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/58,check result for Conv float channels weights as inputs relu6 example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS,CTS/59,check result for Conv float large example,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS,CTS/60,check result for Conv float large relu example,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+CTS,CTS/59,check result for Conv float large example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+CTS,CTS/60,check result for Conv float large relu example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/61,check result for Conv float large relu1 example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/62,check result for Conv float large relu6 example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS,CTS/63,check result for Conv float large weights as inputs example,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS,CTS/64,check result for Conv float large weights as inputs relu example,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+CTS,CTS/63,check result for Conv float large weights as inputs example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+CTS,CTS/64,check result for Conv float large weights as inputs relu example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/65,check result for Conv float large weights as inputs relu1 example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/66,check result for Conv float large weights as inputs relu6 example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/67,check result for Conv float weights as inputs example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
@@ -454,34 +454,114 @@ CTS,CTS/99,check result for Depthwise conv2d float weights as inputs example,Fai
 CTS,CTS/100,check result for Depthwise conv2d float weights as inputs relu example,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass
 CTS,CTS/101,check result for Depthwise conv2d float weights as inputs relu1 example,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass
 CTS,CTS/102,check result for Depthwise conv2d float weights as inputs relu6 example,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass
-CTS,CTS/103,check result for Fully connected float example,Fail,Fail,Fail,Fail,Pass,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail
-CTS,CTS/104,check result for Fully connected float relu example,Fail,Fail,Fail,Fail,Pass,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail
-CTS,CTS/105,check result for Fully connected float relu1 example,Fail,Fail,Fail,Fail,Pass,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail
-CTS,CTS/106,check result for Fully connected float relu6 example,Fail,Fail,Fail,Fail,Pass,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail
-CTS,CTS/107,check result for Fully connected float example/2,Fail,Fail,Fail,Fail,Pass,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail
-CTS,CTS/108,check result for Fully connected float weights as inputs example,Fail,Fail,Fail,Fail,Pass,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail
-CTS,CTS/109,check result for Fully connected float large example,Fail,Fail,Fail,Fail,Pass,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail
-CTS,CTS/110,check result for Fully connected float large weights as inputs example,Fail,Fail,Fail,Fail,Pass,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail
+CTS,CTS/103,check result for Fully connected float example,Pass,Fail,Pass,Fail,Pass,Pass,Fail,Fail,Pass,Fail,Fail,Pass,Fail
+CTS,CTS/104,check result for Fully connected float relu example,Pass,Fail,Pass,Fail,Pass,Pass,Fail,Fail,Pass,Fail,Fail,Pass,Fail
+CTS,CTS/105,check result for Fully connected float relu1 example,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Fail,Pass,Fail,Fail,Pass,Fail
+CTS,CTS/106,check result for Fully connected float relu6 example,Pass,Fail,Pass,Fail,Pass,Pass,Fail,Fail,Pass,Fail,Fail,Pass,Fail
+CTS,CTS/107,check result for Fully connected float example/2,Pass,Fail,Pass,Fail,Pass,Pass,Fail,Fail,Pass,Fail,Fail,Pass,Fail
+CTS,CTS/108,check result for Fully connected float weights as inputs example,Pass,Fail,Pass,Fail,Pass,Pass,Fail,Fail,Pass,Fail,Fail,Pass,Fail
+CTS,CTS/109,check result for Fully connected float large example,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass
+CTS,CTS/110,check result for Fully connected float large weights as inputs example,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass
 CTS,CTS/111,check result for Max pool float example/1,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/112,check result for Max pool float relu example/1,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS,CTS/113,check result for Max pool float relu1 example/1,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass
+CTS,CTS/113,check result for Max pool float relu1 example/1,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass
 CTS,CTS/114,check result for Max pool float relu6 example/1,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/115,check result for Max pool float example/2,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/116,check result for Max pool float example/3,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/117,check result for Mul example,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS,CTS/118,check result for Mul relu example,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS,CTS/119,check result for Mul relu1 example,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass
-CTS,CTS/120,check result for Mul relu6 example,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+CTS,CTS/118,check result for Mul relu example,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+CTS,CTS/119,check result for Mul relu1 example,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass
+CTS,CTS/120,check result for Mul relu6 example,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/121,check result for Softmax float example/1,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass
 CTS,CTS/122,check result for Softmax float example/2,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass
 CTS Supplement Test,CTS Supplement Test/1,check result for Add example,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS Supplement Test,CTS Supplement Test/2,check result for Concatenation axis 0 example,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Fail,Pass,Fail,Fail,Pass,Fail
-CTS Supplement Test,CTS Supplement Test/3,check result for Concatenation axis 1 example,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Fail,Pass,Fail,Fail,Pass,Fail
-CTS Supplement Test,CTS Supplement Test/4,check result for Concatenation axis 2 example,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Fail,Pass,Fail,Fail,Pass,Fail
-CTS Supplement Test,CTS Supplement Test/5,check result for Concatenation axis 3 example,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass
-CTS Supplement Test,CTS Supplement Test/6,check result for Fully connected float 3D input example,Fail,Fail,Fail,Fail,Pass,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail
-CTS Supplement Test,CTS Supplement Test/7,check result for Fully connected float 3D input example/2,Fail,Fail,Fail,Fail,Pass,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail
-CTS Supplement Test,CTS Supplement Test/8,check result for Fully connected float 4D input example,Fail,Fail,Fail,Fail,Pass,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail
-CTS Supplement Test,CTS Supplement Test/9,check result for Mul example,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS Supplement Test,CTS Supplement Test/10,check result for Reshape example,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS Supplement Test,CTS Supplement Test/11,check result for Softmax example,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass
+CTS Supplement Test,CTS Supplement Test/2,check result for Add broadcasting 1D-2D example/1,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/3,check result for Add broadcasting 1D-2D example/2,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/4,check result for Add broadcasting 2D-2D example/1,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/5,check result for Add broadcasting 2D-2D example/2,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/6,check result for Add broadcasting 2D-2D example/3,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/7,check result for Add broadcasting 2D-2D example/4,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Fail,Pass,Fail,Fail,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/8,check result for Add broadcasting 1D-3D example/1,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/9,check result for Add broadcasting 1D-3D example/2,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Fail,Pass,Fail,Fail,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/10,check result for Add broadcasting 2D-3D example/1,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Fail,Pass,Fail,Fail,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/11,check result for Add broadcasting 2D-3D example/2,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Fail,Pass,Fail,Fail,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/12,check result for Add broadcasting 2D-3D example/3,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/13,check result for Add broadcasting 2D-3D example/4,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Fail,Pass,Fail,Fail,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/14,check result for Add broadcasting 2D-3D example/5,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Fail,Pass,Fail,Fail,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/15,check result for Add broadcasting 3D-3D example/1,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/16,check result for Add broadcasting 3D-3D example/2,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/17,check result for Add broadcasting 3D-3D example/3,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/18,check result for Add broadcasting 3D-3D example/4,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/19,check result for Add broadcasting 3D-3D example/5,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/20,check result for Add broadcasting 3D-3D example/6,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/21,check result for Add broadcasting 3D-3D example/7,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/22,check result for Add broadcasting 3D-3D example/8,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Fail,Pass,Fail,Fail,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/23,check result for Add broadcasting 1D-4D example/1,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/24,check result for Add broadcasting 1D-4D example/2,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Fail,Pass,Fail,Fail,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/25,check result for Add broadcasting 2D-4D example/1,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Fail,Pass,Fail,Fail,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/26,check result for Add broadcasting 2D-4D example/2,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Fail,Pass,Fail,Fail,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/27,check result for Add broadcasting 2D-4D example/3,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/28,check result for Add broadcasting 2D-4D example/4,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Fail,Pass,Fail,Fail,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/29,check result for Add broadcasting 2D-4D example/5,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Fail,Pass,Fail,Fail,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/30,check result for Add broadcasting 3D-4D example/1,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/31,check result for Add broadcasting 3D-4D example/2,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/32,check result for Add broadcasting 3D-4D example/3,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/33,check result for Add broadcasting 3D-4D example/4,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/34,check result for Add broadcasting 3D-4D example/5,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/35,check result for Add broadcasting 3D-4D example/6,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Fail,Pass,Fail,Fail,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/36,check result for Add broadcasting 4D-4D example/1,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/37,check result for Add broadcasting 4D-4D example/2,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/38,check result for Add broadcasting 4D-4D example/3,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/39,check result for Add broadcasting 4D-4D example/4,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/40,check result for Add broadcasting 4D-4D example/5,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/41,check result for Add broadcasting 4D-4D example/6,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Fail,Pass,Fail,Fail,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/42,check result for Concatenation axis 0 example,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Fail,Pass,Fail,Fail,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/43,check result for Concatenation axis 1 example,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Fail,Pass,Fail,Fail,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/44,check result for Concatenation axis 2 example,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Fail,Pass,Fail,Fail,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/45,check result for Concatenation axis 3 example,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass
+CTS Supplement Test,CTS Supplement Test/46,check result for Fully connected float 3D input example,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Fail,Pass,Fail,Fail,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/47,check result for Fully connected float 3D input example/2,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass
+CTS Supplement Test,CTS Supplement Test/48,check result for Fully connected float 4D input example,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass
+CTS Supplement Test,CTS Supplement Test/49,check result for Mul example,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+CTS Supplement Test,CTS Supplement Test/50,check result for Mul broadcasting 1D-2D example/1,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/51,check result for Mul broadcasting 1D-2D example/2,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/52,check result for Mul broadcasting 2D-2D example/1,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/53,check result for Mul broadcasting 2D-2D example/2,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/54,check result for Mul broadcasting 2D-2D example/3,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/55,check result for Mul broadcasting 2D-2D example/4,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Fail,Pass,Fail,Fail,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/56,check result for Mul broadcasting 1D-3D example/1,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/57,check result for Mul broadcasting 1D-3D example/2,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Fail,Pass,Fail,Fail,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/58,check result for Mul broadcasting 2D-3D example/1,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Fail,Pass,Fail,Fail,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/59,check result for Mul broadcasting 2D-3D example/2,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Fail,Pass,Fail,Fail,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/60,check result for Mul broadcasting 2D-3D example/3,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/61,check result for Mul broadcasting 2D-3D example/4,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Fail,Pass,Fail,Fail,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/62,check result for Mul broadcasting 2D-3D example/5,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Fail,Pass,Fail,Fail,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/63,check result for Mul broadcasting 3D-3D example/1,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/64,check result for Mul broadcasting 3D-3D example/2,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/65,check result for Mul broadcasting 3D-3D example/3,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/66,check result for Mul broadcasting 3D-3D example/4,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/67,check result for Mul broadcasting 3D-3D example/5,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/68,check result for Mul broadcasting 3D-3D example/6,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/69,check result for Mul broadcasting 3D-3D example/7,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/70,check result for Mul broadcasting 3D-3D example/8,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Fail,Pass,Fail,Fail,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/71,check result for Mul broadcasting 1D-4D example/1,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/72,check result for Mul broadcasting 1D-4D example/2,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Fail,Pass,Fail,Fail,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/73,check result for Mul broadcasting 2D-4D example/1,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Fail,Pass,Fail,Fail,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/74,check result for Mul broadcasting 2D-4D example/2,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Fail,Pass,Fail,Fail,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/75,check result for Mul broadcasting 2D-4D example/3,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/76,check result for Mul broadcasting 2D-4D example/4,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Fail,Pass,Fail,Fail,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/77,check result for Mul broadcasting 2D-4D example/5,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Fail,Pass,Fail,Fail,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/78,check result for Mul broadcasting 3D-4D example/1,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/79,check result for Mul broadcasting 3D-4D example/2,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/80,check result for Mul broadcasting 3D-4D example/3,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/81,check result for Mul broadcasting 3D-4D example/4,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/82,check result for Mul broadcasting 3D-4D example/5,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/83,check result for Mul broadcasting 3D-4D example/6,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Fail,Pass,Fail,Fail,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/84,check result for Mul broadcasting 4D-4D example/1,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/85,check result for Mul broadcasting 4D-4D example/2,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/86,check result for Mul broadcasting 4D-4D example/3,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/87,check result for Mul broadcasting 4D-4D example/4,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/88,check result for Mul broadcasting 4D-4D example/5,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/89,check result for Mul broadcasting 4D-4D example/6,Fail,Fail,Pass,Fail,Pass,Pass,Fail,Fail,Pass,Fail,Fail,Pass,Fail
+CTS Supplement Test,CTS Supplement Test/90,check result for Reshape example,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+CTS Supplement Test,CTS Supplement Test/91,check result for Softmax example,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Fail,Pass,Pass

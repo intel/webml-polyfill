@@ -1,20 +1,13 @@
 class SsdMobileNet {
-  constructor(tfModel, backend) {
-    this._tfModel = tfModel;
+  constructor(kwargs) {
+    this._tfModel =  kwargs.tfModel;
     this._model = null;
     this._compilation;
     this._execution;
     this._tensorIds = [];
     this._operandIndex = 0;
-    if (typeof backend !== 'undefined') {
-      this._backend = backend;
-    } else {
-      if (nnNative && getPreferParam() !== 'invalid') {
-        this._backend = 'WebML';
-      } else {
-        this._backend = 'WASM';
-      }
-    }
+    this._backend = kwargs.backend;
+    this._prefer = kwargs.prefer;
     if (this._backend === 'WebML') {
       if (nnNative === null) {
         throw Error('Fails to initialize neural network context');
@@ -37,7 +30,7 @@ class SsdMobileNet {
 
     await this._model.finish();
     this._compilation = await this._model.createCompilation();
-    this._compilation.setPreference(getPrefer(this._backend));
+    this._compilation.setPreference(getPreferCode(this._backend, this._prefer));
     await this._compilation.finish();
     this._execution = await this._compilation.createExecution();
   }

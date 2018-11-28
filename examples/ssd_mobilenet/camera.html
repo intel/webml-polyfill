@@ -37,7 +37,14 @@
             <button class="dropdown-item disabled" type="button" id="webgl">WebGL2</button>
             <button class="dropdown-item disabled" type="button" id="webml">WebML</button>
           </div>
+      </div>
+      <div class="btn-group prefer" style="margin-left: 5px; display: none;">
+        <button id="selectPrefer" type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          Setting...
+        </button>
+        <div class="dropdown-menu dropdown-menu-right preference">
         </div>
+      </div>
     </nav>
     <div class="container" id="container">
       <div id="progressContainer">
@@ -72,9 +79,9 @@
     <script src="../third_party/stats.min.js"></script>
     <script src="../../dist/webml-polyfill.js"></script>
     <script src="../util/base.js"></script>
-    <script src="../image_classification_tflite/flatbuffers/js/flatbuffers.js"></script>
-    <script src="../image_classification_tflite/schema/schema_generated.js"></script>
-    <script src="../image_classification_tflite/TfLiteModelUtils.js"></script>
+    <script src="../util/tflite/flatbuffers/js/flatbuffers.js"></script>
+    <script src="../util/tflite/schema/schema_generated.js"></script>
+    <script src="../util/tflite/TfLiteModelUtils.js"></script>
     <script src="SsdMobileNet.js"></script>
     <script src="DrawOutputs.js"></script>
     <script src="utils.js"></script>
