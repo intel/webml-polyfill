@@ -1,6 +1,6 @@
 class OnnxModelImporter {
   constructor(kwargs) {
-    this._onnxModel = kwargs.onnxModel;
+    this._rawModel = kwargs.rawModel;
     this._model = null;
     this._compilation;
     this._execution;
@@ -60,19 +60,19 @@ class OnnxModelImporter {
   }
 
   _getInputByName(name) {
-    return getObjectByName(this._onnxModel.graph.input, name);
+    return getObjectByName(this._rawModel.graph.input, name);
   }
 
   _getOutputByName(name) {
-    return getObjectByName(this._onnxModel.graph.output, name);
+    return getObjectByName(this._rawModel.graph.output, name);
   }
 
   _getInitializerByName(name) {
-    return getObjectByName(this._onnxModel.graph.initializer, name);
+    return getObjectByName(this._rawModel.graph.initializer, name);
   }
 
   _addTensorOperands() {
-    const graph = this._onnxModel.graph;
+    const graph = this._rawModel.graph;
 
     // key: input name of unsqueeze node, val: unsqueeze axes array
     const unsqueezeAxes = {}; 
@@ -90,7 +90,7 @@ class OnnxModelImporter {
   }
 
   _addInputsOutputs() {
-    const graph = this._onnxModel.graph;
+    const graph = this._rawModel.graph;
     let inputs = [this._getTensorIdByName(graph.node[0].input[0])];
     let outputs = [this._getTensorIdByName(graph.output[0].name)];
     if (this._options.softmax &&
@@ -104,7 +104,7 @@ class OnnxModelImporter {
     if (this._tensorIds[name])
       throw new Error(`Tensor ${name} is already added`);
 
-    const initializer = getObjectByName(this._onnxModel.graph.initializer, name);
+    const initializer = getObjectByName(this._rawModel.graph.initializer, name);
     const tensorType = valueInfo.type.tensorType;
     let dims = tensorType.shape.dim.map(dim => dim.dimValue);
     if (dims.length == 4) {
@@ -204,7 +204,7 @@ class OnnxModelImporter {
   }
 
   _addOpsAndParams() {
-    const graph = this._onnxModel.graph;
+    const graph = this._rawModel.graph;
     for (let i = 0; i < graph.node.length; ++i) {
       let node = graph.node[i];
       console.log(`opType: ${node.opType}`);
