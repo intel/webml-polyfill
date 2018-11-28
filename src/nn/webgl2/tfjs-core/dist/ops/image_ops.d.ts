@@ -1,0 +1,13 @@
+import { Tensor1D, Tensor2D, Tensor3D, Tensor4D } from '../tensor';
+import { TensorLike } from '../types';
+declare function resizeBilinear_<T extends Tensor3D | Tensor4D>(images: T | TensorLike, size: [number, number], alignCorners?: boolean): T;
+declare function resizeNearestNeighbor_<T extends Tensor3D | Tensor4D>(images: T | TensorLike, size: [number, number], alignCorners?: boolean): T;
+declare function nonMaxSuppression_(boxes: Tensor2D | TensorLike, scores: Tensor1D | TensorLike, maxOutputSize: number, iouThreshold?: number, scoreThreshold?: number): Tensor1D;
+declare function nonMaxSuppressionAsync_(boxes: Tensor2D | TensorLike, scores: Tensor1D | TensorLike, maxOutputSize: number, iouThreshold?: number, scoreThreshold?: number): Promise<Tensor1D>;
+declare function cropAndResize_(image: Tensor4D | TensorLike, boxes: Tensor2D | TensorLike, boxInd: Tensor1D | TensorLike, cropSize: [number, number], method?: 'bilinear' | 'nearest', extrapolationValue?: number): Tensor4D;
+export declare const resizeBilinear: typeof resizeBilinear_;
+export declare const resizeNearestNeighbor: typeof resizeNearestNeighbor_;
+export declare const nonMaxSuppression: typeof nonMaxSuppression_;
+export declare const nonMaxSuppressionAsync: typeof nonMaxSuppressionAsync_;
+export declare const cropAndResize: typeof cropAndResize_;
+export {};

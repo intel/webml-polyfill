@@ -35,8 +35,7 @@
     "ndarray-ops": "^1.2.2",
     "ndarray-squeeze": "^1.0.2",
     "selenium-webdriver": "^3.1.0",
-    "webpack": "^3.5.5",
-    "@tensorflow/tfjs-core": "^0.13.6"
+    "webpack": "^3.5.5"
   },
   "dependencies": {}
 }

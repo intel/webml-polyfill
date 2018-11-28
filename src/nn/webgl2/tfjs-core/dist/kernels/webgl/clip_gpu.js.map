@@ -1,0 +1,1 @@
+{"version":3,"file":"clip_gpu.js","sourceRoot":"","sources":["../../../src/kernels/webgl/clip_gpu.ts"],"names":[],"mappings":";;AAmBA;IAKE,qBAAY,MAAgB,EAAE,GAAW,EAAE,GAAW;QAJtD,kBAAa,GAAG,CAAC,GAAG,CAAC,CAAC;QAKpB,IAAI,CAAC,WAAW,GAAG,MAAM,CAAC;QAC1B,IAAI,CAAC,QAAQ,GAAG,qMAQmB,GAAG,iBAAY,GAAG,wBAEpD,CAAC;IACJ,CAAC;IACH,kBAAC;AAAD,CAAC,AAnBD,IAmBC;AAnBY,kCAAW"}

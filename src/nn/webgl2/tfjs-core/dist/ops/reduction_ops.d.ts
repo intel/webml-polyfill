@@ -1,0 +1,28 @@
+import { Tensor } from '../tensor';
+import { TensorLike } from '../types';
+declare function logSumExp_<T extends Tensor>(x: Tensor | TensorLike, axis?: number | number[], keepDims?: boolean): T;
+declare function sum_<T extends Tensor>(x: Tensor | TensorLike, axis?: number | number[], keepDims?: boolean): T;
+declare function prod_<T extends Tensor>(x: Tensor | TensorLike, axis?: number | number[], keepDims?: boolean): T;
+declare function mean_<T extends Tensor>(x: Tensor | TensorLike, axis?: number | number[], keepDims?: boolean): T;
+declare function min_<T extends Tensor>(x: Tensor | TensorLike, axis?: number | number[], keepDims?: boolean): T;
+declare function max_<T extends Tensor>(x: Tensor | TensorLike, axis?: number | number[], keepDims?: boolean): T;
+declare function argMin_<T extends Tensor>(x: Tensor | TensorLike, axis?: number): T;
+declare function argMax_<T extends Tensor>(x: Tensor | TensorLike, axis?: number): T;
+declare function all_<T extends Tensor>(x: Tensor | TensorLike, axis?: number | number[], keepDims?: boolean): T;
+declare function any_<T extends Tensor>(x: Tensor | TensorLike, axis?: number | number[], keepDims?: boolean): T;
+declare function moments_(x: Tensor | TensorLike, axis?: number | number[], keepDims?: boolean): {
+    mean: Tensor;
+    variance: Tensor;
+};
+export declare const all: typeof all_;
+export declare const any: typeof any_;
+export declare const argMax: typeof argMax_;
+export declare const argMin: typeof argMin_;
+export declare const logSumExp: typeof logSumExp_;
+export declare const max: typeof max_;
+export declare const mean: typeof mean_;
+export declare const min: typeof min_;
+export declare const moments: typeof moments_;
+export declare const sum: typeof sum_;
+export declare const prod: typeof prod_;
+export {};

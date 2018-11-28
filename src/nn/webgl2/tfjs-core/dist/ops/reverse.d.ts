@@ -1,0 +1,13 @@
+import { Tensor, Tensor1D, Tensor2D, Tensor3D, Tensor4D } from '../tensor';
+import { TensorLike } from '../types';
+declare function reverse1d_(x: Tensor1D | TensorLike): Tensor1D;
+declare function reverse2d_(x: Tensor2D | TensorLike, axis?: number | number[]): Tensor2D;
+declare function reverse3d_(x: Tensor3D | TensorLike, axis?: number | number[]): Tensor3D;
+declare function reverse4d_(x: Tensor4D | TensorLike, axis?: number | number[]): Tensor4D;
+declare function reverse_<T extends Tensor>(x: T | TensorLike, axis?: number | number[]): T;
+export declare const reverse: typeof reverse_;
+export declare const reverse1d: typeof reverse1d_;
+export declare const reverse2d: typeof reverse2d_;
+export declare const reverse3d: typeof reverse3d_;
+export declare const reverse4d: typeof reverse4d_;
+export {};

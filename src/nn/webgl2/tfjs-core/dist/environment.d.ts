@@ -1,0 +1,35 @@
+import { Engine, MemoryInfo, ProfileInfo, ScopeFn, TimingInfo } from './engine';
+import { Features } from './environment_util';
+import { KernelBackend } from './kernels/backend';
+import { Tensor, TensorTracker } from './tensor';
+import { TensorContainer } from './tensor_types';
+export declare class Environment {
+    private features;
+    private globalEngine;
+    private registry;
+    backendName: string;
+    constructor(features?: Features);
+    static setBackend(backendName: string, safeMode?: boolean): void;
+    static getBackend(): string;
+    static disposeVariables(): void;
+    static memory(): MemoryInfo;
+    static profile(f: () => TensorContainer): Promise<ProfileInfo>;
+    static tidy<T extends TensorContainer>(nameOrFn: string | ScopeFn<T>, fn?: ScopeFn<T>, gradMode?: boolean): T;
+    static dispose(container: TensorContainer): void;
+    static keep<T extends Tensor>(result: T): T;
+    static time(f: () => void): Promise<TimingInfo>;
+    get<K extends keyof Features>(feature: K): Features[K];
+    getFeatures(): Features;
+    set<K extends keyof Features>(feature: K, value: Features[K]): void;
+    private getBestBackendName;
+    private evaluateFeature;
+    setFeatures(features: Features): void;
+    reset(): void;
+    readonly backend: KernelBackend;
+    findBackend(name: string): KernelBackend;
+    registerBackend(name: string, factory: () => KernelBackend, priority?: number, setTensorTrackerFn?: (f: () => TensorTracker) => void): boolean;
+    removeBackend(name: string): void;
+    readonly engine: Engine;
+    private initEngine;
+}
+export declare let ENV: Environment;

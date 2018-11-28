@@ -1,0 +1,15 @@
+import { Tensor2D, Tensor3D, Tensor4D } from '../tensor';
+import { TensorLike } from '../types';
+declare function conv1d_<T extends Tensor2D | Tensor3D>(x: T | TensorLike, filter: Tensor3D | TensorLike, stride: number, pad: 'valid' | 'same' | number, dataFormat?: 'NWC' | 'NCW', dilation?: number, dimRoundingMode?: 'floor' | 'round' | 'ceil'): T;
+declare function conv2d_<T extends Tensor3D | Tensor4D>(x: T | TensorLike, filter: Tensor4D | TensorLike, strides: [number, number] | number, pad: 'valid' | 'same' | number, dataFormat?: 'NHWC' | 'NCHW', dilations?: [number, number] | number, dimRoundingMode?: 'floor' | 'round' | 'ceil'): T;
+declare function conv2dDerFilter_<T extends Tensor3D | Tensor4D>(x: T, dy: T, filterShape: [number, number, number, number], strides: [number, number] | number, pad: 'valid' | 'same' | number, dimRoundingMode?: 'floor' | 'round' | 'ceil'): Tensor4D;
+declare function conv2dTranspose_<T extends Tensor3D | Tensor4D>(x: T | TensorLike, filter: Tensor4D | TensorLike, outputShape: [number, number, number, number] | [number, number, number], strides: [number, number] | number, pad: 'valid' | 'same' | number, dimRoundingMode?: 'floor' | 'round' | 'ceil'): T;
+declare function depthwiseConv2d_<T extends Tensor3D | Tensor4D>(x: T | TensorLike, filter: Tensor4D | TensorLike, strides: [number, number] | number, pad: 'valid' | 'same' | number, dataFormat?: 'NHWC' | 'NCHW', dilations?: [number, number] | number, dimRoundingMode?: 'floor' | 'round' | 'ceil'): T;
+declare function separableConv2d_<T extends Tensor3D | Tensor4D>(x: T | TensorLike, depthwiseFilter: Tensor4D | TensorLike, pointwiseFilter: Tensor4D | TensorLike, strides: [number, number] | number, pad: 'valid' | 'same', dilation?: [number, number] | number, dataFormat?: 'NHWC' | 'NCHW'): T;
+export declare const conv1d: typeof conv1d_;
+export declare const conv2d: typeof conv2d_;
+export declare const conv2dDerFilter: typeof conv2dDerFilter_;
+export declare const depthwiseConv2d: typeof depthwiseConv2d_;
+export declare const separableConv2d: typeof separableConv2d_;
+export declare const conv2dTranspose: typeof conv2dTranspose_;
+export {};

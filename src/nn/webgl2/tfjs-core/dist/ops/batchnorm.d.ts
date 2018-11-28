@@ -1,0 +1,11 @@
+import { Tensor, Tensor1D, Tensor2D, Tensor3D, Tensor4D } from '../tensor';
+import { Rank, TensorLike } from '../types';
+declare function batchNormalization2d_(x: Tensor2D | TensorLike, mean: Tensor2D | Tensor1D | TensorLike, variance: Tensor2D | Tensor1D | TensorLike, varianceEpsilon?: number, scale?: Tensor2D | Tensor1D | TensorLike, offset?: Tensor2D | Tensor1D | TensorLike): Tensor2D;
+declare function batchNormalization3d_(x: Tensor3D | TensorLike, mean: Tensor3D | Tensor1D | TensorLike, variance: Tensor3D | Tensor1D | TensorLike, varianceEpsilon?: number, scale?: Tensor3D | Tensor1D | TensorLike, offset?: Tensor3D | Tensor1D | TensorLike): Tensor3D;
+declare function batchNormalization4d_(x: Tensor4D | TensorLike, mean: Tensor4D | Tensor1D | TensorLike, variance: Tensor4D | Tensor1D | TensorLike, varianceEpsilon?: number, scale?: Tensor4D | Tensor1D | TensorLike, offset?: Tensor4D | Tensor1D | TensorLike): Tensor4D;
+declare function batchNormalization_<R extends Rank>(x: Tensor<R> | Tensor1D | TensorLike, mean: Tensor<R> | Tensor1D | TensorLike, variance: Tensor<R> | Tensor1D | TensorLike, varianceEpsilon?: number, scale?: Tensor<R> | Tensor1D | TensorLike, offset?: Tensor<R> | Tensor1D | TensorLike): Tensor<R>;
+export declare const batchNormalization2d: typeof batchNormalization2d_;
+export declare const batchNormalization3d: typeof batchNormalization3d_;
+export declare const batchNormalization4d: typeof batchNormalization4d_;
+export declare const batchNormalization: typeof batchNormalization_;
+export {};

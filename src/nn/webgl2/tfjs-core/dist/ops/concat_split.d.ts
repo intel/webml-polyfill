@@ -1,0 +1,15 @@
+import { Tensor, Tensor1D, Tensor2D, Tensor3D, Tensor4D } from '../tensor';
+import { TensorLike } from '../types';
+declare function concat1d_(tensors: Tensor1D[] | TensorLike[]): Tensor1D;
+declare function concat2d_(tensors: Tensor2D[] | TensorLike[], axis: number): Tensor2D;
+declare function concat3d_(tensors: Tensor3D[] | TensorLike[], axis: number): Tensor3D;
+declare function concat4d_(tensors: Tensor4D[] | TensorLike[], axis: number): Tensor4D;
+declare function concat_<T extends Tensor>(tensors: T[] | TensorLike[], axis?: number): T;
+declare function split_<T extends Tensor>(x: T | TensorLike, numOrSizeSplits: number[] | number, axis?: number): T[];
+export declare const concat: typeof concat_;
+export declare const concat1d: typeof concat1d_;
+export declare const concat2d: typeof concat2d_;
+export declare const concat3d: typeof concat3d_;
+export declare const concat4d: typeof concat4d_;
+export declare const split: typeof split_;
+export {};

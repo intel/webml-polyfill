@@ -1,0 +1,13 @@
+import { Tensor, Tensor1D, Tensor2D, Tensor3D, Tensor4D } from '../tensor';
+import { Rank, TensorLike } from '../types';
+declare function slice1d_(x: Tensor1D | TensorLike, begin: number, size: number): Tensor1D;
+declare function slice2d_(x: Tensor2D | TensorLike, begin: [number, number], size: [number, number]): Tensor2D;
+declare function slice3d_(x: Tensor3D | TensorLike, begin: [number, number, number], size: [number, number, number]): Tensor3D;
+declare function slice4d_(x: Tensor4D | TensorLike, begin: [number, number, number, number], size: [number, number, number, number]): Tensor4D;
+declare function slice_<R extends Rank, T extends Tensor<R>>(x: T | TensorLike, begin: number | number[], size?: number | number[]): T;
+export declare const slice: typeof slice_;
+export declare const slice1d: typeof slice1d_;
+export declare const slice2d: typeof slice2d_;
+export declare const slice3d: typeof slice3d_;
+export declare const slice4d: typeof slice4d_;
+export {};

@@ -1,0 +1,1 @@
+{"version":3,"file":"reduce_util.js","sourceRoot":"","sources":["../../src/ops/reduce_util.ts"],"names":[],"mappings":";;AAqBA,gCAAuC;AAE1B,QAAA,qBAAqB,GAAG,EAAE,CAAC;AAQxC,kCAAyC,MAAc;IACrD,IAAI,MAAM,IAAI,6BAAqB,EAAE;QACnC,OAAO,MAAM,CAAC;KACf;IACD,OAAO,qBAAc,CAAC,MAAM,EAAE,IAAI,CAAC,KAAK,CAAC,IAAI,CAAC,IAAI,CAAC,MAAM,CAAC,CAAC,CAAC,CAAC;AAC/D,CAAC;AALD,4DAKC"}

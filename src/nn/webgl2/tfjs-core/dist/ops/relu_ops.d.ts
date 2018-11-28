@@ -1,0 +1,13 @@
+import { Tensor } from '../tensor';
+import { TensorLike } from '../types';
+declare function relu_<T extends Tensor>(x: T | TensorLike): T;
+declare function elu_<T extends Tensor>(x: T | TensorLike): T;
+declare function selu_<T extends Tensor>(x: T | TensorLike): T;
+declare function leakyRelu_<T extends Tensor>(x: T | TensorLike, alpha?: number): T;
+declare function prelu_<T extends Tensor>(x: T | TensorLike, alpha: T | TensorLike): T;
+export declare const elu: typeof elu_;
+export declare const leakyRelu: typeof leakyRelu_;
+export declare const prelu: typeof prelu_;
+export declare const relu: typeof relu_;
+export declare const selu: typeof selu_;
+export {};
