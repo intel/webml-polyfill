@@ -1,1 +1,0 @@
-{"version":3,"file":"browser_util.js","sourceRoot":"","sources":["../src/browser_util.ts"],"names":[],"mappings":";;AAiBA,IAAM,aAAa,GAAG,OAAO,qBAAqB,KAAK,WAAW,CAAC,CAAC;IAChE,qBAAqB,CAAC,CAAC;IACvB,YAAY,CAAC;AAWjB;IACE,OAAO,IAAI,OAAO,CAAO,UAAA,OAAO,IAAI,OAAA,aAAa,CAAC,cAAM,OAAA,OAAO,EAAE,EAAT,CAAS,CAAC,EAA9B,CAA8B,CAAC,CAAC;AACtE,CAAC;AAEO,8BAAS"}

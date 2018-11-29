@@ -1,6 +1,6 @@
 import * as utils from '../utils'
 import {OperationCode, OperandCode, PaddingCode, PreferenceCode, FuseCode, OperandLifetime} from '../Enums'
-import * as tf from './tfjs-core/dist/index';
+import * as tf from 'tfjs-core-webgl2';
 
 export default class WebGL2Model {
   /**
