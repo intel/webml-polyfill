@@ -99,9 +99,9 @@ const mobilenet_v2_onnx = {
     softmax: true,
   }
 };
-const resnet18_v1_onnx = {
-  modelName: 'Resnet v1(Onnx)',
-  modelFile: './model/resnet18v1.onnx',
+const resnet_v1_onnx = {
+  modelName: 'ResNet50 v1(Onnx)',
+  modelFile: './model/resnet50v1.onnx',
   labelsFile: './model/labels1000.txt',
   inputSize: [224, 224, 3],
   outputSize: 1000,
@@ -115,9 +115,9 @@ const resnet18_v1_onnx = {
     softmax: true,
   }
 };
-const resnet18_v2_onnx = {
-  modelName: 'Resnet v2(Onnx)',
-  modelFile: './model/resnet18v2.onnx',
+const resnet_v2_onnx = {
+  modelName: 'ResNet50 v2(Onnx)',
+  modelFile: './model/resnet50v2.onnx',
   labelsFile: './model/labels1000.txt',
   inputSize: [224, 224, 3],
   outputSize: 1000,
@@ -155,8 +155,8 @@ function main(camera) {
     inception_resnet_v2_tflite,
     squeezenet_onnx,
     mobilenet_v2_onnx,
-    resnet18_v1_onnx,
-    resnet18_v2_onnx,
+    resnet_v1_onnx,
+    resnet_v2_onnx,
     inceptionv2_onnx,
   ];
 
