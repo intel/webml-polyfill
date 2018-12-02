@@ -1,8 +1,7 @@
 node_modules/
 dist/
-examples/mobilenet/model/
-!examples/mobilenet/model/README.md
-examples/image_classification_onnx/model/*.onnx
+examples/**/*.tflite
+examples/**/*.onnx
 examples/ssd_mobilenet/model/
 !examples/ssd_mobilenet/model/README.md
 .DS_Store

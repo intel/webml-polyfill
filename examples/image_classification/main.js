@@ -41,7 +41,7 @@ const inception_v4_tflite = {
     mean: [127.5, 127.5, 127.5],
     std: [127.5, 127.5, 127.5],
   }
-}
+};
 const squeezenet_tflite = {
   modelName: 'Squeezenet(TFlite)',
   inputSize: [224, 224, 3],
@@ -66,7 +66,7 @@ const inception_resnet_v2_tflite = {
   postOptions: {
     softmax: true,
   }
-}
+};
 const squeezenet_onnx = {
   modelName: 'SqueezeNet(Onnx)',
   modelFile: './model/squeezenet1.1.onnx',
@@ -106,10 +106,10 @@ const resnet_v1_onnx = {
   inputSize: [224, 224, 3],
   outputSize: 1000,
   preOptions: {
-    // https://github.com/onnx/models/tree/master/resnet50#preprocessing
-    // https://github.com/Microsoft/onnxjs-demo/blob/master/src/components/models/Resnet50.vue#L48
-    mean: [128, 128, 128],
-    std: [128, 128, 128],
+    // https://github.com/onnx/models/tree/master/models/image_classification/resnet#preprocessing
+    mean: [0.485, 0.456, 0.406],
+    std: [0.229, 0.224, 0.225],
+    norm: true
   },
   postOptions: {
     softmax: true,
@@ -138,6 +138,22 @@ const inceptionv2_onnx = {
   inputSize: [224, 224, 3],
   outputSize: 1000,
 };
+const densenet_onnx = {
+  modelName: 'DenseNet(Onnx)',
+  modelFile: './model/densenet121.onnx',
+  labelsFile: './model/labels1000.txt',
+  inputSize: [224, 224, 3],
+  outputSize: 1000,
+  preOptions: {
+    mean: [0.485, 0.456, 0.406],
+    std: [0.229, 0.224, 0.225],
+    norm: true,
+    channelScheme: 'BGR',
+  },
+  postOptions: {
+    softmax: true,
+  }
+};
 const preferMap = {
   'MPS': 'sustained',
   'BNNS': 'fast',
@@ -158,6 +174,7 @@ function main(camera) {
     resnet_v1_onnx,
     resnet_v2_onnx,
     inceptionv2_onnx,
+    densenet_onnx,
   ];
 
   const videoElement = document.getElementById('video');
