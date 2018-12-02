@@ -145,8 +145,9 @@ const densenet_onnx = {
   inputSize: [224, 224, 3],
   outputSize: 1000,
   preOptions: {
-    mean: [0.485, 0.456, 0.406],
-    std: [0.229, 0.224, 0.225],
+    // mean and std should also be in BGR order
+    mean: [0.406, 0.456, 0.485],
+    std: [0.225, 0.224, 0.229],
     norm: true,
     channelScheme: 'BGR',
   },
