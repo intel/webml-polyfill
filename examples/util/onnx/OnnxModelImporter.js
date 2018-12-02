@@ -236,8 +236,8 @@ class OnnxModelImporter {
           const kernelHeight = kernelShape[0];
           const kernelWidth = kernelShape[1];
 
-          const pads = getAttributeValue(node, 'pads');
-          if (!pads || pads.length !== 4)
+          const pads = getAttributeValue(node, 'pads', [0, 0, 0, 0]);
+          if (pads.length !== 4)
             throw new Error('Invalid pads');
           console.log(`  pads: [${pads}]`);
           const paddingHeightBegin = pads[0];
@@ -546,10 +546,10 @@ class OnnxModelImporter {
           const x = node.input[0];
           inputs.push(this._getTensorIdByName(x));
 
-          const pads = getAttributeValue(node, 'pads');
-          if (!pads || pads.length !== 4)
+          const pads = getAttributeValue(node, 'pads', [0, 0, 0, 0]);
+          if (pads.length !== 4)
             throw new Error('Invalid pads');
-          console.log(`  pads: [${pads.ints}]`);
+          console.log(`  pads: [${pads}]`);
           const paddingHeightBegin = pads[0];
           const paddingWidthBegin = pads[1];
           const paddingHeightEnd = pads[2];
@@ -702,6 +702,55 @@ class OnnxModelImporter {
           outputs.push(outputId);
           console.log(`  output ${output}: [${outputDims}]`);
           opCode = this._nn.RESHAPE;
+        } break;
+        case 'Sum': {
+          // Add inputs
+          console.log(`  inputs: [${node.input}]`);
+          const in0 = node.input[0];
+          const inputType = this._getTensorTypeByName(in0);
+          const outputDims = Array.from(inputType.dimensions);
+          const outputType = {type: this._nn.TENSOR_FLOAT32, dimensions: outputDims};
+          opCode = this._nn.ADD;
+
+          let leftOperand = this._getTensorIdByName(in0);
+          let output = node.output[0];
+          for (let i = 1;; ++i) {
+            inputs = [];
+            outputs = [];
+            let in1 = leftOperand;
+            let in2 = this._getTensorIdByName(node.input[i]);
+            inputs.push(in1);
+            inputs.push(in2);
+
+            if (i !== node.input.length - 1) {
+              inputs.push(this._addScalarInt32(this._nn.FUSED_NONE));
+
+              const outputName = `${output}_add_${i}`;
+              const outputId = this._addNewTensorOperand(outputName, outputType);
+              outputs.push(outputId);
+              leftOperand = outputId;
+              console.log(`  Generated Add Op in: [${inputs}], out: [${outputs}]`);
+              this._model.addOperation(opCode, inputs, outputs);
+            } else {
+
+              const nextNode = graph.node[i+1];
+              let output = node.output[0];
+              if (nextNode && nextNode.opType === 'Relu' && node.output[0] === nextNode.input[0]) {
+                // Fuse relu
+                inputs.push(this._addScalarInt32(this._nn.FUSED_RELU));
+                i++;
+                console.log(`  fuse relu: ${nextNode.output[0]} -> ${output}`);
+                output = nextNode.output[0];
+              } else {
+                inputs.push(this._addScalarInt32(this._nn.FUSED_NONE));
+              }
+
+              const outputId = this._addNewTensorOperand(output, outputType);
+              outputs.push(outputId);
+              console.log(`  output ${output}: [${outputDims}]`);
+              break;
+            }
+          }
         } break;
         case 'Unsqueeze': {
           this._tensorIds[node.output[0]] = this._tensorIds[node.input[0]];
