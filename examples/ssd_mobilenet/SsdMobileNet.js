@@ -13,16 +13,14 @@ class SsdMobileNet {
         throw Error('Fails to initialize neural network context');
       }
       this._nn = nnNative;
-    } else if (this._backend === 'WASM' || this._backend === 'WebGL2') {
+    } else if (this._backend === 'WASM' || this._backend === 'WebGL') {
       this._nn = nnPolyfill;
     }
   }
 
   async createCompiledModel() {
     let options = {};
-    if (this._backend === 'WebGL2') {
-      options.useWebGL2 = true;
-    }
+    options.backend = this._backend;
     this._model = await this._nn.createModel(options);
 
     this._addTensorOperands();
@@ -192,7 +190,7 @@ class SsdMobileNet {
       }
       this._model.addOperation(opType, inputs, outputs);
     }
-    // if (this._backend === 'WebGL2') {
+    // if (this._backend === 'WebGL') {
     //   this._model.supportFeatureMapConcate = true;
     // }
   }

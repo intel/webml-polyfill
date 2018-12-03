@@ -1,10 +1,10 @@
 import * as utils from '../utils'
 import {OperationCode, OperandCode, PaddingCode, PreferenceCode, FuseCode, OperandLifetime} from '../Enums'
-import * as tf from 'tfjs-core-webgl2';
+import * as tf from '@tensorflow/tfjs-core';
 
-export default class WebGL2Model {
+export default class WebGLModel {
   /**
-   * Create WebGL2Model class in nn/Model.js
+   * Create WebGLModel class in nn/Model.js
    *
    * @param {Object} model - Model from nn/Model.js
    */
@@ -13,9 +13,6 @@ export default class WebGL2Model {
     this._operations = model._operations;
     this._operands = [];
     this._prepared = false;
-
-    // console.log(tf.ENV);
-    // console.log(tf.ENV.backend.floatPrecision());
   }
 
   /**
@@ -317,8 +314,8 @@ export default class WebGL2Model {
     })
   }
 
-  static _supportWebGL2() {
-    return tf.getBackend() === 'webgl' && tf.ENV.get('WEBGL_VERSION') === 2;
+  static _supportWebGL() {
+    return tf.getBackend() === 'webgl';
   }
 }
 
