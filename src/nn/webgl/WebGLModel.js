@@ -13,6 +13,10 @@ export default class WebGLModel {
     this._operations = model._operations;
     this._operands = [];
     this._prepared = false;
+
+    if (tf.ENV.backend.floatPrecision() === 16) {
+      console.warn('The current floating point operation precision is only 16-bit');
+    }
   }
 
   /**
