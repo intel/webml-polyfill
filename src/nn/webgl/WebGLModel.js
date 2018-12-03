@@ -155,6 +155,11 @@ export default class WebGLModel {
         let strideW, strideH;
         let depthMultipler;
         let activation;
+        let inputInChannels = input.shape[3];
+        let filterInChannels = filter.shape[2];
+        if (inputInChannels < filterInChannels) {
+          input = input.pad([[0, 0], [0, 0], [0, 0], [0, filterInChannels - inputInChannels]]);
+        }
         if (inCount === 8) {
           let paddingCode = operands[inputs[i++]].value[0];
           let padding = PaddingCodeMap.get(paddingCode);
@@ -297,13 +302,11 @@ export default class WebGLModel {
         case OperationCode.DEPTHWISE_CONV_2D: {
           // [1, filterH, filterW, outChannels] -> [filterH, filterW, inChannels, depthMultipler]
           let inputs = operation.inputs;
-          let input = this._operands[inputs[0]];
           let filter = this._operands[inputs[1]];
           let filterH = filter.shape[1];
           let filterW = filter.shape[2];
-          let inChannels = input.shape[3];
           let depthMultipler =  this._operands[inputs[inputs.length-2]].value[0];
-          this._operands[inputs[1]] = filter.reshape([filterH, filterW, inChannels, depthMultipler]);
+          this._operands[inputs[1]] = filter.reshape([filterH, filterW, -1, depthMultipler]);
           filter.dispose();
         } break;
       }
