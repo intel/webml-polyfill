@@ -26,13 +26,13 @@ export default class WebGLModel {
   prepareModel() {
     this._model._operands.forEach(operand => {
       if (utils.isTensor(operand.type)) {
-        let type = this._getOperandType(operand.type);
+        const type = this._getOperandType(operand.type);
         if (operand.value !== null) {   
           // constant tensor
           this._operands.push(tf.tensor(operand.value, operand.dimensions, type));
         } else {                        
           // variable tensor 
-          let zeroTensor = tf.zeros(operand.dimensions, type);
+          const zeroTensor = tf.zeros(operand.dimensions, type);
           this._operands.push(tf.variable(zeroTensor));
           zeroTensor.dispose();
         }
@@ -56,8 +56,8 @@ export default class WebGLModel {
     }
 
     inputs.forEach(input => {
-      let operand = this._operands[input.index];
-      let inputTensor = tf.tensor(input.buffer, operand.shape, operand.dtype);
+      const operand = this._operands[input.index];
+      const inputTensor = tf.tensor(input.buffer, operand.shape, operand.dtype);
       operand.assign(inputTensor);
       inputTensor.dispose();
     });
@@ -69,18 +69,16 @@ export default class WebGLModel {
     });
 
     outputs.forEach(output => {
-      let operand = this._operands[output.index];  
+      const operand = this._operands[output.index];  
       output.buffer.set(operand.dataSync());
     });
-    
-    // console.log(tf.memory());
   }
 
   _executeOperation(operation) {
-    let op = operation.type;
-    let inputs = operation.inputs;
-    let outputs = operation.outputs;
-    let operands = this._operands;
+    const op = operation.type;
+    const inputs = operation.inputs;
+    const outputs = operation.outputs;
+    const operands = this._operands;
 
     const FuseFunctionMap = new Map([
       [FuseCode.NONE, x => x],
@@ -96,108 +94,109 @@ export default class WebGLModel {
 
     switch(op) {
       case OperationCode.ADD: {
-        let in1 = operands[inputs[0]];
-        let in2 = operands[inputs[1]];
-        let activation = FuseFunctionMap.get(operands[inputs[2]].value[0]);
-        let output = operands[outputs[0]];
+        const in1 = operands[inputs[0]];
+        const in2 = operands[inputs[1]];
+        const activation = FuseFunctionMap.get(operands[inputs[2]].value[0]);
+        const output = operands[outputs[0]];
         output.assign(activation(tf.add(in1, in2)));
       } break;
       case OperationCode.MUL: {
-        let in1 = operands[inputs[0]];
-        let in2 = operands[inputs[1]];
-        let activation = FuseFunctionMap.get(operands[inputs[2]].value[0]);
-        let output = operands[outputs[0]];
+        const in1 = operands[inputs[0]];
+        const in2 = operands[inputs[1]];
+        const activation = FuseFunctionMap.get(operands[inputs[2]].value[0]);
+        const output = operands[outputs[0]];
         output.assign(activation(tf.mul(in1, in2)));
       } break;
       case OperationCode.CONV_2D: {
-        let inCount = inputs.length;
+        const inCount = inputs.length;
         if (inCount !== 7 && inCount !== 10) {
           throw new Error('Invalid parameters number of CONV_2D');
         }
         let i = 0;
-        let input = operands[inputs[i++]];
-        let filter = operands[inputs[i++]];
-        let bias = operands[inputs[i++]];
-        let output = operands[outputs[0]];
+        const input = operands[inputs[i++]];
+        const filter = operands[inputs[i++]];
+        const bias = operands[inputs[i++]];
+        const output = operands[outputs[0]];
         let strideW, strideH;
         let activation;
         if (inCount === 7) {
-          let paddingCode = operands[inputs[i++]].value[0];
-          let padding = PaddingCodeMap.get(paddingCode);
+          const paddingCode = operands[inputs[i++]].value[0];
+          const padding = PaddingCodeMap.get(paddingCode);
           strideW = operands[inputs[i++]].value[0];
           strideH = operands[inputs[i++]].value[0];
           activation = FuseFunctionMap.get(operands[inputs[i++]].value[0]);
           output.assign(activation(
-            input.conv2d(filter, [strideH, strideW], padding).add(bias)));
+              input.conv2d(filter, [strideH, strideW], padding).add(bias)));
         } else {
-          let paddingLeft = operands[inputs[i++]].value[0];
-          let paddingRight = operands[inputs[i++]].value[0];
-          let paddingTop = operands[inputs[i++]].value[0];
-          let paddingBottom = operands[inputs[i++]].value[0];
+          const paddingLeft = operands[inputs[i++]].value[0];
+          const paddingRight = operands[inputs[i++]].value[0];
+          const paddingTop = operands[inputs[i++]].value[0];
+          const paddingBottom = operands[inputs[i++]].value[0];
           strideW = operands[inputs[i++]].value[0];
           strideH = operands[inputs[i++]].value[0];
           activation = FuseFunctionMap.get(operands[inputs[i++]].value[0]);
           output.assign(activation(
-            input.pad([[0, 0], [paddingTop, paddingBottom], [paddingLeft, paddingRight], [0, 0]])
-                 .conv2d(filter, [strideH, strideW], 'valid').add(bias)));
+              input.pad([[0, 0], [paddingTop, paddingBottom], [paddingLeft, paddingRight], [0, 0]])
+                   .conv2d(filter, [strideH, strideW], 'valid').add(bias)));
         }
       } break;
       case OperationCode.DEPTHWISE_CONV_2D: {
-        let inCount = inputs.length;
+        const inCount = inputs.length;
         if (inCount !== 8 && inCount !== 11) {
           throw new Error('Invalid parameters number of DEPTHWISE_CONV_2D');
         }
         let i = 0;
-        let input = operands[inputs[i++]];
-        let filter = operands[inputs[i++]];
-        let bias = operands[inputs[i++]];
-        let output = operands[outputs[0]];
+        const input = operands[inputs[i++]];
+        const filter = operands[inputs[i++]];
+        const bias = operands[inputs[i++]];
+        const output = operands[outputs[0]];
         let strideW, strideH;
         let depthMultipler;
         let activation;
-        let inputInChannels = input.shape[3];
-        let filterInChannels = filter.shape[2];
+        let paddedInput = input;
+        const inputInChannels = input.shape[3];
+        const filterInChannels = filter.shape[2];
         if (inputInChannels < filterInChannels) {
-          input = input.pad([[0, 0], [0, 0], [0, 0], [0, filterInChannels - inputInChannels]]);
+          paddedInput = input.pad([[0, 0], [0, 0], [0, 0], [0, filterInChannels - inputInChannels]]);
         }
         if (inCount === 8) {
-          let paddingCode = operands[inputs[i++]].value[0];
-          let padding = PaddingCodeMap.get(paddingCode);
+          const paddingCode = operands[inputs[i++]].value[0];
+          const padding = PaddingCodeMap.get(paddingCode);
           strideW = operands[inputs[i++]].value[0];
           strideH = operands[inputs[i++]].value[0];
           depthMultipler = operands[inputs[i++]].value[0];
           activation = FuseFunctionMap.get(operands[inputs[i++]].value[0]);
           output.assign(activation(
-            input.depthwiseConv2D(filter, [strideH, strideW], padding).add(bias)));
+              paddedInput.depthwiseConv2D(filter, [strideH, strideW], padding).add(bias)));
         } else {
-          let paddingLeft = operands[inputs[i++]].value[0];
-          let paddingRight = operands[inputs[i++]].value[0];
-          let paddingTop = operands[inputs[i++]].value[0];
-          let paddingBottom = operands[inputs[i++]].value[0];
+          const paddingLeft = operands[inputs[i++]].value[0];
+          const paddingRight = operands[inputs[i++]].value[0];
+          const paddingTop = operands[inputs[i++]].value[0];
+          const paddingBottom = operands[inputs[i++]].value[0];
           strideW = operands[inputs[i++]].value[0];
           strideH = operands[inputs[i++]].value[0];
           depthMultipler = operands[inputs[i++]].value[0];
           activation = FuseFunctionMap.get(operands[inputs[i++]].value[0]);
           output.assign(activation(
-            input.pad([[0, 0], [paddingTop, paddingBottom], [paddingLeft, paddingRight], [0, 0]])
-                 .depthwiseConv2D(filter, [strideH, strideW], 'valid').add(bias)));
+              paddedInput.pad([[0, 0], [paddingTop, paddingBottom], [paddingLeft, paddingRight], [0, 0]])
+                         .depthwiseConv2D(filter, [strideH, strideW], 'valid').add(bias)));
         }
       } break;
       case OperationCode.AVERAGE_POOL_2D:
       case OperationCode.MAX_POOL_2D: {
-        let inCount = inputs.length;
+        const inCount = inputs.length;
         if (inCount !== 7 && inCount !== 10) {
           throw new Error(`Invalid parameters number of Pooling ${op}`);
         }
         let i = 0;
-        let input = operands[inputs[i++]];
-        let output = operands[outputs[0]];
+        const input = operands[inputs[i++]];
+        const output = operands[outputs[0]];
         let strideW, strideH;
         let filterW, filterH;
         let activation;
         if (inCount === 7) {
-          let paddingCode = operands[inputs[i++]].value[0];
-          let padding = PaddingCodeMap.get(paddingCode);
+          const paddingCode = operands[inputs[i++]].value[0];
+          const padding = PaddingCodeMap.get(paddingCode);
           strideW = operands[inputs[i++]].value[0];
           strideH = operands[inputs[i++]].value[0];
           filterW = operands[inputs[i++]].value[0];
@@ -205,16 +204,16 @@ export default class WebGLModel {
           activation = FuseFunctionMap.get(operands[inputs[i++]].value[0]);
           if (op === OperationCode.AVERAGE_POOL_2D) {
             output.assign(activation(
-              input.avgPool([filterH, filterW], [strideH, strideW], padding)));
+                input.avgPool([filterH, filterW], [strideH, strideW], padding)));
           } else {
             output.assign(activation(
-              input.maxPool([filterH, filterW], [strideH, strideW], padding)));
+                input.maxPool([filterH, filterW], [strideH, strideW], padding)));
           }
         } else {
-          let paddingLeft = operands[inputs[i++]].value[0];
-          let paddingRight = operands[inputs[i++]].value[0];
-          let paddingTop = operands[inputs[i++]].value[0];
-          let paddingBottom = operands[inputs[i++]].value[0];
+          const paddingLeft = operands[inputs[i++]].value[0];
+          const paddingRight = operands[inputs[i++]].value[0];
+          const paddingTop = operands[inputs[i++]].value[0];
+          const paddingBottom = operands[inputs[i++]].value[0];
           strideW = operands[inputs[i++]].value[0];
           strideH = operands[inputs[i++]].value[0];
           filterW = operands[inputs[i++]].value[0];
@@ -222,34 +221,35 @@ export default class WebGLModel {
           activation = FuseFunctionMap.get(operands[inputs[i++]].value[0]);
           if (op === OperationCode.AVERAGE_POOL_2D) {
             output.assign(activation(
-              input.pad([[0, 0], [paddingTop, paddingBottom], [paddingLeft, paddingRight], [0, 0]])
-                   .avgPool([filterH, filterW], [strideH, strideW], 'valid')));
+                input.pad([[0, 0], [paddingTop, paddingBottom], [paddingLeft, paddingRight], [0, 0]])
+                     .avgPool([filterH, filterW], [strideH, strideW], 'valid')));
           } else {
             output.assign(activation(
-              input.pad([[0, 0], [paddingTop, paddingBottom], [paddingLeft, paddingRight], [0, 0]])
-                   .maxPool([filterH, filterW], [strideH, strideW], 'valid')));
+                input.pad([[0, 0], [paddingTop, paddingBottom], [paddingLeft, paddingRight], [0, 0]])
+                     .maxPool([filterH, filterW], [strideH, strideW], 'valid')));
           }
         }
       } break;
       case OperationCode.SOFTMAX: {
-        let input = operands[inputs[0]];
-        let beta = operands[inputs[1]].value[0];
-        let output = operands[outputs[0]];
-        output.assign(input.mul(tf.scalar(beta)).softmax());
+        const input = operands[inputs[0]];
+        const beta = operands[inputs[1]].value[0];
+        const output = operands[outputs[0]];
+        if (beta === 1) {
+          output.assign(input.softmax());
+        } else {
+          output.assign(input.mul(tf.scalar(beta)).softmax());
+        }
       } break;
       case OperationCode.RESHAPE: {
-        let input = operands[inputs[0]];
-        let targetShape = operands[inputs[1]];
-        let output = operands[outputs[0]];
+        const input = operands[inputs[0]];
+        const targetShape = operands[inputs[1]];
+        const output = operands[outputs[0]];
         output.assign(input.reshape(targetShape.dataSync()));
       } break;
       case OperationCode.CONCATENATION: {
-        if (outputs.length < 1 || inputs.length < 2) {
-          throw new Error('Invalid inputs or outputs');
-        }
-        let numInputTensors = inputs.length - 1;
-        let axis = operands[inputs[numInputTensors]].value[0];
-        let output = operands[outputs[0]];
+        const numInputTensors = inputs.length - 1;
+        const axis = operands[inputs[numInputTensors]].value[0];
+        const output = operands[outputs[0]];
         let inputTensors = [];
         for (let i = 0; i < numInputTensors; ++i) {
           inputTensors.push(operands[inputs[i]]);
@@ -257,14 +257,14 @@ export default class WebGLModel {
         output.assign(tf.concat(inputTensors, axis));
       } break;
       case OperationCode.FULLY_CONNECTED: {
-        let input = operands[inputs[0]];
-        let weights = operands[inputs[1]];
-        let bias = operands[inputs[2]];
-        let activation = FuseFunctionMap.get(operands[inputs[3]].value[0]);
-        let output = operands[outputs[0]];
-        let batchSize = input.shape[0];
+        const input = operands[inputs[0]];
+        const weights = operands[inputs[1]];
+        const bias = operands[inputs[2]];
+        const activation = FuseFunctionMap.get(operands[inputs[3]].value[0]);
+        const output = operands[outputs[0]];
+        const batchSize = utils.product(input.shape) / weights.shape[1];
         output.assign(activation(
-          tf.matMul(input.reshape([batchSize, -1]), weights, false, true).add(bias)));
+            tf.matMul(input.reshape([batchSize, -1]), weights, false, true).add(bias)));
       } break;
       default: {
         throw new Error(`Operation ${op} is not supported`);
@@ -290,22 +290,24 @@ export default class WebGLModel {
    */
   _changeWeightsFormat() {
     this._operations.forEach(operation => {
-      let op = operation.type;
+      const op = operation.type;
       switch(op) {
         case OperationCode.CONV_2D: {
           // NHWC -> HWCN
-          let inputs = operation.inputs;
-          let filter = this._operands[inputs[1]];
+          // https://js.tensorflow.org/api/0.13.3/#conv2d
+          const inputs = operation.inputs;
+          const filter = this._operands[inputs[1]];
           this._operands[inputs[1]] = filter.transpose([1, 2, 3, 0]);
           filter.dispose();
         } break;
         case OperationCode.DEPTHWISE_CONV_2D: {
           // [1, filterH, filterW, outChannels] -> [filterH, filterW, inChannels, depthMultipler]
-          let inputs = operation.inputs;
-          let filter = this._operands[inputs[1]];
-          let filterH = filter.shape[1];
-          let filterW = filter.shape[2];
-          let depthMultipler =  this._operands[inputs[inputs.length-2]].value[0];
+          // https://js.tensorflow.org/api/0.13.3/#depthwiseConv2d
+          const inputs = operation.inputs;
+          const filter = this._operands[inputs[1]];
+          const filterH = filter.shape[1];
+          const filterW = filter.shape[2];
+          const depthMultipler =  this._operands[inputs[inputs.length-2]].value[0];
           this._operands[inputs[1]] = filter.reshape([filterH, filterW, -1, depthMultipler]);
           filter.dispose();
         } break;
