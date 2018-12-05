@@ -244,7 +244,10 @@ export default class WebGLModel {
         const input = operands[inputs[0]];
         const targetShape = operands[inputs[1]];
         const output = operands[outputs[0]];
-        output.assign(input.reshape(targetShape.dataSync()));
+        if (targetShape.value === undefined) {
+          targetShape.value = targetShape.dataSync();
+        }
+        output.assign(input.reshape(targetShape.value));
       } break;
       case OperationCode.CONCATENATION: {
         const numInputTensors = inputs.length - 1;
