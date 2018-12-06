@@ -9,7 +9,8 @@
   "scripts": {
     "watch": "webpack --watch",
     "start": "npm run build && http-server .",
-    "build": "webpack",
+    "build": "node build.js --build-wasm && webpack",
+    "build-wasm": "node build.js --build-wasm",
     "test": "node test-ci.js"
   },
   "repository": {
@@ -35,7 +36,10 @@
     "ndarray-ops": "^1.2.2",
     "ndarray-squeeze": "^1.0.2",
     "selenium-webdriver": "^3.1.0",
-    "webpack": "^3.5.5"
+    "webpack": "^3.5.5",
+    "npmlog": "^4.1.2",
+    "globby": "^8.0.1",
+    "rimraf": "^2.6.2"
   },
   "dependencies": {}
 }

@@ -1,0 +1,6 @@
+[submodule "deps/emsdk"]
+	path = deps/emsdk
+	url = https://github.com/juj/emsdk.git
+[submodule "deps/webml-polyfill-wasm"]
+	path = deps/webml-polyfill-wasm
+	url = https://github.com/Wenzhao-Xiang/webml-polyfill-wasm.git
