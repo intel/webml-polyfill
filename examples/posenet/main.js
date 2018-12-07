@@ -144,11 +144,11 @@ function main() {
     }
   }
 
-  if (nnPolyfill.supportWebGL2) {
+  if (nnPolyfill.supportWebGL) {
     webgl.setAttribute('class', 'dropdown-item');
     webgl.onclick = function(e) {
       removeAlertElement();
-      changeBackend('WebGL2');
+      changeBackend('WebGL');
     }
   }
 

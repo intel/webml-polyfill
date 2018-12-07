@@ -21,15 +21,13 @@ class PoseNet{
         throw Error('Fails to initialize neural network context');
       }
       this._nn = nnNative;
-    } else if (this._backend === 'WASM' || this._backend === 'WebGL2') {
+    } else if (this._backend === 'WASM' || this._backend === 'WebGL') {
       this._nn = nnPolyfill;
     }
   }
   async createCompiledModel() {
     let options = {};
-    if (this._backend === 'WebGL2') {
-      options.useWebGL2 = true;
-    }
+    options.backend = this._backend;
     this._model = await this._nn.createModel(options);
     await this._addTensorOperands();
     await this._model.finish();
