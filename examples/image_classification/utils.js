@@ -114,6 +114,7 @@ class Utils {
     const mean = this.preOptions.mean || [0, 0, 0, 0];
     const std  = this.preOptions.std  || [1, 1, 1, 1];
     const norm = this.preOptions.norm || false;
+    const channelScheme = this.preOptions.channelScheme || 'RGB';
     if (canvas.width !== width || canvas.height !== height) {
       throw new Error(`canvas.width(${canvas.width}) is not ${width} or canvas.height(${canvas.height}) is not ${height}`);
     }
@@ -122,15 +123,31 @@ class Utils {
     if (norm) {
       pixels = new Float32Array(pixels).map(p => p / 255);
     }
-    // NHWC layout
-    for (let y = 0; y < height; ++y) {
-      for (let x = 0; x < width; ++x) {
-        for (let c = 0; c < channels; ++c) {
-          let value = pixels[y*width*imageChannels + x*imageChannels + c];
-          tensor[y*width*channels + x*channels + c] = (value - mean[c]) / std[c];
+    
+    if (channelScheme === 'RGB') {
+      // NHWC layout
+      for (let y = 0; y < height; ++y) {
+        for (let x = 0; x < width; ++x) {
+          for (let c = 0; c < channels; ++c) {
+            let value = pixels[y*width*imageChannels + x*imageChannels + c];
+            tensor[y*width*channels + x*channels + c] = (value - mean[c]) / std[c];
+          }
         }
       }
+    } else if (channelScheme === 'BGR') {
+      // NHWC layout
+      for (let y = 0; y < height; ++y) {
+        for (let x = 0; x < width; ++x) {
+          for (let c = 0; c < channels; ++c) {
+            let value = pixels[y*width*imageChannels + x*imageChannels + (channels-c-1)];
+            tensor[y*width*channels + x*channels + c] = (value - mean[c]) / std[c];
+          }
+        }
+      }
+    } else {
+      throw new Error(`Unknown color channel scheme ${channelScheme}`);
     }
+
   }
 
   getTopClasses(tensor, labels, k = 5) {

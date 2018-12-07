@@ -10,6 +10,7 @@ Download the following model packages, then uncompress them if necessary and mov
 9. [Resnet-50 v1(Onnx)](https://s3.amazonaws.com/onnx-model-zoo/resnet/resnet50v1/resnet50v1.onnx)
 10. [Resnet-50 v2(Onnx)](https://s3.amazonaws.com/onnx-model-zoo/resnet/resnet50v2/resnet50v2.onnx)
 11. [Inception v2(Onnx)](https://s3.amazonaws.com/download.onnx/models/opset_9/inception_v2.tar.gz) (Untar it and rename `model.onnx` to `inceptionv2.onnx`)
+12. [DenseNet(Onnx)](https://s3.amazonaws.com/download.onnx/models/opset_9/densenet121.tar.gz) (Untar it and rename `model.onnx` to `densenet121.onnx`)
 
 The model files are:
 ```
@@ -25,6 +26,7 @@ mobilenetv2-1.0.onnx
 resnet18v1.onnx
 resnet18v2.onnx
 inceptionv2.onnx
+densenet121.onnx
 ```
 
 And we have provided the labels files:

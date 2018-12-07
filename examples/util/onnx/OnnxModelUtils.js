@@ -208,6 +208,7 @@ function printOnnxModel(model) {
       case 'Constant': {} break;
       case 'Reshape': {} break;
       case 'Gemm': {} break;
+      case 'Sum': {} break;
       case 'Unsqueeze': {} break;
       default: {
         console.warn(`    ${node.opType} is not supported.}`);
