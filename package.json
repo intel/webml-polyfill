@@ -9,7 +9,7 @@
   "scripts": {
     "watch": "webpack --watch",
     "start": "npm run build && http-server .",
-    "build": "node build.js --build-wasm && webpack",
+    "build": "webpack",
     "build-wasm": "node build.js --build-wasm",
     "test": "node test-ci.js"
   },
