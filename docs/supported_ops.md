@@ -1,4 +1,4 @@
-| Op Type | WASM | WebGL2 | NNAPI | MPS | BNNS ([#8](https://github.com/intel/webml-polyfill/issues/8)) | clDNN |
+| Op Type | WASM | WebGL | NNAPI | MPS | BNNS ([#8](https://github.com/intel/webml-polyfill/issues/8)) | clDNN |
 |----|------|--------|-------|-----|-----|-----|
 | ADD | yes | yes | yes | yes | no | yes |
 | AVERAGE_POOL_2D | yes | yes| yes | yes | yes | yes |

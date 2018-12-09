@@ -2,7 +2,7 @@ import {PreferenceCode,ResultCode} from './Enums'
 import Device from './wasm/Device'
 import * as utils from './utils'
 import Execution from './Execution'
-import webgl2Model from './webgl2/Model'
+import WebGLModel from './webgl/WebGLModel'
 
 export default class Compilation {
   /**
@@ -16,7 +16,7 @@ export default class Compilation {
     this._preference = PreferenceCode.fast_single_answer;
     this._device = new Device;
     this._preparedModel = null;
-    this._useWebGL2 = model._useWebGL2;
+    this._backend = model._backend;
   }
 
 
@@ -52,11 +52,17 @@ export default class Compilation {
    * Indicate that we have finished modifying a compilation.
    */
   async finish() {
-    if (this._useWebGL2) {
-      this._preparedModel = new webgl2Model(this._model);
-      await this._preparedModel.prepareModel();
-    } else {
-      this._preparedModel = await this._device.prepareModel(this._model);
+    switch (this._backend) {
+      case 'WASM': {
+        this._preparedModel = await this._device.prepareModel(this._model);
+      } break;
+      case 'WebGL': {
+        this._preparedModel = new WebGLModel(this._model);
+        await this._preparedModel.prepareModel();
+      } break;
+      default: {
+        throw new Error(`Backend ${this._backend} is not supported`);
+      }
     }
     this._finished = true;
     return ResultCode.NO_ERROR;

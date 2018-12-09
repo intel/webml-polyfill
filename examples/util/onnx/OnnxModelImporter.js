@@ -17,16 +17,14 @@ class OnnxModelImporter {
         throw Error('Fails to initialize neural network context');
       }
       this._nn = nnNative;
-    } else if (this._backend === 'WASM' || this._backend === 'WebGL2') {
+    } else if (this._backend === 'WASM' || this._backend === 'WebGL') {
       this._nn = nnPolyfill;
     }
   }
 
   async createCompiledModel() {
     let options = {};
-    if (this._backend === 'WebGL2') {
-      options.useWebGL2 = true;
-    }
+    options.backend = this._backend;
     this._model = await this._nn.createModel(options);
 
     this._addTensorOperands();
@@ -236,8 +234,8 @@ class OnnxModelImporter {
           const kernelHeight = kernelShape[0];
           const kernelWidth = kernelShape[1];
 
-          const pads = getAttributeValue(node, 'pads');
-          if (!pads || pads.length !== 4)
+          const pads = getAttributeValue(node, 'pads', [0, 0, 0, 0]);
+          if (pads.length !== 4)
             throw new Error('Invalid pads');
           console.log(`  pads: [${pads}]`);
           const paddingHeightBegin = pads[0];
@@ -451,7 +449,13 @@ class OnnxModelImporter {
           opCode = this._nn.CONV_2D;
         } break;
         case 'Mul':
+        case 'Sum':
         case 'Add': {
+
+          if (node.opType === 'Sum' && node.input.length !== 2) {
+            throw new Error(`Only support Sum with two inputs`);
+          }
+
           // Add inputs
           console.log(`  inputs: [${node.input}]`);
           const in1 = node.input[0];
@@ -492,7 +496,7 @@ class OnnxModelImporter {
           outputs.push(outputId);
           console.log(`  output ${output}: [${outputDims}]`);
 
-          if (node.opType === 'Add')
+          if (node.opType === 'Add' || node.opType === 'Sum')
             opCode = this._nn.ADD;
           else if (node.opType === 'Mul')
             opCode = this._nn.MUL;
@@ -546,10 +550,10 @@ class OnnxModelImporter {
           const x = node.input[0];
           inputs.push(this._getTensorIdByName(x));
 
-          const pads = getAttributeValue(node, 'pads');
-          if (!pads || pads.length !== 4)
+          const pads = getAttributeValue(node, 'pads', [0, 0, 0, 0]);
+          if (pads.length !== 4)
             throw new Error('Invalid pads');
-          console.log(`  pads: [${pads.ints}]`);
+          console.log(`  pads: [${pads}]`);
           const paddingHeightBegin = pads[0];
           const paddingWidthBegin = pads[1];
           const paddingHeightEnd = pads[2];

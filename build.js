@@ -62,7 +62,7 @@ logger.info('Build.SubModules', '(2/3) Fetching submodules... DONE');
 
 logger.info('Download tensorflow dependencies', '(3/3) Downloading... ');
 if (!fs.existsSync(TENSORFLOW_DOWNLOADS)) {
-  const download = spawnSync('./tensorflow/contrib/makefile/download_dependencies.sh', {shell: true, stdio: 'inherit', cwd: DEPS_WASM_TENSORFLOW});
+  const download = spawnSync('tensorflow/contrib/makefile/download_dependencies.sh', {shell: true, stdio: 'inherit', cwd: DEPS_WASM_TENSORFLOW});
   if (download.status !== 0) {
     if (download.error) {
       console.error(download.error);

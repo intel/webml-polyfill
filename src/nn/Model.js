@@ -12,7 +12,7 @@ export default class Model {
     this._operations = [];
     this._inputs = null;
     this._outputs = null;
-    this._useWebGL2 = options.useWebGL2;
+    this._backend = options.backend;
   }
 
   /**

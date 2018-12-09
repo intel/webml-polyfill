@@ -41,7 +41,7 @@ const inception_v4_tflite = {
     mean: [127.5, 127.5, 127.5],
     std: [127.5, 127.5, 127.5],
   }
-}
+};
 const squeezenet_tflite = {
   modelName: 'Squeezenet(TFlite)',
   inputSize: [224, 224, 3],
@@ -66,7 +66,7 @@ const inception_resnet_v2_tflite = {
   postOptions: {
     softmax: true,
   }
-}
+};
 const squeezenet_onnx = {
   modelName: 'SqueezeNet(Onnx)',
   modelFile: './model/squeezenet1.1.onnx',
@@ -99,9 +99,9 @@ const mobilenet_v2_onnx = {
     softmax: true,
   }
 };
-const resnet18_v1_onnx = {
-  modelName: 'Resnet v1(Onnx)',
-  modelFile: './model/resnet18v1.onnx',
+const resnet_v1_onnx = {
+  modelName: 'ResNet50 v1(Onnx)',
+  modelFile: './model/resnet50v1.onnx',
   labelsFile: './model/labels1000.txt',
   inputSize: [224, 224, 3],
   outputSize: 1000,
@@ -115,9 +115,9 @@ const resnet18_v1_onnx = {
     softmax: true,
   }
 };
-const resnet18_v2_onnx = {
-  modelName: 'Resnet v2(Onnx)',
-  modelFile: './model/resnet18v2.onnx',
+const resnet_v2_onnx = {
+  modelName: 'ResNet50 v2(Onnx)',
+  modelFile: './model/resnet50v2.onnx',
   labelsFile: './model/labels1000.txt',
   inputSize: [224, 224, 3],
   outputSize: 1000,
@@ -138,6 +138,23 @@ const inceptionv2_onnx = {
   inputSize: [224, 224, 3],
   outputSize: 1000,
 };
+const densenet_onnx = {
+  modelName: 'DenseNet(Onnx)',
+  modelFile: './model/densenet121.onnx',
+  labelsFile: './model/labels1000.txt',
+  inputSize: [224, 224, 3],
+  outputSize: 1000,
+  preOptions: {
+    // mean and std should also be in BGR order
+    mean: [0.406, 0.456, 0.485],
+    std: [0.225, 0.224, 0.229],
+    norm: true,
+    channelScheme: 'BGR',
+  },
+  postOptions: {
+    softmax: true,
+  }
+};
 const preferMap = {
   'MPS': 'sustained',
   'BNNS': 'fast',
@@ -155,9 +172,10 @@ function main(camera) {
     inception_resnet_v2_tflite,
     squeezenet_onnx,
     mobilenet_v2_onnx,
-    resnet18_v1_onnx,
-    resnet18_v2_onnx,
+    resnet_v1_onnx,
+    resnet_v2_onnx,
     inceptionv2_onnx,
+    densenet_onnx,
   ];
 
   const videoElement = document.getElementById('video');
@@ -389,11 +407,11 @@ function main(camera) {
     };
   }
 
-  if (nnPolyfill.supportWebGL2) {
+  if (nnPolyfill.supportWebGL) {
     webgl.setAttribute('class', 'dropdown-item');
     webgl.onclick = function(e) {
       removeAlertElement();
-      changeBackend('WebGL2');
+      changeBackend('WebGL');
     };
   }
 
