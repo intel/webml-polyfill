@@ -1,4 +1,4 @@
-The nn_ops.js is compiled by Emscripten from https://android.googlesource.com/platform/frameworks/ml and https://github.com/tensorflow/tensorflow, which are both licensed under the Apache License, Version 2.0.
+The nn_ops.js is compiled by Emscripten from https://github.com/Wenzhao-Xiang/webml-polyfill-wasm, which comes from https://android.googlesource.com/platform/frameworks/ml (licensed under the Apache License, Version 2.0).
 
 # Build
 
@@ -14,9 +14,21 @@ The nn_ops.js is compiled by Emscripten from https://android.googlesource.com/pl
 $ git clone https://github.com/Wenzhao-Xiang/webml-polyfill-wasm.git
 ```
 
+### Initialize and update the submodule
+```
+$ cd webml-polyfill-wasm/
+$ git submodule update --init --recursive
+```
+
+### Download tensorflow dependencies
+```
+$ cd external/tensorflow/
+$ ./tensorflow/contrib/makefile/download_dependencies.sh
+```
+
 ### Create a new directory `./build`
 ```
-$ cd webml-polyfill-wasm/ml/nn
+$ cd ../../
 $ mkdir build
 $ cd build
 ```

@@ -21,7 +21,10 @@ const cleanInstall = process.argv.indexOf('--clean-install') !== -1;
 // Path variables
 const ROOT = __dirname;
 const DEPS = path.join(ROOT, 'deps');
-const DEPS_WASM_BUILD = path.join(DEPS, 'webml-polyfill-wasm/build');
+const DEPS_WASM = path.join(DEPS, 'webml-polyfill-wasm');
+const DEPS_WASM_BUILD = path.join(DEPS_WASM, 'build');
+const DEPS_WASM_TENSORFLOW = path.join(DEPS_WASM, 'external/tensorflow');
+const TENSORFLOW_DOWNLOADS = path.join(DEPS_WASM_TENSORFLOW, 'tensorflow/contrib/makefile/downloads');
 const DEPS_NN_OPS = path.join(DEPS_WASM_BUILD, 'nn_ops.js');
 const DEPS_EMSDK = path.join(DEPS, 'emsdk');
 const DEPS_EMSDK_EMSCRIPTEN = path.join(DEPS_EMSDK, 'emscripten');
@@ -36,18 +39,38 @@ logger.info('Build.SubModules', '(1/2) Cleaning dependencies folder...');
 if (cleanInstall) {
   rimraf.sync(DEPS);
 }
-logger.info('Build.SubModules', `(1/2) Cleaning dependencies folder... ${cleanInstall ? 'DONE' : 'SKIPPED'}`);
+logger.info('Build.SubModules', `(1/3) Cleaning dependencies folder... ${cleanInstall ? 'DONE' : 'SKIPPED'}`);
 
 // Step 2: Get dependencies (if needed)
-logger.info('Build.SubModules', '(2/2) Fetching submodules...');
-const update = spawnSync('git submodule update --init --recursive', {shell: true, stdio: 'inherit', cwd: ROOT});
-if (update.status !== 0) {
-  if (update.error) {
-    console.error(update.error);
+logger.info('Build.SubModules', '(2/3) Fetching submodules...');
+const update1 = spawnSync('git submodule update --init --recursive --remote --merge', {shell: true, stdio: 'inherit', cwd: ROOT});
+if (update1.status !== 0) {
+  if (update1.error) {
+    console.error(update1.error);
   }
-  process.exit(update.status);
+  process.exit(update1.status);
 }
-logger.info('Build.SubModules', '(2/2) Fetching submodules... DONE');
+
+const update2 = spawnSync('git submodule update --init --recursive', {shell: true, stdio: 'inherit', cwd: DEPS_WASM});
+if (update2.status !== 0) {
+  if (update2.error) {
+    console.error(update2.error);
+  }
+  process.exit(update2.status);
+}
+logger.info('Build.SubModules', '(2/3) Fetching submodules... DONE');
+
+logger.info('Download tensorflow dependencies', '(3/3) Downloading... ');
+if (!fs.existsSync(TENSORFLOW_DOWNLOADS)) {
+  const download = spawnSync('./tensorflow/contrib/makefile/download_dependencies.sh', {shell: true, stdio: 'inherit', cwd: DEPS_WASM_TENSORFLOW});
+  if (download.status !== 0) {
+    if (download.error) {
+      console.error(download.error);
+    }
+    process.exit(download.status);
+  }
+}
+logger.info('Download tensorflow dependencies', '(3/3) Downloading... DONE');
 
 logger.info('Build', 'Updating submodules... DONE');
 
@@ -123,10 +146,6 @@ if (!buildWasm) {
     process.exit(wasmBuild.status);
   }
   logger.info('Build.Wasm', '(4/4) Building... DONE');
-  if (process.platform === 'linux' || 'darwin') {   // linux or Mac
-    let move = spawnSync(`mv ${DEPS_NN_OPS} ${NN_OPS}`, {shell: true, stdio: 'inherit', cwd: DEPS_WASM_BUILD});
-  } else {  // windows
-    let move = spawnSync(`move ${DEPS_NN_OPS} ${NN_OPS}`, {shell: true, stdio: 'inherit', cwd: DEPS_WASM_BUILD});
-  }
+  let move = spawnSync(`mv ${DEPS_NN_OPS} ${NN_OPS}`, {shell: true, stdio: 'inherit', cwd: DEPS_WASM_BUILD});
 }
 logger.info('Build', `Building WebAssembly sources... ${buildWasm ? 'DONE' : 'SKIPPED'}`);
