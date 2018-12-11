@@ -68,6 +68,8 @@ export default class NeuralNetworkContext {
     this.SPACE_TO_DEPTH = OperationCode.SPACE_TO_DEPTH;
     this.SVDF = OperationCode.SVDF;
     this.TANH = OperationCode.TANH;
+    this.ASTROUS_CONV_2D = OperationCode.ASTROUS_CONV_2D;
+    this.ASTROUS_DEPTHWISE_CONV_2D = OperationCode.ASTROUS_DEPTHWISE_CONV_2D;
   }
 
   _initFusedActivationFunctionTypes() {
