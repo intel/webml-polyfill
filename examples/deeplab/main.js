@@ -58,6 +58,7 @@ function main(camera) {
   const webml = document.getElementById('webml');
   const zoomSlider = document.getElementById('zoomSlider');
   const blurSlider = document.getElementById('blurSlider');
+  const colorMapAlphaSlider = document.getElementById('colorMapAlphaSlider');
   const outputCanvas = document.getElementById('output');
   const preprocessCanvas = document.createElement('canvas');
   let scaledShape = [];
@@ -65,6 +66,7 @@ function main(camera) {
   let currentModel = '';
   let currentPrefer = '';
   let streaming = false;
+  let hoverPos = null;
   let stats;
 
   const counterN = 20;
@@ -106,6 +108,14 @@ function main(camera) {
     renderer.zoom = zoom;
   };
 
+  colorMapAlphaSlider.value = renderer.colorMapAlpha * 100;
+  $('.color-map-alpha-value').html(renderer.colorMapAlpha);
+  colorMapAlphaSlider.oninput = () => {
+    let alpha = colorMapAlphaSlider.value / 100;
+    $('.color-map-alpha-value').html(alpha);
+    renderer.colorMapAlpha = alpha;
+  };
+
   blurSlider.value = renderer.blurRadius;
   $('.blur-radius-value').html(renderer.blurRadius + 'px');
   blurSlider.oninput = () => {
@@ -117,9 +127,12 @@ function main(camera) {
   $('.effects-select .btn input').filter(function() {
     return this.value === renderer.effect;
   }).parent().toggleClass('active');
+  $('.controls').attr('data-select', renderer.effect);
   $('.effects-select .btn').click((e) => {
     e.preventDefault();
-    renderer.effect = e.target.children[0].value;
+    let effect = e.target.children[0].value;
+    $('.controls').attr('data-select', effect);
+    renderer.effect = effect;
   });
 
 
@@ -371,6 +384,23 @@ function main(camera) {
       currentModel = model.modelName;
     }
   }
+
+  function getMousePos(canvas, evt) {
+    let rect = canvas.getBoundingClientRect();
+    return {
+      x: Math.ceil(evt.clientX - rect.left),
+      y: Math.ceil(evt.clientY - rect.top)
+    };
+  }
+
+  outputCanvas.addEventListener('mousemove', (e) => {
+    hoverPos = getMousePos(outputCanvas, e);
+    renderer.highlightHoverLabel(hoverPos);
+  });
+  outputCanvas.addEventListener('mouseleave', (e) => {
+    hoverPos = null;
+    renderer.highlightHoverLabel(hoverPos);
+  });
 
   // register prefers
   if (getOS() === 'Mac OS' && currentBackend === 'WebML') {

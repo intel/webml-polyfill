@@ -4,9 +4,6 @@ video {
   max-height: 513px;
   display: none;
 }
-body {
-  /* background: green; */
-}
 #output {
   max-width: 100%;
   max-height: 513px;
@@ -30,7 +27,7 @@ body {
   position: absolute;
   opacity: 0;
   font-size: 10em;
-  display: flex;
+  display: none;
   flex-direction: column;
   justify-content: center;
 }
@@ -112,4 +109,45 @@ body {
 }
 .controls .btn-group .btn {
   width: 33%;
+}
+.effects-select label:nth-child(1) {
+  border-radius: 3px !important;
+  margin-right: 5px;
+}
+.effects-select label:nth-child(2) {
+  border-radius: 3px 0 0 3px !important;
+}
+.blur-wrapper,
+.color-picker-wrapper,
+.labels-wrapper,
+.color-map-alpha-wrapper {
+  display: none;
+}
+.controls[data-select="blur"] .blur-wrapper {
+  display: flex;
+}
+.controls[data-select="fill"] .color-picker-wrapper {
+  display: flex;
+}
+.controls[data-select="label"] .labels-wrapper,
+.controls[data-select="label"] .color-map-alpha-wrapper {
+  display: flex;
+}
+.labels-wrapper {	
+  margin: 1em 0;	
+  font-size: 14px;	
+}
+.seg-label.highlight {
+  color: #0070c9;
+  background: #f2f2f2;
+}
+.seg-label span {
+  margin-right: 5px;
+}
+.seg-label {
+  transition: color .1s ease-in, background-color .1s ease-in;
+  padding: 3px 10px 3px 10px;
+  border-radius: 15px;
+  height: 30px;
+  font-variant: small-caps;
 }

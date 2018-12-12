@@ -54,7 +54,7 @@
           </div>
         </div>
 
-        <div class="col-lg-2 offset-lg-0 col-md-4 offset-md-4 controls">
+        <div class="col-lg-2 offset-lg-0 col-md-4 offset-md-4 controls" data-select="blur">
 
           <div class="row">
             <div class="label">
@@ -62,7 +62,7 @@
             </div> 
             <div class="btn-group btn-group-toggle btn-group-sm effects-select" data-toggle="buttons">
               <label class="btn btn-secondary">
-                <input type="radio" value="none" autocomplete="off" checked> NONE
+                <input type="radio" value="label" autocomplete="off" checked> LABEL
               </label>
               <label class="btn btn-secondary">
                 <input type="radio" value="fill" autocomplete="off"> FILL
@@ -74,25 +74,35 @@
           </div>
 
 
-          <div class="row">
+          <div class="row zoom-wrapper">
             <div class="label">
               ZOOM: <span class="zoom-value"></span>
             </div>  
             <div class="slidecontainer"><input type="range" min="50" max="300" value="100" class="slider" id="zoomSlider"></div>
           </div>
 
-          <div class="row">
+          <div class="row blur-wrapper">
             <div class="label">
               BLUR RADIUS: <span class="blur-radius-value"></span>
             </div>  
             <div class="slidecontainer"><input type="range" min="0" max="50" value="0" class="slider" id="blurSlider"></div>
           </div>
 
-          <div class="row">
+          <div class="row color-picker-wrapper">
             <div class="label">
               BACKGROUND: <span class="bg-value"></span>
             </div> 
             <div id="color-picker-container"></div>
+          </div>
+
+          <div class="row color-map-alpha-wrapper">
+            <div class="label">
+              OPACITY: <span class="color-map-alpha-value"></span>
+            </div>  
+            <div class="slidecontainer"><input type="range" min="0" max="100" value="0" class="slider" id="colorMapAlphaSlider"></div>
+          </div>
+
+          <div class="row labels-wrapper">
           </div>
         </div>
 
