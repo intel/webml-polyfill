@@ -1,6 +1,6 @@
-The nn_ops.js is compiled by Emscripten from https://github.com/Wenzhao-Xiang/webml-polyfill-wasm, which comes from https://android.googlesource.com/platform/frameworks/ml (licensed under the Apache License, Version 2.0).
+The source code comes from https://android.googlesource.com/platform/frameworks/ml (licensed under the Apache License, Version 2.0), and can be compiled to `nn_ops.js` by Emscripten, which is used for webml-polyfill WASM backend.
 
-# Build
+# WASM Build
 
 ## Prerequisites
 1. Python, node.js, CMake, and Java are not provided by emsdk. Make sure you have installed these beforehand with the system package manager. 
@@ -9,20 +9,15 @@ The nn_ops.js is compiled by Emscripten from https://github.com/Wenzhao-Xiang/we
 2. [Install Emscripten](http://kripken.github.io/emscripten-site/docs/getting_started/downloads.html).
 
 ## Steps
-### Clone the source code
-```
-$ git clone https://github.com/Wenzhao-Xiang/webml-polyfill-wasm.git
-```
-
 ### Initialize and update the submodule
 ```
-$ cd webml-polyfill-wasm/
+$ cd webml-polyfill/
 $ git submodule update --init --recursive
 ```
 
 ### Download tensorflow dependencies
 ```
-$ cd external/tensorflow/
+$ cd src/nn/wasm/src/external/tensorflow/
 $ ./tensorflow/contrib/makefile/download_dependencies.sh
 ```
 

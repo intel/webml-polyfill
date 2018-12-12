@@ -21,11 +21,14 @@ const cleanInstall = process.argv.indexOf('--clean-install') !== -1;
 // Path variables
 const ROOT = __dirname;
 const DEPS = path.join(ROOT, 'deps');
-const DEPS_WASM = path.join(DEPS, 'webml-polyfill-wasm');
-const DEPS_WASM_BUILD = path.join(DEPS_WASM, 'build');
-const DEPS_WASM_TENSORFLOW = path.join(DEPS_WASM, 'external/tensorflow');
-const TENSORFLOW_DOWNLOADS = path.join(DEPS_WASM_TENSORFLOW, 'tensorflow/contrib/makefile/downloads');
-const DEPS_NN_OPS = path.join(DEPS_WASM_BUILD, 'nn_ops.js');
+const WASM_SRC = path.join(ROOT, 'src/nn/wasm/src');
+const WASM_SRC_EXTERNAL = path.join(WASM_SRC, 'external');
+const WASM_BUILD = path.join(WASM_SRC, 'build');
+const WASM_TENSORFLOW = path.join(WASM_SRC, 'external/tensorflow');
+const TENSORFLOW_DOWNLOADS = path.join(WASM_TENSORFLOW, 'tensorflow/contrib/makefile/downloads');
+const TENSORFLOW_EIGEN = path.join(TENSORFLOW_DOWNLOADS, 'eigen');
+const TENSORFLOW_GEMMLOWP = path.join(TENSORFLOW_DOWNLOADS, 'gemmlowp');
+const BUILD_NN_OPS = path.join(WASM_BUILD, 'nn_ops.js');
 const DEPS_EMSDK = path.join(DEPS, 'emsdk');
 const DEPS_EMSDK_EMSCRIPTEN = path.join(DEPS_EMSDK, 'emscripten');
 const EMSDK_BIN = path.join(DEPS_EMSDK, 'emsdk');
@@ -35,34 +38,27 @@ logger.info('Build', 'Initialization completed. Start to build...');
 
 logger.info('Build', 'Updating submodules...');
 // Step 1: Clean folders if needed
-logger.info('Build.SubModules', '(1/2) Cleaning dependencies folder...');
+logger.info('Build.SubModules', '(1/3) Cleaning dependencies folder...');
 if (cleanInstall) {
   rimraf.sync(DEPS);
+  rimraf.sync(WASM_SRC_EXTERNAL);
 }
 logger.info('Build.SubModules', `(1/3) Cleaning dependencies folder... ${cleanInstall ? 'DONE' : 'SKIPPED'}`);
 
 // Step 2: Get dependencies (if needed)
 logger.info('Build.SubModules', '(2/3) Fetching submodules...');
-const update1 = spawnSync('git submodule update --init --recursive --remote --merge', {shell: true, stdio: 'inherit', cwd: ROOT});
-if (update1.status !== 0) {
-  if (update1.error) {
-    console.error(update1.error);
+const update = spawnSync('git submodule update --init --recursive', {shell: true, stdio: 'inherit', cwd: ROOT});
+if (update.status !== 0) {
+  if (update.error) {
+    console.error(update.error);
   }
-  process.exit(update1.status);
-}
-
-const update2 = spawnSync('git submodule update --init --recursive', {shell: true, stdio: 'inherit', cwd: DEPS_WASM});
-if (update2.status !== 0) {
-  if (update2.error) {
-    console.error(update2.error);
-  }
-  process.exit(update2.status);
+  process.exit(update.status);
 }
 logger.info('Build.SubModules', '(2/3) Fetching submodules... DONE');
 
 logger.info('Download tensorflow dependencies', '(3/3) Downloading... ');
-if (!fs.existsSync(TENSORFLOW_DOWNLOADS)) {
-  const download = spawnSync('tensorflow/contrib/makefile/download_dependencies.sh', {shell: true, stdio: 'inherit', cwd: DEPS_WASM_TENSORFLOW});
+if (!fs.existsSync(TENSORFLOW_EIGEN) || !fs.existsSync(TENSORFLOW_GEMMLOWP)) {
+  const download = spawnSync('tensorflow/contrib/makefile/download_dependencies.sh', {shell: true, stdio: 'inherit', cwd: WASM_TENSORFLOW});
   if (download.status !== 0) {
     if (download.error) {
       console.error(download.error);
@@ -74,9 +70,9 @@ logger.info('Download tensorflow dependencies', '(3/3) Downloading... DONE');
 
 logger.info('Build', 'Updating submodules... DONE');
 
-if (!fs.existsSync(DEPS_WASM_BUILD)) {
-  logger.info('Build', `Creating output folder: ${DEPS_WASM_BUILD}`);
-  fs.mkdirSync(DEPS_WASM_BUILD);
+if (!fs.existsSync(WASM_BUILD)) {
+  logger.info('Build', `Creating output folder: ${WASM_BUILD}`);
+  fs.mkdirSync(WASM_BUILD);
 }
 
 logger.info('Build', 'Building WebAssembly sources...');
@@ -126,7 +122,7 @@ if (!buildWasm) {
   // Step 3: Set cmake tool-chain
   logger.info('Build.Wasm', '(3/4) Set cmake tool-chain...');
   // tslint:disable-next-line:non-literal-require
-  const cmaketoolchain = execSync(`cmake -D CMAKE_TOOLCHAIN_FILE=${TOOL_CHAIN} ..`, {cwd: DEPS_WASM_BUILD});
+  const cmaketoolchain = execSync(`cmake -D CMAKE_TOOLCHAIN_FILE=${TOOL_CHAIN} ..`, {cwd: WASM_BUILD});
   
   if (cmaketoolchain.error) {
     console.error(cmaketoolchain.error);
@@ -137,15 +133,14 @@ if (!buildWasm) {
 
   // Step 4: Compile the source code to generate the Wasm file
   logger.info('Build.Wasm', '(4/4) Building...');
-  // logger.info('Build.Wasm', `CMD: ${emcc} ${BUILD_OPTIONS}`);
 
-  const wasmBuild = spawnSync(`make`, {shell: true, stdio: 'inherit', cwd: DEPS_WASM_BUILD});
+  const wasmBuild = spawnSync(`make`, {shell: true, stdio: 'inherit', cwd: WASM_BUILD});
 
   if (wasmBuild.error) {
     console.error(wasmBuild.error);
     process.exit(wasmBuild.status);
   }
   logger.info('Build.Wasm', '(4/4) Building... DONE');
-  let move = spawnSync(`mv ${DEPS_NN_OPS} ${NN_OPS}`, {shell: true, stdio: 'inherit', cwd: DEPS_WASM_BUILD});
+  let move = spawnSync(`mv ${BUILD_NN_OPS} ${NN_OPS}`, {shell: true, stdio: 'inherit', cwd: WASM_BUILD});
 }
 logger.info('Build', `Building WebAssembly sources... ${buildWasm ? 'DONE' : 'SKIPPED'}`);
