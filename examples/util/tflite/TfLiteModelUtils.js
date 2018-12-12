@@ -91,6 +91,10 @@ function printTfLiteModel(model) {
         let options = operator.builtinOptions(new tflite.FullyConnectedOptions());
         console.log(`\t\t\t  builtin_options: {fused_activation_function: ${ActivationFunctionTypes[options.fusedActivationFunction()]}}}`);
       } break;
+      case 'RELU':
+      case 'PAD':
+      case 'RESIZE_BILINEAR': {
+      } break;
       default: {
         console.warn(`\t\t\t  builtin_options: ${op} is not supported.}`);
       }

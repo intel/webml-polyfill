@@ -2,13 +2,13 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>DeepLab Camera Demo</title>
+    <title>Segmentation Camera Demo</title>
     <link rel="stylesheet" href="../third_party/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
     <link rel="stylesheet" href="style.css">
   </head>
   <body>
     <nav class="navbar navbar-expand-md navbar-dark bg-dark">
-      <span class="navbar-brand mb-0 pl-0 h1 col-sm-6 col-md-auto">WebML DeepLab Camera Demo</span>
+      <span class="navbar-brand mb-0 pl-0 h1 col-sm-6 col-md-auto">WebML Segmentation Camera Demo</span>
       <div class="btn-group mr-1">
         <button id="backend" type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"
           aria-expanded="false">
@@ -20,14 +20,14 @@
           <button class="dropdown-item disabled" type="button" id="webml">WebML</button>
         </div>
       </div>
-      <div class="btn-group mr-auto">
+      <div class="btn-group mr-1">
         <button id="selectModel" type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
           Setting...
         </button>
         <div class="dropdown-menu dropdown-menu-right available-models">
         </div>
       </div>
-      <div class="btn-group prefer" style="margin-left: 5px; display: none;">
+      <div class="btn-group prefer" style="display: none;">
         <button id="selectPrefer" type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
           Setting...
         </button>
@@ -50,13 +50,50 @@
       <div class="row top-margin">
         <div class="col-md-12 col-lg-8 offset-lg-2" align="center">
           <div class="image-wrapper">
-            <canvas class="seg-map"></canvas>
+            <canvas id="output"></canvas>
             <video id="video" autoplay playsinline></video>
           </div>
         </div>
 
-        <div class="col-lg-2 offset-lg-0 col-md-4 offset-md-4">
-          <div class="row labels-wrapper">
+        <div class="col-lg-2 offset-lg-0 col-md-4 offset-md-4 controls">
+
+          <div class="row">
+            <div class="label">
+              EFFECT:</span>
+            </div> 
+            <div class="btn-group btn-group-toggle btn-group-sm effects-select" data-toggle="buttons">
+              <label class="btn btn-secondary">
+                <input type="radio" value="none" autocomplete="off" checked> NONE
+              </label>
+              <label class="btn btn-secondary">
+                <input type="radio" value="fill" autocomplete="off"> FILL
+              </label>
+              <label class="btn btn-secondary">
+                <input type="radio" value="blur" autocomplete="off"> BLUR
+              </label>
+            </div>
+          </div>
+
+
+          <div class="row">
+            <div class="label">
+              ZOOM: <span class="zoom-value"></span>
+            </div>  
+            <div class="slidecontainer"><input type="range" min="50" max="300" value="100" class="slider" id="zoomSlider"></div>
+          </div>
+
+          <div class="row">
+            <div class="label">
+              BLUR RADIUS: <span class="blur-radius-value"></span>
+            </div>  
+            <div class="slidecontainer"><input type="range" min="50" max="300" value="100" class="slider" id="zoomSlider"></div>
+          </div>
+
+          <div class="row">
+            <div class="label">
+              BACKGROUND: <span class="bg-value"></span>
+            </div> 
+            <div id="color-picker-container"></div>
           </div>
         </div>
 
@@ -73,12 +110,13 @@
     <script src="../third_party/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
     <script src="../third_party/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
     <script src="../third_party/stats.min.js"></script>
+    <script src="../third_party/iro.min.js" integrity="sha384-4wKYljBiUCSo5tJCQfnFKWf8TAHJxejy8pV2PItmsr0CBWu45fsMtEndOsWNynmn" crossorigin="anonymous"></script>
     <script src="../../dist/webml-polyfill.js"></script>
     <script src="../util/base.js"></script>
-    <script src="../image_classification_tflite/flatbuffers/js/flatbuffers.js"></script>
-    <script src="../image_classification_tflite/schema/schema_generated.js"></script>
-    <script src="../image_classification_tflite/TfLiteModelUtils.js"></script>
-    <script src="DeepLabImporter.js"></script>
+    <script src="../util/tflite/flatbuffers/js/flatbuffers.js"></script>
+    <script src="../util/tflite/schema/schema_generated.js"></script>
+    <script src="../util/tflite/TfLiteModelUtils.js"></script>
+    <script src="../util/tflite/TFliteModelImporter.js"></script>
     <script src="DrawOutputs.js"></script>
     <script src="utils.js"></script>
     <script src="main.js"></script>

@@ -28,11 +28,11 @@ class Utils {
       printTfLiteModel(this.tfModel);
     }
     let kwargs = {
-      tfModel: this.tfModel,
+      rawModel: this.tfModel,
       backend: backend,
       prefer: prefer,
     };
-    this.model = new DeepLabImporter(kwargs);
+    this.model = new TFliteModelImporter(kwargs);
     result = await this.model.createCompiledModel();
     console.log(`compilation result: ${result}`);
     let start = performance.now();
@@ -43,19 +43,17 @@ class Utils {
     this.initialized = true;
   }
 
-
-  async predict(imageSource) {
+  async predict(canvas) {
     if (!this.initialized) return;
-    let scaledShape = this.prepareInputTensor(this.inputTensor, imageSource);
+    this.prepareInputTensor(this.inputTensor, canvas);
     this.outputTensor = new Float32Array(this.outputSize.reduce((x,y) => x*y));
     let start = performance.now();
     let result = await this.model.compute(this.inputTensor, this.outputTensor);
     let elapsed = performance.now() - start;
     return {
-      time: elapsed.toFixed(2),
+      time: elapsed,
       segMap: {
         data: this.outputTensor,
-        scaledShape: scaledShape,
         outputShape: this.outputSize,
         labels: this.labels,
       },
@@ -92,64 +90,36 @@ class Utils {
     });
   }
 
-  prepareInputTensor(tensor, image) {
-    let start = performance.now();
-    let timestamp = [start];
+  prepareCanvas(canvas, imgSrc) {
     const height = this.inputSize[0];
     const width = this.inputSize[1];
-    const channels = this.inputSize[2];
-    const imageChannels = 4; // RGBA
 
-    let canvas = document.createElement('canvas');
     canvas.width = width;
     canvas.height = height;
 
-    let imWidth = image.naturalWidth | image.videoWidth;
-    let imHeight = image.naturalHeight | image.videoHeight;
-    // assume width == height
+    let imWidth = imgSrc.naturalWidth | imgSrc.videoWidth;
+    let imHeight = imgSrc.naturalHeight | imgSrc.videoHeight;
+    // assume deeplab_out.width == deeplab_out.height
     let resizeRatio = Math.max(Math.max(imWidth, imHeight) / width, 1);
     let scaledWidth = Math.floor(imWidth / resizeRatio);
     let scaledHeight = Math.floor(imHeight / resizeRatio);
     let ctx = canvas.getContext('2d');
-    timestamp.push(performance.now());
-    ctx.drawImage(image, 0, 0, scaledWidth, scaledHeight);
-    timestamp.push(performance.now());
-    // // padding (replicate)
-    // // right
-    // let padWidth = width - scaledWidth;
-    // let padHeight = height - scaledHeight;
+    ctx.drawImage(imgSrc, 0, 0, scaledWidth, scaledHeight);
 
-    // if (padWidth > 0) {
-    //   let rightEdge = ctx.getImageData(scaledWidth-1, 0, 1, scaledHeight);
-    //   for (let x = scaledWidth; x < width; x++)
-    //     ctx.putImageData(rightEdge, x, 0);
-    // }
+    return [scaledWidth, scaledHeight];
+  }
 
-    // // bottom
-    // if (padHeight > 0) {
-    //   let bottomEdge = ctx.getImageData(0, scaledHeight-1, scaledWidth, 1);
-    //   for (let y = scaledHeight; y < height; y++)
-    //     ctx.putImageData(bottomEdge, 0, y);
-    // }
+  prepareInputTensor(tensor, canvas) {
+    let start = performance.now();
 
-    // // corner
-    // if (padWidth > 0 && padHeight > 0) {
-    //   let pixel = ctx.getImageData(scaledWidth-1, scaledHeight-1, 1, 1);
-    //   let cornerPixel = pixel.data;
-    //   let cornerPad = new Uint8ClampedArray(padWidth * padHeight * imageChannels);
-    //   for (let i = 0; i < padWidth * padHeight * imageChannels; i += imageChannels) {
-    //     cornerPad[i] = cornerPixel[0];
-    //     cornerPad[i+1] = cornerPixel[1];
-    //     cornerPad[i+2] = cornerPixel[2];
-    //     cornerPad[i+3] = cornerPixel[3];
-    //   }
-    //   let cornerData = new ImageData(cornerPad, padWidth, padHeight);
-    //   ctx.putImageData(cornerData, scaledWidth, scaledHeight);
-    // }
-    timestamp.push(performance.now());
+    const height = canvas.height;
+    const width = canvas.width;
+    const channels = 3;
+    const imageChannels = 4;
+    
+    const ctx = canvas.getContext('2d');
+    const pixels = ctx.getImageData(0, 0, width, height).data;
 
-    let pixels = ctx.getImageData(0, 0, width, height).data;
-    timestamp.push(performance.now());
     // NHWC layout
     for (let y = 0; y < height; ++y) {
       for (let x = 0; x < width; ++x) {
@@ -159,12 +129,7 @@ class Utils {
         }
       }
     }
-    timestamp.push(performance.now());
-    let name = ['', 'init', 'scaledown', 'padding', 'getData', 'norm'];
-    for (let i = 1; i < timestamp.length; i++)
-      console.log(` ${i == 1 ? '┌' : '├'} ${name[i]}: ${(timestamp[i] - timestamp[i-1]).toFixed(2)} ms`);
-    console.log(`Prepare time: ${(timestamp[timestamp.length-1] - timestamp[0]).toFixed(2)} ms`);
-    return [scaledWidth, scaledHeight];
+    console.log(`Prepare time: ${(performance.now() - start).toFixed(2)} ms`);
   }
 
   deleteAll() {

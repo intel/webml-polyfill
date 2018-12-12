@@ -40,10 +40,10 @@ const preferMap = {
 function main(camera) {
 
   const availableModels = [
+    deeplab224dilated,
+    deeplab513dilated,
     deeplab513,
     deeplab224,
-    deeplab513dilated,
-    deeplab224dilated,
   ];
   const videoElement = document.getElementById('video');
   const imageElement = document.getElementById('image');
@@ -56,16 +56,62 @@ function main(camera) {
   const wasm = document.getElementById('wasm');
   const webgl = document.getElementById('webgl');
   const webml = document.getElementById('webml');
-  const segMapCanvas = document.getElementsByClassName('seg-map')[0];
+  const zoomSlider = document.getElementById('zoomSlider');
+  const outputCanvas = document.getElementById('output');
+  const preprocessCanvas = document.createElement('canvas');
+  let scaledShape = [];
   let currentBackend = '';
   let currentModel = '';
   let currentPrefer = '';
   let streaming = false;
-  let hoverPos = null;
+  let stats;
+
+  const counterN = 20;
+  let counter = 0;
+  let inferTimeAcc = 0;
+  let drawTimeAcc = 0;
+
+
+  let renderer = new Renderer(outputCanvas);
+  renderer.setup();
 
   let utils = new Utils();
   // register updateProgress function if progressBar element exist
   utils.progressCallback = updateProgress;
+
+  let colorPicker = new iro.ColorPicker("#color-picker-container", {
+    width: 200,
+    height: 200,
+    color: {
+      r: renderer.bgcolor[0],
+      g: renderer.bgcolor[1],
+      b: renderer.bgcolor[2]
+    },
+    markerRadius: 5,
+    sliderMargin: 12,
+    sliderHeight: 20,
+  });
+  $('.bg-value').html(colorPicker.color.hexString);
+  colorPicker.on('color:change', function(color) {
+    $('.bg-value').html(color.hexString);
+    renderer.bgcolor = [color.rgb.r, color.rgb.g, color.rgb.b];
+  });
+
+  zoomSlider.value = renderer.zoom * 100;
+  $('.zoom-value').html(renderer.zoom + 'x');
+  zoomSlider.oninput = (e) => {
+    let zoom = zoomSlider.value / 100;
+    $('.zoom-value').html(zoom + 'x');
+    renderer.zoom = zoom;
+  };
+
+  $('.effects-select .btn input').filter(function() {
+    return this.value === renderer.effect;
+  }).parent().toggleClass('active');
+  $('.effects-select .btn').click((e) => {
+    e.preventDefault();
+    renderer.effect = e.target.children[0].value;
+  });
 
 
   function checkPreferParam() {
@@ -113,23 +159,6 @@ function main(camera) {
     }
   }
 
-  function clearCanvas() {
-    const context = segMapCanvas.getContext('2d');
-    context.clearRect(0, 0, segMapCanvas.width, segMapCanvas.height);
-  }
-
-  function adjustOutputArea(newHeight, newWidth) {
-    if (camera) {
-      video.style.maxHeight = newHeight + 'px';
-    } else {
-      image.style.maxHeight = newHeight + 'px';
-    }
-    $('.image-wrapper').css({
-      'max-height': newHeight + 'px',
-      'max-width': newWidth + 'px',
-    });
-  }
-
   function updateBackend() {
     if (getUrlParams('api_info') === 'true') {
       backend.innerHTML = currentBackend === 'WebML' ? currentBackend + '/' + getNativeAPI() : currentBackend;
@@ -157,7 +186,7 @@ function main(camera) {
         updateModel();
         updateBackend();
         if (!camera) {
-          utils.predict(imageElement).then(ret => updateResult(ret));
+          predictAndDraw(imageElement);
         } else {
           streaming = true;
           startPredict();
@@ -185,8 +214,6 @@ function main(camera) {
     streaming = false;
     utils.deleteAll();
     utils.changeModelParam(newModel);
-    clearCanvas();
-    adjustOutputArea(newModel.inputSize[0], newModel.inputSize[1]);
     currentPrefer = "sustained";
     progressContainer.style.display = "inline";
     selectModel.innerHTML = 'Setting...';
@@ -198,7 +225,7 @@ function main(camera) {
         updateBackend();
         updateModel();
         if (!camera) {
-          utils.predict(imageElement).then(ret => updateResult(ret));
+          predictAndDraw(imageElement);
         } else {
           streaming = true;
           startPredict();
@@ -221,7 +248,7 @@ function main(camera) {
         updateModel();
         updateBackend();
         if (!camera) {
-          utils.predict(imageElement).then(ret => updateResult(ret));
+          predictAndDraw(imageElement);
         } else {
           streaming = true;
           startPredict();
@@ -242,18 +269,6 @@ function main(camera) {
     selectPrefer.innerHTML = preferMap[currentPrefer];
   }
 
-  function _fileExists(url) {
-    var exists;
-    $.ajax({
-      url: url,
-      async: false,
-      type: 'HEAD',
-      error: function() { exists = 0; },
-      success: function() { exists = 1; }
-    });
-    return exists === 1;
-  }
-
   function updateProgress(ev) {
     if (ev.lengthComputable) {
       let percentComplete = ev.loaded / ev.total * 100;
@@ -268,15 +283,27 @@ function main(camera) {
     }
   }
 
-  function updateResult(result) {
-    console.log(`Inference time: ${result.time} ms`);
-    let inferenceTimeElement = document.getElementById('inferenceTime');
-    inferenceTimeElement.innerHTML = `inference time: <em style="color:green;font-weight:bloder">${result.time} </em>ms`;
+  function predictAndDraw(imageSource) {
+    scaledShape = utils.prepareCanvas(preprocessCanvas, imageSource);
+    renderer.uploadNewTexture(imageSource, scaledShape);
 
-    let start = performance.now();
-    drawSegMap(segMapCanvas, result.segMap);
-    highlightHoverLabel(hoverPos);
-    console.log(`[Main]   Draw time: ${(performance.now() - start).toFixed(2)} ms`);
+    return utils.predict(preprocessCanvas).then(result => {
+
+      let inferTime = result.time;
+      console.log(`Inference time: ${inferTime.toFixed(2)} ms`);
+      inferenceTime.innerHTML = `inference time: <em style="color:green;font-weight:bloder">${inferTime.toFixed(2)} </em>ms`;
+
+      let drawTime = renderer.drawOutputs(result.segMap);
+
+      inferTimeAcc += inferTime;
+      drawTimeAcc += drawTime;
+      if (++counter === counterN) {
+        console.debug(`(${counterN} frames) Infer time: ${(inferTimeAcc / counterN).toFixed(2)} ms`);
+        console.debug(`(${counterN} frames) Draw time: ${(drawTimeAcc / counterN).toFixed(2)} ms`);
+        counter = inferTimeAcc = drawTimeAcc = 0;
+      }
+      
+    });
   }
 
   function getMousePos(canvas, evt) {
@@ -323,9 +350,6 @@ function main(camera) {
 
   // register models
   for (let model of availableModels) {
-    if (!_fileExists(model.modelFile))
-      return;
-
     let dropdownBtn = $('<button class="dropdown-item d-flex"/>')
       .append(
         $('<div class="model-link"/>')
@@ -343,19 +367,9 @@ function main(camera) {
     $('.available-models').append(dropdownBtn);
     if (!currentModel) {
       utils.changeModelParam(model);
-      adjustOutputArea(model.inputSize[0], model.inputSize[1]);
       currentModel = model.modelName;
     }
   }
-
-  segMapCanvas.addEventListener('mousemove', (e) => {
-    hoverPos = getMousePos(segMapCanvas, e);
-    highlightHoverLabel(hoverPos);
-  });
-  segMapCanvas.addEventListener('mouseleave', (e) => {
-    hoverPos = null;
-    highlightHoverLabel(hoverPos);
-  });
 
   // register prefers
   if (getOS() === 'Mac OS' && currentBackend === 'WebML') {
@@ -403,14 +417,14 @@ function main(camera) {
     };
 
     imageElement.onload = function () {
-      utils.predict(imageElement).then(ret => updateResult(ret));
+      predictAndDraw(imageElement);
     };
 
     utils.init(currentBackend, currentPrefer).then(() => {
       updateBackend();
       updateModel();
       updatePrefer();
-      utils.predict(imageElement).then(ret => updateResult(ret));
+      predictAndDraw(imageElement);
       buttonEelement.setAttribute('class', 'btn btn-primary');
       inputElement.removeAttribute('disabled');
     }).catch((e) => {
@@ -420,12 +434,19 @@ function main(camera) {
       changeBackend('WASM');
     });
   } else {
-    let stats = new Stats();
+    stats = new Stats();
     stats.dom.style.cssText = 'position:fixed;top:60px;left:10px;cursor:pointer;opacity:0.9;z-index:10000';
     stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
     document.body.appendChild(stats.dom);
 
-    navigator.mediaDevices.getUserMedia({audio: false, video: {facingMode: "environment"}}).then((stream) => {
+    navigator.mediaDevices.getUserMedia({
+      audio: false,
+      video: {
+        height: 513,
+        width: 513,
+        facingMode: 'environment',
+      }
+    }).then((stream) => {
       video.srcObject = stream;
       utils.init(currentBackend, currentPrefer).then(() => {
         updateBackend();
@@ -442,16 +463,16 @@ function main(camera) {
     }).catch((error) => {
       console.log('getUserMedia error: ' + error.name, error);
     });
+  }
 
-    function startPredict() {
-      if (streaming) {
-        stats.begin();
-        utils.predict(videoElement).then(ret => {
-          updateResult(ret);
-          stats.end();
-          setTimeout(startPredict, 0);
-        });
-      }
+
+  function startPredict() {
+    if (streaming) {
+      stats.begin();
+      predictAndDraw(videoElement).then(_ => {
+        stats.end();
+        setTimeout(startPredict, 0);
+      });
     }
   }
 }
