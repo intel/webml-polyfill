@@ -38,7 +38,7 @@ describe('CTS', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
