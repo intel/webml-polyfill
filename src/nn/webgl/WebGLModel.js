@@ -1,6 +1,6 @@
 import * as utils from '../utils'
 import {OperationCode, OperandCode, PaddingCode, PreferenceCode, FuseCode, OperandLifetime} from '../Enums'
-import * as tf from '@tensorflow/tfjs-core';
+import * as tf from '@tensorflow/tfjs-core'
 
 export default class WebGLModel {
   /**
@@ -268,6 +268,37 @@ export default class WebGLModel {
         const batchSize = utils.product(input.shape) / weights.shape[1];
         output.assign(activation(
             tf.matMul(input.reshape([batchSize, -1]), weights, false, true).add(bias)));
+      } break;
+      case OperationCode.TANH: {
+        const input = operands[inputs[0]];
+        const output = operands[outputs[0]];
+        output.assign(input.tanh());
+      } break;
+      case OperationCode.BATCH_TO_SPACE_ND: {
+        const input = operands[inputs[0]];
+        const blockShape = operands[inputs[1]];
+        const crops = operands[inputs[2]];
+        const output = operands[outputs[0]];
+        if (blockShape.value === undefined) {
+          // blockShape.dataSync() return Int32Array, here it should be convert to Array
+          blockShape.value = Array.apply([], blockShape.dataSync());
+          // crops.dataSync() return 1D array, should be reshaped to [-1, 2]  
+          const cropsValue1D = crops.dataSync();
+          crops.value = [];
+          for(let i = 0; i < cropsValue1D.length; i += 2) {
+            crops.value.push([cropsValue1D[i], cropsValue1D[i + 1]]);
+          }
+        }
+        output.assign(input.batchToSpaceND(blockShape.value, crops.value));
+      } break;
+      case OperationCode.TRANSPOSE: {
+        const input = operands[inputs[0]];
+        const perm = operands[inputs[1]];
+        const output = operands[outputs[0]];
+        if (perm.value === undefined) {
+          perm.value = perm.dataSync();
+        }
+        output.assign(input.transpose(perm.value));
       } break;
       default: {
         throw new Error(`Operation ${op} is not supported`);

@@ -242,6 +242,15 @@ class TFliteModelImporter {
           inputs.push(this._addScalarInt32(fuseCode));
           opType = this._nn.FULLY_CONNECTED;
         } break;
+        case tflite.BuiltinOperator.TANH: {
+          opType = this._nn.TANH;
+        } break;
+        case tflite.BuiltinOperator.BATCH_TO_SPACE_ND: {
+          opType = this._nn.BATCH_TO_SPACE_ND;
+        } break;
+        case tflite.BuiltinOperator.TRANSPOSE: {
+          opType = this._nn.TRANSPOSE;
+        } break;
         default: {
           throw new Error(`operator type ${opCode} is not supported.`);
         }

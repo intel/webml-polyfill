@@ -1170,6 +1170,8 @@ export const OperationCode = {
    * * 0: The output tensor of same shape as input0.
    */
   TANH: 28,
+  BATCH_TO_SPACE_ND: 37,
+  TRANSPOSE: 39,
 };
 
 export const ResultCode = {

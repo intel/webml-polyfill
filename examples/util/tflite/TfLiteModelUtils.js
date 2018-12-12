@@ -91,6 +91,15 @@ function printTfLiteModel(model) {
         let options = operator.builtinOptions(new tflite.FullyConnectedOptions());
         console.log(`\t\t\t  builtin_options: {fused_activation_function: ${ActivationFunctionTypes[options.fusedActivationFunction()]}}}`);
       } break;
+      case 'TANH': {
+        console.log(`\t\t\t  builtin_options: null}`);
+      } break;
+      case 'BATCH_TO_SPACE_ND': {
+        console.log(`\t\t\t  builtin_options: null}`);
+      } break;
+      case 'TRANSPOSE': {
+        console.log(`\t\t\t  builtin_options: null}`);
+      } break;
       default: {
         console.warn(`\t\t\t  builtin_options: ${op} is not supported.}`);
       }
