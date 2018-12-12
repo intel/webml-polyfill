@@ -57,6 +57,7 @@ function main(camera) {
   const webgl = document.getElementById('webgl');
   const webml = document.getElementById('webml');
   const zoomSlider = document.getElementById('zoomSlider');
+  const blurSlider = document.getElementById('blurSlider');
   const outputCanvas = document.getElementById('output');
   const preprocessCanvas = document.createElement('canvas');
   let scaledShape = [];
@@ -83,9 +84,9 @@ function main(camera) {
     width: 200,
     height: 200,
     color: {
-      r: renderer.bgcolor[0],
-      g: renderer.bgcolor[1],
-      b: renderer.bgcolor[2]
+      r: renderer.bgColor[0],
+      g: renderer.bgColor[1],
+      b: renderer.bgColor[2]
     },
     markerRadius: 5,
     sliderMargin: 12,
@@ -94,15 +95,23 @@ function main(camera) {
   $('.bg-value').html(colorPicker.color.hexString);
   colorPicker.on('color:change', function(color) {
     $('.bg-value').html(color.hexString);
-    renderer.bgcolor = [color.rgb.r, color.rgb.g, color.rgb.b];
+    renderer.bgColor = [color.rgb.r, color.rgb.g, color.rgb.b];
   });
 
   zoomSlider.value = renderer.zoom * 100;
   $('.zoom-value').html(renderer.zoom + 'x');
-  zoomSlider.oninput = (e) => {
+  zoomSlider.oninput = () => {
     let zoom = zoomSlider.value / 100;
     $('.zoom-value').html(zoom + 'x');
     renderer.zoom = zoom;
+  };
+
+  blurSlider.value = renderer.blurRadius;
+  $('.blur-radius-value').html(renderer.blurRadius + 'px');
+  blurSlider.oninput = () => {
+    let blurRadius = blurSlider.value;
+    $('.blur-radius-value').html(blurRadius + 'px');
+    renderer.blurRadius = blurRadius;
   };
 
   $('.effects-select .btn input').filter(function() {
@@ -293,26 +302,18 @@ function main(camera) {
       console.log(`Inference time: ${inferTime.toFixed(2)} ms`);
       inferenceTime.innerHTML = `inference time: <em style="color:green;font-weight:bloder">${inferTime.toFixed(2)} </em>ms`;
 
-      let drawTime = renderer.drawOutputs(result.segMap);
-
-      inferTimeAcc += inferTime;
-      drawTimeAcc += drawTime;
-      if (++counter === counterN) {
-        console.debug(`(${counterN} frames) Infer time: ${(inferTimeAcc / counterN).toFixed(2)} ms`);
-        console.debug(`(${counterN} frames) Draw time: ${(drawTimeAcc / counterN).toFixed(2)} ms`);
-        counter = inferTimeAcc = drawTimeAcc = 0;
-      }
-      
+      renderer.drawOutputs(result.segMap).then((drawTime) => {
+        inferTimeAcc += inferTime;
+        drawTimeAcc += drawTime;
+        if (++counter === counterN) {
+          console.debug(`(${counterN} frames) Infer time: ${(inferTimeAcc / counterN).toFixed(2)} ms`);
+          console.debug(`(${counterN} frames) Draw time: ${(drawTimeAcc / counterN).toFixed(2)} ms`);
+          counter = inferTimeAcc = drawTimeAcc = 0;
+        }
+      });
     });
   }
 
-  function getMousePos(canvas, evt) {
-    let rect = canvas.getBoundingClientRect();
-    return {
-      x: Math.ceil(evt.clientX - rect.left),
-      y: Math.ceil(evt.clientY - rect.top)
-    };
-  }
 
   // register backends
   if (nnNative) {
@@ -442,8 +443,8 @@ function main(camera) {
     navigator.mediaDevices.getUserMedia({
       audio: false,
       video: {
-        height: 513,
-        width: 513,
+        // height: 513,
+        // width: 513,
         facingMode: 'environment',
       }
     }).then((stream) => {

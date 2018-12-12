@@ -15,10 +15,11 @@ class Renderer {
     this._segMap = null;
     this._scaledShape = [224, 224];
 
-    this._effect = 'fill';
-    this._zoom = 1;
-    this._bgcolor = [57, 135, 189]; // rgb
-    this._blurRadius = 1;
+    this._effect = 'blur';
+    this._zoom = 2;
+    this._bgColor = [57, 135, 189]; // rgb
+    this._blurRadius = 0;
+    this._halfKernel = [1];
   }
 
   get zoom() {
@@ -29,16 +30,15 @@ class Renderer {
     this._zoom = val;
 
     // all FRAMEBUFFERs should be re-setup when zooming
-    this.setup();
-    this.drawOutputs(this._segMap);
+    this.setup().then(_ => this.drawOutputs(this._segMap));
   }
 
-  get bgcolor() {
-    return this._bgcolor;
+  get bgColor() {
+    return this._bgColor;
   }
 
-  set bgcolor(rgb) {
-    this._bgcolor = rgb;
+  set bgColor(rgb) {
+    this._bgColor = rgb;
     this.drawOutputs();
   }
 
@@ -46,9 +46,18 @@ class Renderer {
     return this._blurRadius;
   }
 
-  set blurRadius(val) {
-    this._blurRadius = val;
-    this.drawOutputs();
+  set blurRadius(radius) {
+    if (this._blurRadius === radius)
+      return;
+
+    this._blurRadius = radius;
+    let kernelSize = radius * 2 + 1;
+    let kernel1D = this._generateGaussianKernel1D(kernelSize, 25);
+    // take the second half
+    this._halfKernel = kernel1D.slice(radius);
+
+    // re-setup shader with new kernel
+    this.setup().then(_ => this.drawOutputs());
   }
 
   get effect() {
@@ -60,7 +69,7 @@ class Renderer {
     this.drawOutputs();
   }
 
-  setup() {
+  async setup() {
 
     const quad = new Float32Array([-1, -1, 1, -1, 1, 1, 1, 1, -1, 1, -1, -1]);
     const vbo = this._gl.createBuffer();
@@ -125,8 +134,9 @@ class Renderer {
 
       uniform sampler2D bg;
       uniform bool first_pass;
-      uniform float kernel[5];
-      
+      uniform int raidius;
+      uniform float kernel[${this._blurRadius + 1}];
+
       // https://learnopengl.com/code_viewer_gh.php?code=src/5.advanced_lighting/7.bloom/7.blur.fs
 
       void main()
@@ -135,12 +145,12 @@ class Renderer {
         vec4 bg_color = texture(bg, v_texcoord);
         vec4 result = bg_color * kernel[0];
         if (first_pass) {
-          for (int i = 1; i < 5; ++i) {
+          for (int i = 1; i < ${this._blurRadius + 1}; ++i) {
             result += texture(bg, v_texcoord + vec2(tex_offset.x * float(i), 0.0)) * kernel[i];
             result += texture(bg, v_texcoord - vec2(tex_offset.x * float(i), 0.0)) * kernel[i];
           }
         } else {
-          for (int i = 1; i < 5; ++i) {
+          for (int i = 1; i < ${this._blurRadius + 1}; ++i) {
             result += texture(bg, v_texcoord + vec2(0.0, tex_offset.y * float(i))) * kernel[i];
             result += texture(bg, v_texcoord - vec2(0.0, tex_offset.y * float(i))) * kernel[i];
           }
@@ -233,7 +243,7 @@ class Renderer {
     this._shader.blend.setUniform1i('orig', 2); // texture units 2
   }
 
-  async uploadNewTexture(imageSource, scaledShape) {
+  uploadNewTexture(imageSource, scaledShape) {
     let id = Date.now(); // used for sync
     return new Promise(resolve => {
 
@@ -259,7 +269,7 @@ class Renderer {
     });
   }
 
-  drawOutputs(newSegMap) {
+  async drawOutputs(newSegMap) {
 
     let start = performance.now();
 
@@ -308,9 +318,8 @@ class Renderer {
 
     if (this._effect == 'blur') {
       // feed extracted background into blur shader
-      let kernel = [0.2270270270, 0.1945945946, 0.1216216216, 0.0540540541, 0.0162162162];
       this._shader.blur.use();
-      this._shader.blur.setUniform1fv('kernel', kernel);
+      this._shader.blur.setUniform1fv('kernel', this._halfKernel);
 
       this._gl.bindFramebuffer(this._gl.FRAMEBUFFER, this._fbo.blurFirstPassResult);
       this._gl.clear(this._gl.COLOR_BUFFER_BIT | this._gl.DEPTH_BUFFER_BIT);
@@ -327,7 +336,7 @@ class Renderer {
       this._gl.drawArrays(this._gl.TRIANGLES, 0, 6);
     } else {
       // feed extracted background into fill shader
-      let fillColor = this._bgcolor.map(x => x / 255);
+      let fillColor = this._bgColor.map(x => x / 255);
       this._shader.fill.use();
       this._shader.fill.setUniform4f('fill_color', ...fillColor, 1);
       this._gl.bindFramebuffer(this._gl.FRAMEBUFFER, this._fbo.styledBg);
@@ -372,6 +381,20 @@ class Renderer {
       mask[i] = maxIdx === PERSON_ID ? 0 : 255;
     }
     return mask;
+  }
+
+  _generateGaussianKernel1D(kernelSize, sigma = 1) {
+    const gaussian = (x, sigma) => 
+      1 / (Math.sqrt(2*Math.PI) * sigma) * Math.exp(-x*x / (2*sigma*sigma));
+    const kernel = [];
+    const radius = (kernelSize - 1) / 2;
+    for (let x = -radius; x <= radius; x++) {
+      kernel.push(gaussian(x, sigma));
+    }
+  
+    // normalize kernel
+    const sum = kernel.reduce((x, y) => x + y);
+    return kernel.map((x) => x / sum);
   }
 
 
