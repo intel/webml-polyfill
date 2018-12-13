@@ -61,7 +61,7 @@ function main(camera) {
   const colorMapAlphaSlider = document.getElementById('colorMapAlphaSlider');
   const outputCanvas = document.getElementById('output');
   const preprocessCanvas = document.createElement('canvas');
-  let scaledShape = [];
+  let clippedSize = [];
   let currentBackend = '';
   let currentModel = '';
   let currentPrefer = '';
@@ -306,8 +306,8 @@ function main(camera) {
   }
 
   function predictAndDraw(imageSource) {
-    scaledShape = utils.prepareCanvas(preprocessCanvas, imageSource);
-    renderer.uploadNewTexture(imageSource, scaledShape);
+    clippedSize = utils.prepareCanvas(preprocessCanvas, imageSource);
+    renderer.uploadNewTexture(imageSource, clippedSize);
 
     return utils.predict(preprocessCanvas).then(result => {
 
@@ -324,6 +324,7 @@ function main(camera) {
           counter = inferTimeAcc = drawTimeAcc = 0;
         }
       });
+      renderer.highlightHoverLabel(hoverPos);
     });
   }
 
