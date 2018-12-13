@@ -945,7 +945,7 @@ def js_print_model(ex_input, ex_output, count, filename, flag):
   print ("    await model.finish();\n", file = filename)
 
   print ("    let compilation = await model.createCompilation();", file = filename)
-  print ("    compilation.setPreference(prefer);", file = filename)
+  print ("    compilation.setPreference(getPreferenceCode(options.prefer));", file = filename)
   print ("    await compilation.finish();\n", file = filename)
   print ("    let execution = await compilation.createExecution();\n", file = filename)
 
