@@ -26,26 +26,26 @@ var csvStream = csv.createWriteStream({headers: true}).transform(function(row) {
     "CheckResult(Mac-BNNS)": row.CRMBNNS,
     "BaseLine(Mac-WASM)": row.BLMWASM,
     "CheckResult(Mac-WASM)": row.CRMWASM,
-    "BaseLine(Mac-WebGL2)": row.BLMWebGL2,
-    "CheckResult(Mac-WebGL2)": row.CRMWebGL2,
+    "BaseLine(Mac-WebGL)": row.BLMWebGL,
+    "CheckResult(Mac-WebGL)": row.CRMWebGL,
     "BaseLine(Android-NNAPI)": row.BLANNAPI,
     "CheckResult(Android-NNAPI)": row.CRANNAPI,
     "BaseLine(Android-WASM)": row.BLAWASM,
     "CheckResult(Android-WASM)": row.CRAWASM,
-    "BaseLine(Android-WebGL2)": row.BLAWebGL2,
-    "CheckResult(Android-WebGL2)": row.CRAWebGL2,
+    "BaseLine(Android-WebGL)": row.BLAWebGL,
+    "CheckResult(Android-WebGL)": row.CRAWebGL,
     "BaseLine(Windows-clDNN)": row.BLWclDNN,
     "CheckResult(Windows-clDNN)": row.CRWclDNN,
     "BaseLine(Windows-WASM)": row.BLWWASM,
     "CheckResult(Windows-WASM)": row.CRWWASM,
-    "BaseLine(Windows-WebGL2)": row.BLWWebGL2,
-    "CheckResult(Windows-WebGL2)": row.CRWWebGL2,
+    "BaseLine(Windows-WebGL)": row.BLWWebGL,
+    "CheckResult(Windows-WebGL)": row.CRWWebGL,
     "BaseLine(Linux-clDNN)": row.BLLclDNN,
     "CheckResult(Linux-clDNN)": row.CRLclDNN,
     "BaseLine(Linux-WASM)": row.BLLWASM,
     "CheckResult(Linux-WASM)": row.CRLWASM,
-    "BaseLine(Linux-WebGL2)": row.BLLWebGL2,
-    "CheckResult(Linux-WebGL2)": row.CRLWebGL2
+    "BaseLine(Linux-WebGL)": row.BLLWebGL,
+    "CheckResult(Linux-WebGL)": row.CRLWebGL
 }});
 
 var csvFilePath = outputPath + "/report-check-result.csv";
@@ -54,17 +54,17 @@ csvStream.pipe(fs.createWriteStream(csvFilePath));
 var remoteURL, driver, backendModel, chromeOption, command, androidSN, adbPath, htmlPath;
 var backendModels = [
     "Mac-WASM",
-    "Mac-WebGL2",
+    "Mac-WebGL",
     "Mac-MPS",
     "Mac-BNNS",
     "Android-WASM",
-    "Android-WebGL2",
+    "Android-WebGL",
     "Android-NNAPI",
     "Windows-WASM",
-    "Windows-WebGL2",
+    "Windows-WebGL",
     "Windows-clDNN",
     "Linux-WASM",
-    "Linux-WebGL2",
+    "Linux-WebGL",
     "Linux-clDNN"
 ];
 
@@ -85,16 +85,16 @@ var versionPolyfill = baselinejson.Version.polyfill;
  *         "Mac-MPS": value,
  *         "Mac-BNNS": value,
  *         "Mac-WASM": value,
- *         "Mac-WebGL2": value,
+ *         "Mac-WebGL": value,
  *         "Android-NNAPI": value,
  *         "Android-WASM": value,
- *         "Android-WebGL2": value,
+ *         "Android-WebGL": value,
  *         "Windows-clDNN": value,
  *         "Windows-WASM": value,
- *         "Windows-WebGL2": value,
+ *         "Windows-WebGL": value,
  *         "Linux-clDNN": value,
  *         "Linux-WASM": value,
- *         "Linux-WebGL2": value
+ *         "Linux-WebGL": value
  *     }
  * }
  */
@@ -150,16 +150,16 @@ csv.fromPath("./baseline/unitTestsBaseline.csv").on("data", function(data){
             ["Mac-MPS", data[3]],
             ["Mac-BNNS", data[4]],
             ["Mac-WASM", data[5]],
-            ["Mac-WebGL2", data[6]],
+            ["Mac-WebGL", data[6]],
             ["Android-NNAPI", data[7]],
             ["Android-WASM", data[8]],
-            ["Android-WebGL2", data[9]],
+            ["Android-WebGL", data[9]],
             ["Windows-clDNN", data[10]],
             ["Windows-WASM", data[11]],
-            ["Windows-WebGL2", data[12]],
+            ["Windows-WebGL", data[12]],
             ["Linux-clDNN", data[13]],
             ["Linux-WASM", data[14]],
-            ["Linux-WebGL2", data[15]]
+            ["Linux-WebGL", data[15]]
         ]
     ));
 }).on("end", function() {
@@ -255,9 +255,6 @@ if (testPlatform == "Android") {
         throw new Error("chromium to be tested is not installed correctly");
     }
 
-    command = adbPath + " -s " + androidSN + " shell am force-stop com.android.chrome";
-    execSync(command, {encoding: "UTF-8", stdio: "pipe"});
-
     command = adbPath + " -s " + androidSN + " shell am force-stop org.chromium.chrome";
     execSync(command, {encoding: "UTF-8", stdio: "pipe"});
 } else if (testPlatform == "Linux") {
@@ -270,10 +267,17 @@ if (testPlatform == "Android") {
     }
 
     try {
-        command = "killall chrome";
-        execSync(command, {encoding: "UTF-8", stdio: "pipe"});
+        command = "ps aux | grep chrome";
+        let Lines = execSync(command, {encoding: "UTF-8", stdio: "pipe"}).trim().split("\n");
+        for (let line of Lines) {
+            let infos = line.trim().split(/\s+/);
+            if (infos[10] == "/opt/chromium.org/chromium-unstable/chrome") {
+                command = "kill " + infos[1];
+                execSync(command, {encoding: "UTF-8", stdio: "pipe"});
+            }
+        }
     } catch(e) {
-        if (e.message.search("no process found") == -1) {
+        if (e.message.search("No such process") == -1) {
             throw e;
         }
     }
@@ -294,15 +298,6 @@ if (testPlatform == "Android") {
             throw e;
         }
     }
-
-    try {
-        command = "killall 'Google Chrome'";
-        execSync(command, {encoding: "UTF-8", stdio: "pipe"});
-    } catch(e) {
-        if (e.message.search("No matching processes") == -1) {
-            throw e;
-        }
-    }
 } else if (testPlatform == "Windows") {
     RClog("console", "runtime environment: Windows");
 
@@ -313,8 +308,19 @@ if (testPlatform == "Android") {
     }
 
     try {
-        command = "taskkill /im chrome.exe /f";
-        execSync(command, {encoding: "UTF-8", stdio: "pipe"});
+        command = "wmic process where name='chrome.exe' get processid";
+        let idLines = execSync(command, {encoding: "UTF-8", stdio: "pipe"}).trim().split("\n");
+        for (let idLine of idLines) {
+            idLine = idLine.trim();
+            if (idLine !== "ProcessId") {
+                command = "wmic process where processid='" + idLine + "' get executablepath";
+                let pathLine = execSync(command, {encoding: "UTF-8", stdio: "pipe"}).trim().split("\n");
+                if (pathLine[1] == chromiumPath) {
+                    command = "wmic process where processid='" + idLine + "' delete";
+                    execSync(command, {encoding: "UTF-8", stdio: "pipe"});
+                }
+            }
+        }
     } catch(e) {
         if (e.message.search("not found") == -1) {
             throw e;
@@ -379,9 +385,9 @@ var numberTotal = 0;
                         DataArray["BLMWASM"] = baseLineStatus;
                         DataArray["CRMWASM"] = checkCaseStatus;
                         break;
-                    case "Mac-WebGL2":
-                        DataArray["BLMWebGL2"] = baseLineStatus;
-                        DataArray["CRMWebGL2"] = checkCaseStatus;
+                    case "Mac-WebGL":
+                        DataArray["BLMWebGL"] = baseLineStatus;
+                        DataArray["CRMWebGL"] = checkCaseStatus;
                         break;
                     case "Android-NNAPI":
                         DataArray["BLANNAPI"] = baseLineStatus;
@@ -391,9 +397,9 @@ var numberTotal = 0;
                         DataArray["BLAWASM"] = baseLineStatus;
                         DataArray["CRAWASM"] = checkCaseStatus;
                         break;
-                    case "Android-WebGL2":
-                        DataArray["BLAWebGL2"] = baseLineStatus;
-                        DataArray["CRAWebGL2"] = checkCaseStatus;
+                    case "Android-WebGL":
+                        DataArray["BLAWebGL"] = baseLineStatus;
+                        DataArray["CRAWebGL"] = checkCaseStatus;
                         break;
                     case "Windows-clDNN":
                         DataArray["BLWclDNN"] = baseLineStatus;
@@ -403,17 +409,17 @@ var numberTotal = 0;
                         DataArray["BLWWASM"] = baseLineStatus;
                         DataArray["CRWWASM"] = checkCaseStatus;
                         break;
-                    case "Windows-WebGL2":
-                        DataArray["BLWWebGL2"] = baseLineStatus;
-                        DataArray["CRWWebGL2"] = checkCaseStatus;
+                    case "Windows-WebGL":
+                        DataArray["BLWWebGL"] = baseLineStatus;
+                        DataArray["CRWWebGL"] = checkCaseStatus;
                         break;
                     case "Linux-WASM":
                         DataArray["BLLWASM"] = baseLineStatus;
                         DataArray["CRLWASM"] = checkCaseStatus;
                         break;
-                    case "Linux-WebGL2":
-                        DataArray["BLLWebGL2"] = baseLineStatus;
-                        DataArray["CRLWebGL2"] = checkCaseStatus;
+                    case "Linux-WebGL":
+                        DataArray["BLLWebGL"] = baseLineStatus;
+                        DataArray["CRLWebGL"] = checkCaseStatus;
                         break;
                     case "Linux-clDNN":
                         DataArray["BLLclDNN"] = baseLineStatus;
@@ -856,10 +862,10 @@ var numberTotal = 0;
             } else {
                 continue;
             }
-        } else if (backendModel === "Mac-WebGL2") {
+        } else if (backendModel === "Mac-WebGL") {
             if (testPlatform === "Mac") {
-                testBackends.push("Mac-WebGL2");
-                remoteURL = remoteURL + "?backend=webgl2";
+                testBackends.push("Mac-WebGL");
+                remoteURL = remoteURL + "?backend=webgl";
                 chromeOption = chromeOption
                     .setChromeBinaryPath(chromiumPath)
                     .addArguments("--disable-features=WebML");
@@ -888,10 +894,10 @@ var numberTotal = 0;
             } else {
                 continue;
             }
-        } else if (backendModel === "Android-WebGL2") {
+        } else if (backendModel === "Android-WebGL") {
             if (testPlatform === "Android") {
-                testBackends.push("Android-WebGL2");
-                remoteURL = remoteURL + "?backend=webgl2";
+                testBackends.push("Android-WebGL");
+                remoteURL = remoteURL + "?backend=webgl";
                 chromeOption = chromeOption
                     .androidPackage("org.chromium.chrome")
                     .addArguments("--disable-features=WebML")
@@ -920,10 +926,10 @@ var numberTotal = 0;
             } else {
                 continue;
             }
-        } else if (backendModel === "Windows-WebGL2") {
+        } else if (backendModel === "Windows-WebGL") {
             if (testPlatform === "Windows") {
-                testBackends.push("Windows-WebGL2");
-                remoteURL = remoteURL + "?backend=webgl2";
+                testBackends.push("Windows-WebGL");
+                remoteURL = remoteURL + "?backend=webgl";
                 chromeOption = chromeOption
                     .setChromeBinaryPath(chromiumPath)
                     .addArguments("--disable-features=WebML");
@@ -951,10 +957,10 @@ var numberTotal = 0;
             } else {
                 continue;
             }
-        } else if (backendModel === "Linux-WebGL2") {
+        } else if (backendModel === "Linux-WebGL") {
             if (testPlatform === "Linux") {
-                testBackends.push("Linux-WebGL2");
-                remoteURL = remoteURL + "?backend=webgl2";
+                testBackends.push("Linux-WebGL");
+                remoteURL = remoteURL + "?backend=webgl";
                 chromeOption = chromeOption
                     .setChromeBinaryPath(chromiumPath)
                     .addArguments("--disable-features=WebML");
@@ -975,12 +981,14 @@ var numberTotal = 0;
             throw new Error("failed to load web page");
         });
 
-        await driver.wait(function() {
+        await driver.wait(async function() {
             driver.executeScript("return window.mochaFinish;").then(function(flag) {
                 RClog("debug", flag);
+            }).catch(function(err) {
+                throw err;
             });
 
-            return driver.executeScript("return window.mochaFinish;");
+            return driver.executeScript("return window.mochaFinish;").catch(function(err) {throw err;});
         }, 200000).then(function() {
             RClog("console", "load remote URL is completed, no crash");
         }).catch(function(err) {
@@ -1032,6 +1040,15 @@ var numberTotal = 0;
     csvStream.end();
 
     if (testPlatform == "Android") {
+        driver = new Builder()
+            .forBrowser("chrome")
+            .setChromeOptions(new Chrome.Options().androidPackage("org.chromium.chrome").androidDeviceSerial(androidSN))
+            .build();
+
+        await driver.sleep(3000);
+        driver.quit();
+        await driver.sleep(3000);
+
         command = adbPath + " kill-server";
         execSync(command, {encoding: "UTF-8", stdio: "pipe"});
     }

@@ -80,13 +80,13 @@ let csvNA = null;
     'Case Id',
     'Test Case',
     'Mac-WASM',
-    'Mac-WebGL2',
+    'Mac-WebGL',
     'Android-WASM',
-    'Android-WebGL2',
+    'Android-WebGL',
     'Windows-WASM',
-    'Windows-WebGL2',
+    'Windows-WebGL',
     'Linux-WASM',
-    'Linux-WebGL2',
+    'Linux-WebGL',
   ];
   let checkStatus = async function(backendModel, results) {
     for (let i=0; i< lists.length; i++) {
@@ -189,20 +189,20 @@ let csvNA = null;
       'Mac-MPS',
       'Mac-BNNS',
       'Mac-WASM',
-      'Mac-WebGL2',
+      'Mac-WebGL',
       'Android-NNAPI',
       'Android-WASM',
-      'Android-WebGL2',
+      'Android-WebGL',
       'Windows-clDNN',
       'Windows-WASM',
-      'Windows-WebGL2',
+      'Windows-WebGL',
       'Linux-clDNN',
       'Linux-WASM',
-      'Linux-WebGL2',
+      'Linux-WebGL',
     ];
     let backends = [
       'WASM',
-      // 'WebGL2'
+      // 'WebGL'
     ];
     await driver.get('chrome://gpu');
     let vr = await driver.findElement(By.xpath('//*[@id="info-view-table"]/tbody/tr[2]/td[2]/span')).getText();
