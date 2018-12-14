@@ -46,6 +46,13 @@ function setOptions() {
         "backend": 'WebML',
         "prefer": 'sustained'
       };
+    } else if (backend === "nnapi") {
+      // use PREFER_SUSTAINED_SPEED for Android NNAPI backend
+      prefer = nn.PREFER_SUSTAINED_SPEED;
+      options = {
+        "backend": 'WebML',
+        "prefer": 'sustained'
+      };
     } else if (backend === "bnns") {
       // use PREFER_FAST_SINGLE_ANSWER for MacOS BNNS backend
       options = {

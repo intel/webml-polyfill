@@ -2,20 +2,22 @@ describe('CTS Supplement Test', function() {
   const assert = chai.assert;
   const nn = navigator.ml.getNeuralNetworkContext();
 
-  it('check result for Fully connected float 3D input example/2', async function() {
+  it('check result for Fully connected float 4D input example/3', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
-    let op1_value = [1, 10, 100];
-    let op3_expect = [127];
+    let op1_value = [ 1,  2,  3,  4,  5,  6,  7,  8,
+                      9, 10, 11, 12, 13, 14, 15, 16,
+                     17, 18, 19, 20, 21, 22, 23, 24];
+    let op3_expect = [17, 24, 23, 49, 56, 55, 81, 88, 87];
 
     let type3 = {type: nn.INT32};
-    let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 3]};
+    let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [3, 8]};
     let type1_length = product(type1.dimensions);
-    let type2 = {type: nn.TENSOR_FLOAT32, dimensions: [1]};
+    let type2 = {type: nn.TENSOR_FLOAT32, dimensions: [3]};
     let type2_length = product(type2.dimensions);
-    let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 1, 3]};
-    let type4 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 1]};
+    let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2, 3]};
+    let type4 = {type: nn.TENSOR_FLOAT32, dimensions: [3, 3]};
     let type4_length = product(type4.dimensions);
 
     let op1 = operandIndex++;
@@ -29,8 +31,8 @@ describe('CTS Supplement Test', function() {
     let act = operandIndex++;
     model.addOperand(type3);
 
-    model.setOperandValue(op2, new Float32Array([3, 2, 1]));
-    model.setOperandValue(b0, new Float32Array([4]));
+    model.setOperandValue(op2, new Float32Array([1, 0, 1, 1, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 0, 0, 1, 0, 1, 0, 1]));
+    model.setOperandValue(b0, new Float32Array([1, 2, 4]));
     model.setOperandValue(act, new Int32Array([0]));
     model.addOperation(nn.FULLY_CONNECTED, [op1, op2, b0, act], [op3]);
 
