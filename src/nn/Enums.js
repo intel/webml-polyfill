@@ -1171,9 +1171,9 @@ export const OperationCode = {
    */
   TANH: 28,
 
-  /** Performs a astrous 2-D convolution operation.
+  /** Performs a atrous 2-D convolution operation.
    *
-   * The ASTROUS_CONV_2D op sweeps a 2-D filter that can mix channels together over a batch of
+   * The ATROUS_CONV_2D op sweeps a 2-D filter that can mix channels together over a batch of
    * images, applying the filter to each window of each image of the appropriate size.
    *
    * If the dilation rate parameters are greater than one, it performs convolution with holes,
@@ -1238,9 +1238,9 @@ export const OperationCode = {
    *      For output tensor of {@link TENSOR_QUANT8_ASYMM} type, the following
    *      condition must be satisfied: output_scale > input_scale * filter_scale.
    */
-  ASTROUS_CONV_2D: 10003,
+  ATROUS_CONV_2D: 10003,
 
-  /** Performs a astrous depthwise 2-D convolution operation.
+  /** Performs a atrous depthwise 2-D convolution operation.
    *
    * Given an input tensor of shape [batches, height, width, depth_in] and a filter
    * tensor of shape [1, filter_height, filter_width, depth_out] containing
@@ -1311,7 +1311,7 @@ export const OperationCode = {
    *      For output tensor of {@link TENSOR_QUANT8_ASYMM} type, the following
    *      condition must be satisfied: output_scale > input_scale * filter_scale.
    */
-  ASTROUS_DEPTHWISE_CONV_2D: 10004,
+  ATROUS_DEPTHWISE_CONV_2D: 10004,
 };
 
 export const ResultCode = {
