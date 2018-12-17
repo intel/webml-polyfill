@@ -35,5 +35,7 @@ mul.mod.py
 mul_relu.mod.py
 reshape.mod.py
 reshape_weights_as_inputs.mod.py
+resize_bilinear.mod.py
+resize_bilinear_2.mod.py
 softmax_float_1.mod.py
 softmax_float_2.mod.py
