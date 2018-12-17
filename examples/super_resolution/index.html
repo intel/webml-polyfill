@@ -2,13 +2,9 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>WebML SRGAN Demo</title>
+    <title>WebML Super-Resolution Demo</title>
     <link rel="stylesheet" href="../third_party/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
     <style>
-      canvas {
-        width: 384px;
-        height: 384px;
-      }
       .progress-label {
         float: left;
         margin-right: 1em;
@@ -23,7 +19,7 @@
 
   <body>
     <nav class="navbar navbar-expand-md navbar-dark bg-dark" style="width:100%">
-      <span class="navbar-brand mb-0 h1">WebML SRGAN Demo</span>
+      <span class="navbar-brand mb-0 h1">WebML Super-Resolution Demo</span>
       <div class="btn-group">
         <button id="backend" type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
           Setting...
@@ -32,6 +28,13 @@
           <button class="dropdown-item disabled" type="button" id="wasm">WASM</button>
           <button class="dropdown-item disabled" type="button" id="webgl">WebGL</button>
           <button class="dropdown-item disabled" type="button" id="webml">WebML</button>
+        </div>
+      </div>
+      <div class="btn-group" style="margin-left: 5px;">
+        <button id="selectModel" type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          Setting...
+        </button>
+        <div class="dropdown-menu dropdown-menu-right available-models">
         </div>
       </div>
       <div class="btn-group prefer" style="margin-left: 5px; display: none;">

@@ -1,14 +1,14 @@
 class Utils {
-  constructor(modelInfo) {
+  constructor() {
     this.rawModel;
     this.model;
     this.initialized;
     this.updateProgress;
-    this.modelFile = modelInfo.modelFile;
-    this.inputSize = modelInfo.inputSize;
-    this.outputSize = modelInfo.outputSize;
-    this.inputTensor = new Float32Array(this.product(this.inputSize));
-    this.outputTensor = new Float32Array(this.product(this.outputSize));
+    this.modelFile;
+    this.inputSize;
+    this.outputSize;
+    this.inputTensor;
+    this.outputTensor;
   }
 
   async init(backend, prefer) {
@@ -149,5 +149,19 @@ class Utils {
     if (this.model._backend != 'WebML') {
       this.model._compilation._preparedModel._deleteAll();
     }
+  }
+
+  changeModelParamAndCanvasSize(newModel, inputCanvas, outputCanvas) {
+    this.modelFile = newModel.modelFile;
+    this.inputSize = newModel.inputSize;
+    this.outputSize = newModel.outputSize;
+    this.inputTensor = new Float32Array(this.product(this.inputSize));
+    this.outputTensor = new Float32Array(this.product(this.outputSize));
+    this.rawModel = null;
+
+    inputCanvas.width = this.inputSize[1];
+    inputCanvas.height = this.inputSize[0];
+    outputCanvas.width = this.outputSize[1];
+    outputCanvas.height = this.outputSize[0];
   }
 }

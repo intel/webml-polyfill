@@ -1,16 +1,29 @@
-const srgan_tflite = {
-  modelName: 'SRGAN',
+const srgan_96_4 = {
+  modelName: 'SRGAN 96x4',
   inputSize: [96, 96, 3],
   outputSize: [384, 384, 3],
   scale: 4,
-  modelFile: './model/srgan_96_4.tflite',
+  modelFile: './model/srgan_96_4.tflite'
 };
+
+const srgan_128_4 = {
+  modelName: 'SRGAN 128x4',
+  inputSize: [128, 128, 3],
+  outputSize: [512, 512, 3],
+  scale: 4,
+  modelFile: './model/srgan_128_4.tflite'
+};
+
+const availableModels = [
+  srgan_96_4,
+  srgan_128_4
+];
 
 const preferMap = {
   'MPS': 'sustained',
   'BNNS': 'fast',
   'sustained': 'MPS',
-  'fast': 'BNNS',
+  'fast': 'BNNS'
 };
 
 function main(camera) {
@@ -19,6 +32,7 @@ function main(camera) {
   const inputElement = document.getElementById('input');
   const buttonEelement = document.getElementById('button');
   const backend = document.getElementById('backend');
+  const selectModel = document.getElementById('selectModel');
   const wasm = document.getElementById('wasm');
   const webgl = document.getElementById('webgl');
   const webml = document.getElementById('webml');
@@ -28,10 +42,11 @@ function main(camera) {
 
   let imageUrl = './image/image0.png';
   let currentBackend = '';
+  let currentModel = '';
   let currentPrefer = '';
   let streaming = false;
 
-  const utils = new Utils(srgan_tflite);
+  const utils = new Utils();
   utils.updateProgress = updateProgress; // register updateProgress function if progressBar element exist
 
   function checkPreferParam() {
@@ -87,6 +102,14 @@ function main(camera) {
     }
   }
 
+  function updateModel() {
+    selectModel.innerHTML = currentModel;
+  }
+
+  function updatePrefer() {
+    selectPrefer.innerHTML = preferMap[currentPrefer];
+  }
+
   function changeBackend(newBackend, force) {
     if (!force && currentBackend === newBackend) {
       return;
@@ -103,6 +126,7 @@ function main(camera) {
       utils.init(newBackend, currentPrefer).then(() => {
         currentBackend = newBackend;
         updatePrefer();
+        updateModel();
         updateBackend();
         if (!camera) {
           computeAndDraw(imageUrl);
@@ -116,7 +140,35 @@ function main(camera) {
         showAlert(newBackend);
         changeBackend(currentBackend, true);
         updatePrefer();
+        updateModel();
         updateBackend();
+      });
+    }, 10);
+  }
+
+  function changeModel(newModel) {
+    if (currentModel === newModel.modelName) {
+      return;
+    }
+    streaming = false;
+    utils.deleteAll();
+    utils.changeModelParamAndCanvasSize(newModel, inputCanvas, outputCanvas);
+    inputCanvas.style = `width: ${newModel.outputSize[1]}px; height: ${newModel.outputSize[0]}px;`;
+    progressContainer.style.display = "inline";
+    currentPrefer = "sustained";
+    selectModel.innerHTML = 'Setting...';
+    currentModel = newModel.modelName;
+    setTimeout(() => {
+      utils.init(currentBackend, currentPrefer).then(() => {
+        updatePrefer();
+        updateModel();
+        updateBackend();
+        if (!camera) {
+          computeAndDraw(imageUrl);
+        } else {
+          streaming = true;
+          startPredict();
+        }
       });
     }, 10);
   }
@@ -132,6 +184,7 @@ function main(camera) {
       utils.init(currentBackend, newPrefer).then(() => {
         currentPrefer = newPrefer;
         updatePrefer();
+        updateModel();
         updateBackend();
         if (!camera) {
           computeAndDraw(imageUrl);
@@ -145,13 +198,10 @@ function main(camera) {
         showAlert(preferMap[newPrefer]);
         changePrefer(currentPrefer, true);
         updatePrefer();
+        updateModel();
         updateBackend();
       });
     }, 10);
-  }
-
-  function updatePrefer() {
-    selectPrefer.innerHTML = preferMap[currentPrefer];
   }
 
   function updateProgress(ev) {
@@ -172,6 +222,22 @@ function main(camera) {
     console.log(`Inference time: ${result.time} ms`);
     let inferenceTimeElement = document.getElementById('inferenceTime');
     inferenceTimeElement.innerHTML = `inference time: <em style="color:green;font-weight:bloder;">${result.time} </em>ms`;
+  }
+
+  function fileExists(url) {
+    var exists;
+    $.ajax({
+      url:url,
+      async:false,
+      type:'HEAD',
+      error:function() { exists = 0; },
+      success:function() { exists = 1; }
+    });
+    if (exists === 1) {
+      return true;
+    } else {
+      return false;
+    }
   }
  
   if (nnNative) {
@@ -204,6 +270,22 @@ function main(camera) {
       currentBackend = 'WebML';
     } else {
       currentBackend = 'WebGL';
+    }
+  }
+
+  // register models
+  for (let model of availableModels) {
+    if (!fileExists(model.modelFile)) {
+      continue;
+    }
+    let dropdownBtn = $('<button class="dropdown-item"/>')
+      .text(model.modelName)
+      .click(_ => changeModel(model));
+    $('.available-models').append(dropdownBtn);
+    if (!currentModel) {
+      utils.changeModelParamAndCanvasSize(model, inputCanvas, outputCanvas);
+      inputCanvas.style = `width: ${model.outputSize[1]}px; height: ${model.outputSize[0]}px;`;
+      currentModel = model.modelName;
     }
   }
 
@@ -246,6 +328,7 @@ function main(camera) {
 
     utils.init(currentBackend, currentPrefer).then(() => {
       updateBackend();
+      updateModel();
       updatePrefer();
       computeAndDraw(imageUrl);
       buttonEelement.setAttribute('class', 'btn btn-primary');
@@ -267,6 +350,7 @@ function main(camera) {
       video.srcObject = stream;
       utils.init(currentBackend, currentPrefer).then(() => {
         updateBackend();
+        updateModel();
         updatePrefer();
         streaming = true;
         startPredict();
