@@ -160,35 +160,49 @@ class TFliteModelImporter {
         case tflite.BuiltinOperator.CONV_2D: {
           let options = operator.builtinOptions(new tflite.Conv2DOptions());
           let paddingCode = PaddingCodeMap.get(options.padding());
+          let dilated = options.dilationWFactor() !== 1 || options.dilationWFactor() !== 1;
           if (typeof paddingCode === 'undefined') {
             throw new Error(`Padding code ${options.padding()} is not supported.`);
           }
           inputs.push(this._addScalarInt32(paddingCode));
-          inputs.push(this._addScalarInt32(options.strideW()));
-          inputs.push(this._addScalarInt32(options.strideH()));
+          if (dilated) {
+            inputs.push(this._addScalarInt32(options.dilationWFactor()));
+            inputs.push(this._addScalarInt32(options.dilationHFactor()));
+            opType = this._nn.ATROUS_CONV_2D;
+          } else {
+            inputs.push(this._addScalarInt32(options.strideW()));
+            inputs.push(this._addScalarInt32(options.strideH()));
+            opType = this._nn.CONV_2D;
+          }
           let fuseCode = FuseCodeMap.get(options.fusedActivationFunction());
           if (typeof fuseCode === 'undefined') {
             throw new Error(`Fuse code ${options.fusedActivationFunction()} is not supported.`);
           }
           inputs.push(this._addScalarInt32(fuseCode));
-          opType = this._nn.CONV_2D;
         } break;
         case tflite.BuiltinOperator.DEPTHWISE_CONV_2D: {
           let options = operator.builtinOptions(new tflite.DepthwiseConv2DOptions());
           let paddingCode = PaddingCodeMap.get(options.padding());
+          let dilated = options.dilationWFactor() !== 1 || options.dilationWFactor() !== 1;
           if (typeof paddingCode === 'undefined') {
             throw new Error(`Padding code ${options.padding()} is not supported.`);
           }
           inputs.push(this._addScalarInt32(paddingCode));
-          inputs.push(this._addScalarInt32(options.strideW()));
-          inputs.push(this._addScalarInt32(options.strideH()));
+          if (dilated) {
+            inputs.push(this._addScalarInt32(options.dilationWFactor()));
+            inputs.push(this._addScalarInt32(options.dilationHFactor()));
+            opType = this._nn.ATROUS_DEPTHWISE_CONV_2D;
+          } else {
+            inputs.push(this._addScalarInt32(options.strideW()));
+            inputs.push(this._addScalarInt32(options.strideH()));
+            opType = this._nn.DEPTHWISE_CONV_2D;
+          }
           inputs.push(this._addScalarInt32(options.depthMultiplier()));
           let fuseCode = FuseCodeMap.get(options.fusedActivationFunction());
           if (typeof fuseCode === 'undefined') {
             throw new Error(`Fuse code ${options.fusedActivationFunction()} is not supported.`);
           }
           inputs.push(this._addScalarInt32(fuseCode));
-          opType = this._nn.DEPTHWISE_CONV_2D;
         } break;
         case tflite.BuiltinOperator.AVERAGE_POOL_2D: {
           let options = operator.builtinOptions(new tflite.Pool2DOptions());
