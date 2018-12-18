@@ -269,6 +269,16 @@ export default class WebGLModel {
         output.assign(activation(
             tf.matMul(input.reshape([batchSize, -1]), weights, false, true).add(bias)));
       } break;
+      case OperationCode.RESIZE_BILINEAR: {
+        if (outputs.length < 1 || inputs.length < 3) {
+          throw new Error('Invalid inputs or outputs');
+        }
+        const input = operands[inputs[0]];
+        const newHeight = operands[inputs[1]].value[0];
+        const newWidth = operands[inputs[2]].value[0];
+        const output = operands[outputs[0]];
+        output.assign(input.resizeBilinear([newHeight, newWidth], false));
+      } break;
       default: {
         throw new Error(`Operation ${op} is not supported`);
       }
