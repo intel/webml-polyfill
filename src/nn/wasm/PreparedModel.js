@@ -10,6 +10,11 @@ export default class PreparedModel {
     this._prepared = false;
     this._nn_ops = null;
     this._model;
+    this._toDelete = {
+      tensorValue: [],
+      tensorShape: [],
+      tfliteParams: []
+    };
   }
 
   /**
@@ -27,7 +32,7 @@ export default class PreparedModel {
       runtimeOperand.type = operand.type;
       if (utils.isTensor(operand.type)) {
         runtimeOperand.value = this._allocateTensor(operand);
-        runtimeOperand.shape = this._allocateShape(operand);
+        runtimeOperand.runtimeshape = this._allocateRuntimeShape(operand);
       } else {
         runtimeOperand.value = operand.value;
       }
@@ -110,7 +115,38 @@ export default class PreparedModel {
 
       return [paddingHead, paddingTail];
     }
-      
+
+    function calculateActivationRangeFloat(activation) {
+      let activation_min, activation_max;
+      if (activation == nn_ops.RELU) {
+        activation_min = 0.0;
+        activation_max = nn_ops.MAX;
+      } else if (activation == nn_ops.RELU6) {
+        activation_min = 0.0;
+        activation_max = 6.0;
+      } else if (activation == nn_ops.RELU1) {
+        activation_min = -1.0;
+        activation_max = 1.0;
+      } else if (activation == nn_ops.NONE){
+        activation_min = nn_ops.LOWEST;
+        activation_max = nn_ops.MAX;
+      } else {
+        console.error("Unsupported fused activation function.");
+      }
+      return {activation_min, activation_max};
+    }
+
+    function sameShape(input1, input2) {
+      if (input1.type != input2.type || input1.runtimeshape.size != input2.runtimeshape.size){
+          return false;
+      }
+      for (let i = 0; i < input1.runtimeshape.size; i++) {
+          if (input1.runtimeshape.dims[i] != input2.runtimeshape.dims[i]) {
+              return false;
+          }
+      }
+      return true;
+    }  
 
     switch(op) {
       case OperationCode.ADD: {
@@ -119,17 +155,38 @@ export default class PreparedModel {
         let in2 = operands[inputs[1]];
         let activation = FuseCodeMap.get(operands[inputs[2]].value[0]);
         let out = operands[outputs[0]];
-        success = nn_ops.addMulPrepare(in1.shape, in2.shape, out.shape);
-        if (!success) {
-          throw new Error('addMulPrepare fails');
+
+        let float_activation_min = calculateActivationRangeFloat(activation).activation_min;
+        let float_activation_max = calculateActivationRangeFloat(activation).activation_max;
+
+        // init arithmeticParams
+        let arithmeticParams = new nn_ops.ArithmeticParams;
+        arithmeticParams.float_activation_range = [float_activation_min, float_activation_max];
+        // success = nn_ops.addMulPrepare(in1.shape, in2.shape, out.shape);
+        // if (!success) {
+        //   throw new Error('addMulPrepare fails');
+        // }
+        
+        let needBroadCast = !sameShape(in1, in2);
+        let funcName;
+        if (needBroadCast) {
+          success = nn_ops.broadCastAddFloat32(arithmeticParams,
+                                               in1.runtimeshape, in1.value,
+                                               in2.runtimeshape, in2.value,
+                                               out.runtimeshape, out.value);
+          funcName = `broadCastAddFloat32`;
+        } else {
+          success = nn_ops.addFloat32(arithmeticParams,
+                                      in1.runtimeshape, in1.value,
+                                      in2.runtimeshape, in2.value,
+                                      out.runtimeshape, out.value);
+          funcName = `addFloat32`;
         }
-        success = nn_ops.addFloat32(in1.value, in1.shape,
-                                    in2.value, in2.shape,
-                                    activation,
-                                    out.value, out.shape);
+        // this._toDelete.tfliteParams.push(arithmeticParams);
         if (!success) {
-          throw new Error('addFloat32 fails');
+          throw new Error(`${funcName} fails`);
         }
+        nn_ops._free(arithmeticParams);
       } break;
       case OperationCode.MUL: {
         allParametersPresent(3, 1);
@@ -137,17 +194,38 @@ export default class PreparedModel {
         let in2 = operands[inputs[1]];
         let activation = FuseCodeMap.get(operands[inputs[2]].value[0]);
         let out = operands[outputs[0]];
-        success = nn_ops.addMulPrepare(in1.shape, in2.shape, out.shape);
-        if (!success) {
-          throw new Error('addMulPrepare fails');
+
+        let float_activation_min = calculateActivationRangeFloat(activation).activation_min;
+        let float_activation_max = calculateActivationRangeFloat(activation).activation_max;
+
+        // init arithmeticParams
+        let arithmeticParams = new nn_ops.ArithmeticParams;
+        arithmeticParams.float_activation_range = [float_activation_min, float_activation_max];
+        // success = nn_ops.addMulPrepare(in1.shape, in2.shape, out.shape);
+        // if (!success) {
+        //   throw new Error('addMulPrepare fails');
+        // }
+
+        let needBroadCast = !sameShape(in1, in2);
+        let funcName;
+        if (needBroadCast) {
+          success = nn_ops.broadCastMulFloat32(arithmeticParams,
+                                               in1.runtimeshape, in1.value,
+                                               in2.runtimeshape, in2.value,
+                                               out.runtimeshape, out.value);
+          funcName = `broadCastMulFloat32`;
+        } else {
+          success = nn_ops.mulFloat32(arithmeticParams,
+                                      in1.runtimeshape, in1.value,
+                                      in2.runtimeshape, in2.value,
+                                      out.runtimeshape, out.value);
+          funcName = `mulFloat32`;
         }
-        success = nn_ops.mulFloat32(in1.value, in1.shape,
-                                    in2.value, in2.shape,
-                                    activation,
-                                    out.value, out.shape);
+        // this._toDelete.tfliteParams.push(arithmeticParams);
         if (!success) {
-          throw new Error('mulFloat32 fails');
+          throw new Error(`${funcName} fails`);
         }
+        nn_ops._free(arithmeticParams);
       } break;
       case OperationCode.CONV_2D: {
         let inCount = inputs.length;
@@ -162,6 +240,8 @@ export default class PreparedModel {
         let paddingLeft, paddingRight;
         let paddingTop, paddingBottom;
         let strideWidth, strideHeight;
+        let filterWidth = filter.runtimeshape.dims[2];
+        let filterHeight = filter.runtimeshape.dims[1];
         let activation;
         if (inCount === 10) {
           paddingLeft = operands[inputs[i++]].value[0];
@@ -177,32 +257,61 @@ export default class PreparedModel {
           strideHeight = operands[inputs[i++]].value[0];
           activation = FuseCodeMap.get(operands[inputs[i++]].value[0]);
 
-          let inputWidth = input.shape.dimensions[2];
-          let inputHeight = input.shape.dimensions[1];
-          let filterWidth = filter.shape.dimensions[2];
-          let filterHeight = filter.shape.dimensions[1];
+          let inputWidth = input.runtimeshape.dims[2];
+          let inputHeight = input.runtimeshape.dims[1];
           [paddingLeft, paddingRight] = calculateExplicitPadding(inputWidth, strideWidth, filterWidth, paddingCode);
           [paddingTop, paddingBottom] = calculateExplicitPadding(inputHeight, strideHeight, filterHeight, paddingCode);
         }
         let output = operands[outputs[0]];
-        success = nn_ops.convPrepare(input.shape, filter.shape, bias.shape,
-                                     paddingLeft, paddingRight,
-                                     paddingTop, paddingBottom,
-                                     strideWidth, strideHeight,
-                                     output.shape);
-        if (!success) {
-          throw new Error('convPrepare fails');
+
+        // init im2col operand
+        let outBatch = output.runtimeshape.dims[0];
+        let outHeight = output.runtimeshape.dims[1];
+        let outWidth = output.runtimeshape.dims[2];
+        let inDepth = input.runtimeshape.dims[3];
+        let im2colDepth = filterWidth * filterHeight * inDepth;
+        let im2colDims = [outBatch, outHeight, outWidth, im2colDepth];
+        let im2colValue = new Float32Array(utils.product(im2colDims));
+        let operand = {
+          type: OperandCode.TENSOR_FLOAT32,
+          dimensions: im2colDims,
+          numberOfConsumers: 0,
+          lifetime: OperandLifetime.CONSTANT_REFERENCE,
+          value: im2colValue
         }
-        success = nn_ops.convFloat32(input.value, input.shape,
-                                      filter.value, filter.shape,
-                                      bias.value, bias.shape,
-                                      paddingLeft, paddingRight,
-                                      paddingTop, paddingBottom,
-                                      strideWidth, strideHeight, activation,
-                                      output.value, output.shape);
+        let im2colShape = this._allocateRuntimeShape(operand);
+        let im2colData = this._allocateTensor(operand);
+
+        let float_activation_min = calculateActivationRangeFloat(activation).activation_min;
+        let float_activation_max = calculateActivationRangeFloat(activation).activation_max;
+
+        // init convParams
+        let convParams = new nn_ops.ConvParams;
+        convParams.padding_values = [paddingLeft, paddingTop];
+        convParams.strides = [strideWidth, strideHeight];
+        convParams.dilation_factors = [1, 1];
+        convParams.float_activation_range = [float_activation_min, float_activation_max];
+        // success = nn_ops.convPrepare(input.shape, filter.shape, bias.shape,
+        //                              paddingLeft, paddingRight,
+        //                              paddingTop, paddingBottom,
+        //                              strideWidth, strideHeight,
+        //                              output.shape);
+        // if (!success) {
+        //   throw new Error('convPrepare fails');
+        // }
+        success = nn_ops.convFloat32(convParams, 
+                                     input.runtimeshape, input.value, 
+                                     filter.runtimeshape, filter.value, 
+                                     bias.runtimeshape, bias.value, 
+                                     output.runtimeshape, output.value,
+                                     im2colShape, im2colData);
+        // this._toDelete.tfliteParams.push(convParams);
         if (!success) {
           throw new Error('convFloat32 fails');
         }
+        nn_ops._free(convParams);
+        nn_ops._free(im2colData);
+        nn_ops._free(im2colShape);
       } break;
       case OperationCode.DEPTHWISE_CONV_2D: {
         let inCount = inputs.length;
@@ -235,33 +344,43 @@ export default class PreparedModel {
           depthMultipler = operands[inputs[i++]].value[0];
           activation = FuseCodeMap.get(operands[inputs[i++]].value[0]);
 
-          let inputWidth = input.shape.dimensions[2];
-          let inputHeight = input.shape.dimensions[1];
-          let filterWidth = filter.shape.dimensions[2];
-          let filterHeight = filter.shape.dimensions[1];
+          let inputWidth = input.runtimeshape.dims[2];
+          let inputHeight = input.runtimeshape.dims[1];
+          let filterWidth = filter.runtimeshape.dims[2];
+          let filterHeight = filter.runtimeshape.dims[1];
           [paddingLeft, paddingRight] = calculateExplicitPadding(inputWidth, strideWidth, filterWidth, paddingCode);
           [paddingTop, paddingBottom] = calculateExplicitPadding(inputHeight, strideHeight, filterHeight, paddingCode);
         }
         let output = operands[outputs[0]];
-        success = nn_ops.depthwiseConvPrepare(input.shape, filter.shape, bias.shape,
-                                              paddingLeft, paddingRight,
-                                              paddingTop, paddingBottom,
-                                              strideWidth, strideHeight,
-                                              output.shape);
-        if (!success) {
-          throw new Error('depthwiseConvPrepare fails');
-        }
-        success = nn_ops.depthwiseConvFloat32(input.value, input.shape,
-                                              filter.value, filter.shape,
-                                              bias.value, bias.shape,
-                                              paddingLeft, paddingRight,
-                                              paddingTop, paddingBottom,
-                                              strideWidth, strideHeight,
-                                              depthMultipler, activation,
-                                              output.value, output.shape);
+
+        let float_activation_min = calculateActivationRangeFloat(activation).activation_min;
+        let float_activation_max = calculateActivationRangeFloat(activation).activation_max;
+
+        // init depthwiseParams
+        let depthwiseParams = new nn_ops.DepthwiseParams;
+        depthwiseParams.padding_values = [paddingLeft, paddingTop];
+        depthwiseParams.strides = [strideWidth, strideHeight];
+        depthwiseParams.dilation_factors = [1, 1];
+        depthwiseParams.float_activation_range = [float_activation_min, float_activation_max];
+        depthwiseParams.depth_multiplier = depthMultipler;
+        // success = nn_ops.depthwiseConvPrepare(input.shape, filter.shape, bias.shape,
+        //                                       paddingLeft, paddingRight,
+        //                                       paddingTop, paddingBottom,
+        //                                       strideWidth, strideHeight,
+        //                                       output.shape);
+        // if (!success) {
+        //   throw new Error('depthwiseConvPrepare fails');
+        // }
+        success = nn_ops.depthwiseConvFloat32(depthwiseParams, 
+                                              input.runtimeshape, input.value, 
+                                              filter.runtimeshape, filter.value, 
+                                              bias.runtimeshape, bias.value, 
+                                              output.runtimeshape, output.value);
+        // this._toDelete.tfliteParams.push(depthwiseParams);
         if (!success) {
           throw new Error('depthwiseConvFloat32 fails');
         }
+        nn_ops._free(depthwiseParams);
       } break;
       case OperationCode.AVERAGE_POOL_2D:
       case OperationCode.MAX_POOL_2D: {
@@ -295,39 +414,45 @@ export default class PreparedModel {
           filterHeight = operands[inputs[i++]].value[0];
           activation = FuseCodeMap.get(operands[inputs[i++]].value[0]);
 
-          let inputWidth = input.shape.dimensions[2];
-          let inputHeight = input.shape.dimensions[1];
+          let inputWidth = input.runtimeshape.dims[2];
+          let inputHeight = input.runtimeshape.dims[1];
           [paddingLeft, paddingRight] = calculateExplicitPadding(inputWidth, strideWidth, filterWidth, paddingCode);
           [paddingTop, paddingBottom] = calculateExplicitPadding(inputHeight, strideHeight, filterHeight, paddingCode);
         }
         let output = operands[outputs[0]];
-        success = nn_ops.genericPoolingPrepare(input.shape,
-                                               paddingLeft, paddingRight,
-                                               paddingTop, paddingBottom,
-                                               strideWidth, strideHeight,
-                                               filterWidth, filterHeight,
-                                               output.shape);
-        if (!success) {
-          throw new Error('genericPoolingPrepare fails');
-        }
+
+        let float_activation_min = calculateActivationRangeFloat(activation).activation_min;
+        let float_activation_max = calculateActivationRangeFloat(activation).activation_max;
+
+        // init poolParams
+        let poolParams = new nn_ops.PoolParams;
+        poolParams.padding_values = [paddingLeft, paddingTop];
+        poolParams.strides = [strideWidth, strideHeight];
+        poolParams.filters = [filterWidth, filterHeight];
+        poolParams.float_activation_range = [float_activation_min, float_activation_max];
+        // success = nn_ops.genericPoolingPrepare(input.shape,
+        //                                        paddingLeft, paddingRight,
+        //                                        paddingTop, paddingBottom,
+        //                                        strideWidth, strideHeight,
+        //                                        filterWidth, filterHeight,
+        //                                        output.shape);
+        // if (!success) {
+        //   throw new Error('genericPoolingPrepare fails');
+        // }
         if (op === OperationCode.AVERAGE_POOL_2D) {
-          success = nn_ops.averagePoolFloat32(input.value, input.shape,
-                                              paddingLeft, paddingRight,
-                                              paddingTop, paddingBottom,
-                                              strideWidth, strideHeight,
-                                              filterWidth, filterHeight, activation,
-                                              output.value, output.shape);
+          success = nn_ops.averagePoolFloat32(poolParams, 
+                                              input.runtimeshape, input.value,
+                                              output.runtimeshape, output.value);
         } else if (op === OperationCode.MAX_POOL_2D) {
-          success = nn_ops.maxPoolFloat32(input.value, input.shape,
-                                          paddingLeft, paddingRight,
-                                          paddingTop, paddingBottom,
-                                          strideWidth, strideHeight,
-                                          filterWidth, filterHeight, activation,
-                                          output.value, output.shape);
+          success = nn_ops.maxPoolFloat32(poolParams, 
+                                          input.runtimeshape, input.value,
+                                          output.runtimeshape, output.value);
         }
+        // this._toDelete.tfliteParams.push(poolParams);
         if (!success) {
           throw new Error(`Pooling ${op} fails`);
         }
+        nn_ops._free(poolParams);
       } break;
       case OperationCode.SOFTMAX: {
         allParametersPresent(2, 1);
@@ -337,30 +462,52 @@ export default class PreparedModel {
           throw new Error('beta must be positive for SOFTMAX');
         }
         let output = operands[outputs[0]];
-        success = nn_ops.genericActivationPrepare(input.shape, output.shape);
-        if (!success) {
-          throw new Error('genericActivationPrepare fails');
-        }
-        success = nn_ops.softmaxFloat32(input.value, input.shape, beta, output.value, output.shape);
+
+        // init softmaxParams
+        let softmaxParams = new nn_ops.SoftmaxParams;
+        softmaxParams.beta = beta;
+        // success = nn_ops.genericActivationPrepare(input.shape, output.shape);
+        // if (!success) {
+        //   throw new Error('genericActivationPrepare fails');
+        // }
+        success = nn_ops.softmaxFloat32(softmaxParams, 
+                                        input.runtimeshape, input.value, 
+                                        output.runtimeshape, output.value);
+        // this._toDelete.tfliteParams.push(softmaxParams);
         if (!success) {
           throw new Error('softmaxFloat32 fails');
         }
+        nn_ops._free(softmaxParams);
       } break;
       case OperationCode.RESHAPE: {
         allParametersPresent(2, 1);
         let input = operands[inputs[0]];
-        let targetShape = operands[inputs[1]];
-        let targetShapeBufferLength = product(targetShape.shape.dimensions);
+        let targetShape = operands[inputs[1]];  // Dont use targetShape since outputShape has been set at first
 
         let output = operands[outputs[0]];
-        success = nn_ops.reshapePrepare(input.shape, targetShape.value, targetShapeBufferLength, output.shape);
-        if (!success) {
-          throw new Error('reshapePrepare fails');
+
+        let size_count;
+        if (utils.isTensor(input.type)) {
+          size_count = utils.sizeOfTensorData(input.type, input.runtimeshape.dims);
+        } else {
+          size_count = utils.sizeOfScalarData(input.type);
         }
-        success = nn_ops.reshapeGeneric(input.value, input.shape, output.value, output.shape);
+
+        // init reshapeParams
+        let reshapeParams = new nn_ops.ReshapeParams;
+        reshapeParams.size_count = size_count;
+        // success = nn_ops.reshapePrepare(input.shape, targetShape.value, targetShapeBufferLength, output.shape);
+        // if (!success) {
+        //   throw new Error('reshapePrepare fails');
+        // }
+        success = nn_ops.reshapeGeneric(reshapeParams,
+                                        input.runtimeshape, input.value,  
+                                        output.runtimeshape, output.value);
+        // this._toDelete.tfliteParams.push(reshapeParams);
         if (!success) {
           throw new Error('reshapeGeneric fails');
         }
+        nn_ops._free(reshapeParams);
       } break;
       case OperationCode.CONCATENATION: {
         if (outputs.length < 1 || inputs.length < 2) {
@@ -373,39 +520,56 @@ export default class PreparedModel {
         let inputValues = new nn_ops.VectorPtr;
         for (let i = 0; i < numInputTensors; ++i) {
           let input = operands[inputs[i]];
-          inputShapes.push_back(input.shape);
+          inputShapes.push_back(input.runtimeshape);
           inputValues.push_back(input.value);
         }
-        success = nn_ops.concatenationPrepare(inputShapes, axis, output.shape);
-        if (!success) {
-          throw new Error('concatenationPrepare fails');
-        }
-        success = nn_ops.concatenationFloat32(inputValues, inputShapes, axis, output.value, output.shape);
+
+        // init reshapeParams
+        let concatenationParams = new nn_ops.ConcatenationParams;
+        concatenationParams.axis = axis;
+        concatenationParams.inputs_count = numInputTensors;
+        // success = nn_ops.concatenationPrepare(inputShapes, axis, output.shape);
+        // if (!success) {
+        //   throw new Error('concatenationPrepare fails');
+        // }
+        success = nn_ops.concatenationFloat32(concatenationParams, inputShapes, inputValues, 
+                                              output.runtimeshape, output.value);
+        // this._toDelete.tfliteParams.push(concatenationParams);
         if (!success) {
           throw new Error('concatenationFloat32 fails');
         }
         inputShapes.delete();
         inputValues.delete();
+        nn_ops._free(concatenationParams);
       } break;
       case OperationCode.FULLY_CONNECTED: {
         allParametersPresent(4, 1);
         let input = operands[inputs[0]];
         let weights = operands[inputs[1]];
-        let bias = operands[inputs[2]]
+        let bias = operands[inputs[2]];
         let activation = FuseCodeMap.get(operands[inputs[3]].value[0]);
         let output = operands[outputs[0]];
-        success = nn_ops.fullyConnectedPrepare(input.shape, weights.shape, bias.shape, output.shape);
-        if (!success) {
-          throw new Error('fullyConnectedPrepare fails');
-        }
-        success = nn_ops.fullyConnectedFloat32(input.value, input.shape,
-                                               weights.value, weights.shape,
-                                               bias.value, bias.shape,
-                                               activation,
-                                               output.value, output.shape);
+
+        let float_activation_min = calculateActivationRangeFloat(activation).activation_min;
+        let float_activation_max = calculateActivationRangeFloat(activation).activation_max;
+
+        // init fullyConnectedParams
+        let fullyConnectedParams = new nn_ops.FullyConnectedParams;
+        fullyConnectedParams.float_activation_range = [float_activation_min, float_activation_max];
+        // success = nn_ops.fullyConnectedPrepare(input.shape, weights.shape, bias.shape, output.shape);
+        // if (!success) {
+        //   throw new Error('fullyConnectedPrepare fails');
+        // }
+        success = nn_ops.fullyConnectedFloat32(fullyConnectedParams, 
+                                               input.runtimeshape, input.value, 
+                                               weights.runtimeshape, weights.value, 
+                                               bias.runtimeshape, bias.value, 
+                                               output.runtimeshape, output.value);
+        // this._toDelete.tfliteParams.push(fullyConnectedParams);
         if (!success) {
           throw new Error('fullyConnectedFloat32 fails');
         }
+        nn_ops._free(fullyConnectedParams);
       } break;
       case OperationCode.RESIZE_BILINEAR: {
         allParametersPresent(3, 1);
@@ -413,17 +577,42 @@ export default class PreparedModel {
         let newHeight = operands[inputs[1]].value[0];
         let newWidth = operands[inputs[2]].value[0];
         let output = operands[outputs[0]];
-        success = nn_ops.resizeBilinearPrepare(input.shape,
-                                               newHeight, newWidth,
-                                               output.shape);
-        if (!success) {
-          throw new Error('resizeBilinearPrepare fails');
+        let outSizeHeight = output.runtimeshape.dims[1];
+        let outSizeWidth = output.runtimeshape.dims[2];
+
+        let outSizeDims = [2];
+        let outSizeValue = new Int32Array([outSizeHeight, outSizeWidth]);
+        let operand = {
+          type: OperandCode.TENSOR_INT32,
+          dimensions: outSizeDims,
+          numberOfConsumers: 0,
+          lifetime: OperandLifetime.CONSTANT_REFERENCE,
+          value: outSizeValue
         }
-        success = nn_ops.resizeBilinearFloat32(input.value, input.shape,
-                                               output.value, output.shape);
+        let outSizeShape = this._allocateRuntimeShape(operand);
+        let outSizeData = this._allocateTensor(operand);
+
+        // init resizeBilinearParams
+        let resizeBilinearParams = new nn_ops.ResizeBilinearParams;
+        // default set align_corners to false
+        resizeBilinearParams.align_corners = false;
+        // success = nn_ops.resizeBilinearPrepare(input.shape,
+        //                                        newHeight, newWidth,
+        //                                        output.shape);
+        // if (!success) {
+        //   throw new Error('resizeBilinearPrepare fails');
+        // }
+        success = nn_ops.resizeBilinearFloat32(resizeBilinearParams, 
+                                               input.runtimeshape, input.value, 
+                                               outSizeShape, outSizeData,   
+                                               output.runtimeshape, output.value);
+        // this._toDelete.tfliteParams.push(resizeBilinearParams);
         if (!success) {
           throw new Error('resizeBilinearFloat32 fails');
         }
+        nn_ops._free(resizeBilinearParams);
+        nn_ops._free(outSizeData);
+        nn_ops._free(outSizeShape);
       } break;
       default: {
         throw new Error(`Operation ${op} is not supported`);
@@ -466,6 +655,7 @@ export default class PreparedModel {
     if (operand.lifetime === OperandLifetime.CONSTANT_REFERENCE) {
       this._setTensorData(operand.type, ptr, operand.value);
     }
+    this._toDelete.tensorValue.push(ptr);
     return ptr;
   }
 
@@ -482,12 +672,23 @@ export default class PreparedModel {
     return shape;
   }
 
+  _allocateRuntimeShape(operand) {
+    const nn_ops = this._nn_ops;
+    let RuntimeShape = new nn_ops.RuntimeShape(operand.dimensions.length);
+    RuntimeShape.dims = operand.dimensions;
+    this._toDelete.tensorShape.push(RuntimeShape);
+    return RuntimeShape;
+  }
+
   _deleteAll() {
-    this._operands.forEach(operand => {
-      if (operand.type === 3 || operand.type === 4) {
-        this._nn_ops._free(operand.value);
-        this._nn_ops._free(operand.shape);
-      }
+    this._toDelete.tensorValue.forEach(tensorValue => {
+      this._nn_ops._free(tensorValue);
+    });
+    this._toDelete.tensorShape.forEach(tensorShape => {
+      this._nn_ops._free(tensorShape);
+    });
+    this._toDelete.tfliteParams.forEach(tfliteParams => {
+      this._nn_ops._free(tfliteParams);
     });
     this._model._operands.forEach(operand => {
       operand.value = null;
