@@ -48,13 +48,29 @@
       <div class="row top-margin">
         <div class="col-md-12 col-lg-8 offset-lg-2" align="center">
           <div class="image-wrapper">
-            <div class="overlay">↓</div>
-            <canvas id="output"></canvas>
-            <img id="image" crossorigin="anonymous" class="img-fluid" alt="Responsive image" src="./img/riding.jpg">
+            <div class="credit">
+              <a style="background-color:black;color:white;text-decoration:none;padding:2px 3px;font-family:-apple-system, BlinkMacSystemFont, &quot;San Francisco&quot;, &quot;Helvetica Neue&quot;, Helvetica, Ubuntu, Roboto, Noto, &quot;Segoe UI&quot;, Arial, sans-serif;font-size:8px;font-weight:bold;line-height:1;display:inline-block;border-radius:2px" href="https://unsplash.com/@philipegd?utm_medium=referral&amp;utm_campaign=photographer-credit&amp;utm_content=creditBadge" target="_blank" rel="noopener noreferrer" title="Photo by Philipe Cavalcante on Unsplash"><span style="display:inline-block;padding:2px 3px"><svg xmlns="http://www.w3.org/2000/svg" style="height:8px;width:auto;position:relative;vertical-align:middle;fill:white" viewBox="0 0 32 32"><title>unsplash-logo</title><path d="M10 9V0h12v9H10zm12 5h10v18H0V14h10v9h12v-9z"></path></svg></span><span style="display:inline-block;padding:0px 3px">Philipe Cavalcante</span></a>
+            </div>
+            <canvas id="output" width="448" height="448"></canvas>
+            <img id="image" crossorigin="anonymous" class="img-fluid" alt="Responsive image" src="./img/woman.jpg">
           </div>
         </div>
 
-        <div class="col-lg-2 offset-lg-0 col-md-4 offset-md-4 controls" data-select="blur">
+        <div class="order-lg-2 col-md-12 col-lg-8 offset-lg-2" align="center">
+          <div class="row top-margin">
+            <div class="col" align="center">
+              <label id="button" class="btn btn-primary disabled">
+                Pick Image <input type="file" id="input" accept="image/*" hidden disabled>
+              </label>
+            </div>
+          </div>
+          <div class="row">
+            <div id="inferenceTime" class="col" align="center">
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-2 offset-lg-0 col-sm-6 offset-sm-3 col-8 offset-2 controls" data-select="blur">
 
           <div class="row">
             <div class="label">
@@ -62,11 +78,14 @@
             </div> 
             <div class="btn-group btn-group-toggle btn-group-sm effects-select" data-toggle="buttons">
               <label class="btn btn-secondary">
-                <input type="radio" value="label" autocomplete="off" checked> LABEL
+                <input type="radio" value="label" autocomplete="off" checked> MAP
               </label>
               <label class="btn btn-secondary">
                 <input type="radio" value="fill" autocomplete="off"> FILL
               </label>
+              <label class="btn btn-secondary">
+                  <input type="radio" value="image" autocomplete="off"> IMG
+                </label>
               <label class="btn btn-secondary">
                 <input type="radio" value="blur" autocomplete="off"> BLUR
               </label>
@@ -81,6 +100,13 @@
             <div class="slidecontainer"><input type="range" min="50" max="300" value="100" class="slider" id="zoomSlider"></div>
           </div>
 
+          <div class="row refine-edge-wrapper">
+            <div class="label">
+              REFINE EDGE: <span class="refine-edge-value"></span>
+            </div>  
+            <div class="slidecontainer"><input type="range" min="0" max="60" value="0" class="slider" id="refineEdgeSlider"></div>
+          </div>
+
           <div class="row blur-wrapper">
             <div class="label">
               BLUR RADIUS: <span class="blur-radius-value"></span>
@@ -88,12 +114,24 @@
             <div class="slidecontainer"><input type="range" min="0" max="50" value="0" class="slider" id="blurSlider"></div>
           </div>
 
-          <div class="row color-picker-wrapper">
+          <div class="row color-picker-wrapper justify-content-center">
             <div class="label">
               BACKGROUND: <span class="bg-value"></span>
             </div> 
             <div id="color-picker-container"></div>
           </div>
+
+          <div class="row select-bg-wrapper justify-content-center">
+            <div class="label">
+              <label class="btn btn-outline-primary btn-sm">
+                Select Background <input type="file" id="chooseBackground" accept="image/*" hidden>
+              </label>
+              <button id="clearBackground" class="btn btn-outline-secondary btn-sm">
+                Clear Background
+              </button>
+            </div> 
+          </div>
+          
 
           <div class="row color-map-alpha-wrapper">
             <div class="label">
@@ -103,20 +141,6 @@
           </div>
 
           <div class="row labels-wrapper">
-          </div>
-        </div>
-
-        <div class="col-md-12 col-lg-8 offset-lg-2" align="center">
-          <div class="row top-margin">
-            <div class="col" align="center">
-              <label id="button" class="btn btn-primary disabled">
-                Pick Image <input type="file" id="input" accept="image/*" hidden disabled>
-              </label>
-            </div>
-          </div>
-          <div class="row">
-            <div id="inferenceTime" class="col" align="center">
-            </div>
           </div>
         </div>
       </div>
@@ -132,7 +156,10 @@
     <script src="../util/tflite/schema/schema_generated.js"></script>
     <script src="../util/tflite/TfLiteModelUtils.js"></script>
     <script src="../util/tflite/TFliteModelImporter.js"></script>
-    <script src="DrawOutputs.js"></script>
+    <script src="src/WebGLUtils.js"></script>
+    <script src="src/Shader.js"></script>
+    <script src="src/GuidedFilter.js"></script>
+    <script src="src/DrawOutputs.js"></script>
     <script src="utils.js"></script>
     <script src="main.js"></script>
     <script>
