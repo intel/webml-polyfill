@@ -338,18 +338,6 @@ namespace binding_utils {
 
 EMSCRIPTEN_BINDINGS(nn)
 {
-  constant("NONE", (int32_t)FusedActivationFunc::NONE);
-  constant("RELU", (int32_t)FusedActivationFunc::RELU);
-  constant("RELU1", (int32_t)FusedActivationFunc::RELU1);
-  constant("RELU6", (int32_t)FusedActivationFunc::RELU6);
-
-  constant("FLOAT32", (int32_t)OperandType::FLOAT32);
-  constant("INT32", (int32_t)OperandType::INT32);
-  constant("UINT32", (int32_t)OperandType::UINT32);
-  constant("TENSOR_FLOAT32", (int32_t)OperandType::TENSOR_FLOAT32);
-  constant("TENSOR_INT32", (int32_t)OperandType::TENSOR_INT32);
-  constant("TENSOR_QUANT8_ASYMM", (int32_t)OperandType::TENSOR_QUANT8_ASYMM);
-
   constant("MAX", std::numeric_limits<float>::max());
   constant("LOWEST", std::numeric_limits<float>::lowest());
   constant("MIN", std::numeric_limits<float>::min());

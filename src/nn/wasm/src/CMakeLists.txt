@@ -3,6 +3,7 @@ project(nn_ops)
 set(CMAKE_BUILD_TYPE Release)
 
 include_directories(
+  ./
   external/
   external/tensorflow/
   external/tensorflow/tensorflow/contrib/makefile/downloads/eigen/

@@ -32,6 +32,8 @@ export default class PreparedModel {
       if (utils.isTensor(operand.type)) {
         runtimeOperand.value = this._allocateTensor(operand);
         runtimeOperand.runtimeshape = this._allocateRuntimeShape(operand);
+        this._toDelete.tensorValue.push(runtimeOperand.value);
+        this._toDelete.tensorShape.push(runtimeOperand.runtimeshape);
       } else {
         runtimeOperand.value = operand.value;
       }
@@ -92,13 +94,6 @@ export default class PreparedModel {
       verify(requiredOuts, outputs, 'out');
     }
 
-    const FuseCodeMap = new Map([
-      [FuseCode.NONE, nn_ops.NONE],
-      [FuseCode.RELU, nn_ops.RELU],
-      [FuseCode.RELU1, nn_ops.RELU1],
-      [FuseCode.RELU6, nn_ops.RELU6],
-    ]);
-
     function calculateExplicitPadding(inSize, stride, filterSize, paddingCode) {
       let paddingHead = 0;
       let paddingTail = 0;
@@ -117,16 +112,16 @@ export default class PreparedModel {
 
     function calculateActivationRangeFloat(activation) {
       let activation_min, activation_max;
-      if (activation == nn_ops.RELU) {
+      if (activation == FuseCode.RELU) {
         activation_min = 0.0;
         activation_max = nn_ops.MAX;
-      } else if (activation == nn_ops.RELU6) {
+      } else if (activation == FuseCode.RELU6) {
         activation_min = 0.0;
         activation_max = 6.0;
-      } else if (activation == nn_ops.RELU1) {
+      } else if (activation == FuseCode.RELU1) {
         activation_min = -1.0;
         activation_max = 1.0;
-      } else if (activation == nn_ops.NONE){
+      } else if (activation == FuseCode.NONE){
         activation_min = nn_ops.LOWEST;
         activation_max = nn_ops.MAX;
       } else {
@@ -159,7 +154,7 @@ export default class PreparedModel {
         allParametersPresent(3, 1);
         let in1 = operands[inputs[0]];
         let in2 = operands[inputs[1]];
-        let activation = FuseCodeMap.get(operands[inputs[2]].value[0]);
+        let activation = operands[inputs[2]].value[0];
         let out = operands[outputs[0]];
 
         let float_activation_min = calculateActivationRangeFloat(activation).activation_min;
@@ -191,13 +186,13 @@ export default class PreparedModel {
         if (!success) {
           throw new Error(`${funcName} fails`);
         }
-        nn_ops._free(arithmeticParams);
+        arithmeticParams.delete();
       } break;
       case OperationCode.MUL: {
         allParametersPresent(3, 1);
         let in1 = operands[inputs[0]];
         let in2 = operands[inputs[1]];
-        let activation = FuseCodeMap.get(operands[inputs[2]].value[0]);
+        let activation = operands[inputs[2]].value[0];
         let out = operands[outputs[0]];
 
         let float_activation_min = calculateActivationRangeFloat(activation).activation_min;
@@ -229,7 +224,7 @@ export default class PreparedModel {
         if (!success) {
           throw new Error(`${funcName} fails`);
         }
-        nn_ops._free(arithmeticParams);
+        arithmeticParams.delete();
       } break;
       case OperationCode.CONV_2D: {
         let inCount = inputs.length;
@@ -254,12 +249,12 @@ export default class PreparedModel {
           paddingBottom = operands[inputs[i++]].value[0];
           strideWidth = operands[inputs[i++]].value[0];
           strideHeight = operands[inputs[i++]].value[0];
-          activation = FuseCodeMap.get(operands[inputs[i++]].value[0]);
+          activation = operands[inputs[i++]].value[0];
         } else {
           let paddingCode = operands[inputs[i++]].value[0];
           strideWidth = operands[inputs[i++]].value[0];
           strideHeight = operands[inputs[i++]].value[0];
-          activation = FuseCodeMap.get(operands[inputs[i++]].value[0]);
+          activation = operands[inputs[i++]].value[0];
 
           let inputWidth = input.runtimeshape.dims[2];
           let inputHeight = input.runtimeshape.dims[1];
@@ -321,9 +316,9 @@ export default class PreparedModel {
         if (!success) {
           throw new Error('convFloat32 fails');
         }
-        nn_ops._free(convParams);
+        convParams.delete();
+        im2colShape.delete();
         nn_ops._free(im2colData);
-        nn_ops._free(im2colShape);
       } break;
       case OperationCode.DEPTHWISE_CONV_2D: {
         let inCount = inputs.length;
@@ -348,13 +343,13 @@ export default class PreparedModel {
           strideWidth = operands[inputs[i++]].value[0];
           strideHeight = operands[inputs[i++]].value[0];
           depthMultipler = operands[inputs[i++]].value[0];
-          activation = FuseCodeMap.get(operands[inputs[i++]].value[0]);
+          activation = operands[inputs[i++]].value[0];
         } else {
           let paddingCode = operands[inputs[i++]].value[0];
           strideWidth = operands[inputs[i++]].value[0];
           strideHeight = operands[inputs[i++]].value[0];
           depthMultipler = operands[inputs[i++]].value[0];
-          activation = FuseCodeMap.get(operands[inputs[i++]].value[0]);
+          activation = operands[inputs[i++]].value[0];
 
           let inputWidth = input.runtimeshape.dims[2];
           let inputHeight = input.runtimeshape.dims[1];
@@ -399,7 +394,7 @@ export default class PreparedModel {
         if (!success) {
           throw new Error('depthwiseConvFloat32 fails');
         }
-        nn_ops._free(depthwiseParams);
+        depthwiseParams.delete();
       } break;
       case OperationCode.AVERAGE_POOL_2D:
       case OperationCode.MAX_POOL_2D: {
@@ -424,14 +419,14 @@ export default class PreparedModel {
           strideHeight = operands[inputs[i++]].value[0];
           filterWidth = operands[inputs[i++]].value[0];
           filterHeight = operands[inputs[i++]].value[0];
-          activation = FuseCodeMap.get(operands[inputs[i++]].value[0]);
+          activation = operands[inputs[i++]].value[0];
         } else {
           let paddingCode = operands[inputs[i++]].value[0];
           strideWidth = operands[inputs[i++]].value[0];
           strideHeight = operands[inputs[i++]].value[0];
           filterWidth = operands[inputs[i++]].value[0];
           filterHeight = operands[inputs[i++]].value[0];
-          activation = FuseCodeMap.get(operands[inputs[i++]].value[0]);
+          activation = operands[inputs[i++]].value[0];
 
           let inputWidth = input.runtimeshape.dims[2];
           let inputHeight = input.runtimeshape.dims[1];
@@ -466,7 +461,7 @@ export default class PreparedModel {
         if (!success) {
           throw new Error(`Pooling ${op} fails`);
         }
-        nn_ops._free(poolParams);
+        poolParams.delete();
       } break;
       case OperationCode.SOFTMAX: {
         allParametersPresent(2, 1);
@@ -490,7 +485,7 @@ export default class PreparedModel {
         if (!success) {
           throw new Error('softmaxFloat32 fails');
         }
-        nn_ops._free(softmaxParams);
+        softmaxParams.delete();
       } break;
       case OperationCode.RESHAPE: {
         allParametersPresent(2, 1);
@@ -521,7 +516,7 @@ export default class PreparedModel {
         if (!success) {
           throw new Error('reshapeGeneric fails');
         }
-        nn_ops._free(reshapeParams);
+        reshapeParams.delete();
       } break;
       case OperationCode.CONCATENATION: {
         if (outputs.length < 1 || inputs.length < 2) {
@@ -570,14 +565,14 @@ export default class PreparedModel {
         }
         inputShapes.delete();
         inputValues.delete();
-        nn_ops._free(concatenationParams);
+        concatenationParams.delete();
       } break;
       case OperationCode.FULLY_CONNECTED: {
         allParametersPresent(4, 1);
         let input = operands[inputs[0]];
         let weights = operands[inputs[1]];
         let bias = operands[inputs[2]];
-        let activation = FuseCodeMap.get(operands[inputs[3]].value[0]);
+        let activation = operands[inputs[3]].value[0];
         let output = operands[outputs[0]];
 
         let float_activation_min = calculateActivationRangeFloat(activation).activation_min;
@@ -598,7 +593,7 @@ export default class PreparedModel {
         if (!success) {
           throw new Error('fullyConnectedFloat32 fails');
         }
-        nn_ops._free(fullyConnectedParams);
+        fullyConnectedParams.delete();
       } break;
       case OperationCode.RESIZE_BILINEAR: {
         allParametersPresent(3, 1);
@@ -622,8 +617,8 @@ export default class PreparedModel {
         let outSizeData = this._allocateTensor(operand);
 
         // Error check
-        NN_OPS_CHECK(input.runtimeshape.size <= 4);
-        NN_OPS_CHECK(output.runtimeshape.size <= 4);
+        OPS_CHECK(input.runtimeshape.size <= 4);
+        OPS_CHECK(output.runtimeshape.size <= 4);
 
         // init resizeBilinearParams
         let resizeBilinearParams = new nn_ops.ResizeBilinearParams;
@@ -637,9 +632,9 @@ export default class PreparedModel {
         if (!success) {
           throw new Error('resizeBilinearFloat32 fails');
         }
-        nn_ops._free(resizeBilinearParams);
+        resizeBilinearParams.delete();
+        outSizeShape.delete();
         nn_ops._free(outSizeData);
-        nn_ops._free(outSizeShape);
       } break;
       default: {
         throw new Error(`Operation ${op} is not supported`);
@@ -682,28 +677,13 @@ export default class PreparedModel {
     if (operand.lifetime === OperandLifetime.CONSTANT_REFERENCE) {
       this._setTensorData(operand.type, ptr, operand.value);
     }
-    this._toDelete.tensorValue.push(ptr);
     return ptr;
-  }
-
-  _allocateShape(operand) {
-    const nn_ops = this._nn_ops;
-    const OperandTypeMap = new Map([
-      [OperandCode.TENSOR_FLOAT32, nn_ops.TENSOR_FLOAT32],
-      [OperandCode.TENSOR_INT32, nn_ops.TENSOR_INT32],
-      [OperandCode.TENSOR_QUANT8_ASYMM, nn_ops.TENSOR_QUANT8_ASYMM]
-    ]);
-    let shape = new nn_ops.Shape;
-    shape.type = OperandTypeMap.get(operand.type);
-    shape.dimensions = operand.dimensions;
-    return shape;
   }
 
   _allocateRuntimeShape(operand) {
     const nn_ops = this._nn_ops;
     let RuntimeShape = new nn_ops.RuntimeShape(operand.dimensions.length);
     RuntimeShape.dims = operand.dimensions;
-    this._toDelete.tensorShape.push(RuntimeShape);
     return RuntimeShape;
   }
 
@@ -712,7 +692,7 @@ export default class PreparedModel {
       this._nn_ops._free(tensorValue);
     });
     this._toDelete.tensorShape.forEach(tensorShape => {
-      this._nn_ops._free(tensorShape);
+      tensorShape.delete();
     });
     this._model._operands.forEach(operand => {
       operand.value = null;
