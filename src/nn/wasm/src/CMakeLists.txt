@@ -3,9 +3,6 @@ project(nn_ops)
 set(CMAKE_BUILD_TYPE Release)
 
 include_directories(
-  common/include
-  common/
-  ./
   external/
   external/tensorflow/
   external/tensorflow/tensorflow/contrib/makefile/downloads/eigen/
@@ -16,17 +13,7 @@ include_directories(
 
 set(SOURCES
     bind/src/binding.cpp
-    common/operations/Activation.cpp
-    common/operations/Concatenation.cpp
-    common/operations/Conv2D.cpp
-    common/operations/DepthwiseConv2D.cpp
-    common/operations/FullyConnected.cpp
-    common/operations/Normalization.cpp
-    common/operations/Pooling.cpp
-    common/operations/Reshape.cpp
-    common/operations/SimpleMath.cpp
-    common/OperationsUtils.cpp
-    common/Utils.cpp)
+   )
 
 add_executable(nn_ops ${SOURCES})
 set_property(TARGET nn_ops PROPERTY CXX_STANDARD 11)

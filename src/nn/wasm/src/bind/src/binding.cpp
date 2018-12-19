@@ -1,8 +1,6 @@
 #include <emscripten/bind.h>
 #include <emscripten/val.h>
 
-#include "Operations.h"
-#include "OperationsUtils.h"
 #include "external/tensorflow/tensorflow/lite/kernels/internal/types.h"
 #include "external/tensorflow/tensorflow/lite/kernels/internal/optimized/optimized_ops.h"
 #include "external/tensorflow/tensorflow/lite/kernels/internal/reference/reference_ops.h"
