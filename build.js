@@ -1,5 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
-// Licensed under the MIT license.
+// Reference https://github.com/Microsoft/onnxjs/blob/master/tools/build.ts
 
 const child_process =  require('child_process');
 const execSync = child_process.execSync;

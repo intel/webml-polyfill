@@ -98,7 +98,7 @@ export default class PreparedModel {
       let paddingHead = 0;
       let paddingTail = 0;
 
-      if (paddingCode == PaddingCode.SAME) {
+      if (paddingCode === PaddingCode.SAME) {
         let outSize = Math.floor((inSize + stride - 1) / stride);
         let tmp = Math.floor((outSize - 1) * stride + filterSize);
         if (tmp > inSize) {
@@ -112,16 +112,16 @@ export default class PreparedModel {
 
     function calculateActivationRangeFloat(activation) {
       let activation_min, activation_max;
-      if (activation == FuseCode.RELU) {
+      if (activation === FuseCode.RELU) {
         activation_min = 0.0;
         activation_max = nn_ops.MAX;
-      } else if (activation == FuseCode.RELU6) {
+      } else if (activation === FuseCode.RELU6) {
         activation_min = 0.0;
         activation_max = 6.0;
-      } else if (activation == FuseCode.RELU1) {
+      } else if (activation === FuseCode.RELU1) {
         activation_min = -1.0;
         activation_max = 1.0;
-      } else if (activation == FuseCode.NONE){
+      } else if (activation === FuseCode.NONE){
         activation_min = nn_ops.LOWEST;
         activation_max = nn_ops.MAX;
       } else {
@@ -161,7 +161,7 @@ export default class PreparedModel {
         let float_activation_max = calculateActivationRangeFloat(activation).activation_max;
 
         // Error check
-        OPS_CHECK(in1.type == in2.type);
+        OPS_CHECK(in1.type === in2.type);
         OPS_CHECK(in1.runtimeshape.size <= 4 && in2.runtimeshape.size <= 4);
 
         // init arithmeticParams
@@ -199,7 +199,7 @@ export default class PreparedModel {
         let float_activation_max = calculateActivationRangeFloat(activation).activation_max;
 
         // Error check
-        OPS_CHECK(in1.type == in2.type);
+        OPS_CHECK(in1.type === in2.type);
         OPS_CHECK(in1.runtimeshape.size <= 4 && in2.runtimeshape.size <= 4);
 
         // init arithmeticParams
@@ -286,7 +286,7 @@ export default class PreparedModel {
 
         // Error check
         OPS_CHECK(input.type === filter.type);
-        if (input.type == OperandCode.TENSOR_QUANT8_ASYMM) {
+        if (input.type === OperandCode.TENSOR_QUANT8_ASYMM) {
             OPS_CHECK(bias.type === OperandCode.TENSOR_INT32);
         } else {
             OPS_CHECK(input.type === bias.type);
@@ -298,7 +298,7 @@ export default class PreparedModel {
         OPS_CHECK(output.runtimeshape.size === 4);
 
         OPS_CHECK(filter.runtimeshape.dims[0] === bias.runtimeshape.dims[0]);
-        OPS_CHECK(filter.runtimeshape.dims[3] == input.runtimeshape.dims[3]);
+        OPS_CHECK(filter.runtimeshape.dims[3] === input.runtimeshape.dims[3]);
 
         // init convParams
         let convParams = new nn_ops.ConvParams;
@@ -366,7 +366,7 @@ export default class PreparedModel {
         // Error check
         OPS_CHECK(input.type === filter.type);
         if (input.type === OperandCode.TENSOR_QUANT8_ASYMM) {
-            OPS_CHECK(bias.type == OperandCode.TENSOR_INT32);
+            OPS_CHECK(bias.type === OperandCode.TENSOR_INT32);
         } else {
             OPS_CHECK(input.type === bias.type);
         }
@@ -694,8 +694,6 @@ export default class PreparedModel {
     this._toDelete.tensorShape.forEach(tensorShape => {
       tensorShape.delete();
     });
-    this._model._operands.forEach(operand => {
-      operand.value = null;
-    })
+    this._model._operands = [];
   }
 }
