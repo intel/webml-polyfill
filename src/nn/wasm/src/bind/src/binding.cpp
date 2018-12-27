@@ -11,6 +11,7 @@
 #include <iostream>
 
 using namespace emscripten;
+using namespace tflite;
 
 namespace binding_utils {
   struct ReshapeParams {
@@ -18,320 +19,201 @@ namespace binding_utils {
   };
 
   // Factors set and get function
-  val getRuntimeShapeDimensions(const tflite::RuntimeShape& shape) {
-    emscripten::val js_dims = emscripten::val::array();
-    for (int i = 0; i < shape.DimensionsCount(); i++) {
-      js_dims.call<void>("push", shape.Dims(i));
-    }
-    return js_dims;
+  val getRuntimeShapeDimensions(const RuntimeShape& shape) {
+    return emscripten::val(
+      emscripten::typed_memory_view(shape.DimensionsCount(),
+                                    shape.DimsData()));
   }
 
-  void setRuntimeShapeDimensions(tflite::RuntimeShape& shape, val js_dims) {
+  void setRuntimeShapeDimensions(RuntimeShape& shape, val js_dims) {
     std::vector<int> tmp = vecFromJSArray<int32_t>(js_dims);
     for (int i = 0; i < tmp.size(); i++) {
       shape.SetDim(i, tmp.at(i));
     }
   }
 
-  val getRuntimeShapeSize(const tflite::RuntimeShape& shape) {
+  val getRuntimeShapeSize(const RuntimeShape& shape) {
     emscripten::val js_val = val(shape.DimensionsCount());
     return js_val;
   }
 
-  void setRuntimeShapeSize(tflite::RuntimeShape& shape, int32_t size) {
+  void setRuntimeShapeSize(RuntimeShape& shape, int32_t size) {
     shape.Resize(size);
   }
 
-  template <typename T>
-  val getPaddingValues(const T& params) {
-    emscripten::val js_dims = emscripten::val::array();
-    js_dims.call<void>("push", params.padding_values.width);
-    js_dims.call<void>("push", params.padding_values.height);
-    return js_dims;
-  }
-
-  template <typename T>
-  void setPaddingValues(T& params, val js_dims) {
-    std::vector<uint32_t> tmp = vecFromJSArray<uint32_t>(js_dims);
-    params.padding_values.width = tmp.at(0);
-    params.padding_values.height = tmp.at(1);
-  }
-
-  template <typename T>
-  val getDilationFactor(const T& params) {
-    emscripten::val js_dims = emscripten::val::array();
-    js_dims.call<void>("push", params.dilation_width_factor);
-    js_dims.call<void>("push", params.dilation_height_factor);
-    return js_dims;
-  }
-
-  template <typename T>
-  void setDilationFactor(T& params, val js_dims) {
-    std::vector<int32_t> tmp = vecFromJSArray<int32_t>(js_dims);
-    params.dilation_width_factor = tmp.at(0);
-    params.dilation_height_factor = tmp.at(1);
-  }
-
-  template <typename T>
-  val getStrides(const T& params) {
-    emscripten::val js_dims = emscripten::val::array();
-    js_dims.call<void>("push", params.stride_width);
-    js_dims.call<void>("push", params.stride_height);
-    return js_dims;
-  }
-
-  template <typename T>
-  void setStrides(T& params, val js_dims) {
-    std::vector<uint32_t> tmp = vecFromJSArray<uint32_t>(js_dims);
-    params.stride_width = tmp.at(0);
-    params.stride_height = tmp.at(1);
-  }
-
-  template <typename T>
-  val getActivationRange(const T& params) {
-    emscripten::val js_dims = emscripten::val::array();
-    js_dims.call<void>("push", params.float_activation_min);
-    js_dims.call<void>("push", params.float_activation_max);
-    return js_dims;
-  }
-
-  template <typename T>
-  void setActivationRange(T& params, val js_dims) {
-    std::vector<float> tmp = vecFromJSArray<float>(js_dims);
-    params.float_activation_min = tmp.at(0);
-    params.float_activation_max = tmp.at(1);
-  }
-
-  template <typename T>
-  val getDepthMultiplier(const T& params) {
-    emscripten::val js_val = val(params.depth_multiplier);
-    return js_val;
-  }
-
-  template <typename T>
-  void setDepthMultiplier(T& params, int32_t depth_multiplier) {
-    params.depth_multiplier = depth_multiplier;
-  }
-
-  template <typename T>
-  val getBeta(const T& params) {
-    emscripten::val js_val = val(params.beta);
-    return js_val;
-  }
-
-  template <typename T>
-  void setBeta(T& params, float beta) {
-    params.beta = beta;
-  }
-
-  template <typename T>
-  val getFilters(const T& params) {
-    emscripten::val js_dims = emscripten::val::array();
-    js_dims.call<void>("push", params.filter_width);
-    js_dims.call<void>("push", params.filter_height);
-    return js_dims;
-  }
-
-  template <typename T>
-  void setFilters(T& params, val js_dims) {
-    std::vector<int32_t> tmp = vecFromJSArray<int32_t>(js_dims);
-    params.filter_width = tmp.at(0);
-    params.filter_height = tmp.at(1);
-  }
-
-  template <typename T>
-  val getAlignCorners(const T& params) {
-    emscripten::val js_val = val(params.align_corners);
-    return js_val;
-  }
-
-  template <typename T>
-  void setAlignCorners(T& params, bool align_corners) {
-    params.align_corners = align_corners;
-  }
-
-  template <typename T>
-  val getAxis(const T& params) {
-    emscripten::val js_val = val(params.axis);
-    return js_val;
-  }
-
-  template <typename T>
-  void setAxis(T& params, int32_t axis) {
-    params.axis = axis;
-  }
-
-  template <typename T>
-  val getInputsCount(const T& params) {
-    emscripten::val js_val = val(params.inputs_count);
-    return js_val;
-  }
-
-  template <typename T>
-  void setInputsCount(T& params, int32_t inputs_count) {
-    params.inputs_count = inputs_count;
-  }
-
-  template <typename T>
-  val getSizeCount(const T& params) {
-    emscripten::val js_val = val(params.size_count);
-    return js_val;
-  }
-
-  template <typename T>
-  void setSizeCount(T& params, uint32_t size_count) {
-    params.size_count = size_count;
-  }
-
   // Operation wrappers.
-  bool addFloat32Wrapper(const tflite::ArithmeticParams& op_params,
-                                  const tflite::RuntimeShape& input1_shape, const intptr_t input1_data, 
-                                  const tflite::RuntimeShape& input2_shape, const intptr_t input2_data, 
-                                  const tflite::RuntimeShape& output_shape, intptr_t output_data) {
-    tflite::optimized_ops::Add(op_params,
-                               input1_shape, (const float*) input1_data,
-                               input2_shape, (const float*) input2_data,
-                               output_shape, (float*) output_data);
-    return true;
+  bool addFloat32Wrapper(const ArithmeticParams& op_params,
+                         const RuntimeShape& input1_shape, 
+                         const intptr_t input1_data, 
+                         const RuntimeShape& input2_shape, 
+                         const intptr_t input2_data, 
+                         const RuntimeShape& output_shape, 
+                         intptr_t output_data) {
+    optimized_ops::Add(op_params,
+                       input1_shape, (const float*) input1_data,
+                       input2_shape, (const float*) input2_data,
+                       output_shape, (float*) output_data);
   }
 
-  bool broadCastAddFloat32Wrapper(const tflite::ArithmeticParams& op_params,
-                                  const tflite::RuntimeShape& input1_shape, const intptr_t input1_data, 
-                                  const tflite::RuntimeShape& input2_shape, const intptr_t input2_data, 
-                                  const tflite::RuntimeShape& output_shape, intptr_t output_data) {
-    tflite::optimized_ops::BroadcastAdd4DSlow(op_params,
-                                              input1_shape, (const float*) input1_data,
-                                              input2_shape, (const float*) input2_data,
-                                              output_shape, (float*) output_data);
-    return true;
+  bool broadCastAddFloat32Wrapper(const ArithmeticParams& op_params,
+                                  const RuntimeShape& input1_shape, 
+                                  const intptr_t input1_data, 
+                                  const RuntimeShape& input2_shape, 
+                                  const intptr_t input2_data, 
+                                  const RuntimeShape& output_shape, 
+                                  intptr_t output_data) {
+    optimized_ops::BroadcastAdd4DSlow(op_params,
+                                      input1_shape, (const float*) input1_data,
+                                      input2_shape, (const float*) input2_data,
+                                      output_shape, (float*) output_data);
   }
 
-  bool mulFloat32Wrapper(const tflite::ArithmeticParams& op_params,
-                         const tflite::RuntimeShape& input1_shape, const intptr_t input1_data, 
-                         const tflite::RuntimeShape& input2_shape, const intptr_t input2_data, 
-                         const tflite::RuntimeShape& output_shape, intptr_t output_data) {
-    tflite::optimized_ops::Mul(op_params,
-                               input1_shape, (const float*) input1_data,
-                               input2_shape, (const float*) input2_data,
-                               output_shape, (float*) output_data);
-    return true;
+  bool mulFloat32Wrapper(const ArithmeticParams& op_params,
+                         const RuntimeShape& input1_shape, 
+                         const intptr_t input1_data, 
+                         const RuntimeShape& input2_shape, 
+                         const intptr_t input2_data, 
+                         const RuntimeShape& output_shape, 
+                         intptr_t output_data) {
+    optimized_ops::Mul(op_params,
+                       input1_shape, (const float*) input1_data,
+                       input2_shape, (const float*) input2_data,
+                       output_shape, (float*) output_data);
   }
 
-  bool broadCastMulFloat32Wrapper(const tflite::ArithmeticParams& op_params,
-                                  const tflite::RuntimeShape& input1_shape, const intptr_t input1_data, 
-                                  const tflite::RuntimeShape& input2_shape, const intptr_t input2_data, 
-                                  const tflite::RuntimeShape& output_shape, intptr_t output_data) {
-    tflite::optimized_ops::BroadcastMul4DSlow(op_params,
-                                              input1_shape, (const float*) input1_data,
-                                              input2_shape, (const float*) input2_data,
-                                              output_shape, (float*) output_data);
-    return true;
+  bool broadCastMulFloat32Wrapper(const ArithmeticParams& op_params,
+                                  const RuntimeShape& input1_shape, 
+                                  const intptr_t input1_data, 
+                                  const RuntimeShape& input2_shape, 
+                                  const intptr_t input2_data, 
+                                  const RuntimeShape& output_shape, 
+                                  intptr_t output_data) {
+    optimized_ops::BroadcastMul4DSlow(op_params,
+                                      input1_shape, (const float*) input1_data,
+                                      input2_shape, (const float*) input2_data,
+                                      output_shape, (float*) output_data);
   }
 
-  bool floorFloat32Wrapper(const tflite::RuntimeShape& input_shape, const intptr_t inputData, 
-                           const tflite::RuntimeShape& output_shape, intptr_t outputData) {
-    tflite::optimized_ops::Floor(input_shape, (const float*)inputData,
-                                 output_shape, (float*)outputData);
-    return true;
+  bool floorFloat32Wrapper(const RuntimeShape& input_shape, 
+                           const intptr_t inputData, 
+                           const RuntimeShape& output_shape, 
+                           intptr_t outputData) {
+    optimized_ops::Floor(input_shape, (const float*)inputData,
+                         output_shape, (float*)outputData);
   }
 
-  bool depthwiseConvFloat32Wrapper(const tflite::DepthwiseParams& op_params,
-                                   const tflite::RuntimeShape& inputShape, const intptr_t inputData, 
-                                   const tflite::RuntimeShape& filterShape, const intptr_t filterData, 
-                                   const tflite::RuntimeShape& biasShape, const intptr_t biasData, 
-                                   const tflite::RuntimeShape& outputShape, intptr_t outputData) {
-    tflite::optimized_ops::DepthwiseConv(op_params,
-                                         inputShape, (const float*)inputData, 
-                                         filterShape, (const float*)filterData, 
-                                         biasShape, (const float*)biasData, 
-                                         outputShape, (float*)outputData);
-    return true;
+  bool depthwiseConvFloat32Wrapper(const DepthwiseParams& op_params,
+                                   const RuntimeShape& inputShape, 
+                                   const intptr_t inputData, 
+                                   const RuntimeShape& filterShape, 
+                                   const intptr_t filterData, 
+                                   const RuntimeShape& biasShape, 
+                                   const intptr_t biasData, 
+                                   const RuntimeShape& outputShape, 
+                                   intptr_t outputData) {
+    optimized_ops::DepthwiseConv(op_params,
+                                 inputShape, (const float*)inputData, 
+                                 filterShape, (const float*)filterData, 
+                                 biasShape, (const float*)biasData, 
+                                 outputShape, (float*)outputData);
   }
 
-  bool convFloat32Wrapper(const tflite::ConvParams& op_params, 
-                          const tflite::RuntimeShape& inputShape, const intptr_t inputData, 
-                          const tflite::RuntimeShape& filterShape, const intptr_t filterData, 
-                          const tflite::RuntimeShape& biasShape, const intptr_t biasData, 
-                          const tflite::RuntimeShape& outputShape, intptr_t outputData,
-                          const tflite::RuntimeShape& im2colShape, intptr_t im2colData) {
-    tflite::optimized_ops::Conv(op_params, 
-                                inputShape, (const float*)inputData, 
-                                filterShape, (const float*)filterData, 
-                                biasShape, (const float*)biasData, 
-                                outputShape, (float*)outputData, 
-                                im2colShape, (float*)im2colData);
-    return true;
+  bool convFloat32Wrapper(const ConvParams& op_params, 
+                          const RuntimeShape& inputShape, 
+                          const intptr_t inputData, 
+                          const RuntimeShape& filterShape, 
+                          const intptr_t filterData, 
+                          const RuntimeShape& biasShape, 
+                          const intptr_t biasData, 
+                          const RuntimeShape& outputShape, 
+                          intptr_t outputData,
+                          const RuntimeShape& im2colShape, 
+                          intptr_t im2colData) {
+    optimized_ops::Conv(op_params, 
+                        inputShape, (const float*)inputData, 
+                        filterShape, (const float*)filterData, 
+                        biasShape, (const float*)biasData, 
+                        outputShape, (float*)outputData, 
+                        im2colShape, (float*)im2colData);
   }
 
-  bool averagePoolFloat32Wrapper(const tflite::PoolParams op_params,
-                                 const tflite::RuntimeShape& inputShape, const intptr_t inputData, 
-                                 const tflite::RuntimeShape& outputShape, intptr_t outputData) {
-    tflite::optimized_ops::AveragePool(op_params,
-                                       inputShape, (const float*)inputData,
-                                       outputShape, (float*)outputData);
-    return true;
+  bool averagePoolFloat32Wrapper(const PoolParams op_params,
+                                 const RuntimeShape& inputShape, 
+                                 const intptr_t inputData, 
+                                 const RuntimeShape& outputShape, 
+                                 intptr_t outputData) {
+    optimized_ops::AveragePool(op_params,
+                               inputShape, (const float*)inputData,
+                               outputShape, (float*)outputData);
   }
 
-  bool maxPoolFloat32Wrapper(const tflite::PoolParams op_params,
-                             const tflite::RuntimeShape& inputShape, const intptr_t inputData, 
-                             const tflite::RuntimeShape& outputShape, intptr_t outputData) {
-    tflite::optimized_ops::MaxPool(op_params,
-                                   inputShape, (const float*)inputData,
-                                   outputShape, (float*)outputData);
-    return true;
+  bool maxPoolFloat32Wrapper(const PoolParams op_params,
+                             const RuntimeShape& inputShape, 
+                             const intptr_t inputData, 
+                             const RuntimeShape& outputShape, 
+                             intptr_t outputData) {
+    optimized_ops::MaxPool(op_params,
+                           inputShape, (const float*)inputData,
+                           outputShape, (float*)outputData);
   }
 
-  bool softmaxFloat32Wrapper(const tflite::SoftmaxParams op_params,
-                             const tflite::RuntimeShape& inputShape, const intptr_t inputData, 
-                             const tflite::RuntimeShape& outputShape, intptr_t outputData) {
-    tflite::optimized_ops::Softmax(op_params, inputShape, (const float*)inputData,
-                                   outputShape, (float*)outputData);
-    return true;
+  bool softmaxFloat32Wrapper(const SoftmaxParams op_params,
+                             const RuntimeShape& inputShape, 
+                             const intptr_t inputData, 
+                             const RuntimeShape& outputShape, 
+                             intptr_t outputData) {
+    optimized_ops::Softmax(op_params, inputShape, (const float*)inputData,
+                           outputShape, (float*)outputData);
   }
 
   bool reshapeGenericWrapper(const binding_utils::ReshapeParams op_params,
-                             const tflite::RuntimeShape& inputShape, const intptr_t inputData, 
-                             const tflite::RuntimeShape& outputShape, intptr_t outputData) {
+                             const RuntimeShape& inputShape, 
+                             const intptr_t inputData, 
+                             const RuntimeShape& outputShape, 
+                             intptr_t outputData) {
     // implement it by self due to no reshape op in tflite::optimized_ops
     uint32_t size_count = (uint32_t)op_params.size_count;
     memcpy((void*)outputData, (const void*)inputData, size_count);
-    return true;
   }
 
-  bool concatenationFloat32Wrapper(const tflite::ConcatenationParams op_params,  
-                                   const std::vector<tflite::RuntimeShape*> inputShapes, 
+  bool concatenationFloat32Wrapper(const ConcatenationParams op_params,  
+                                   const std::vector<RuntimeShape*> inputShapes, 
                                    const std::vector<intptr_t>& inputDataPtrs,
-                                   const tflite::RuntimeShape& outputShape, intptr_t outputData) {
-    tflite::optimized_ops::Concatenation<float>(op_params,
-                                                inputShapes.data(),
-                                                ((const std::vector<const float*>&)inputDataPtrs).data(), 
-                                                outputShape, (float*)outputData);
-    
-    return true;
+                                   const RuntimeShape& outputShape, 
+                                   intptr_t outputData) {
+    optimized_ops::Concatenation<float>(op_params,
+                                        inputShapes.data(),
+                                        ((const std::vector<const float*>&)inputDataPtrs).data(), 
+                                        outputShape, (float*)outputData);
   }
 
-  bool fullyConnectedFloat32Wrapper(const tflite::FullyConnectedParams op_params,
-                                    const tflite::RuntimeShape& inputShape, const intptr_t inputData, 
-                                    const tflite::RuntimeShape& weightsShape, const intptr_t weightsData, 
-                                    const tflite::RuntimeShape& biasShape, const intptr_t biasData, 
-                                    const tflite::RuntimeShape& outputShape, intptr_t outputData) {
-    tflite::optimized_ops::FullyConnected(op_params, 
-                                          inputShape, (const float*)inputData, 
-                                          weightsShape, (const float*)weightsData, 
-                                          biasShape, (const float*)biasData,
-                                          outputShape, (float*)outputData);
-    return true;
+  bool fullyConnectedFloat32Wrapper(const FullyConnectedParams op_params,
+                                    const RuntimeShape& inputShape, 
+                                    const intptr_t inputData, 
+                                    const RuntimeShape& weightsShape, 
+                                    const intptr_t weightsData, 
+                                    const RuntimeShape& biasShape, 
+                                    const intptr_t biasData, 
+                                    const RuntimeShape& outputShape, 
+                                    intptr_t outputData) {
+    optimized_ops::FullyConnected(op_params, 
+                                  inputShape, (const float*)inputData, 
+                                  weightsShape, (const float*)weightsData, 
+                                  biasShape, (const float*)biasData,
+                                  outputShape, (float*)outputData);
   }
 
-  bool resizeBilinearFloat32Wrapper(const tflite::ResizeBilinearParams op_params,
-                                    const tflite::RuntimeShape& inputShape, const intptr_t inputData, 
-                                    const tflite::RuntimeShape& outSizeShape, const intptr_t outSizeData,
-                                    const tflite::RuntimeShape& outputShape, intptr_t outputData) {
-    tflite::optimized_ops::ResizeBilinear(op_params, 
-                                          inputShape, (const float*)inputData, 
-                                          outSizeShape, (const int32_t*)outSizeData, 
-                                          outputShape, (float*)outputData);
-    return true;
+  bool resizeBilinearFloat32Wrapper(const ResizeBilinearParams op_params,
+                                    const RuntimeShape& inputShape, 
+                                    const intptr_t inputData, 
+                                    const RuntimeShape& outSizeShape, 
+                                    const intptr_t outSizeData,
+                                    const RuntimeShape& outputShape, 
+                                    intptr_t outputData) {
+    optimized_ops::ResizeBilinear(op_params, 
+                                  inputShape, (const float*)inputData, 
+                                  outSizeShape, (const int32_t*)outSizeData, 
+                                  outputShape, (float*)outputData);
   }
 
 }
@@ -342,72 +224,81 @@ EMSCRIPTEN_BINDINGS(nn)
   constant("LOWEST", std::numeric_limits<float>::lowest());
   constant("MIN", std::numeric_limits<float>::min());
 
-  class_<tflite::RuntimeShape>("RuntimeShape")
-    .constructor<int>(select_overload<tflite::RuntimeShape(int)>([](int dimensions_count) {
-        return tflite::RuntimeShape(dimensions_count);
+  class_<RuntimeShape>("RuntimeShape")
+    .constructor<int>(select_overload<RuntimeShape(int)>([](int dimensions_count) {
+        return RuntimeShape(dimensions_count);
       }
     ))
-    .property("dims", &binding_utils::getRuntimeShapeDimensions, &binding_utils::setRuntimeShapeDimensions)
-    .property("size", &binding_utils::getRuntimeShapeSize, &binding_utils::setRuntimeShapeSize)
+    .property("dims", &binding_utils::getRuntimeShapeDimensions, 
+                      &binding_utils::setRuntimeShapeDimensions)
+    .property("size", &binding_utils::getRuntimeShapeSize, 
+                      &binding_utils::setRuntimeShapeSize)
     ;
 
-  class_<tflite::ConvParams>("ConvParams")
-    .constructor<>()
-    .property("padding_values", &binding_utils::getPaddingValues<tflite::ConvParams>, &binding_utils::setPaddingValues<tflite::ConvParams>)
-    .property("strides", &binding_utils::getStrides<tflite::ConvParams>, &binding_utils::setStrides<tflite::ConvParams>)
-    .property("dilation_factors", &binding_utils::getDilationFactor<tflite::ConvParams>, &binding_utils::setDilationFactor<tflite::ConvParams>)
-    .property("float_activation_range", &binding_utils::getActivationRange<tflite::ConvParams>, &binding_utils::setActivationRange<tflite::ConvParams>)
+  value_object<PaddingValues>("PaddingValues")
+    .field("width", &PaddingValues::width)
+    .field("height", &PaddingValues::height)
     ;
 
-  class_<tflite::DepthwiseParams>("DepthwiseParams")
-    .constructor<>()
-    .property("padding_values", &binding_utils::getPaddingValues<tflite::DepthwiseParams>, &binding_utils::setPaddingValues<tflite::DepthwiseParams>)
-    .property("strides", &binding_utils::getStrides<tflite::DepthwiseParams>, &binding_utils::setStrides<tflite::DepthwiseParams>)
-    .property("dilation_factors", &binding_utils::getDilationFactor<tflite::DepthwiseParams>, &binding_utils::setDilationFactor<tflite::DepthwiseParams>)
-    .property("float_activation_range", &binding_utils::getActivationRange<tflite::DepthwiseParams>, &binding_utils::setActivationRange<tflite::DepthwiseParams>)
-    .property("depth_multiplier", &binding_utils::getDepthMultiplier<tflite::DepthwiseParams>, &binding_utils::setDepthMultiplier<tflite::DepthwiseParams>)
+  value_object<ConvParams>("ConvParams")
+    .field("padding_values", &ConvParams::padding_values)
+    .field("stride_width", &ConvParams::stride_width)
+    .field("stride_height", &ConvParams::stride_height)
+    .field("dilation_width_factor", &ConvParams::dilation_width_factor)
+    .field("dilation_height_factor", &ConvParams::dilation_height_factor)
+    .field("float_activation_min", &ConvParams::float_activation_min)
+    .field("float_activation_max", &ConvParams::float_activation_max)
     ;
 
-  class_<tflite::SoftmaxParams>("SoftmaxParams")
-    .constructor<>()
-    .property("beta", &binding_utils::getBeta<tflite::SoftmaxParams>, &binding_utils::setBeta<tflite::SoftmaxParams>)
+  value_object<DepthwiseParams>("DepthwiseParams")
+    .field("padding_values", &DepthwiseParams::padding_values)
+    .field("stride_width", &DepthwiseParams::stride_width)
+    .field("stride_height", &DepthwiseParams::stride_height)
+    .field("dilation_width_factor", &DepthwiseParams::dilation_width_factor)
+    .field("dilation_height_factor", &DepthwiseParams::dilation_height_factor)
+    .field("float_activation_min", &DepthwiseParams::float_activation_min)
+    .field("float_activation_max", &DepthwiseParams::float_activation_max)
+    .field("depth_multiplier", &DepthwiseParams::depth_multiplier)
     ;
 
-  class_<tflite::PoolParams>("PoolParams")
-    .constructor<>()
-    .property("padding_values", &binding_utils::getPaddingValues<tflite::PoolParams>, &binding_utils::setPaddingValues<tflite::PoolParams>)
-    .property("strides", &binding_utils::getStrides<tflite::PoolParams>, &binding_utils::setStrides<tflite::PoolParams>)
-    .property("filters", &binding_utils::getFilters<tflite::PoolParams>, &binding_utils::setFilters<tflite::PoolParams>)
-    .property("float_activation_range", &binding_utils::getActivationRange<tflite::PoolParams>, &binding_utils::setActivationRange<tflite::PoolParams>)
+  value_object<SoftmaxParams>("SoftmaxParams")
+    .field("beta", &SoftmaxParams::beta)
     ;
 
-  class_<tflite::ResizeBilinearParams>("ResizeBilinearParams")
-    .constructor<>()
-    .property("align_corners", &binding_utils::getAlignCorners<tflite::ResizeBilinearParams>, &binding_utils::setAlignCorners<tflite::ResizeBilinearParams>)
+  value_object<PoolParams>("PoolParams")
+    .field("padding_values", &PoolParams::padding_values)
+    .field("stride_width", &PoolParams::stride_width)
+    .field("stride_height", &PoolParams::stride_height)
+    .field("filter_width", &PoolParams::filter_width)
+    .field("filter_height", &PoolParams::filter_height)
+    .field("float_activation_min", &PoolParams::float_activation_min)
+    .field("float_activation_max", &PoolParams::float_activation_max)
     ;
 
-  class_<tflite::ConcatenationParams>("ConcatenationParams")
-    .constructor<>()
-    .property("axis", &binding_utils::getAxis<tflite::ConcatenationParams>, &binding_utils::setAxis<tflite::ConcatenationParams>)
-    .property("inputs_count", &binding_utils::getInputsCount<tflite::ConcatenationParams>, &binding_utils::setInputsCount<tflite::ConcatenationParams>)
+  value_object<ResizeBilinearParams>("ResizeBilinearParams")
+    .field("align_corners", &ResizeBilinearParams::align_corners)
     ;
 
-  class_<tflite::FullyConnectedParams>("FullyConnectedParams")
-    .constructor<>()
-    .property("float_activation_range", &binding_utils::getActivationRange<tflite::FullyConnectedParams>, &binding_utils::setActivationRange<tflite::FullyConnectedParams>)
+  value_object<ConcatenationParams>("ConcatenationParams")
+    .field("axis", &ConcatenationParams::axis)
+    .field("inputs_count", &ConcatenationParams::inputs_count)
     ;
 
-  class_<tflite::ArithmeticParams>("ArithmeticParams")
-    .constructor<>()
-    .property("float_activation_range", &binding_utils::getActivationRange<tflite::ArithmeticParams>, &binding_utils::setActivationRange<tflite::ArithmeticParams>)
+  value_object<FullyConnectedParams>("FullyConnectedParams")
+    .field("float_activation_min", &FullyConnectedParams::float_activation_min)
+    .field("float_activation_max", &FullyConnectedParams::float_activation_max)
     ;
 
-  class_<binding_utils::ReshapeParams>("ReshapeParams")
-    .constructor<>()
-    .property("size_count", &binding_utils::getSizeCount<binding_utils::ReshapeParams>, &binding_utils::setSizeCount<binding_utils::ReshapeParams>)
+  value_object<ArithmeticParams>("ArithmeticParams")
+    .field("float_activation_min", &ArithmeticParams::float_activation_min)
+    .field("float_activation_max", &ArithmeticParams::float_activation_max)
     ;
 
-  register_vector<tflite::RuntimeShape*>("VectorShape");
+  value_object<binding_utils::ReshapeParams>("ReshapeParams")
+    .field("size_count", &binding_utils::ReshapeParams::size_count)
+    ;
+
+  register_vector<RuntimeShape*>("VectorShape");
   register_vector<intptr_t>("VectorPtr");
 
 
