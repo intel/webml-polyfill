@@ -269,6 +269,11 @@ export default class WebGLModel {
         output.assign(activation(
             tf.matMul(input.reshape([batchSize, -1]), weights, false, true).add(bias)));
       } break;
+      case OperationCode.LOGISTIC: {
+        const input = operands[inputs[0]];
+        const output = operands[outputs[0]];
+        output.assign(input.sigmoid());
+      } break;
       case OperationCode.TANH: {
         const input = operands[inputs[0]];
         const output = operands[outputs[0]];
@@ -300,6 +305,45 @@ export default class WebGLModel {
         }
         output.assign(input.transpose(perm.value));
       } break;
+      case OperationCode.MAXIMUM: {
+        const in1 = operands[inputs[0]];
+        const in2 = operands[inputs[1]];
+        const output = operands[outputs[0]];
+        output.assign(tf.maximum(in1, in2));
+      } break;
+      case OperationCode.TRANSPOSE_CONV: {
+        const inCount = inputs.length;
+        if (inCount !== 6 && inCount !== 9) {
+          throw new Error('Invalid parameters number of TRANSPOSE_CONV');
+        }
+        let i = 0;
+        const outputShape = operands[inputs[i++]];
+        const filter = operands[inputs[i++]];
+        const input = operands[inputs[i++]];
+        const output = operands[outputs[0]];
+        let strideW, strideH;
+        if (outputShape.value === undefined) {
+          outputShape.value = outputShape.dataSync();
+        }
+        if (inCount === 6) {
+          const paddingCode = operands[inputs[i++]].value[0];
+          const padding = PaddingCodeMap.get(paddingCode);
+          strideW = operands[inputs[i++]].value[0];
+          strideH = operands[inputs[i++]].value[0];
+          output.assign(
+              input.conv2dTranspose(filter, outputShape.value, [strideH, strideW], padding));
+        } else {
+          const paddingLeft = operands[inputs[i++]].value[0];
+          const paddingRight = operands[inputs[i++]].value[0];
+          const paddingTop = operands[inputs[i++]].value[0];
+          const paddingBottom = operands[inputs[i++]].value[0];
+          strideW = operands[inputs[i++]].value[0];
+          strideH = operands[inputs[i++]].value[0];
+          output.assign(
+              input.pad([[0, 0], [paddingTop, paddingBottom], [paddingLeft, paddingRight], [0, 0]])
+                   .conv2d(filter, outputShape.value, [strideH, strideW], 'valid'));
+        }
+      } break;
       default: {
         throw new Error(`Operation ${op} is not supported`);
       }
@@ -320,14 +364,14 @@ export default class WebGLModel {
   }
 
   /**
-   * Change (depthwise)conv2d weights format 
+   * Change weights format 
    */
   _changeWeightsFormat() {
     this._operations.forEach(operation => {
       const op = operation.type;
       switch(op) {
         case OperationCode.CONV_2D: {
-          // NHWC -> HWCN
+          // [outChannels, filterH, filterW, inChannels] -> [filterH, filterW, inChannels, outChannels]
           // https://js.tensorflow.org/api/0.13.3/#conv2d
           const inputs = operation.inputs;
           const filter = this._operands[inputs[1]];
@@ -345,6 +389,14 @@ export default class WebGLModel {
           this._operands[inputs[1]] = filter.reshape([filterH, filterW, -1, depthMultipler]);
           filter.dispose();
         } break;
+        case OperationCode.TRANSPOSE_CONV: {
+          // [outChannels, filterH, filterW, inChannels] -> [filterH, filterW, outChannels, inChannels]
+          // https://js.tensorflow.org/api/0.13.3/#conv2dTranspose
+          const inputs = operation.inputs;
+          const filter = this._operands[inputs[1]];
+          this._operands[inputs[1]] = filter.transpose([1, 2, 0, 3]);
+          filter.dispose();
+        }
       }
     });
   }

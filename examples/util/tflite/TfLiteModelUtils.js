@@ -1,11 +1,19 @@
 const BuiltinOperators = [
+  // https://github.com/tensorflow/tensorflow/blob/daf0985028a8b0133e653e6fb9ee72a4bc1c2ed2/tensorflow/lite/builtin_ops.h
   'ADD', 'AVERAGE_POOL_2D', 'CONCATENATION', 'CONV_2D', 'DEPTHWISE_CONV_2D', 'DEPTH_TO_SPACE',
   'DEQUANTIZE', 'EMBEDDING_LOOKUP', 'FLOOR', 'FULLY_CONNECTED', 'HASHTABLE_LOOKUP',
   'L2_NORMALIZATION', 'L2_POOL_2D', 'LOCAL_RESPONSE_NORMALIZATION', 'LOGISTIC',
   'LSH_PROJECTION', 'LSTM', 'MAX_POOL_2D', 'MUL', 'RELU', 'RELU1', 'RELU6', 'RESHAPE',
-  'RESIZE_BILINEAR', 'RNN', 'SOFTMAX', 'SPACE_TO_DEPTH', 'SVDF', 'TANH', "CONCAT_EMBEDDINGS",
-  "SKIP_GRAM", "CALL", "CUSTOM", "EMBEDDING_LOOKUP_SPARSE", "PAD", "UNIDIRECTIONAL_SEQUENCE_RNN",
-  "GATHER", "BATCH_TO_SPACE_ND", "SPACE_TO_BATCH_ND", "TRANSPOSE", "MEAN", "SUB", "DIV", 'SQUEEZE'];
+  'RESIZE_BILINEAR', 'RNN', 'SOFTMAX', 'SPACE_TO_DEPTH', 'SVDF', 'TANH', 'CONCAT_EMBEDDINGS',
+  'SKIP_GRAM', 'CALL', 'CUSTOM', 'EMBEDDING_LOOKUP_SPARSE', 'PAD', 'UNIDIRECTIONAL_SEQUENCE_RNN',
+  'GATHER', 'BATCH_TO_SPACE_ND', 'SPACE_TO_BATCH_ND', 'TRANSPOSE', 'MEAN', 'SUB', 'DIV', 'SQUEEZE',
+  'UNIDIRECTIONAL_SEQUENCE_LSTM', 'STRIDED_SLICE', 'BIDIRECTIONAL_SEQUENCE_RNN', 'EXP', 'TOPK_V2',
+  'SPLIT', 'LOG_SOFTMAX', 'DELEGATE', 'BIDIRECTIONAL_SEQUENCE_LSTM', 'CAST', 'PRELU', 'MAXIMUM',
+  'ARG_MAX', 'MINIMUM', 'LESS', 'NEG', 'PADV2', 'GREATER', 'GREATER_EQUAL', 'LESS_EQUAL',
+  'SELECT', 'SLICE', 'SIN', 'TRANSPOSE_CONV', 'SPARSE_TO_DENSE', 'TILE', 'EXPAND_DIMS',
+  'EQUAL', 'NOT_EQUAL', 'LOG', 'SUM', 'SQRT', 'RSQRT', 'SHAPE', 'POW', 'ARG_MIN', 'FAKE_QUANT',
+  'REDUCE_PROD', 'REDUCE_MAX', 'PACK', 'LOGICAL_OR', 'ONE_HOT', 'LOGICAL_AND', 'LOGICAL_NOT'
+];
 
 const TensorTypes = ['FLOAT32', 'FLOAT16', 'INT32', 'UINT8', 'INT64', 'STRING'];
 
@@ -28,6 +36,11 @@ function printTfLiteModel(model) {
     switch(op) {
       case 'ADD': {
         let options = operator.builtinOptions(new tflite.AddOptions());
+        console.log(`\t\t\t  builtin_options: {` +
+          `fused_activation_function: ${ActivationFunctionTypes[options.fusedActivationFunction()]}}}`);
+      } break;
+      case 'MUL': {
+        let options = operator.builtinOptions(new tflite.MulOptions());
         console.log(`\t\t\t  builtin_options: {` +
           `fused_activation_function: ${ActivationFunctionTypes[options.fusedActivationFunction()]}}}`);
       } break;
@@ -91,14 +104,19 @@ function printTfLiteModel(model) {
         let options = operator.builtinOptions(new tflite.FullyConnectedOptions());
         console.log(`\t\t\t  builtin_options: {fused_activation_function: ${ActivationFunctionTypes[options.fusedActivationFunction()]}}}`);
       } break;
-      case 'TANH': {
+      case 'LOGISTIC':
+      case 'TANH':
+      case 'BATCH_TO_SPACE_ND':
+      case 'TRANSPOSE': 
+      case 'MAXIMUM': { 
         console.log(`\t\t\t  builtin_options: null}`);
       } break;
-      case 'BATCH_TO_SPACE_ND': {
-        console.log(`\t\t\t  builtin_options: null}`);
-      } break;
-      case 'TRANSPOSE': {
-        console.log(`\t\t\t  builtin_options: null}`);
+      case 'TRANSPOSE_CONV': {
+        let options = operator.builtinOptions(new tflite.TransposeConvOptions());
+        console.log(`\t\t\t  builtin_options: {` +
+          `padding: ${PaddingTypes[options.padding()]}, ` +
+          `stride_w: ${options.strideW()}, ` +
+          `stride_h: ${options.strideH()}}}`);
       } break;
       default: {
         console.warn(`\t\t\t  builtin_options: ${op} is not supported.}`);

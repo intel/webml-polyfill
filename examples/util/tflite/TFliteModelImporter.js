@@ -139,6 +139,15 @@ class TFliteModelImporter {
           inputs.push(this._addScalarInt32(fuseCode));
           opType = this._nn.ADD;
         } break;
+        case tflite.BuiltinOperator.MUL: {
+          let options = operator.builtinOptions(new tflite.MulOptions());
+          let fuseCode = FuseCodeMap.get(options.fusedActivationFunction());
+          if (typeof fuseCode === 'undefined') {
+            throw new Error(`Fuse code ${options.fusedActivationFunction()} is not supported.`);
+          }
+          inputs.push(this._addScalarInt32(fuseCode));
+          opType = this._nn.MUL;
+        } break;
         case tflite.BuiltinOperator.CONV_2D: {
           let options = operator.builtinOptions(new tflite.Conv2DOptions());
           let paddingCode = PaddingCodeMap.get(options.padding());
@@ -242,6 +251,9 @@ class TFliteModelImporter {
           inputs.push(this._addScalarInt32(fuseCode));
           opType = this._nn.FULLY_CONNECTED;
         } break;
+        case tflite.BuiltinOperator.LOGISTIC: {
+          opType = this._nn.LOGISTIC;
+        } break;
         case tflite.BuiltinOperator.TANH: {
           opType = this._nn.TANH;
         } break;
@@ -250,6 +262,22 @@ class TFliteModelImporter {
         } break;
         case tflite.BuiltinOperator.TRANSPOSE: {
           opType = this._nn.TRANSPOSE;
+        } break;
+        case tflite.BuiltinOperator.MAXIMUM: {
+          opType = this._nn.MAXIMUM;
+        } break;
+        case tflite.BuiltinOperator.TRANSPOSE_CONV: {
+          // should be define as
+          // https://android.googlesource.com/platform/frameworks/ml/+/master/nn/runtime/include/NeuralNetworks.h
+          let options = operator.builtinOptions(new tflite.TransposeConvOptions());
+          let paddingCode = PaddingCodeMap.get(options.padding());
+          if (typeof paddingCode === 'undefined') {
+            throw new Error(`Padding code ${options.padding()} is not supported.`);
+          }
+          inputs.push(this._addScalarInt32(paddingCode));
+          inputs.push(this._addScalarInt32(options.strideW()));
+          inputs.push(this._addScalarInt32(options.strideH()));
+          opType = this._nn.TRANSPOSE_CONV;
         } break;
         default: {
           throw new Error(`operator type ${opCode} is not supported.`);
