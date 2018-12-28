@@ -1,3 +1,19 @@
+const fsrcnn_96_4 = {
+  modelName: 'FSRCNN 96x4',
+  inputSize: [96, 96, 3],
+  outputSize: [384, 384, 3],
+  scale: 4,
+  modelFile: './model/fsrcnn_96_4.tflite'
+};
+
+const fsrcnn_128_4 = {
+  modelName: 'FSRCNN 128x4',
+  inputSize: [128, 128, 3],
+  outputSize: [512, 512, 3],
+  scale: 4,
+  modelFile: './model/fsrcnn_128_4.tflite'
+};
+
 const srgan_96_4 = {
   modelName: 'SRGAN 96x4',
   inputSize: [96, 96, 3],
@@ -15,6 +31,8 @@ const srgan_128_4 = {
 };
 
 const availableModels = [
+  fsrcnn_96_4,
+  fsrcnn_128_4,
   srgan_96_4,
   srgan_128_4
 ];
