@@ -45,7 +45,6 @@ function main(camera) {
   const selectBackgroundButton = document.getElementById('chooseBackground');
   const clearBackgroundButton = document.getElementById('clearBackground');
   const outputCanvas = document.getElementById('output');
-  const preprocessCanvas = document.createElement('canvas');
   let clippedSize = [];
   let currentBackend = '';
   let currentModel = '';
@@ -256,8 +255,11 @@ function main(camera) {
         if (!camera) {
           predictAndDraw(imageElement);
         } else {
-          streaming = true;
-          startPredict();
+          let res = utils.getFittedResolution(4 / 3);
+          setCamResolution(res).then(() => {
+            streaming = true;
+            startPredict();
+          });
         }
       });
     }, 10);
@@ -313,32 +315,24 @@ function main(camera) {
     }
   }
 
-  function predictAndDraw(imageSource) {
-    clippedSize = utils.prepareCanvas(preprocessCanvas, imageSource);
-    // console.debug('1 upload start');
-    renderer.uploadNewTexture(imageSource, clippedSize)
-      // .then(_ => console.debug('2 upload done'));
-
-    // console.debug('3 predict start');
-    return utils.predict(preprocessCanvas).then(result => {
-      // console.debug('4 predict done, draw start');
-      let inferTime = result.time;
-      console.log(`Inference time: ${inferTime.toFixed(2)} ms`);
-      inferenceTime.innerHTML = `inference time: <em style="color:green;font-weight:bloder">${inferTime.toFixed(2)} </em>ms`;
-
-      renderer.drawOutputs(result.segMap)
-        // .then((drawTime) => {
-        //   inferTimeAcc += inferTime;
-        //   drawTimeAcc += drawTime;
-        //   if (++counter === counterN) {
-        //     console.debug(`(${counterN} frames) Infer time: ${(inferTimeAcc / counterN).toFixed(2)} ms`);
-        //     console.debug(`(${counterN} frames) Draw time: ${(drawTimeAcc / counterN).toFixed(2)} ms`);
-        //     counter = inferTimeAcc = drawTimeAcc = 0;
-        //   }
-        // });
-      renderer.highlightHoverLabel(hoverPos);
-      // console.debug('5 draw done\n\n');
-    });
+  async function predictAndDraw(imageSource) {
+    clippedSize = utils.prepareInput(imageSource);
+    renderer.uploadNewTexture(imageSource, clippedSize);
+    let result = await utils.predict();
+    let inferTime = result.time;
+    console.log(`Inference time: ${inferTime.toFixed(2)} ms`);
+    inferenceTime.innerHTML = `inference time: <em style="color:green;font-weight:bloder">${inferTime.toFixed(2)} </em>ms`;
+    renderer.drawOutputs(result.segMap)
+      // .then((drawTime) => {
+      //   inferTimeAcc += inferTime;
+      //   drawTimeAcc += drawTime;
+      //   if (++counter === counterN) {
+      //     console.debug(`(${counterN} frames) Infer time: ${(inferTimeAcc / counterN).toFixed(2)} ms`);
+      //     console.debug(`(${counterN} frames) Draw time: ${(drawTimeAcc / counterN).toFixed(2)} ms`);
+      //     counter = inferTimeAcc = drawTimeAcc = 0;
+      //   }
+      // });
+    renderer.highlightHoverLabel(hoverPos);
   }
 
 
@@ -374,6 +368,25 @@ function main(camera) {
     } else {
       currentBackend = 'WebGL';
     }
+  }
+
+  function setCamResolution(resolution) {
+    return navigator.mediaDevices.getUserMedia({
+      audio: false,
+      video: {
+        width: resolution[0],
+        height: resolution[1],
+        facingMode: 'environment',
+      }
+    }).then((stream) => {
+      videoElement.srcObject = stream;
+      return new Promise((resolve) => {
+        // video cannot be uploaded to texture until being loaded
+        videoElement.onloadeddata = resolve;
+      });
+    }).catch((error) => {
+      console.log('getUserMedia error: ' + error.name, error);
+    });
   }
 
   // register models
@@ -502,15 +515,8 @@ function main(camera) {
     stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
     document.body.appendChild(stats.dom);
 
-    navigator.mediaDevices.getUserMedia({
-      audio: false,
-      video: {
-        // height: 513,
-        // width: 513,
-        facingMode: 'environment',
-      }
-    }).then((stream) => {
-      video.srcObject = stream;
+    let res = utils.getFittedResolution(4 / 3);
+    setCamResolution(res).then(() => {
       utils.init(currentBackend, currentPrefer).then(() => {
         updateBackend();
         updateModel();
@@ -523,9 +529,7 @@ function main(camera) {
         showAlert(utils.model._backend);
         changeBackend('WASM');
       });
-    }).catch((error) => {
-      console.log('getUserMedia error: ' + error.name, error);
-    });
+    })
   }
 
 

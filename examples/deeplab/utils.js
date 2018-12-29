@@ -12,6 +12,9 @@ class Utils {
     this.outputSize;
     this.preOptions;
     this.postOptions;
+    // this.preprocessCanvas = new OffscreenCanvas(224, 224);
+    this.preprocessCanvas = document.createElement('canvas');
+    this.preprocessCtx = this.preprocessCanvas.getContext('2d');    
 
     this.initialized = false;
   }
@@ -36,19 +39,16 @@ class Utils {
     result = await this.model.createCompiledModel();
     console.log(`compilation result: ${result}`);
     let start = performance.now();
-    this.outputTensor = new Float32Array(this.outputSize.reduce((x,y) => x*y));
     result = await this.model.compute(this.inputTensor, this.outputTensor);
     let elapsed = performance.now() - start;
     console.log(`warmup time: ${elapsed.toFixed(2)} ms`);
     this.initialized = true;
   }
 
-  async predict(canvas) {
+  async predict() {
     if (!this.initialized) return;
-    this.prepareInputTensor(this.inputTensor, canvas);
-    this.outputTensor = new Float32Array(this.outputSize.reduce((x,y) => x*y));
     let start = performance.now();
-    let result = await this.model.compute(this.inputTensor, this.outputTensor);
+    await this.model.compute(this.inputTensor, this.outputTensor);
     let elapsed = performance.now() - start;
     return {
       time: elapsed,
@@ -90,12 +90,24 @@ class Utils {
     });
   }
 
-  prepareCanvas(canvas, imgSrc) {
+  getFittedResolution(aspectRatio) {
     const height = this.inputSize[0];
     const width = this.inputSize[1];
 
-    canvas.width = width;
-    canvas.height = height;
+    // aspectRatio = width / height
+    if (aspectRatio > 1) {
+      return [width, Math.floor(height / aspectRatio)];
+    } else {
+      return [Math.floor(width / aspectRatio), height];
+    }
+  }
+
+  prepareInput(imgSrc) {
+    const height = this.inputSize[0];
+    const width = this.inputSize[1];
+
+    this.preprocessCanvas.width = width;
+    this.preprocessCanvas.height = height;
 
     let imWidth = imgSrc.naturalWidth | imgSrc.videoWidth;
     let imHeight = imgSrc.naturalHeight | imgSrc.videoHeight;
@@ -103,22 +115,15 @@ class Utils {
     let resizeRatio = Math.max(Math.max(imWidth, imHeight) / width, 1);
     let scaledWidth = Math.floor(imWidth / resizeRatio);
     let scaledHeight = Math.floor(imHeight / resizeRatio);
-    let ctx = canvas.getContext('2d');
-    ctx.drawImage(imgSrc, 0, 0, scaledWidth, scaledHeight);
 
-    return [scaledWidth, scaledHeight];
-  }
+    // better to keep resizeRatio at 1
+    // avoid scaling images in `drawImage`, especially in real time scenarios
+    this.preprocessCtx.drawImage(imgSrc, 0, 0, scaledWidth, scaledHeight);
+    const pixels = this.preprocessCtx.getImageData(0, 0, width, height).data;
 
-  prepareInputTensor(tensor, canvas) {
-    let start = performance.now();
-
-    const height = canvas.height;
-    const width = canvas.width;
+    const tensor = this.inputTensor;
     const channels = 3;
     const imageChannels = 4;
-    
-    const ctx = canvas.getContext('2d');
-    const pixels = ctx.getImageData(0, 0, width, height).data;
 
     // NHWC layout
     for (let y = 0; y < height; ++y) {
@@ -129,7 +134,8 @@ class Utils {
         }
       }
     }
-    console.log(`Prepare time: ${(performance.now() - start).toFixed(2)} ms`);
+
+    return [scaledWidth, scaledHeight];
   }
 
   deleteAll() {
