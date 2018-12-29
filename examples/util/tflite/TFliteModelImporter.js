@@ -262,7 +262,7 @@ class TFliteModelImporter {
           this._tensorIds.push(tensorId);
           this._model.setOperandValue(tensorId, new Int32Array([1, 1001]));
           inputs.push(tensorId);
-          opType = this._nn.RESHAPE;          
+          opType = this._nn.RESHAPE;         
         } break;
         case tflite.BuiltinOperator.FULLY_CONNECTED: {
           let options = operator.builtinOptions(new tflite.FullyConnectedOptions());
