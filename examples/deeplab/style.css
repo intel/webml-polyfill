@@ -29,10 +29,6 @@ video {
   position: absolute;
   bottom: 0;
 }
-.image-wrapper.show .overlay {
-  opacity: 1;
-  z-index: 999 !important;
-}
 .progress-label {
   float: left;
   margin-right: 1em;
@@ -104,12 +100,18 @@ video {
   border-radius: 10px;
 }
 .controls .btn-group * {
-  color: #fff;
-  background-color: #777;
-  font-size: 9px;
+  color: #6c757d;
+  background-color: #fff;
+  font-size: 10px;
+}
+.controls .btn-group .btn.active {
+  outline: 0;
+  -webkit-box-shadow: none;
+          box-shadow: none;
 }
 .controls .btn-group .btn {
   width: 24%;
+  padding: 4px;
 }
 .effects-select label:nth-child(1) {
   border-radius: 3px !important;

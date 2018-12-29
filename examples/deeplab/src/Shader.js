@@ -60,7 +60,7 @@ class Shader {
     this._gl.attachShader(program, fragmentShader);
     this._gl.linkProgram(program);
     if (!this._gl.getProgramParameter(program, this._gl.LINK_STATUS)) {
-      let log = this._gl.getShaderInfoLog(shader);
+      let log = this._gl.getProgramInfoLog(program);
       this._gl.deleteProgram(program);
       throw new Error(log);
     }

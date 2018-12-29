@@ -14,22 +14,6 @@ const deeplab513dilated = {
   outputSize: [513, 513, 21],
 };
 
-const deeplab224 = {
-  modelName: 'DeepLab 224',
-  modelFile: './model/deeplab_mobilenetv2_224.tflite',
-  labelsFile: './model/labels.txt',
-  inputSize: [224, 224, 3],
-  outputSize: [224, 224, 21],
-};
-
-const deeplab224dilated = {
-  modelName: 'DeepLab 224 Atrous',
-  modelFile: './model/deeplab_mobilenetv2_224_dilated.tflite',
-  labelsFile: './model/labels.txt',
-  inputSize: [224, 224, 3],
-  outputSize: [224, 224, 21],
-};
-
 const preferMap = {
   'MPS': 'sustained',
   'BNNS': 'fast',
@@ -40,10 +24,8 @@ const preferMap = {
 function main(camera) {
 
   const availableModels = [
-    deeplab224dilated,
     deeplab513dilated,
     deeplab513,
-    deeplab224,
   ];
   const videoElement = document.getElementById('video');
   const imageElement = document.getElementById('image');
@@ -143,7 +125,7 @@ function main(camera) {
     renderer.refineEdgeRadius = refineEdgeRadius;
   };
 
-  
+
 
   $('.effects-select .btn input').filter(function() {
     return this.value === renderer.effect;
@@ -216,8 +198,10 @@ function main(camera) {
     }
     streaming = false;
     if (newBackend !== "WebML") {
+      renderer._correctionFactor = 0.99;
       selectPrefer.style.display = 'none';
     } else {
+      renderer._correctionFactor = 1;
       selectPrefer.style.display = 'inline';
     }
     // renderer.deleteAll();

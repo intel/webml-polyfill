@@ -1,14 +1,14 @@
 class GuidedFilter {
   constructor(context) {
 
-    this._gl = context;
+    this.gl = context;
     this.utils = new WebGLUtils(context);
 
-    if (!this._gl.getExtension('EXT_color_buffer_float')) {
+    if (!this.gl.getExtension('EXT_color_buffer_float')) {
       throw new Error('not support EXT_color_buffer_float');
     }
 
-    if (!this._gl.getExtension('OES_texture_float_linear')) {
+    if (!this.gl.getExtension('OES_texture_float_linear')) {
       throw new Error('not support OES_texture_float_linear');
     }
 
@@ -28,14 +28,17 @@ class GuidedFilter {
       this.subWidth = this.width / this.subsample;
       this.subHeight = this.height / this.subsample;
     }
+    
+    this._correctionFactor = 0.99;
   }
 
-  setup(radius, epsilon, width, height) {
+  setup(radius, epsilon, width, height, correct) {
 
     this.radius = radius;
     this.epsilon = epsilon;
     this.width = width;
     this.height = height;
+    this._correctionFactor = correct;
     if (this.radius < 4) {
       this.subRadius = this.radius;
       this.subWidth = this.width;
@@ -66,7 +69,7 @@ class GuidedFilter {
         void main() {
           gl_Position = a_pos;
           v_texcoord = a_pos.xy * vec2(0.5, -0.5) + 0.5;
-          v_maskcoord = v_texcoord * 0.99;
+          v_maskcoord = v_texcoord * float(${this._correctionFactor});
         }`;
 
     const fs =
@@ -89,16 +92,16 @@ class GuidedFilter {
           result = vec4(I, p, Ip, II);
         }`;
 
-    this.shaders.hadamard4 = new Shader(this._gl, vs, fs);
+    this.shaders.hadamard4 = new Shader(this.gl, vs, fs);
 
     this.utils.createAndBindTexture({
       name: 'p',
-      filter: this._gl.NEAREST,
+      filter: this.gl.NEAREST,
     });
 
     this.utils.createAndBindTexture({
       name: 'I',
-      filter: this._gl.LINEAR,
+      filter: this.gl.LINEAR,
     });
 
     this.utils.createTexInFrameBuffer('fbo1',
@@ -106,9 +109,9 @@ class GuidedFilter {
         name: 'result1',
         width: this.subWidth,
         height: this.subHeight,
-        filter: this._gl.NEAREST,
-        type: this._gl.FLOAT,
-        internalformat: this._gl.RGBA32F,
+        filter: this.gl.NEAREST,
+        type: this.gl.FLOAT,
+        internalformat: this.gl.RGBA32F,
       }]
     );
     this.shaders.hadamard4.use();
@@ -155,15 +158,15 @@ class GuidedFilter {
           out_color = result / (2.0 * float(radius) + 1.0);
         }`;
 
-    this.shaders.boxFilter = new Shader(this._gl, vs, fs);
+    this.shaders.boxFilter = new Shader(this.gl, vs, fs);
     this.utils.createTexInFrameBuffer('pingpong',
       [{
         name: 'pingpongTemp',
         width: this.subWidth,
         height: this.subHeight,
-        filter: this._gl.LINEAR,
-        type: this._gl.FLOAT,
-        internalformat: this._gl.RGBA32F,
+        filter: this.gl.LINEAR,
+        type: this.gl.FLOAT,
+        internalformat: this.gl.RGBA32F,
       }]
     );
 
@@ -172,9 +175,9 @@ class GuidedFilter {
         name: 'result2',
         width: this.subWidth,
         height: this.subHeight,
-        filter: this._gl.LINEAR,
-        type: this._gl.FLOAT,
-        internalformat: this._gl.RGBA32F,
+        filter: this.gl.LINEAR,
+        type: this.gl.FLOAT,
+        internalformat: this.gl.RGBA32F,
       }]
     );
 
@@ -183,9 +186,9 @@ class GuidedFilter {
         name: 'result5',
         width: this.width,
         height: this.height,
-        filter: this._gl.LINEAR,
-        type: this._gl.FLOAT,
-        internalformat: this._gl.RGBA32F,
+        filter: this.gl.LINEAR,
+        type: this.gl.FLOAT,
+        internalformat: this.gl.RGBA32F,
       }]
     );
   }
@@ -209,7 +212,7 @@ class GuidedFilter {
 
         in vec2 v_texcoord;
         out vec4 result;
-  
+
         uniform sampler2D result2;
 
         void main() {
@@ -219,16 +222,16 @@ class GuidedFilter {
           result.xy = vec2(mean_I * mean_p, mean_I * mean_I);
         }`;
 
-    this.shaders.hadamard2 = new Shader(this._gl, vs, fs);
+    this.shaders.hadamard2 = new Shader(this.gl, vs, fs);
 
     this.utils.createTexInFrameBuffer('fbo3',
       [{
         name: 'result3',
         width: this.subWidth,
         height: this.subHeight,
-        filter: this._gl.NEAREST,
-        type: this._gl.FLOAT,
-        internalformat: this._gl.RGBA32F,
+        filter: this.gl.NEAREST,
+        type: this.gl.FLOAT,
+        internalformat: this.gl.RGBA32F,
       }]
     );
   }
@@ -275,7 +278,7 @@ class GuidedFilter {
           result.xy = vec2(a, b);
         }`;
 
-    this.shaders.covar = new Shader(this._gl, vs, fs);
+    this.shaders.covar = new Shader(this.gl, vs, fs);
 
     this.shaders.covar.use();
     this.shaders.covar.set1i('result2', 0); // texture units 0
@@ -286,9 +289,9 @@ class GuidedFilter {
         name: 'result4',
         width: this.subWidth,
         height: this.subHeight,
-        filter: this._gl.NEAREST,
-        type: this._gl.FLOAT,
-        internalformat: this._gl.RGBA32F,
+        filter: this.gl.NEAREST,
+        type: this.gl.FLOAT,
+        internalformat: this.gl.RGBA32F,
       }]
     );
   }
@@ -330,7 +333,7 @@ class GuidedFilter {
           result = vec4(intensity, intensity, intensity, intensity);
         }`;
 
-    this.shaders.final = new Shader(this._gl, vs, fs);
+    this.shaders.final = new Shader(this.gl, vs, fs);
 
     this.shaders.final.use();
     this.shaders.final.set1i('result5', 0); // texture units 0
@@ -341,7 +344,7 @@ class GuidedFilter {
         name: 'result6',
         width: this.width,
         height: this.height,
-        filter: this._gl.LINEAR,
+        filter: this.gl.LINEAR,
       }]
     );
   }
@@ -350,26 +353,26 @@ class GuidedFilter {
     let start = performance.now();
 
     this.utils.bindTexture('p');
-    this._gl.pixelStorei(this._gl.UNPACK_ALIGNMENT, 1);
-    this._gl.texImage2D(
-      this._gl.TEXTURE_2D,
+    this.gl.pixelStorei(this.gl.UNPACK_ALIGNMENT, 1);
+    this.gl.texImage2D(
+      this.gl.TEXTURE_2D,
       0,
-      this._gl.ALPHA,
+      this.gl.ALPHA,
       maskWidth,
       maskHeight,
       0,
-      this._gl.ALPHA,
-      this._gl.UNSIGNED_BYTE,
+      this.gl.ALPHA,
+      this.gl.UNSIGNED_BYTE,
       input
     );
 
     this.utils.bindTexture('I');
-    this._gl.texImage2D(
-      this._gl.TEXTURE_2D,
+    this.gl.texImage2D(
+      this.gl.TEXTURE_2D,
       0,
-      this._gl.LUMINANCE,
-      this._gl.LUMINANCE,
-      this._gl.UNSIGNED_BYTE,
+      this.gl.LUMINANCE,
+      this.gl.LUMINANCE,
+      this.gl.UNSIGNED_BYTE,
       guideImage
     );
 

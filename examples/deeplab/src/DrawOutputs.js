@@ -1,13 +1,13 @@
 class Renderer {
   constructor(canvas) {
 
-    this._gl = canvas.getContext('webgl2');
-    if (this._gl === null) {
+    this.gl = canvas.getContext('webgl2');
+    if (this.gl === null) {
       throw new Error('Unable to initialize WebGL.');
     }
 
-    this.guidedFilter = new GuidedFilter(this._gl);
-    this.utils = new WebGLUtils(this._gl);
+    this.guidedFilter = new GuidedFilter(this.gl);
+    this.utils = new WebGLUtils(this.gl);
 
     this.shaders = {};
 
@@ -16,17 +16,19 @@ class Renderer {
     this._clippedSize = [224, 224];
     this._imageSource = null;
 
+    // workaround for lack of `align_corner` in `RESIZE_BILINEAR`
+    this._correctionFactor = 0.99;
+
+    // UI state
     this._effect = 'label';
     this._zoom = 2;
-    this._bgColor = [57, 135, 189]; // rgb
+    this._bgColor = [57, 135, 189];
     this._colorMapAlpha = 0.7;
     this._blurRadius = 30;
     this._backgroundImageSource = null;
     let kernel1D = this._generateGaussianKernel1D(this._blurRadius * 2 + 1);
     this._halfKernel = kernel1D.slice(this._blurRadius); // take the second half
     this._guidedFilterRadius = 0;
-
-    this._correctionFactor = 0.99;
 
     this._colorPalette = new Uint8Array([
       45, 52, 54,
@@ -88,8 +90,8 @@ class Renderer {
     // take the second half
     this._halfKernel = kernel1D.slice(radius);
 
-    // reconfigure shaders with new kernel
-    this.setup().then(_ => this.drawOutputs(this._segMap));
+    this._setupBlurShader();
+    this.drawOutputs(this._segMap);
   }
 
   get colorMapAlpha() {
@@ -124,7 +126,8 @@ class Renderer {
       this._guidedFilterRadius,
       1e-6,
       this._clippedSize[0] * this._zoom,
-      this._clippedSize[1] * this._zoom
+      this._clippedSize[1] * this._zoom,
+      this._correctionFactor
     );
     this.setup().then(_ => this.drawOutputs(this._segMap));
   }
@@ -185,7 +188,8 @@ class Renderer {
       this._guidedFilterRadius,
       1e-6,
       this._clippedSize[0] * this._zoom,
-      this._clippedSize[1] * this._zoom
+      this._clippedSize[1] * this._zoom,
+      this._correctionFactor
     );
 
     this.utils.setup2dQuad();
@@ -227,7 +231,7 @@ class Renderer {
       void main() {
         gl_Position = a_pos;
         v_texcoord = a_pos.xy * vec2(0.5, -0.5) + 0.5;
-        v_maskcord = v_texcoord * ${this._correctionFactor};
+        v_maskcord = v_texcoord * float(${this._correctionFactor});
       }`;
 
     const fs =
@@ -251,7 +255,7 @@ class Renderer {
         out_color = mix(im_color, label_color, u_alpha);
       }`;
 
-    this.shaders.colorize = new Shader(this._gl, vs, fs);
+    this.shaders.colorize = new Shader(this.gl, vs, fs);
     this.shaders.colorize.use();
     this.shaders.colorize.set1i('u_image', 0); // texture units 0
     this.shaders.colorize.set1i('u_predictions', 1); // texture units 1
@@ -261,29 +265,29 @@ class Renderer {
     if (typeof this.utils.getTexture('image') === 'undefined') {
       this.utils.createAndBindTexture({
         name: 'image',
-        filter: this._gl.LINEAR,
+        filter: this.gl.LINEAR,
       });
     }
 
     this.utils.createAndBindTexture({
       name: 'predictions',
-      filter: this._gl.NEAREST,
+      filter: this.gl.NEAREST,
     });
 
     this.utils.createAndBindTexture({
       name: 'palette',
-      filter: this._gl.NEAREST,
+      filter: this.gl.NEAREST,
     });
 
-    this._gl.texImage2D(
-      this._gl.TEXTURE_2D,
+    this.gl.texImage2D(
+      this.gl.TEXTURE_2D,
       0,
-      this._gl.RGB,
+      this.gl.RGB,
       this._colorPalette.length / 3,
       1,
       0,
-      this._gl.RGB,
-      this._gl.UNSIGNED_BYTE,
+      this.gl.RGB,
+      this.gl.UNSIGNED_BYTE,
       this._colorPalette
     );
   }
@@ -301,21 +305,20 @@ class Renderer {
       void main() {
         gl_Position = a_pos;
         v_texcoord = a_pos.xy * vec2(0.5, -0.5) + 0.5;
-        v_maskcord = v_texcoord * ${this._correctionFactor};
+        v_maskcord = v_texcoord * float(${this._correctionFactor});
       }`;
 
     const vsWithPreprocess =
-    `#version 300 es
-    in vec4 a_pos;
-    out vec2 v_texcoord;
-    out vec2 v_maskcord;
+      `#version 300 es
+      in vec4 a_pos;
+      out vec2 v_texcoord;
+      out vec2 v_maskcord;
 
-    void main() {
-      gl_Position = a_pos;
-      v_texcoord = a_pos.xy * vec2(0.5, -0.5) + 0.5;
-      v_maskcord = a_pos.xy * vec2(0.5, 0.5) + 0.5;
-    }`;
-  
+      void main() {
+        gl_Position = a_pos;
+        v_texcoord = a_pos.xy * vec2(0.5, -0.5) + 0.5;
+        v_maskcord = a_pos.xy * vec2(0.5, 0.5) + 0.5;
+      }`;
 
     const fs =
       `#version 300 es
@@ -340,21 +343,21 @@ class Renderer {
 
     if (this._guidedFilterRadius === 0) {
       // guided filter is disabled
-      this.shaders.extract = new Shader(this._gl, vsWithoutPreprocess, fs);
+      this.shaders.extract = new Shader(this.gl, vsWithoutPreprocess, fs);
     } else {
-      this.shaders.extract = new Shader(this._gl, vsWithPreprocess, fs);
+      this.shaders.extract = new Shader(this.gl, vsWithPreprocess, fs);
     }
 
     if (typeof this.utils.getTexture('image') === 'undefined') {
       this.utils.createAndBindTexture({
         name: 'image',
-        filter: this._gl.LINEAR,
+        filter: this.gl.LINEAR,
       });
     }
 
     this.utils.createAndBindTexture({
       name: 'predictions',
-      filter: this._gl.NEAREST,
+      filter: this.gl.NEAREST,
     });
 
     this.utils.createTexInFrameBuffer('extract',
@@ -415,7 +418,7 @@ class Renderer {
         out_color = result;
       }`;
 
-    this.shaders.blur = new Shader(this._gl, vs, fs);
+    this.shaders.blur = new Shader(this.gl, vs, fs);
     this.shaders.blur.use();
     this.shaders.blur.set1fv('kernel', this._halfKernel);
 
@@ -461,7 +464,7 @@ class Renderer {
         out_color = fill_color;
       }`;
 
-    this.shaders.fill = new Shader(this._gl, vs, fs);
+    this.shaders.fill = new Shader(this.gl, vs, fs);
     this.shaders.fill.use();
     // set solid color in fill shader
     const fillColor = this._bgColor.map(x => x / 255);
@@ -531,7 +534,7 @@ class Renderer {
         }
       }`;
 
-    this.shaders.image = new Shader(this._gl, vs, fs);
+    this.shaders.image = new Shader(this.gl, vs, fs);
     this.utils.createAndBindTexture({
       name: 'bgImage'
     });
@@ -552,12 +555,12 @@ class Renderer {
     if (this._backgroundImageSource) {
       this.shaders.image.set1i('has_bg', 1);
       this.utils.bindTexture('bgImage');
-      this._gl.texImage2D(
-        this._gl.TEXTURE_2D,
+      this.gl.texImage2D(
+        this.gl.TEXTURE_2D,
         0,
-        this._gl.RGBA,
-        this._gl.RGBA,
-        this._gl.UNSIGNED_BYTE,
+        this.gl.RGBA,
+        this.gl.RGBA,
+        this.gl.UNSIGNED_BYTE,
         this._backgroundImageSource
       );
     } else {
@@ -596,7 +599,7 @@ class Renderer {
         out_color = fg_color + (1.0 - fg_color.a) * bg_color;
       }`;
 
-    this.shaders.blend = new Shader(this._gl, vs, fs);
+    this.shaders.blend = new Shader(this.gl, vs, fs);
     this.shaders.blend.use();
     this.shaders.blend.set1i('fg', 0); // texture units 0
     this.shaders.blend.set1i('bg', 1); // texture units 1
@@ -616,12 +619,12 @@ class Renderer {
     this._imageSource = imageSource;
 
     this.utils.bindTexture('image');
-    this._gl.texImage2D(
-      this._gl.TEXTURE_2D,
+    this.gl.texImage2D(
+      this.gl.TEXTURE_2D,
       0,
-      this._gl.RGBA,
-      this._gl.RGBA,
-      this._gl.UNSIGNED_BYTE,
+      this.gl.RGBA,
+      this.gl.RGBA,
+      this.gl.UNSIGNED_BYTE,
       imageSource
     );
 
@@ -629,27 +632,30 @@ class Renderer {
 
   async drawOutputs(newSegMap) {
 
+    if (!newSegMap)
+      return;
+
     let start = performance.now();
 
-    this._gl.canvas.width = this._clippedSize[0] * this._zoom;
-    this._gl.canvas.height = this._clippedSize[1] * this._zoom;
-    this.utils.setViewport(this._gl.drawingBufferWidth, this._gl.drawingBufferHeight);
+    this.gl.canvas.width = this._clippedSize[0] * this._zoom;
+    this.gl.canvas.height = this._clippedSize[1] * this._zoom;
+    this.utils.setViewport(this.gl.drawingBufferWidth, this.gl.drawingBufferHeight);
 
     // Display color labels
     if (this._effect === 'label') {
       this._segMap = newSegMap;
       this._predictions = this._argmaxClippedSegMap(newSegMap);
       this.utils.bindTexture('predictions');
-      this._gl.pixelStorei(this._gl.UNPACK_ALIGNMENT, 1);
-      this._gl.texImage2D(
-        this._gl.TEXTURE_2D,
+      this.gl.pixelStorei(this.gl.UNPACK_ALIGNMENT, 1);
+      this.gl.texImage2D(
+        this.gl.TEXTURE_2D,
         0,
-        this._gl.ALPHA,
+        this.gl.ALPHA,
         this._clippedSize[0],
         this._clippedSize[1],
         0,
-        this._gl.ALPHA,
-        this._gl.UNSIGNED_BYTE,
+        this.gl.ALPHA,
+        this.gl.UNSIGNED_BYTE,
         this._predictions
       );
       this._drawColorLabel();
@@ -662,16 +668,16 @@ class Renderer {
       if (this._guidedFilterRadius === 0) {
         // guided filter is disabled
         this.utils.bindTexture('predictions');
-        this._gl.pixelStorei(this._gl.UNPACK_ALIGNMENT, 1);
-        this._gl.texImage2D(
-          this._gl.TEXTURE_2D,
+        this.gl.pixelStorei(this.gl.UNPACK_ALIGNMENT, 1);
+        this.gl.texImage2D(
+          this.gl.TEXTURE_2D,
           0,
-          this._gl.ALPHA,
+          this.gl.ALPHA,
           this._clippedSize[0],
           this._clippedSize[1],
           0,
-          this._gl.ALPHA,
-          this._gl.UNSIGNED_BYTE,
+          this.gl.ALPHA,
+          this.gl.UNSIGNED_BYTE,
           this._predictions
         );
       } else {
@@ -722,15 +728,29 @@ class Renderer {
   }
 
   highlightHoverLabel(hoverPos) {
-    if (hoverPos === null) {
-      // clear highlight when mouse leaving canvas
+    if (!this._predictions) {
+      return;
+    }
+
+    if (!hoverPos) {
+      // clear highlight when mouse leaves canvas
       $('.seg-label').removeClass('highlight');
       return;
     }
 
     let outputW = this._clippedSize[0];
-    let x = Math.floor(this._correctionFactor * hoverPos.x / this._zoom);
-    let y = Math.floor(this._correctionFactor * hoverPos.y / this._zoom);
+    let actualZoom = this._zoom;
+    const MAX_DISP_WIDTH = 513;
+    const MAX_DISP_HEIGHT = 513;
+
+    if (this._clippedSize[0] * this._zoom > MAX_DISP_WIDTH) {
+      actualZoom = MAX_DISP_WIDTH / this._clippedSize[0];
+    } else if (this._clippedSize[1] * this._zoom > MAX_DISP_HEIGHT) {
+      actualZoom = MAX_DISP_HEIGHT / this._clippedSize[1];
+    }
+
+    let x = Math.floor(this._correctionFactor * hoverPos.x / actualZoom);
+    let y = Math.floor(this._correctionFactor * hoverPos.y / actualZoom);
     let labelId = this._predictions[x + y * outputW];
 
     $('.seg-label').removeClass('highlight');
