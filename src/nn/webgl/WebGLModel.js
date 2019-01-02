@@ -182,7 +182,7 @@ export default class WebGLModel {
         if (inCount === 8) {
           const paddingCode = operands[inputs[i++]].value[0];
           const padding = PaddingCodeMap.get(paddingCode);
-          if (op === OperationCode.CONV_2D) {
+          if (op === OperationCode.DEPTHWISE_CONV_2D) {
             strideW = operands[inputs[i++]].value[0];
             strideH = operands[inputs[i++]].value[0];
             [dilationW, dilationH] = [1, 1];
@@ -201,7 +201,7 @@ export default class WebGLModel {
           const paddingRight = operands[inputs[i++]].value[0];
           const paddingTop = operands[inputs[i++]].value[0];
           const paddingBottom = operands[inputs[i++]].value[0];
-          if (op === OperationCode.CONV_2D) {
+          if (op === OperationCode.DEPTHWISE_CONV_2D) {
             strideW = operands[inputs[i++]].value[0];
             strideH = operands[inputs[i++]].value[0];
             [dilationW, dilationH] = [1, 1];
