@@ -1,4 +1,4 @@
-The source code comes from https://android.googlesource.com/platform/frameworks/ml (licensed under the Apache License, Version 2.0), and can be compiled to `nn_ops.js` by Emscripten, which is used for webml-polyfill WASM backend.
+The source code can be compiled to `nn_ops.js` by Emscripten, which is used for webml-polyfill WASM backend.
 
 # WASM Build
 

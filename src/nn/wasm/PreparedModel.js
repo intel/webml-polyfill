@@ -130,11 +130,12 @@ export default class PreparedModel {
     }
 
     function sameShape(input1, input2) {
-      if (input1.type != input2.type || input1.runtimeshape.size != input2.runtimeshape.size){
+      if (input1.type != input2.type || 
+          input1.runtimeshape.DimensionsCount() != input2.runtimeshape.DimensionsCount()){
           return false;
       }
-      for (let i = 0; i < input1.runtimeshape.size; i++) {
-          if (input1.runtimeshape.dims[i] != input2.runtimeshape.dims[i]) {
+      for (let i = 0; i < input1.runtimeshape.DimensionsCount(); i++) {
+          if (input1.runtimeshape.Dims(i) != input2.runtimeshape.Dims(i)) {
               return false;
           }
       }
@@ -161,7 +162,7 @@ export default class PreparedModel {
 
         // Error check
         OPS_CHECK(in1.type === in2.type);
-        OPS_CHECK(in1.runtimeshape.size <= 4 && in2.runtimeshape.size <= 4);
+        OPS_CHECK(in1.runtimeshape.DimensionsCount() <= 4 && in2.runtimeshape.DimensionsCount() <= 4);
 
         // init arithmeticParams
         let arithmeticParams = {
@@ -194,7 +195,7 @@ export default class PreparedModel {
 
         // Error check
         OPS_CHECK(in1.type === in2.type);
-        OPS_CHECK(in1.runtimeshape.size <= 4 && in2.runtimeshape.size <= 4);
+        OPS_CHECK(in1.runtimeshape.DimensionsCount() <= 4 && in2.runtimeshape.DimensionsCount() <= 4);
 
         // init arithmeticParams
         let arithmeticParams = {
@@ -228,8 +229,8 @@ export default class PreparedModel {
         let paddingLeft, paddingRight;  // Just use paddingLeft as paddingWidth
         let paddingTop, paddingBottom;  // Just use paddingTop as paddingHeight
         let strideWidth, strideHeight;
-        let filterWidth = filter.runtimeshape.dims[2];
-        let filterHeight = filter.runtimeshape.dims[1];
+        let filterWidth = filter.runtimeshape.Dims(2);
+        let filterHeight = filter.runtimeshape.Dims(1);
         let activation;
         if (inCount === 10) {
           paddingLeft = operands[inputs[i++]].value[0];
@@ -245,18 +246,18 @@ export default class PreparedModel {
           strideHeight = operands[inputs[i++]].value[0];
           activation = operands[inputs[i++]].value[0];
 
-          let inputWidth = input.runtimeshape.dims[2];
-          let inputHeight = input.runtimeshape.dims[1];
+          let inputWidth = input.runtimeshape.Dims(2);
+          let inputHeight = input.runtimeshape.Dims(1);
           [paddingLeft, paddingRight] = calculateExplicitPadding(inputWidth, strideWidth, filterWidth, paddingCode);
           [paddingTop, paddingBottom] = calculateExplicitPadding(inputHeight, strideHeight, filterHeight, paddingCode);
         }
         let output = operands[outputs[0]];
 
         // init im2col operand
-        let outBatch = output.runtimeshape.dims[0];
-        let outHeight = output.runtimeshape.dims[1];
-        let outWidth = output.runtimeshape.dims[2];
-        let inDepth = input.runtimeshape.dims[3];
+        let outBatch = output.runtimeshape.Dims(0);
+        let outHeight = output.runtimeshape.Dims(1);
+        let outWidth = output.runtimeshape.Dims(2);
+        let inDepth = input.runtimeshape.Dims(3);
         let im2colDepth = filterWidth * filterHeight * inDepth;
         let im2colDims = [outBatch, outHeight, outWidth, im2colDepth];
         let im2colValue = new Float32Array(product(im2colDims));
@@ -281,13 +282,13 @@ export default class PreparedModel {
             OPS_CHECK(input.type === bias.type);
         }
 
-        OPS_CHECK(input.runtimeshape.size === 4);
-        OPS_CHECK(filter.runtimeshape.size === 4);
-        OPS_CHECK(bias.runtimeshape.size === 1);
-        OPS_CHECK(output.runtimeshape.size === 4);
+        OPS_CHECK(input.runtimeshape.DimensionsCount() === 4);
+        OPS_CHECK(filter.runtimeshape.DimensionsCount() === 4);
+        OPS_CHECK(bias.runtimeshape.DimensionsCount() === 1);
+        OPS_CHECK(output.runtimeshape.DimensionsCount() === 4);
 
-        OPS_CHECK(filter.runtimeshape.dims[0] === bias.runtimeshape.dims[0]);
-        OPS_CHECK(filter.runtimeshape.dims[3] === input.runtimeshape.dims[3]);
+        OPS_CHECK(filter.runtimeshape.Dims(0) === bias.runtimeshape.Dims(0));
+        OPS_CHECK(filter.runtimeshape.Dims(3) === input.runtimeshape.Dims(3));
 
         // init convParams
         let PaddingValues = {
@@ -344,10 +345,10 @@ export default class PreparedModel {
           depthMultipler = operands[inputs[i++]].value[0];
           activation = operands[inputs[i++]].value[0];
 
-          let inputWidth = input.runtimeshape.dims[2];
-          let inputHeight = input.runtimeshape.dims[1];
-          let filterWidth = filter.runtimeshape.dims[2];
-          let filterHeight = filter.runtimeshape.dims[1];
+          let inputWidth = input.runtimeshape.Dims(2);
+          let inputHeight = input.runtimeshape.Dims(1);
+          let filterWidth = filter.runtimeshape.Dims(2);
+          let filterHeight = filter.runtimeshape.Dims(1);
           [paddingLeft, paddingRight] = calculateExplicitPadding(inputWidth, strideWidth, filterWidth, paddingCode);
           [paddingTop, paddingBottom] = calculateExplicitPadding(inputHeight, strideHeight, filterHeight, paddingCode);
         }
@@ -364,12 +365,12 @@ export default class PreparedModel {
             OPS_CHECK(input.type === bias.type);
         }
 
-        OPS_CHECK(input.runtimeshape.size === 4);
-        OPS_CHECK(filter.runtimeshape.size === 4);
-        OPS_CHECK(bias.runtimeshape.size === 1);
-        OPS_CHECK(output.runtimeshape.size === 4);
+        OPS_CHECK(input.runtimeshape.DimensionsCount() === 4);
+        OPS_CHECK(filter.runtimeshape.DimensionsCount() === 4);
+        OPS_CHECK(bias.runtimeshape.DimensionsCount() === 1);
+        OPS_CHECK(output.runtimeshape.DimensionsCount() === 4);
 
-        OPS_CHECK(filter.runtimeshape.dims[3] === bias.runtimeshape.dims[0]);
+        OPS_CHECK(filter.runtimeshape.Dims(3) === bias.runtimeshape.Dims(0));
 
         // init depthwiseParams
         let PaddingValues = {
@@ -425,8 +426,8 @@ export default class PreparedModel {
           filterHeight = operands[inputs[i++]].value[0];
           activation = operands[inputs[i++]].value[0];
 
-          let inputWidth = input.runtimeshape.dims[2];
-          let inputHeight = input.runtimeshape.dims[1];
+          let inputWidth = input.runtimeshape.Dims(2);
+          let inputHeight = input.runtimeshape.Dims(1);
           [paddingLeft, paddingRight] = calculateExplicitPadding(inputWidth, strideWidth, filterWidth, paddingCode);
           [paddingTop, paddingBottom] = calculateExplicitPadding(inputHeight, strideHeight, filterHeight, paddingCode);
         }
@@ -436,8 +437,8 @@ export default class PreparedModel {
         let float_activation_max = calculateActivationRangeFloat(activation).activation_max;
 
         // Error check
-        OPS_CHECK(input.runtimeshape.size === 4);
-        OPS_CHECK(output.runtimeshape.size === 4);
+        OPS_CHECK(input.runtimeshape.DimensionsCount() === 4);
+        OPS_CHECK(output.runtimeshape.DimensionsCount() === 4);
 
         // init poolParams
         let PaddingValues = {
@@ -474,7 +475,7 @@ export default class PreparedModel {
         let output = operands[outputs[0]];
 
         // Error check
-        OPS_CHECK(input.runtimeshape.size <= 4);
+        OPS_CHECK(input.runtimeshape.DimensionsCount() <= 4);
 
         // init softmaxParams
         let softmaxParams = {
@@ -492,25 +493,21 @@ export default class PreparedModel {
                                                 // outputShape has been set at first
         let output = operands[outputs[0]];
 
-        let size_count;
-        if (utils.isTensor(input.type)) {
-          size_count = utils.sizeOfTensorData(input.type, input.runtimeshape.dims);
-        } else {
-          size_count = utils.sizeOfScalarData(input.type);
+        let inputDims = [];
+        let  outputDims = [];
+        for (let i = 0; i < input.runtimeshape.DimensionsCount(); ++i) {
+          inputDims.push(input.runtimeshape.Dims(i));
+        }
+        for (let i = 0; i < output.runtimeshape.DimensionsCount(); ++i) {
+          outputDims.push(output.runtimeshape.Dims(i));
         }
 
         // Error check
-        let numInputElements = product(input.runtimeshape.dims);
-        let numOutputElements = product(output.runtimeshape.dims);
+        let numInputElements = product(inputDims);
+        let numOutputElements = product(outputDims);
         OPS_CHECK(numInputElements === numOutputElements);
 
-        // init reshapeParams
-        let reshapeParams = {
-          size_count: size_count
-        }
-
-        nn_ops.reshapeGeneric(reshapeParams,
-                              input.runtimeshape, input.value,  
+        nn_ops.reshapeFloat32(input.runtimeshape, input.value,  
                               output.runtimeshape, output.value);
       } break;
       case OperationCode.CONCATENATION: {
@@ -520,7 +517,7 @@ export default class PreparedModel {
         let numInputTensors = inputs.length - 1;
         let axis = operands[inputs[numInputTensors]].value[0];
         let input0 = operands[inputs[0]];
-        let num_dimensions = input0.runtimeshape.size;
+        let num_dimensions = input0.runtimeshape.DimensionsCount();
         let input_type = input0.type;
         if (axis === -1) {
           axis = num_dimensions - 1;
@@ -538,12 +535,12 @@ export default class PreparedModel {
         OPS_CHECK(axis >= 0 && axis < num_dimensions);
         for (let  i = 1; i < numInputTensors; ++i) {
           let input = operands[inputs[i]];
-          OPS_CHECK(input.runtimeshape.size === num_dimensions);
+          OPS_CHECK(input.runtimeshape.DimensionsCount() === num_dimensions);
           OPS_CHECK(input.type === input_type);
           for (let d = 0; d < num_dimensions; ++d) {
             if (d != axis) {
-              OPS_CHECK(input0.runtimeshape.dims[d] ===
-                        input.runtimeshape.dims[d]);
+              OPS_CHECK(input0.runtimeshape.Dims(d) ===
+                        input.runtimeshape.Dims(d));
             }
           }
         }
@@ -571,7 +568,7 @@ export default class PreparedModel {
         let float_activation_max = calculateActivationRangeFloat(activation).activation_max;
 
         // Error check
-        OPS_CHECK(weights.runtimeshape.size === 2);
+        OPS_CHECK(weights.runtimeshape.DimensionsCount() === 2);
 
         // init fullyConnectedParams
         let fullyConnectedParams = {
@@ -591,8 +588,8 @@ export default class PreparedModel {
         let newHeight = operands[inputs[1]].value[0]; // Dont use newHeight and newWidth
         let newWidth = operands[inputs[2]].value[0];  // since outputShape has been set at first
         let output = operands[outputs[0]];
-        let outSizeHeight = output.runtimeshape.dims[1];
-        let outSizeWidth = output.runtimeshape.dims[2];
+        let outSizeHeight = output.runtimeshape.Dims(1);
+        let outSizeWidth = output.runtimeshape.Dims(2);
 
         let outSizeDims = [2];
         let outSizeValue = new Int32Array([outSizeHeight, outSizeWidth]);
@@ -607,8 +604,8 @@ export default class PreparedModel {
         let outSizeData = this._allocateTensor(operand);
 
         // Error check
-        OPS_CHECK(input.runtimeshape.size <= 4);
-        OPS_CHECK(output.runtimeshape.size <= 4);
+        OPS_CHECK(input.runtimeshape.DimensionsCount() <= 4);
+        OPS_CHECK(output.runtimeshape.DimensionsCount() <= 4);
 
         // init resizeBilinearParams
         // default set align_corners to false
@@ -670,7 +667,9 @@ export default class PreparedModel {
   _allocateRuntimeShape(operand) {
     const nn_ops = this._nn_ops;
     let RuntimeShape = new nn_ops.RuntimeShape(operand.dimensions.length);
-    RuntimeShape.dims = operand.dimensions;
+    for (let i = 0; i < RuntimeShape.DimensionsCount(); ++i) {
+      RuntimeShape.SetDim(i, operand.dimensions[i]);
+    }
     return RuntimeShape;
   }
 

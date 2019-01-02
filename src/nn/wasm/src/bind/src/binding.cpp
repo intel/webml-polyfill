@@ -14,33 +14,6 @@ using namespace emscripten;
 using namespace tflite;
 
 namespace binding_utils {
-  struct ReshapeParams {
-    uint32_t size_count;
-  };
-
-  // Factors set and get function
-  val getRuntimeShapeDimensions(const RuntimeShape& shape) {
-    return emscripten::val(
-      emscripten::typed_memory_view(shape.DimensionsCount(),
-                                    shape.DimsData()));
-  }
-
-  void setRuntimeShapeDimensions(RuntimeShape& shape, val js_dims) {
-    std::vector<int> tmp = vecFromJSArray<int32_t>(js_dims);
-    for (int i = 0; i < tmp.size(); i++) {
-      shape.SetDim(i, tmp.at(i));
-    }
-  }
-
-  val getRuntimeShapeSize(const RuntimeShape& shape) {
-    emscripten::val js_val = val(shape.DimensionsCount());
-    return js_val;
-  }
-
-  void setRuntimeShapeSize(RuntimeShape& shape, int32_t size) {
-    shape.Resize(size);
-  }
-
   // Operation wrappers.
   bool addFloat32Wrapper(const ArithmeticParams& op_params,
                          const RuntimeShape& input1_shape, 
@@ -166,14 +139,13 @@ namespace binding_utils {
                            outputShape, (float*)outputData);
   }
 
-  bool reshapeGenericWrapper(const binding_utils::ReshapeParams op_params,
-                             const RuntimeShape& inputShape, 
+  bool reshapeFloat32Wrapper(const RuntimeShape& inputShape, 
                              const intptr_t inputData, 
                              const RuntimeShape& outputShape, 
                              intptr_t outputData) {
     // implement it by self due to no reshape op in tflite::optimized_ops
-    uint32_t size_count = (uint32_t)op_params.size_count;
-    memcpy((void*)outputData, (const void*)inputData, size_count);
+    uint32_t size_count = (uint32_t)(inputShape.FlatSize() * sizeof(float));
+    memcpy((float*)outputData, (const float*)inputData, size_count);
   }
 
   bool concatenationFloat32Wrapper(const ConcatenationParams op_params,  
@@ -229,10 +201,9 @@ EMSCRIPTEN_BINDINGS(nn)
         return RuntimeShape(dimensions_count);
       }
     ))
-    .property("dims", &binding_utils::getRuntimeShapeDimensions, 
-                      &binding_utils::setRuntimeShapeDimensions)
-    .property("size", &binding_utils::getRuntimeShapeSize, 
-                      &binding_utils::setRuntimeShapeSize)
+    .function("DimensionsCount", &RuntimeShape::DimensionsCount)
+    .function("Dims", &RuntimeShape::Dims)
+    .function("SetDim", &RuntimeShape::SetDim)
     ;
 
   value_object<PaddingValues>("PaddingValues")
@@ -294,10 +265,6 @@ EMSCRIPTEN_BINDINGS(nn)
     .field("float_activation_max", &ArithmeticParams::float_activation_max)
     ;
 
-  value_object<binding_utils::ReshapeParams>("ReshapeParams")
-    .field("size_count", &binding_utils::ReshapeParams::size_count)
-    ;
-
   register_vector<RuntimeShape*>("VectorShape");
   register_vector<intptr_t>("VectorPtr");
 
@@ -312,7 +279,7 @@ EMSCRIPTEN_BINDINGS(nn)
   function("convFloat32", &binding_utils::convFloat32Wrapper, allow_raw_pointers());
   function("averagePoolFloat32", &binding_utils::averagePoolFloat32Wrapper, allow_raw_pointers());
   function("softmaxFloat32", &binding_utils::softmaxFloat32Wrapper, allow_raw_pointers());
-  function("reshapeGeneric", &binding_utils::reshapeGenericWrapper, allow_raw_pointers());
+  function("reshapeFloat32", &binding_utils::reshapeFloat32Wrapper, allow_raw_pointers());
   function("maxPoolFloat32", &binding_utils::maxPoolFloat32Wrapper, allow_raw_pointers());
   function("concatenationFloat32", &binding_utils::concatenationFloat32Wrapper, allow_raw_pointers());
   function("fullyConnectedFloat32", &binding_utils::fullyConnectedFloat32Wrapper, allow_raw_pointers());
