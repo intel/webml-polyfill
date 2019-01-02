@@ -282,28 +282,26 @@ export default class WebGLModel {
       case OperationCode.BATCH_TO_SPACE_ND: {
         const input = operands[inputs[0]];
         const blockShape = operands[inputs[1]];
-        const crops = operands[inputs[2]];
         const output = operands[outputs[0]];
+        const crops = [[0, 0], [0, 0]];
         if (blockShape.value === undefined) {
           // blockShape.dataSync() return Int32Array, here it should be convert to Array
           blockShape.value = Array.apply([], blockShape.dataSync());
-          // crops.dataSync() return 1D array, should be reshaped to [-1, 2]  
-          const cropsValue1D = crops.dataSync();
-          crops.value = [];
-          for(let i = 0; i < cropsValue1D.length; i += 2) {
-            crops.value.push([cropsValue1D[i], cropsValue1D[i + 1]]);
-          }
         }
-        output.assign(input.batchToSpaceND(blockShape.value, crops.value));
+        output.assign(input.batchToSpaceND(blockShape.value, crops));
       } break;
       case OperationCode.TRANSPOSE: {
         const input = operands[inputs[0]];
         const perm = operands[inputs[1]];
         const output = operands[outputs[0]];
-        if (perm.value === undefined) {
-          perm.value = perm.dataSync();
+        if (perm !== undefined) {
+          if (perm.value === undefined) {
+            perm.value = perm.dataSync();
+          }
+          output.assign(input.transpose(perm.value));
+        } else {
+          output.assign(input.transpose());
         }
-        output.assign(input.transpose(perm.value));
       } break;
       case OperationCode.MAXIMUM: {
         const in1 = operands[inputs[0]];
@@ -312,6 +310,7 @@ export default class WebGLModel {
         output.assign(tf.maximum(in1, in2));
       } break;
       case OperationCode.TRANSPOSE_CONV: {
+        // should be modified
         const inCount = inputs.length;
         if (inCount !== 6 && inCount !== 9) {
           throw new Error('Invalid parameters number of TRANSPOSE_CONV');
@@ -341,7 +340,7 @@ export default class WebGLModel {
           strideH = operands[inputs[i++]].value[0];
           output.assign(
               input.pad([[0, 0], [paddingTop, paddingBottom], [paddingLeft, paddingRight], [0, 0]])
-                   .conv2d(filter, outputShape.value, [strideH, strideW], 'valid'));
+                   .conv2dTranspose(filter, outputShape.value, [strideH, strideW], 'valid'));
         }
       } break;
       default: {
