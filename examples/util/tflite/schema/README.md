@@ -22,7 +22,7 @@ $ sudo make install
 ### Download source code
 ```
 $ git clone https://github.com/tensorflow/tensorflow.git
-$ cd tensorflow/tensorflow/contrib/lite/schema
+$ cd tensorflow/tensorflow/lite/schema
 ```
 
 ### Generate schema_generated.js
