@@ -34,8 +34,12 @@ function printTfLiteModel(model) {
       case 'CONV_2D': {
         let options = operator.builtinOptions(new tflite.Conv2DOptions());
         console.log(`\t\t\t  builtin_options: {` +
-          `padding: ${PaddingTypes[options.padding()]}, stride_w: ${options.strideW()}, ` +
-          `stride_h: ${options.strideH()}, fused_activation_function: ${ActivationFunctionTypes[options.fusedActivationFunction()]}}}`);
+          `padding: ${PaddingTypes[options.padding()]}, ` +
+          `stride_w: ${options.strideW()}, ` +
+          `stride_h: ${options.strideH()}, ` +
+          `dilation_w: ${options.dilationWFactor()}, `+
+          `dilation_h: ${options.dilationHFactor()}, ` +
+          `fused_activation_function: ${ActivationFunctionTypes[options.fusedActivationFunction()]}}}`);
       } break;
       case 'DEPTHWISE_CONV_2D': {
         let options = operator.builtinOptions(new tflite.DepthwiseConv2DOptions());
@@ -43,6 +47,8 @@ function printTfLiteModel(model) {
           `padding: ${PaddingTypes[options.padding()]}, ` +
           `stride_w: ${options.strideW()}, `+
           `stride_h: ${options.strideH()}, ` +
+          `dilation_w: ${options.dilationWFactor()}, `+
+          `dilation_h: ${options.dilationHFactor()}, ` +
           `depth_multiplier: ${options.depthMultiplier()}, ` +
           `fused_activation_function: ${ActivationFunctionTypes[options.fusedActivationFunction()]}}}`);
       } break;
@@ -90,6 +96,8 @@ function printTfLiteModel(model) {
       case 'FULLY_CONNECTED': {
         let options = operator.builtinOptions(new tflite.FullyConnectedOptions());
         console.log(`\t\t\t  builtin_options: {fused_activation_function: ${ActivationFunctionTypes[options.fusedActivationFunction()]}}}`);
+      } break;
+      case 'RESIZE_BILINEAR': {
       } break;
       default: {
         console.warn(`\t\t\t  builtin_options: ${op} is not supported.}`);
