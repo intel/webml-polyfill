@@ -1,0 +1,6 @@
+[submodule "deps/emsdk"]
+	path = deps/emsdk
+	url = https://github.com/juj/emsdk.git
+[submodule "src/nn/wasm/src/external/tensorflow"]
+	path = src/nn/wasm/src/external/tensorflow
+	url = https://github.com/tensorflow/tensorflow.git
