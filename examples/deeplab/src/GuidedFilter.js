@@ -28,17 +28,15 @@ class GuidedFilter {
       this.subWidth = this.width / this.subsample;
       this.subHeight = this.height / this.subsample;
     }
-    
-    this._correctionFactor = 0.99;
   }
 
-  setup(radius, epsilon, width, height, correct) {
+  setup(radius, epsilon, width, height) {
 
     this.radius = radius;
     this.epsilon = epsilon;
     this.width = width;
     this.height = height;
-    this._correctionFactor = correct;
+
     if (this.radius < 4) {
       this.subRadius = this.radius;
       this.subWidth = this.width;
@@ -64,12 +62,10 @@ class GuidedFilter {
       `#version 300 es
         in vec4 a_pos;
         out vec2 v_texcoord;
-        out vec2 v_maskcoord;
 
         void main() {
           gl_Position = a_pos;
           v_texcoord = a_pos.xy * vec2(0.5, -0.5) + 0.5;
-          v_maskcoord = v_texcoord * float(${this._correctionFactor});
         }`;
 
     const fs =
@@ -82,11 +78,10 @@ class GuidedFilter {
         uniform sampler2D u_I;
 
         in vec2 v_texcoord;
-        in vec2 v_maskcoord;
 
         void main() {
           float I = texture(u_I, v_texcoord).x;
-          float p = texture(u_p, v_maskcoord).a;
+          float p = texture(u_p, v_texcoord).a;
           float Ip = I * p;
           float II = I * I;
           result = vec4(I, p, Ip, II);

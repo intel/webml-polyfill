@@ -194,10 +194,8 @@ function main(camera) {
     }
     streaming = false;
     if (newBackend !== "WebML") {
-      renderer._correctionFactor = 0.99;
       selectPrefer.style.display = 'none';
     } else {
-      renderer._correctionFactor = 1;
       selectPrefer.style.display = 'inline';
     }
     // renderer.deleteAll();

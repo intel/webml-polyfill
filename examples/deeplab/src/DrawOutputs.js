@@ -16,9 +16,6 @@ class Renderer {
     this._clippedSize = [224, 224];
     this._imageSource = null;
 
-    // workaround for lack of `align_corner` in `RESIZE_BILINEAR`
-    this._correctionFactor = 0.99;
-
     // UI state
     this._effect = 'label';
     this._zoom = 2;
@@ -126,8 +123,7 @@ class Renderer {
       this._guidedFilterRadius,
       1e-6,
       this._clippedSize[0] * this._zoom,
-      this._clippedSize[1] * this._zoom,
-      this._correctionFactor
+      this._clippedSize[1] * this._zoom
     );
     this.setup().then(_ => this.drawOutputs(this._segMap));
   }
@@ -188,8 +184,7 @@ class Renderer {
       this._guidedFilterRadius,
       1e-6,
       this._clippedSize[0] * this._zoom,
-      this._clippedSize[1] * this._zoom,
-      this._correctionFactor
+      this._clippedSize[1] * this._zoom
     );
 
     this.utils.setup2dQuad();
@@ -231,7 +226,7 @@ class Renderer {
       void main() {
         gl_Position = a_pos;
         v_texcoord = a_pos.xy * vec2(0.5, -0.5) + 0.5;
-        v_maskcord = v_texcoord * float(${this._correctionFactor});
+        v_maskcord = v_texcoord;
       }`;
 
     const fs =
@@ -305,7 +300,7 @@ class Renderer {
       void main() {
         gl_Position = a_pos;
         v_texcoord = a_pos.xy * vec2(0.5, -0.5) + 0.5;
-        v_maskcord = v_texcoord * float(${this._correctionFactor});
+        v_maskcord = v_texcoord;
       }`;
 
     const vsWithPreprocess =
@@ -749,8 +744,8 @@ class Renderer {
       actualZoom = MAX_DISP_HEIGHT / this._clippedSize[1];
     }
 
-    let x = Math.floor(this._correctionFactor * hoverPos.x / actualZoom);
-    let y = Math.floor(this._correctionFactor * hoverPos.y / actualZoom);
+    let x = Math.floor(hoverPos.x / actualZoom);
+    let y = Math.floor(hoverPos.y / actualZoom);
     let labelId = this._predictions[x + y * outputW];
 
     $('.seg-label').removeClass('highlight');
