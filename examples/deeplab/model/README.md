@@ -94,3 +94,58 @@ bazel-bin/tensorflow/lite/toco/toco \
 --output_arrays=ResizeBilinear_3 \
 --input_shapes=1,513,513,3
 ```
+
+## Use custom models
+
+If you consider this model was too slow, you can export a model with smaller input size on your own.
+
+1. Download models
+```sh
+git clone https://github.com/tensorflow/models.git
+cd models/research/deeplab/
+vim local_test_mobilenetv2.sh
+```
+
+2. Modify export parameters
+
+For example, export a model with 321x321 inputs and outputs.
+
+```sh
+@@ -124,8 +124,8 @@ python "${WORK_DIR}"/export_model.py \
+   --export_path="${EXPORT_PATH}" \
+   --model_variant="mobilenet_v2" \
+   --num_classes=21 \
+-  --crop_size=513 \
+-  --crop_size=513 \
++  --crop_size=321 \
++  --crop_size=321 \
+```
+
+3. Export model
+
+```sh
+./local_test_mobilenetv2.sh
+```
+
+The exported is located in `datasets/pascal_voc_seg/exp/train_on_trainval_set_mobilenetv2/export/frozen_inference_graph.pb`. You can then convert it to a TFLite Model per instructions above.
+
+4. Enable model
+
+Add the following block to the `main.js` under the `deeplab` example directory.
+
+```js
+const availableModels = [
+  ...
+  {
+    modelName: 'DeepLab 321 Atrous',
+    modelFile: './model/deeplab_mobilenetv2_321_dilated.tflite',
+    labelsFile: './model/labels.txt',
+    inputSize: [321, 321, 3],
+    outputSize: [321, 321, 21],
+  }
+];
+```
+
+For your convenience, you can download the 321 model here
+- [DeepLab 321 (with Atrous Conv)](https://drive.google.com/file/d/1J2Wx5lmgsaZZ84Am8gSqRL0ilcJ2Gpvs/view?usp=sharing)
+- [DeepLab 321](https://drive.google.com/file/d/1wEJH6d2x0o1NuWZbMQVeT4ADDV72A8Lz/view?usp=sharing)

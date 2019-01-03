@@ -1,18 +1,19 @@
-const deeplab513 = {
-  modelName: 'DeepLab 513',
-  modelFile: './model/deeplab_mobilenetv2_513.tflite',
-  labelsFile: './model/labels.txt',
-  inputSize: [513, 513, 3],
-  outputSize: [513, 513, 21],
-};
-
-const deeplab513dilated = {
-  modelName: 'DeepLab 513 Atrous',
-  modelFile: './model/deeplab_mobilenetv2_513_dilated.tflite',
-  labelsFile: './model/labels.txt',
-  inputSize: [513, 513, 3],
-  outputSize: [513, 513, 21],
-};
+const availableModels = [
+  {
+    modelName: 'DeepLab 513',
+    modelFile: './model/deeplab_mobilenetv2_513.tflite',
+    labelsFile: './model/labels.txt',
+    inputSize: [513, 513, 3],
+    outputSize: [513, 513, 21],
+  },
+  {
+    modelName: 'DeepLab 513 Atrous',
+    modelFile: './model/deeplab_mobilenetv2_513_dilated.tflite',
+    labelsFile: './model/labels.txt',
+    inputSize: [513, 513, 3],
+    outputSize: [513, 513, 21],
+  },
+];
 
 const preferMap = {
   'MPS': 'sustained',
@@ -23,10 +24,6 @@ const preferMap = {
 
 function main(camera) {
 
-  const availableModels = [
-    deeplab513dilated,
-    deeplab513,
-  ];
   const videoElement = document.getElementById('video');
   const imageElement = document.getElementById('image');
   const inputElement = document.getElementById('input');
