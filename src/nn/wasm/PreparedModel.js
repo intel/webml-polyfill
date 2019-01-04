@@ -1,5 +1,5 @@
 import getNNOpsInstance from './NNOps'
-import {OperationCode, OperandCode, PaddingCode, PreferenceCode, FuseCode, OperandLifetime} from '../Enums'
+import { OperationCode, OperandCode, PaddingCode, PreferenceCode, FuseCode, OperandLifetime } from '../Enums'
 import * as utils from '../utils'
 import { product } from '../utils';
 
@@ -93,13 +93,15 @@ export default class PreparedModel {
       verify(requiredOuts, outputs, 'out');
     }
 
-    function calculateExplicitPadding(inSize, stride, filterSize, paddingCode) {
+    function calculateExplicitPadding(inSize, stride, filterSize, dilationFactor, paddingCode) {
       let paddingHead = 0;
       let paddingTail = 0;
 
+      let dilatedFilterSize = dilationFactor * (filterSize - 1) + 1;
+
       if (paddingCode === PaddingCode.SAME) {
         let outSize = Math.floor((inSize + stride - 1) / stride);
-        let tmp = Math.floor((outSize - 1) * stride + filterSize);
+        let tmp = Math.floor((outSize - 1) * stride + dilatedFilterSize);
         if (tmp > inSize) {
           paddingHead = Math.floor((tmp - inSize) / 2);
           paddingTail = Math.floor((tmp - inSize) - paddingHead);
@@ -120,24 +122,24 @@ export default class PreparedModel {
       } else if (activation === FuseCode.RELU1) {
         activation_min = -1.0;
         activation_max = 1.0;
-      } else if (activation === FuseCode.NONE){
+      } else if (activation === FuseCode.NONE) {
         activation_min = nn_ops.LOWEST;
         activation_max = nn_ops.MAX;
       } else {
         throw new Error("Unsupported fused activation function.");
       }
-      return {activation_min, activation_max};
+      return { activation_min, activation_max };
     }
 
     function sameShape(input1, input2) {
       if (input1.type != input2.type || 
-          input1.runtimeshape.DimensionsCount() != input2.runtimeshape.DimensionsCount()){
-          return false;
+        input1.runtimeshape.DimensionsCount() != input2.runtimeshape.DimensionsCount()) {
+        return false;
       }
       for (let i = 0; i < input1.runtimeshape.DimensionsCount(); i++) {
-          if (input1.runtimeshape.Dims(i) != input2.runtimeshape.Dims(i)) {
-              return false;
-          }
+        if (input1.runtimeshape.Dims(i) != input2.runtimeshape.Dims(i)) {
+          return false;
+        }
       }
       return true;
     }  
@@ -216,7 +218,8 @@ export default class PreparedModel {
                             out.runtimeshape, out.value);
         }
       } break;
-      case OperationCode.CONV_2D: {
+      case OperationCode.CONV_2D:
+      case OperationCode.ATROUS_CONV_2D: {
         let inCount = inputs.length;
         if (inCount !== 7 && inCount !== 10) {
           throw new Error('Invalid parameters number of CONV_2D');
@@ -229,6 +232,7 @@ export default class PreparedModel {
         let paddingLeft, paddingRight;  // Just use paddingLeft as paddingWidth
         let paddingTop, paddingBottom;  // Just use paddingTop as paddingHeight
         let strideWidth, strideHeight;
+        let dilationWidth, dilationHeight;
         let filterWidth = filter.runtimeshape.Dims(2);
         let filterHeight = filter.runtimeshape.Dims(1);
         let activation;
@@ -237,19 +241,35 @@ export default class PreparedModel {
           paddingRight = operands[inputs[i++]].value[0];
           paddingTop = operands[inputs[i++]].value[0];
           paddingBottom = operands[inputs[i++]].value[0];
-          strideWidth = operands[inputs[i++]].value[0];
-          strideHeight = operands[inputs[i++]].value[0];
+          if (op === OperationCode.CONV_2D) {
+            strideWidth = operands[inputs[i++]].value[0];
+            strideHeight = operands[inputs[i++]].value[0];
+            [dilationWidth, dilationHeight] = [1, 1];
+          } else {
+            dilationWidth = operands[inputs[i++]].value[0];
+            dilationHeight = operands[inputs[i++]].value[0];
+            [strideWidth, strideHeight] = [1, 1];
+          }
           activation = operands[inputs[i++]].value[0];
         } else {
           let paddingCode = operands[inputs[i++]].value[0];
-          strideWidth = operands[inputs[i++]].value[0];
-          strideHeight = operands[inputs[i++]].value[0];
+          if (op === OperationCode.CONV_2D) {
+            strideWidth = operands[inputs[i++]].value[0];
+            strideHeight = operands[inputs[i++]].value[0];
+            [dilationWidth, dilationHeight] = [1, 1];
+          } else {
+            dilationWidth = operands[inputs[i++]].value[0];
+            dilationHeight = operands[inputs[i++]].value[0];
+            [strideWidth, strideHeight] = [1, 1];
+          }
           activation = operands[inputs[i++]].value[0];
 
           let inputWidth = input.runtimeshape.Dims(2);
           let inputHeight = input.runtimeshape.Dims(1);
-          [paddingLeft, paddingRight] = calculateExplicitPadding(inputWidth, strideWidth, filterWidth, paddingCode);
-          [paddingTop, paddingBottom] = calculateExplicitPadding(inputHeight, strideHeight, filterHeight, paddingCode);
+          [paddingLeft, paddingRight] = 
+            calculateExplicitPadding(inputWidth, strideWidth, filterWidth, dilationWidth, paddingCode);
+          [paddingTop, paddingBottom] = 
+            calculateExplicitPadding(inputHeight, strideHeight, filterHeight, dilationHeight, paddingCode);
         }
         let output = operands[outputs[0]];
 
@@ -277,9 +297,9 @@ export default class PreparedModel {
         // Error check
         OPS_CHECK(input.type === filter.type);
         if (input.type === OperandCode.TENSOR_QUANT8_ASYMM) {
-            OPS_CHECK(bias.type === OperandCode.TENSOR_INT32);
+          OPS_CHECK(bias.type === OperandCode.TENSOR_INT32);
         } else {
-            OPS_CHECK(input.type === bias.type);
+          OPS_CHECK(input.type === bias.type);
         }
 
         OPS_CHECK(input.runtimeshape.DimensionsCount() === 4);
@@ -299,8 +319,8 @@ export default class PreparedModel {
           padding_values: PaddingValues,
           stride_width: strideWidth,
           stride_height: strideHeight,
-          dilation_width_factor: 1,
-          dilation_height_factor: 1,
+          dilation_width_factor: dilationWidth,
+          dilation_height_factor: dilationHeight,
           float_activation_min: float_activation_min,
           float_activation_max: float_activation_max
         }
@@ -314,7 +334,8 @@ export default class PreparedModel {
         im2colShape.delete();
         nn_ops._free(im2colData);
       } break;
-      case OperationCode.DEPTHWISE_CONV_2D: {
+      case OperationCode.DEPTHWISE_CONV_2D:
+      case OperationCode.ATROUS_DEPTHWISE_CONV_2D: {
         let inCount = inputs.length;
         if (inCount !== 8 && inCount !== 11) {
           throw new Error('Invalid parameters number of DEPTHWISE_CONV_2D');
@@ -327,6 +348,7 @@ export default class PreparedModel {
         let paddingLeft, paddingRight;  // Just use paddingLeft as paddingWidth
         let paddingTop, paddingBottom;  // Just use paddingTop as paddingHeight
         let strideWidth, strideHeight;
+        let dilationWidth, dilationHeight;
         let depthMultipler;
         let activation;
         if (inCount === 11) {
@@ -334,14 +356,28 @@ export default class PreparedModel {
           paddingRight = operands[inputs[i++]].value[0];
           paddingTop = operands[inputs[i++]].value[0];
           paddingBottom = operands[inputs[i++]].value[0];
-          strideWidth = operands[inputs[i++]].value[0];
-          strideHeight = operands[inputs[i++]].value[0];
+          if (op === OperationCode.DEPTHWISE_CONV_2D) {
+            strideWidth = operands[inputs[i++]].value[0];
+            strideHeight = operands[inputs[i++]].value[0];
+            [dilationWidth, dilationHeight] = [1, 1];
+          } else {
+            dilationWidth = operands[inputs[i++]].value[0];
+            dilationHeight = operands[inputs[i++]].value[0];
+            [strideWidth, strideHeight] = [1, 1];
+          }
           depthMultipler = operands[inputs[i++]].value[0];
           activation = operands[inputs[i++]].value[0];
         } else {
           let paddingCode = operands[inputs[i++]].value[0];
-          strideWidth = operands[inputs[i++]].value[0];
-          strideHeight = operands[inputs[i++]].value[0];
+          if (op === OperationCode.DEPTHWISE_CONV_2D) {
+            strideWidth = operands[inputs[i++]].value[0];
+            strideHeight = operands[inputs[i++]].value[0];
+            [dilationWidth, dilationHeight] = [1, 1];
+          } else {
+            dilationWidth = operands[inputs[i++]].value[0];
+            dilationHeight = operands[inputs[i++]].value[0];
+            [strideWidth, strideHeight] = [1, 1];
+          }
           depthMultipler = operands[inputs[i++]].value[0];
           activation = operands[inputs[i++]].value[0];
 
@@ -349,8 +385,11 @@ export default class PreparedModel {
           let inputHeight = input.runtimeshape.Dims(1);
           let filterWidth = filter.runtimeshape.Dims(2);
           let filterHeight = filter.runtimeshape.Dims(1);
-          [paddingLeft, paddingRight] = calculateExplicitPadding(inputWidth, strideWidth, filterWidth, paddingCode);
-          [paddingTop, paddingBottom] = calculateExplicitPadding(inputHeight, strideHeight, filterHeight, paddingCode);
+
+          [paddingLeft, paddingRight] = 
+            calculateExplicitPadding(inputWidth, strideWidth, filterWidth, dilationWidth, paddingCode);
+          [paddingTop, paddingBottom] = 
+            calculateExplicitPadding(inputHeight, strideHeight, filterHeight, dilationHeight, paddingCode);
         }
         let output = operands[outputs[0]];
 
@@ -360,9 +399,9 @@ export default class PreparedModel {
         // Error check
         OPS_CHECK(input.type === filter.type);
         if (input.type === OperandCode.TENSOR_QUANT8_ASYMM) {
-            OPS_CHECK(bias.type === OperandCode.TENSOR_INT32);
+          OPS_CHECK(bias.type === OperandCode.TENSOR_INT32);
         } else {
-            OPS_CHECK(input.type === bias.type);
+          OPS_CHECK(input.type === bias.type);
         }
 
         OPS_CHECK(input.runtimeshape.DimensionsCount() === 4);
@@ -381,13 +420,12 @@ export default class PreparedModel {
           padding_values: PaddingValues,
           stride_width: strideWidth,
           stride_height: strideHeight,
-          dilation_width_factor: 1,
-          dilation_height_factor: 1,
+          dilation_width_factor: dilationWidth,
+          dilation_height_factor: dilationHeight,
           float_activation_min: float_activation_min,
           float_activation_max: float_activation_max,
           depth_multiplier: depthMultipler
         }
-
         nn_ops.depthwiseConvFloat32(depthwiseParams, 
                                     input.runtimeshape, input.value, 
                                     filter.runtimeshape, filter.value, 
@@ -428,8 +466,10 @@ export default class PreparedModel {
 
           let inputWidth = input.runtimeshape.Dims(2);
           let inputHeight = input.runtimeshape.Dims(1);
-          [paddingLeft, paddingRight] = calculateExplicitPadding(inputWidth, strideWidth, filterWidth, paddingCode);
-          [paddingTop, paddingBottom] = calculateExplicitPadding(inputHeight, strideHeight, filterHeight, paddingCode);
+          [paddingLeft, paddingRight] = 
+            calculateExplicitPadding(inputWidth, strideWidth, filterWidth, 1, paddingCode);
+          [paddingTop, paddingBottom] = 
+            calculateExplicitPadding(inputHeight, strideHeight, filterHeight, 1, paddingCode);
         }
         let output = operands[outputs[0]];
 
@@ -533,7 +573,7 @@ export default class PreparedModel {
 
         // Error check
         OPS_CHECK(axis >= 0 && axis < num_dimensions);
-        for (let  i = 1; i < numInputTensors; ++i) {
+        for (let i = 1; i < numInputTensors; ++i) {
           let input = operands[inputs[i]];
           OPS_CHECK(input.runtimeshape.DimensionsCount() === num_dimensions);
           OPS_CHECK(input.type === input_type);
@@ -629,9 +669,9 @@ export default class PreparedModel {
   _setTensorData(type, ptr, data) {
     const nn_ops = this._nn_ops;
     if (type === OperandCode.TENSOR_FLOAT32) {
-      nn_ops.HEAPF32.set(data, ptr>>2);
+      nn_ops.HEAPF32.set(data, ptr >> 2);
     } else if (type === OperandCode.TENSOR_INT32) {
-      nn_ops.HEAP32.set(data, ptr>>2);
+      nn_ops.HEAP32.set(data, ptr >> 2);
     } else if (type === OperandCode.TENSOR_QUANT8_ASYMM) {
       nn_ops.HEAPU8.set(data, ptr);
     } else {
