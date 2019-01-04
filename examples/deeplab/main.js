@@ -368,11 +368,7 @@ function main(camera) {
   function setCamResolution(resolution) {
     return navigator.mediaDevices.getUserMedia({
       audio: false,
-      video: {
-        width: resolution[0],
-        height: resolution[1],
-        facingMode: 'environment',
-      }
+      video: { facingMode: 'user' }
     }).then((stream) => {
       videoElement.srcObject = stream;
       return new Promise((resolve) => {
