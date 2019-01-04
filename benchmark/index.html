@@ -30,6 +30,12 @@
         font-size: 12px;
         tab-size: 2;
       }
+      .prefer-show {
+        display: block;
+      }
+      .prefer-hidden {
+        display: none;
+      }
     </style>
   </head>
   <body>
@@ -40,15 +46,33 @@
           <div>
             <h4>Model</h4>
             <select id="modelName">
-              <option value="mobilenet" selected>MobileNet</option>
+              <option value="mobilenet_v1_1.0_224.tflite" selected>Mobilenet V1(TFlite)</option>
+              <option value="mobilenet_v2_1.0_224.tflite">Mobilenet V2(TFlite)</option>
+              <option value="inception_v3.tflite">Inception V3(TFlite)</option>
+              <option value="inception_v4.tflite">Inception V4(TFlite)</option>
+              <option value="squeezenet.tflite">Squeezenet(TFlite)</option>
+              <option value="inception_resnet_v2.tflite">Incep. Res. V2(TFlite)</option>
+              <option value="squeezenet1.1.onnx">SqueezeNet(Onnx)</option>
+              <option value="mobilenetv2-1.0.onnx">Mobilenet v2(Onnx)</option>
+              <option value="resnet50v1.onnx">ResNet50 v1(Onnx)</option>
+              <option value="resnet50v2.onnx">ResNet50 v2(Onnx)</option>
+              <option value="inceptionv2.onnx">Inception v2(Onnx)</option>
+              <option value="densenet121.onnx">DenseNet(Onnx)</option>
+              <option value="ssd_mobilenet.tflite">SSD MobileNet(TFlite)</option>
               <option value="posenet">PoseNet</option>
-              <option value="squeezenet">SqueezeNet</option>
-              <option value="ssdmobilenet">SSD MobileNet</option>
             </select>
           </div>
           <div>
             <h4>Framework and backends</h4>
             <select id="configurations">
+            </select>
+          </div>
+          <div id="preferDiv" class="prefer-hidden">
+            <h4>Preference</h4>
+            <select id="preferSelect">
+              <option value="sustained" selected>SUSTAINED_SPEED</option>
+              <option value="fast">FAST_SINGLE_ANSWER</option>
+              <option value="low">LOW_POWER</option>
             </select>
           </div>
           <div>
@@ -62,8 +86,8 @@
               <canvas id="poseCanvas"></canvas>
               <canvas id="poseCanvasPredict" width="513" height="513"></canvas>
               <canvas id="canvas"></canvas>
-              <img id="image" crossorigin="anonymous" class="img-fluid" alt="Responsive image" src="../examples/mobilenet/img/bee_eater.jpg">
-              <img id="mobileImage" hidden crossorigin="anonymous" class="img-fluid" alt="Responsive image" src="../examples/mobilenet/img/bee_eater.jpg">
+              <img id="image" crossorigin="anonymous" class="img-fluid" alt="Responsive image" src="../examples/image_classification/img/bee_eater.jpg">
+              <img id="imageClassificationImage" hidden crossorigin="anonymous" class="img-fluid" alt="Responsive image" src="../examples/image_classification/img/bee_eater.jpg">
               <img id="poseImage" hidden  crossorigin="anonymous" class="img-fluid" alt="Responsive image" src="../examples/posenet/download.png">
               <img id="ssdMobileImage" hidden crossorigin="anonymous" class="img-fluid" alt="Responsive image" src="../examples/ssd_mobilenet/img/image1.jpg">
             </div>
@@ -90,14 +114,16 @@
     </div>
     <script src="../dist/webml-polyfill.js"></script>
     <script src="../examples/util/base.js"></script>
-    <script src="../examples/mobilenet/flatbuffers/js/flatbuffers.js"></script>
-    <script src="../examples/mobilenet/schema/schema_generated.js"></script>
-    <script src="../examples/mobilenet/TfLiteModelUtils.js"></script>
-    <script src="../examples/mobilenet/MobileNet.js"></script>
+
     <script src="../examples/third_party/protobuf.min.js"></script>
-    <script src="../examples/squeezenet/onnx.js"></script>
-    <script src="../examples/squeezenet/OnnxModelUtils.js"></script>
-    <script src="../examples/squeezenet/SqueezeNet.js"></script>
+    <script src="../examples/util/tflite/flatbuffers/js/flatbuffers.js"></script>
+    <script src="../examples/util/tflite/schema/schema_generated.js"></script>
+    <script src="../examples/util/tflite/TfLiteModelUtils.js"></script>
+    <script src="../examples/util/tflite/TFliteModelImporter.js"></script>
+    <script src="../examples/util/onnx/onnx.js"></script>
+    <script src="../examples/util/onnx/OnnxModelUtils.js"></script>
+    <script src="../examples/util/onnx/OnnxModelImporter.js"></script>
+
     <script src="../examples/posenet/src/decodePose.js"></script>
     <script src="../examples/posenet/src/helperFunc.js"></script>
     <script src="../examples/posenet/utils.js"></script>

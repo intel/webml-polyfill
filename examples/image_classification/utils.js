@@ -95,7 +95,7 @@ class Utils {
           if (request.status === 200) {
               resolve(request.response);
           } else {
-              reject(new Error('Failed to load ' + modelUrl + ' status: ' + request.status));
+              reject(new Error('Failed to load ' + url + ' status: ' + request.status));
           }
         }
       };
@@ -123,7 +123,7 @@ class Utils {
     if (norm) {
       pixels = new Float32Array(pixels).map(p => p / 255);
     }
-    
+
     if (channelScheme === 'RGB') {
       // NHWC layout
       for (let y = 0; y < height; ++y) {
