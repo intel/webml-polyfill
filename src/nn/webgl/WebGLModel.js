@@ -134,7 +134,8 @@ export default class WebGLModel {
           activation = FuseFunctionMap.get(operands[inputs[i++]].value[0]);
           output.assign(activation(
               input.conv2d(filter, [strideH, strideW],
-                           padding, 'NHWC', [dilationH, dilationW])
+                           padding, 'NHWC',
+                           [dilationH, dilationW])
                    .add(bias)));
         } else {
           const paddingLeft = operands[inputs[i++]].value[0];
@@ -151,12 +152,22 @@ export default class WebGLModel {
             [strideW, strideH] = [1, 1];
           }
           activation = FuseFunctionMap.get(operands[inputs[i++]].value[0]);
-          output.assign(activation(
-              input.pad([[0, 0], [paddingTop, paddingBottom],
-                         [paddingLeft, paddingRight], [0, 0]])
-                   .conv2d(filter, [strideH, strideW],
-                           'valid', 'NHWC', [dilationH, dilationW])
-                   .add(bias)));
+          if (this._isPaddingEqual(paddingLeft, paddingRight,
+                                   paddingTop, paddingBottom)) {
+            output.assign(activation(
+                input.conv2d(filter, [strideH, strideW],
+                             paddingLeft, 'NHWC',
+                             [dilationH, dilationW], 'floor')
+                     .add(bias)));
+          } else {
+            output.assign(activation(
+                input.pad([[0, 0], [paddingTop, paddingBottom],
+                           [paddingLeft, paddingRight], [0, 0]])
+                     .conv2d(filter, [strideH, strideW],
+                             'valid', 'NHWC',
+                             [dilationH, dilationW])
+                     .add(bias)));
+          }
         }
       } break;
       case OperationCode.DEPTHWISE_CONV_2D:
@@ -198,7 +209,8 @@ export default class WebGLModel {
           activation = FuseFunctionMap.get(operands[inputs[i++]].value[0]);
           output.assign(activation(
               input.depthwiseConv2D(filter, [strideH, strideW],
-                                    padding, 'NHWC', [dilationH, dilationW])
+                                    padding, 'NHWC',
+                                    [dilationH, dilationW])
                    .add(bias)));
         } else {
           const paddingLeft = operands[inputs[i++]].value[0];
@@ -216,12 +228,22 @@ export default class WebGLModel {
           }
           depthMultipler = operands[inputs[i++]].value[0];
           activation = FuseFunctionMap.get(operands[inputs[i++]].value[0]);
-          output.assign(activation(
-              input.pad([[0, 0], [paddingTop, paddingBottom],
-                         [paddingLeft, paddingRight], [0, 0]])
-                   .depthwiseConv2D(filter, [strideH, strideW],
-                                    'valid', 'NHWC', [dilationH, dilationW])
-                   .add(bias)));
+          if (this._isPaddingEqual(paddingLeft, paddingRight,
+                                   paddingTop, paddingBottom)) {
+            output.assign(activation(
+                input.depthwiseConv2D(filter, [strideH, strideW],
+                                      paddingLeft, 'NHWC',
+                                      [dilationH, dilationW], 'floor')
+                     .add(bias)));
+          } else {
+            output.assign(activation(
+                input.pad([[0, 0], [paddingTop, paddingBottom],
+                           [paddingLeft, paddingRight], [0, 0]])
+                     .depthwiseConv2D(filter, [strideH, strideW],
+                                      'valid', 'NHWC',
+                                      [dilationH, dilationW])
+                     .add(bias)));
+          }
         }
       } break;
       case OperationCode.AVERAGE_POOL_2D:
@@ -247,11 +269,13 @@ export default class WebGLModel {
           if (op === OperationCode.AVERAGE_POOL_2D) {
             output.assign(activation(
                 input.avgPool([filterH, filterW],
-                              [strideH, strideW], padding)));
+                              [strideH, strideW],
+                              padding)));
           } else {
             output.assign(activation(
                 input.maxPool([filterH, filterW],
-                              [strideH, strideW], padding)));
+                              [strideH, strideW],
+                              padding)));
           }
         } else {
           const paddingLeft = operands[inputs[i++]].value[0];
@@ -263,18 +287,32 @@ export default class WebGLModel {
           filterW = operands[inputs[i++]].value[0];
           filterH = operands[inputs[i++]].value[0];
           activation = FuseFunctionMap.get(operands[inputs[i++]].value[0]);
-          if (op === OperationCode.AVERAGE_POOL_2D) {
-            output.assign(activation(
-                input.pad([[0, 0], [paddingTop, paddingBottom],
-                           [paddingLeft, paddingRight], [0, 0]])
-                     .avgPool([filterH, filterW],
-                              [strideH, strideW],'valid')));
+          if (this._isPaddingEqual(paddingLeft, paddingRight,
+                                   paddingTop, paddingBottom)) {
+            if (op === OperationCode.AVERAGE_POOL_2D) {
+              output.assign(activation(
+                  input.avgPool([filterH, filterW],
+                                [strideH, strideW],
+                                paddingLeft, 'floor')));
+            } else {
+              output.assign(activation(
+                  input.maxPool([filterH, filterW],
+                                [strideH, strideW],
+                                paddingLeft, 'floor')));
+            }            
           } else {
-            output.assign(activation(
-                input.pad([[0, 0], [paddingTop, paddingBottom],
-                           [paddingLeft, paddingRight], [0, 0]])
-                     .maxPool([filterH, filterW],
-                              [strideH, strideW], 'valid')));
+            if (op === OperationCode.AVERAGE_POOL_2D) {
+              throw new Error(
+                  'AVERAGE_POOL_2D with unequal padding is not supported');
+            } else {
+              output.assign(activation(
+                  input.pad([[0, 0], [paddingTop, paddingBottom],
+                             [paddingLeft, paddingRight], [0, 0]],
+                            -1e8 /* a small enough constant */)
+                       .maxPool([filterH, filterW],
+                                [strideH, strideW],
+                                'valid')));
+            }
           }
         }
       } break;
@@ -381,6 +419,10 @@ export default class WebGLModel {
       }
     });
   }
+
+  _isPaddingEqual(left, right, top, bottom) {
+    return (left === right) && (left === top) && (left === bottom);
+ }
 
   _deleteAll() {
     this._operands.forEach(operand => {
