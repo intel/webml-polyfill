@@ -16,56 +16,22 @@ if (!fs.existsSync(outputPath)) {
 var htmlPath = outputPath + "/report-check-result.html";
 
 var htmlStream = fs.createWriteStream(htmlPath, {flags: "a"});
-var csvStream = csv.createWriteStream({headers: true}).transform(function(row) {return {
-    "Feature": row.Feature,
-    "Case Id": row.CaseId,
-    "Test Case": row.TestCase,
-    "BaseLine(Mac-MPS)": row.BLMMPS,
-    "CheckResult(Mac-MPS)": row.CRMMPS,
-    "BaseLine(Mac-BNNS)": row.BLMBNNS,
-    "CheckResult(Mac-BNNS)": row.CRMBNNS,
-    "BaseLine(Mac-WASM)": row.BLMWASM,
-    "CheckResult(Mac-WASM)": row.CRMWASM,
-    "BaseLine(Mac-WebGL)": row.BLMWebGL,
-    "CheckResult(Mac-WebGL)": row.CRMWebGL,
-    "BaseLine(Android-NNAPI)": row.BLANNAPI,
-    "CheckResult(Android-NNAPI)": row.CRANNAPI,
-    "BaseLine(Android-WASM)": row.BLAWASM,
-    "CheckResult(Android-WASM)": row.CRAWASM,
-    "BaseLine(Android-WebGL)": row.BLAWebGL,
-    "CheckResult(Android-WebGL)": row.CRAWebGL,
-    "BaseLine(Windows-clDNN)": row.BLWclDNN,
-    "CheckResult(Windows-clDNN)": row.CRWclDNN,
-    "BaseLine(Windows-WASM)": row.BLWWASM,
-    "CheckResult(Windows-WASM)": row.CRWWASM,
-    "BaseLine(Windows-WebGL)": row.BLWWebGL,
-    "CheckResult(Windows-WebGL)": row.CRWWebGL,
-    "BaseLine(Linux-clDNN)": row.BLLclDNN,
-    "CheckResult(Linux-clDNN)": row.CRLclDNN,
-    "BaseLine(Linux-WASM)": row.BLLWASM,
-    "CheckResult(Linux-WASM)": row.CRLWASM,
-    "BaseLine(Linux-WebGL)": row.BLLWebGL,
-    "CheckResult(Linux-WebGL)": row.CRLWebGL
-}});
-
-var csvFilePath = outputPath + "/report-check-result.csv";
-csvStream.pipe(fs.createWriteStream(csvFilePath));
 
 var remoteURL, driver, backendModel, chromeOption, command, androidSN, adbPath, htmlPath;
 var backendModels = [
-    "Mac-WASM",
-    "Mac-WebGL",
     "Mac-MPS",
     "Mac-BNNS",
+    "Mac-WASM",
+    "Mac-WebGL",
+    "Android-NNAPI",
     "Android-WASM",
     "Android-WebGL",
-    "Android-NNAPI",
+    "Windows-clDNN",
     "Windows-WASM",
     "Windows-WebGL",
-    "Windows-clDNN",
+    "Linux-clDNN",
     "Linux-WASM",
-    "Linux-WebGL",
-    "Linux-clDNN"
+    "Linux-WebGL"
 ];
 
 var RCjson = JSON.parse(fs.readFileSync("./config.json"));
@@ -77,7 +43,7 @@ var versionChromium = baselinejson.Version.chromium;
 var versionPolyfill = baselinejson.Version.polyfill;
 
 /**
- * baseLineData = writeCSVData = {
+ * baseLineData = {
  *     key: {
  *         "Feature": value,
  *         "CaseId": value,
@@ -99,7 +65,6 @@ var versionPolyfill = baselinejson.Version.polyfill;
  * }
  */
 var baseLineData = new Map();
-var writeCSVData = new Map();
 /**
  * pageData = {
  *     backend: {
@@ -132,14 +97,44 @@ for (let i = 0; i < backendModels.length; i++) {
 var testBackends = new Array();
 var crashData = new Array();
 /**
- * graspData = [
+ * newTestCaseData = {
+ *     "caseCount": value,
+ *     "backends": {
+ *         backend1: true,
+ *         backend2: true
+ *     },
+ *     testCase: {
+ *         "title": title,
+ *         "caseID": caseID,
+ *         "backend": {
+ *             backend1: caseStatus1,
+ *             backend2: caseStatus2,
+ *             backend3: caseStatus3
+ *         }
+ *     }
+ * }
+ */
+var newTestCaseData = new Map();
+newTestCaseData.set("caseCount", 0);
+newTestCaseData.set("backends", new Map());
+
+/**
+ * graspDataSummary = [
  *     total: value,
  *     pass: value,
  *     fail: value,
  *     block: value
  * ]
  */
-var graspData = new Array();
+var graspDataSummary = new Array();
+/**
+ * baseLineDataSummary = [
+ *     model-name1: count1,
+ *     model-name2: count2,
+ *     model-name3: count3
+ * ]
+ */
+var baseLineDataSummary = new Map();
 
 csv.fromPath("./baseline/unitTestsBaseline.csv").on("data", function(data){
     baseLineData.set(data[0] + "-" + data[1], new Map(
@@ -162,25 +157,72 @@ csv.fromPath("./baseline/unitTestsBaseline.csv").on("data", function(data){
             ["Linux-WebGL", data[15]]
         ]
     ));
+
+    let newData = data[1].split("/")[0];
+    let dataArray = data[1].split("/");
+    if (dataArray.length > 2) {
+        for (let dataCount = 1; dataCount < dataArray.length - 1; dataCount++) {
+            newData = newData + "/" + dataArray[dataCount];
+        }
+    }
+
+    baseLineData.set(data[0] + "-" + newData + "-" + data[2], new Map(
+        [
+            ["Feature", data[0]],
+            ["CaseId", newData],
+            ["TestCase", data[2]],
+            ["Mac-MPS", data[3]],
+            ["Mac-BNNS", data[4]],
+            ["Mac-WASM", data[5]],
+            ["Mac-WebGL", data[6]],
+            ["Android-NNAPI", data[7]],
+            ["Android-WASM", data[8]],
+            ["Android-WebGL", data[9]],
+            ["Windows-clDNN", data[10]],
+            ["Windows-WASM", data[11]],
+            ["Windows-WebGL", data[12]],
+            ["Linux-clDNN", data[13]],
+            ["Linux-WASM", data[14]],
+            ["Linux-WebGL", data[15]]
+        ]
+    ));
+
+    if (baseLineDataSummary.has(data[0] + "-" + newData)) {
+        baseLineDataSummary.set(data[0] + "-" + newData, baseLineDataSummary.get(data[0] + "-" + newData) + 1);
+    } else {
+        baseLineDataSummary.set(data[0] + "-" + newData, 1);
+    }
 }).on("end", function() {
     for (let key of baseLineData.keys()) {
         RClog("debug", "key: " + key);
+    }
+
+    for (let key of baseLineDataSummary.keys()) {
+        RClog("debug", "key: " + key);
+        RClog("debug", "value: " + baseLineDataSummary.get(key));
     }
 });
 
 var continueFlag = false;
 var debugFlag = false;
+var timeFlag = false;
 function RClog (target, message) {
     if (target == "console") {
         console.log("RC -- " + message);
     } else if (target == "debug") {
         if (debugFlag) console.log("RC -- " + message);
+    } else if (target == "time") {
+        // For performance testing
+        if (timeFlag) {
+            console.log("RC -- running time: " + process.uptime() + "s");
+        }
     } else {
         throw new Error("Not support target '" + target + "'");
     }
 }
 
 RClog("console", "checking runtime environment....");
+RClog("time", "mark");
 
 if (testPlatform == "Android") {
     RClog("console", "runtime environment: android");
@@ -328,124 +370,140 @@ if (testPlatform == "Android") {
     }
 }
 
+RClog("time", "mark");
+
 var numberPasstoFail = 0;
 var numberFailtoPass = 0;
 var numberTotal = 0;
+var matchFlag = null;
 
 (async function() {
     RClog("console", "checking chromium code is start");
 
-    var getInfo = async function(element, count, title, module) {
+    var getCaseStatus = async function(element) {
         return element.getAttribute("class").then(function(message) {
-            let checkCaseStatus = null;
+            let graspCaseStatus = null;
             if (message == "test pass pending") {
-                checkCaseStatus = "N/A";
-                graspData["block"] = graspData["block"] + 1
+                graspCaseStatus = "N/A";
             } else if (message == "test pass fast" || message == "test pass slow" || message == "test pass medium") {
-                checkCaseStatus = "Pass";
-                graspData["pass"] = graspData["pass"] + 1
+                graspCaseStatus = "Pass";
             } else if (message == "test fail") {
-                checkCaseStatus = "Fail";
-                graspData["fail"] = graspData["fail"] + 1
+                graspCaseStatus = "Fail";
             } else {
                 throw new Error("not support case status");
             }
 
-            graspData["total"] = graspData["total"] + 1;
-            module = module + "/" + count;
-
-            RClog("debug", "'Feature': " + title);
-            RClog("debug", "'Case Id': " + module);
-            RClog("debug", "'Case Status': " + checkCaseStatus + "\n");
-
-            let resultFlag = checkResult(backendModel, title, module, checkCaseStatus);
-            if (resultFlag) {
-                if (!writeCSVData.has(title + "-" + module)) {
-                    writeCSVData.set(title + "-" + module, new Array());
-
-                    writeCSVData.get(title + "-" + module)["Feature"] = title;
-                    writeCSVData.get(title + "-" + module)["CaseId"] = module;
-                    writeCSVData.get(title + "-" + module)["TestCase"] = baseLineData.get(title + "-" + module).get("TestCase");
-                }
-
-                let DataArray = writeCSVData.get(title + "-" + module);
-                let baseLineStatus = baseLineData.get(title + "-" + module).get(backendModel);
-                let name = baseLineData.get(title + "-" + module).get("TestCase");
-
-                switch(backendModel) {
-                    case "Mac-MPS":
-                        DataArray["BLMMPS"] = baseLineStatus;
-                        DataArray["CRMMPS"] = checkCaseStatus;
-                        break;
-                    case "Mac-BNNS":
-                        DataArray["BLMBNNS"] = baseLineStatus;
-                        DataArray["CRMBNNS"] = checkCaseStatus;
-                        break;
-                    case "Mac-WASM":
-                        DataArray["BLMWASM"] = baseLineStatus;
-                        DataArray["CRMWASM"] = checkCaseStatus;
-                        break;
-                    case "Mac-WebGL":
-                        DataArray["BLMWebGL"] = baseLineStatus;
-                        DataArray["CRMWebGL"] = checkCaseStatus;
-                        break;
-                    case "Android-NNAPI":
-                        DataArray["BLANNAPI"] = baseLineStatus;
-                        DataArray["CRANNAPI"] = checkCaseStatus;
-                        break;
-                    case "Android-WASM":
-                        DataArray["BLAWASM"] = baseLineStatus;
-                        DataArray["CRAWASM"] = checkCaseStatus;
-                        break;
-                    case "Android-WebGL":
-                        DataArray["BLAWebGL"] = baseLineStatus;
-                        DataArray["CRAWebGL"] = checkCaseStatus;
-                        break;
-                    case "Windows-clDNN":
-                        DataArray["BLWclDNN"] = baseLineStatus;
-                        DataArray["CRWclDNN"] = checkCaseStatus;
-                        break;
-                    case "Windows-WASM":
-                        DataArray["BLWWASM"] = baseLineStatus;
-                        DataArray["CRWWASM"] = checkCaseStatus;
-                        break;
-                    case "Windows-WebGL":
-                        DataArray["BLWWebGL"] = baseLineStatus;
-                        DataArray["CRWWebGL"] = checkCaseStatus;
-                        break;
-                    case "Linux-WASM":
-                        DataArray["BLLWASM"] = baseLineStatus;
-                        DataArray["CRLWASM"] = checkCaseStatus;
-                        break;
-                    case "Linux-WebGL":
-                        DataArray["BLLWebGL"] = baseLineStatus;
-                        DataArray["CRLWebGL"] = checkCaseStatus;
-                        break;
-                    case "Linux-clDNN":
-                        DataArray["BLLclDNN"] = baseLineStatus;
-                        DataArray["CRLclDNN"] = checkCaseStatus;
-                        break;
-                }
-
-                if (baseLineStatus == "Pass" && checkCaseStatus == "Fail") {
-                    pageData.get(backendModel).get("pass2fail").push([title, module + "-" + name]);
-                } else {
-                    pageData.get(backendModel).get("fail2pass").push([title, module + "-" + name]);
-                }
-
-                RClog("console", title + "-" + module + "-" + name);
-                RClog("console", baseLineStatus + " : " + checkCaseStatus);
-            }
+            return graspCaseStatus;
         });
+    }
+
+    var getCaseName = async function(element) {
+        let Text = null;
+        let length = 0;
+        await element.findElement(By.xpath("./h2")).getText().then(function(message) {
+            length = message.length - 1;
+            Text = message;
+        });
+
+        let arrayElement = await element.findElements(By.xpath("./h2/child::*"));
+        for (let j = 1; j <= arrayElement.length; j++) {
+            await arrayElement[j - 1].getText().then(function(message) {
+                length = length - message.length;
+            });
+        }
+
+        return Text.slice(0, length);
+    }
+
+    var checkResult = async function(element, count, title, module, flag) {
+        let caseStatus = await getCaseStatus(element);
+        let caseName, key;
+
+        if (flag) {
+            key = title + "-" + module + "/" + count;
+            caseName = baseLineData.get(key).get("TestCase");
+        } else {
+            caseName = await getCaseName(element);
+            key = title + "-" + module + "-" + caseName;
+        }
+
+        if (baseLineData.has(key)) {
+            graspDataSummary["total"] = graspDataSummary["total"] + 1;
+            if (caseStatus == "Pass") {
+                graspDataSummary["pass"] = graspDataSummary["pass"] + 1;
+            } else if (caseStatus == "Fail") {
+                graspDataSummary["fail"] = graspDataSummary["fail"] + 1;
+            } else if (caseStatus == "N/A") {
+                graspDataSummary["block"] = graspDataSummary["block"] + 1;
+            }
+
+            let baseLineStatus = baseLineData.get(key).get(backendModel);
+            if (caseStatus !== baseLineStatus) {
+                if (baseLineStatus == "Pass" && caseStatus == "Fail") {
+                    pageData.get(backendModel).get("pass2fail").push([title, module + "-" + caseName]);
+                } else {
+                    pageData.get(backendModel).get("fail2pass").push([title, module + "-" + caseName]);
+                }
+
+                RClog("console", title + "-" + module + "-" + caseName);
+                RClog("console", "baseLineStatus: " + baseLineStatus + " - caseStatus: " + caseStatus);
+            }
+        } else {
+            RClog("console", "no match test case: " + title + "-" + module + "-" + caseName);
+
+            if (matchFlag == "macth" || matchFlag == "delete") {
+                throw new Error("no match test case: " + title + "-" + module + "-" + caseName);
+            } else {
+                if (!newTestCaseData.get("backends").has(backendModel)) {
+                    newTestCaseData.get("backends").set(backendModel, true);
+                }
+
+                if (!newTestCaseData.has(title + "-" + module + "-" + caseName)) {
+                    newTestCaseData.set(title + "-" + module + "-" + caseName, new Map());
+                    newTestCaseData.get(title + "-" + module + "-" + caseName).set("title", title);
+                    newTestCaseData.get(title + "-" + module + "-" + caseName).set("caseID", module + "-" + caseName);
+                    newTestCaseData.get(title + "-" + module + "-" + caseName).set("backend", new Map());
+                    newTestCaseData.set("caseCount", newTestCaseData.get("caseCount") + 1);
+                }
+
+                newTestCaseData.get(title + "-" + module + "-" + caseName).get("backend").set(backendModel, caseStatus);
+            }
+        }
     }
 
     var graspResult = async function() {
         let actions = 0;
         let actionCount = 0;
+        let graspTotal, graspPass, graspFail;
+
+        await driver.findElement(By.xpath("//ul[@id='mocha-stats']/li[@class='passes']//em")).getText().then(function(message) {
+            RClog("debug", "passes: " + message);
+            graspPass = message >> 0;
+        });
+
+        await driver.findElement(By.xpath("//ul[@id='mocha-stats']/li[@class='failures']//em")).getText().then(function(message) {
+            RClog("debug", "failures: " + message);
+            graspFail = message >> 0;
+        });
+
+        graspTotal = graspPass + graspFail;
+        if (graspTotal == baselinejson[backendModel]["total"]) {
+            matchFlag = "macth";
+            RClog("console", "match base line data: matching mode");
+        } else {
+            if (graspTotal > baselinejson[backendModel]["total"]) {
+                matchFlag = "add";
+            } else if (graspTotal < baselinejson[backendModel]["total"]) {
+                matchFlag = "delete";
+            }
+
+            RClog("console", "not match base line data: compatibility mode");
+            RClog("console", "will too slow, because grasping more information");
+        }
 
         await driver.findElements(By.xpath("//ul[@id='mocha-report']/li[@class='suite']")).then(function(arrayTitles) {
             for (let i = 0; i < arrayTitles.length; i++) {
-                arrayTitles[i].findElement(By.xpath("./h1/a")).getText().then(function(message) {
+                arrayTitles[i].findElement(By.xpath("./h1/a")).getAttribute("textContent").then(function(message) {
                     let title = message;
 
                     arrayTitles[i].findElements(By.xpath("./ul/li[@class='suite']")).then(function(arrayModules) {
@@ -459,16 +517,24 @@ var numberTotal = 0;
                                                                  "@class='test pass medium']")).then(async function(arrayCase) {
                                 RClog("debug", "title: " + title + "    module: " + module + "    case: " + arrayCase.length);
 
+                                let modeFlag;
+                                if (baseLineDataSummary.get(title + "-" + module) == arrayCase.length) {
+                                    modeFlag = true;
+                                    RClog("debug", title + "-" + module + ": match, fast search mode");
+                                } else {
+                                    modeFlag = false;
+                                    RClog("console", title + "-" + module + ": not match, carefully search mode");
+                                }
+
                                 for (let k = 0; k < arrayCase.length; k++) {
-                                    await getInfo(arrayCase[k], k + 1, title, module).then(function() {
+                                    await checkResult(arrayCase[k], k + 1, title, module, modeFlag).then(function() {
                                         actions = actions + 1;
                                     });
                                 }
-
                             });
                         } else {
                             for (let j = 0; j < arrayModules.length; j++) {
-                                arrayModules[j].findElement(By.xpath("./h1/a")).getText().then(function(message) {
+                                arrayModules[j].findElement(By.xpath("./h1/a")).getAttribute("textContent").then(function(message) {
                                     let module = message.split("#")[1];
 
                                     arrayModules[j].findElements(By.xpath("./ul/li[@class='test pass fast' or " +
@@ -478,8 +544,17 @@ var numberTotal = 0;
                                                                           "@class='test pass medium']")).then(async function(arrayCase) {
                                         RClog("debug", "title: " + title + "    module: " + module + "    case: " + arrayCase.length);
 
+                                        let modeFlag;
+                                        if (baseLineDataSummary.get(title + "-" + module) == arrayCase.length) {
+                                            modeFlag = true;
+                                            RClog("debug", title + "-" + module + ": match, fast search mode");
+                                        } else {
+                                            modeFlag = false;
+                                            RClog("console", title + "-" + module + ": not match, carefully search mode");
+                                        }
+
                                         for (let k = 0; k < arrayCase.length; k++) {
-                                            await getInfo(arrayCase[k], k + 1, title, module).then(function() {
+                                            await checkResult(arrayCase[k], k + 1, title, module, modeFlag).then(function() {
                                                 actions = actions + 1;
                                             });
                                         }
@@ -495,27 +570,16 @@ var numberTotal = 0;
         await driver.wait(function() {
             if (actionCount != actions) {
                 actionCount = actions;
-                RClog("debug", baselinejson[backendModel]["total"] + " : " + actionCount);
+                RClog("debug", graspTotal + " : " + actionCount);
             }
 
-            return (actions == baselinejson[backendModel]["total"]);
-        }, 500000).catch(function() {
-            RClog("console", "total: " + baselinejson[backendModel]["total"] + " grasp: " + actionCount);
+            return (actions == graspTotal);
+        }, 5000000).then(function() {
+            RClog("console", "grasp all test case: " + graspTotal);
+        }).catch(function() {
+            RClog("console", "total: " + graspTotal + " grasp: " + actionCount);
             throw new Error("failed to grasp all test result");
         });
-    }
-
-    var checkResult = function(backend, title, module, statusCheck) {
-        let caseId = title + "-" + module;
-        if (!baseLineData.has(caseId)) {
-            throw new Error("no match test case: " + caseId);
-        } else {
-            if (statusCheck === baseLineData.get(caseId).get(backend)) {
-                return false;
-            } else {
-                return true;
-            }
-        }
     }
 
     var createHtmlHead = function() {
@@ -535,6 +599,7 @@ var numberTotal = 0;
     .tab-menu ul li:hover {cursor: pointer;}\n\
     .tab-box div {display:none;}\n\
     .tab-box div.active {display:block;}\n\
+    .tab-box div div.NewTestCase {display:block;}\n\
     table {border: 1px solid #ddd; border-spacing:0;}\n\
     table tr th {border: 1px solid #000;background-color: #B0C4DE;}\n\
     table tr td {border: 1px solid #ddd}\n\
@@ -578,13 +643,13 @@ var numberTotal = 0;
         htmlStream.write(space + "    <div>Chromium version: " + versionChromium + "</div>\n");
         htmlStream.write(space + "    <div>Webml-polyfill version: " + versionPolyfill + "</div>\n");
         htmlStream.write(space + "</div>\n");
+
+        htmlStream.write(space + "<hr />\n");
     }
 
-    var createHtmlBodyContainerWarnning = function(space) {
-        htmlStream.write(space + "<hr />\n");
-
+    var createHtmlBodyContainerCrash = function(space) {
         if (crashData.length !== 0) {
-            htmlStream.write(space + "<div class='warnning' id='option_div'>\n");
+            htmlStream.write(space + "<div class='warnning' id='option_Crash'>\n");
             htmlStream.write(space + "  <h3>Warnning:</h3>\n");
 
             for (let i = 0; i < crashData.length; i++) {
@@ -592,26 +657,89 @@ var numberTotal = 0;
                                  crashData[i] + ", please double check.</p>\n");
             }
 
+            htmlStream.write(space + "  <hr />\n");
             htmlStream.write(space + "</div>\n");
         }
     }
 
-    var createHtmlBodyContainerSuggest = function(space) {
-        for (let i = 0; i < testBackends.length; i++) {
-            numberPasstoFail = numberPasstoFail + pageData.get(testBackends[i]).get("pass2fail").length;
-            numberFailtoPass = numberFailtoPass + pageData.get(testBackends[i]).get("fail2pass").length;
+    var createHtmlBodyContainerNewTestCase = function(space) {
+        if (newTestCaseData.get("caseCount") !== 0) {
+            htmlStream.write(space + "<hr />\n");
 
-            if (typeof pageDataTotal.get(testBackends[i]).get("grasp")[0] !== "undefined") {
-                numberTotal = numberTotal + pageDataTotal.get(testBackends[i]).get("grasp")[0];
+            htmlStream.write(space + "<div class='NewTestCase'>\n");
+            htmlStream.write(space + "  <h3>NOTE: There are " + newTestCaseData.get("caseCount") +
+                             " new test cases compared with the baseline, please double check.</h3>\n");
+            htmlStream.write(space + "</div>\n");
+
+            htmlStream.write(space + "<table>\n");
+            htmlStream.write(space + "  <thead>\n");
+            htmlStream.write(space + "    <tr>\n");
+            htmlStream.write(space + "      <th>Feature\n");
+            htmlStream.write(space + "      </th>\n");
+            htmlStream.write(space + "      <th>TestCase\n");
+            htmlStream.write(space + "      </th>\n");
+
+            for (let backend of newTestCaseData.get("backends").keys()) {
+                htmlStream.write(space + "      <th>" + backend + "\n");
+                htmlStream.write(space + "      </th>\n");
             }
+
+            htmlStream.write(space + "    </tr>\n");
+            htmlStream.write(space + "  </thead>\n");
+            htmlStream.write(space + "  <tbody>\n");
+
+            for (let caseName of newTestCaseData.keys()) {
+                if (caseName !== "caseCount" && caseName !== "backends") {
+                    htmlStream.write(space + "    <tr >\n");
+                    htmlStream.write(space + "      <td >" + newTestCaseData.get(caseName).get("title") + "\n");
+                    htmlStream.write(space + "      </td>\n");
+                    htmlStream.write(space + "      <td >" + newTestCaseData.get(caseName).get("caseID") + "\n");
+                    htmlStream.write(space + "      </td>\n");
+
+                    for (let backend of newTestCaseData.get("backends").keys()) {
+                        if (newTestCaseData.get(caseName).get("backend").has(backend)) {
+                            if (newTestCaseData.get(caseName).get("backend").get(backend) == "Pass") {
+                                htmlStream.write(space + "      <td class='pass'>" +
+                                                 newTestCaseData.get(caseName).get("backend").get(backend) + "\n");
+                                htmlStream.write(space + "      </td>\n");
+                            } else {
+                                htmlStream.write(space + "      <td class='fail'>" +
+                                                 newTestCaseData.get(caseName).get("backend").get(backend) + "\n");
+                                htmlStream.write(space + "          </td>\n");
+                            }
+                        }
+                    }
+
+                    htmlStream.write(space + "    </tr>\n");
+                }
+            }
+
+            htmlStream.write(space + "  </tbody>\n");
+            htmlStream.write(space + "</table>\n");
+
+            htmlStream.write(space + "<hr />\n");
         }
+    }
 
+    var createHtmlBodyContainerSuggest = function(space) {
         htmlStream.write(space + "<div>\n");
+        htmlStream.write(space + "  <h3>PR Submission Proposal:</h3>\n");
 
-        if (numberPasstoFail == 0 && crashData.length == 0) {
-            htmlStream.write(space + "  <h3>PR Submission Proposal: <span class='suggest'>OK</span></h3>\n");
-        } else {
-            htmlStream.write(space + "  <h3>PR Submission Proposal: <span class='notsuggest'>Please improve your code</span></h3>\n");
+        for (let testBackend of testBackends) {
+            numberPasstoFail = numberPasstoFail + pageData.get(testBackend).get("pass2fail").length;
+            numberFailtoPass = numberFailtoPass + pageData.get(testBackend).get("fail2pass").length;
+
+            if (typeof pageDataTotal.get(testBackend).get("grasp")[0] !== "undefined") {
+                numberTotal = numberTotal + pageDataTotal.get(testBackend).get("grasp")[0];
+            }
+
+            if (pageData.get(testBackend).get("pass2fail").length !== 0) {
+                htmlStream.write(space + "    <h4>&emsp; &emsp; &#10148 &emsp; " + testBackend +
+                                 ": <span class='notsuggest'>Please improve the code</span></h4>\n");
+            } else {
+                htmlStream.write(space + "    <h4>&emsp; &emsp; &#10148 &emsp; " + testBackend +
+                                 ": <span class='suggest'>OK</span></h4>\n");
+            }
         }
 
         htmlStream.write(space + "  <h3>PR Submission Message:</h3>\n");
@@ -653,21 +781,11 @@ var numberTotal = 0;
             htmlStream.write(space + "      </td>\n");
             htmlStream.write(space + "    </tr>\n");
         } else {
-            let pass2failArray = new Array();
-            for (let key of baseLineData.keys()) {
-                for (let i = 0; i < pageData.get(backend).get("pass2fail").length; i++) {
-                    if ((key + "-" + baseLineData.get(key).get("TestCase")) ==
-                        (pageData.get(backend).get("pass2fail")[i][0] + "-" + pageData.get(backend).get("pass2fail")[i][1])) {
-                        pass2failArray.push([pageData.get(backend).get("pass2fail")[i][0], pageData.get(backend).get("pass2fail")[i][1]]);
-                    }
-                }
-            }
-
-            for (let i = 0; i < pass2failArray.length; i++) {
+            for (let i = 0; i < pageData.get(backend).get("pass2fail").length; i++) {
                 htmlStream.write(space + "      <tr class='pass2fail'>\n");
-                htmlStream.write(space + "        <td >" + pass2failArray[i][0] + "\n");
+                htmlStream.write(space + "        <td >" + pageData.get(backend).get("pass2fail")[i][0] + "\n");
                 htmlStream.write(space + "        </td>\n");
-                htmlStream.write(space + "        <td >" + pass2failArray[i][1] + "\n");
+                htmlStream.write(space + "        <td >" + pageData.get(backend).get("pass2fail")[i][1] + "\n");
                 htmlStream.write(space + "        </td>\n");
                 htmlStream.write(space + "        <td class='pass'>Pass\n");
                 htmlStream.write(space + "        </td>\n");
@@ -683,21 +801,11 @@ var numberTotal = 0;
             htmlStream.write(space + "      </td>\n");
             htmlStream.write(space + "    </tr>\n");
         } else {
-            let fail2passArray = new Array();
-            for (let key of baseLineData.keys()) {
-                for (let i = 0; i < pageData.get(backend).get("fail2pass").length; i++) {
-                    if ((key + "-" + baseLineData.get(key).get("TestCase")) ==
-                        (pageData.get(backend).get("fail2pass")[i][0] + "-" + pageData.get(backend).get("fail2pass")[i][1])){
-                        fail2passArray.push([pageData.get(backend).get("fail2pass")[i][0], pageData.get(backend).get("fail2pass")[i][1]]);
-                    }
-                }
-            }
-
-            for (let i = 0; i < fail2passArray.length; i++) {
+            for (let i = 0; i < pageData.get(backend).get("fail2pass").length; i++) {
                 htmlStream.write(space + "      <tr class='fail2pass'>\n");
-                htmlStream.write(space + "        <td >" + fail2passArray[i][0] + "\n");
+                htmlStream.write(space + "        <td >" + pageData.get(backend).get("fail2pass")[i][0] + "\n");
                 htmlStream.write(space + "        </td>\n");
-                htmlStream.write(space + "        <td >" + fail2passArray[i][1] + "\n");
+                htmlStream.write(space + "        <td >" + pageData.get(backend).get("fail2pass")[i][1] + "\n");
                 htmlStream.write(space + "        </td>\n");
                 htmlStream.write(space + "        <td class='fail'>Fail\n");
                 htmlStream.write(space + "        </td>\n");
@@ -780,6 +888,7 @@ var numberTotal = 0;
         }
 
         createHtmlBodyContainerResultBoxTableTotal(space + "    ");
+        createHtmlBodyContainerNewTestCase(space + "    ");
 
         htmlStream.write(space + "  </div>\n");
         htmlStream.write(space + "</div>\n");
@@ -796,7 +905,7 @@ var numberTotal = 0;
         htmlStream.write(space + "<div class='container'>\n");
 
         createHtmlBodyContainerVersion(space + "  ");
-        createHtmlBodyContainerWarnning(space + "  ");
+        createHtmlBodyContainerCrash(space + "  ");
         createHtmlBodyContainerSuggest(space + "  ");
         createHtmlBodyContainerResult(space + "  ");
 
@@ -822,13 +931,15 @@ var numberTotal = 0;
         htmlStream.write("</html>\n");
     }
 
+    RClog("time", "mark");
+
     for (let i = 0; i < backendModels.length; i++) {
         chromeOption = new Chrome.Options();
         backendModel = backendModels[i];
-        graspData["total"] = 0;
-        graspData["pass"] = 0;
-        graspData["fail"] = 0;
-        graspData["block"] = 0;
+        graspDataSummary["total"] = 0;
+        graspDataSummary["pass"] = 0;
+        graspDataSummary["fail"] = 0;
+        graspDataSummary["block"] = 0;
         continueFlag = false;
         remoteURL = "https://brucedai.github.io/nt/test/index-local.html";
 
@@ -981,14 +1092,18 @@ var numberTotal = 0;
             throw new Error("failed to load web page");
         });
 
+        RClog("time", "mark");
+
         await driver.wait(async function() {
-            driver.executeScript("return window.mochaFinish;").then(function(flag) {
+            await driver.executeScript("return window.mochaFinish;").then(function(flag) {
                 RClog("debug", flag);
             }).catch(function(err) {
                 throw err;
             });
 
-            return driver.executeScript("return window.mochaFinish;").catch(function(err) {throw err;});
+            return driver.executeScript("return window.mochaFinish;").catch(function(err) {
+                throw err;
+            });
         }, 200000).then(function() {
             RClog("console", "load remote URL is completed, no crash");
         }).catch(function(err) {
@@ -1002,6 +1117,8 @@ var numberTotal = 0;
                 throw err;
             }
         });
+
+        RClog("time", "mark");
 
         if (continueFlag) {
             await driver.sleep(2000);
@@ -1017,11 +1134,13 @@ var numberTotal = 0;
 
         await graspResult();
 
-        pageDataTotal.get(backendModel).get("grasp").push(graspData["total"]);
-        pageDataTotal.get(backendModel).get("grasp").push(graspData["pass"]);
-        pageDataTotal.get(backendModel).get("grasp").push(graspData["fail"]);
-        pageDataTotal.get(backendModel).get("grasp").push(graspData["block"]);
-        pageDataTotal.get(backendModel).get("grasp").push(Math.round((graspData["pass"] / graspData["total"]) * 100).toString() + "%");
+        RClog("time", "mark");
+
+        pageDataTotal.get(backendModel).get("grasp").push(graspDataSummary["total"]);
+        pageDataTotal.get(backendModel).get("grasp").push(graspDataSummary["pass"]);
+        pageDataTotal.get(backendModel).get("grasp").push(graspDataSummary["fail"]);
+        pageDataTotal.get(backendModel).get("grasp").push(graspDataSummary["block"]);
+        pageDataTotal.get(backendModel).get("grasp").push(Math.round((graspDataSummary["pass"] / graspDataSummary["total"]) * 100).toString() + "%");
 
         await driver.sleep(2000);
         await driver.quit();
@@ -1030,14 +1149,9 @@ var numberTotal = 0;
         RClog("console", "checking with '" + backendModel + "' backend is completed");
     }
 
-    for (let value of writeCSVData.values()) {
-        csvStream.write(value);
-    }
-
     await createHtmlFile();
 
     htmlStream.end();
-    csvStream.end();
 
     if (testPlatform == "Android") {
         driver = new Builder()
@@ -1063,6 +1177,8 @@ var numberTotal = 0;
     } else {
         htmlPath = "file://" + process.cwd() + "/output/report-check-result.html";
     }
+
+    RClog("time", "mark");
 
     await driver.get(htmlPath);
 })().then(function() {
