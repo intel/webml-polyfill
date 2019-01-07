@@ -19,18 +19,18 @@
           <button class="dropdown-item disabled" type="button" id="webml">WebML</button>
         </div>
       </div>
-      <div class="btn-group mr-1">
-        <button id="selectModel" type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-          Setting...
-        </button>
-        <div class="dropdown-menu dropdown-menu-right available-models">
-        </div>
-      </div>
-      <div class="btn-group prefer" style="display: none;">
+      <div class="btn-group mr-1 prefer" style="display: none;">
         <button id="selectPrefer" type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
           Setting...
         </button>
         <div class="dropdown-menu dropdown-menu-right preference">
+        </div>
+      </div>
+      <div class="btn-group">
+        <button id="selectModel" type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          Setting...
+        </button>
+        <div class="dropdown-menu dropdown-menu-right available-models">
         </div>
       </div>
     </nav>
@@ -75,7 +75,7 @@
           <div class="row">
             <div class="label">
               EFFECT:</span>
-            </div> 
+            </div>
             <div class="btn-group btn-group-toggle btn-group-sm effects-select" data-toggle="buttons">
               <label class="btn btn-secondary">
                 <input type="radio" value="label" autocomplete="off" checked> MAP
@@ -96,28 +96,28 @@
           <div class="row zoom-wrapper">
             <div class="label">
               ZOOM: <span class="zoom-value"></span>
-            </div>  
+            </div>
             <div class="slidecontainer"><input type="range" min="50" max="300" value="100" class="slider" id="zoomSlider"></div>
           </div>
 
           <div class="row refine-edge-wrapper">
             <div class="label">
               REFINE EDGE: <span class="refine-edge-value"></span>
-            </div>  
+            </div>
             <div class="slidecontainer"><input type="range" min="0" max="60" value="0" class="slider" id="refineEdgeSlider"></div>
           </div>
 
           <div class="row blur-wrapper">
             <div class="label">
               BLUR RADIUS: <span class="blur-radius-value"></span>
-            </div>  
+            </div>
             <div class="slidecontainer"><input type="range" min="0" max="50" value="0" class="slider" id="blurSlider"></div>
           </div>
 
           <div class="row color-picker-wrapper justify-content-center">
             <div class="label">
               BACKGROUND: <span class="bg-value"></span>
-            </div> 
+            </div>
             <div id="color-picker-container"></div>
           </div>
 
@@ -129,14 +129,13 @@
               <button id="clearBackground" class="btn btn-outline-secondary btn-sm">
                 Clear Background
               </button>
-            </div> 
+            </div>
           </div>
-          
 
           <div class="row color-map-alpha-wrapper">
             <div class="label">
               OPACITY: <span class="color-map-alpha-value"></span>
-            </div>  
+            </div>
             <div class="slidecontainer"><input type="range" min="0" max="100" value="0" class="slider" id="colorMapAlphaSlider"></div>
           </div>
 

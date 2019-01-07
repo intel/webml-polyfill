@@ -1,35 +1,79 @@
 'use strict';
-const MODEL_DIC = {
-  mobilenet: {
-    width: 224,
-    height: 224,
-    inputTensorSize: 224 * 224 * 3,
-    outputTensorSize: 1001,
-    modelFile: '../examples/mobilenet/model/mobilenet_v1_1.0_224.tflite',
-    labelFile: '../examples/mobilenet/model/labels.txt'
+const tfliteModelArray = [
+  "mobilenet_v1_1.0_224.tflite",
+  "mobilenet_v2_1.0_224.tflite",
+  "inception_v3.tflite",
+  "inception_v4.tflite",
+  "squeezenet.tflite",
+  "inception_resnet_v2.tflite"];
+
+const onnxModelArray = [
+  "squeezenet1.1.onnx",
+  "mobilenetv2-1.0.onnx",
+  "resnet50v1.onnx",
+  "resnet50v2.onnx",
+  "inceptionv2.onnx",
+  "densenet121.onnx"];
+
+const modelDic = {
+  "mobilenet_v1_1.0_224.tflite": {
+    "model": mobilenet_v1_tflite,
+    "name": "Mobilenet V1(TFlite)",
   },
-  squeezenet: {
-    width: 224,
-    height: 224,
-    inputTensorSize: 224 * 224 * 3,
-    outputTensorSize: 1000,
-    modelFile: '../examples/squeezenet/model/model.onnx',
-    labelFile: '../examples/squeezenet/labels.json'
+  "mobilenet_v2_1.0_224.tflite": {
+    "model": mobilenet_v2_tflite,
+    "name": "Mobilenet V2(TFlite)",
   },
-  posenet: {
-    width: 513,
-    height: 513
+  "inception_v3.tflite": {
+    "model": inception_v3_tflite,
+    "name": "Inception V3(TFlite)",
   },
-  ssdmobilenet: {
-    width: 300,
-    height: 300,
-    inputTensorSize: 300 * 300 * 3,
-    outputBoxTensorSize: (1083 + 600 + 150 + 54 + 24 + 6) * 4,
-    outputClassScoresTensorSize: (1083 + 600 + 150 + 54 + 24 + 6) * 91,
-    modelFile: '../examples/ssd_mobilenet/model/ssd_mobilenet.tflite',
-    labelFile: '../examples/ssd_mobilenet/model/coco_labels_list.txt'
+  "inception_v4.tflite": {
+    "model": inception_v4_tflite,
+    "name": "Inception V4(TFlite)",
   },
-}
+  "squeezenet.tflite": {
+    "model": squeezenet_tflite,
+    "name": "Squeezenet(TFlite)",
+  },
+  "inception_resnet_v2.tflite": {
+    "model": inception_resnet_v2_tflite,
+    "name": "Incep. Res. V2(TFlite)",
+  },
+  "ssd_mobilenet.tflite": {
+    "model": ssd_mobilenet_tflite,
+    "name": "SSD MobileNet(TFlite)",
+  },
+  "squeezenet1.1.onnx": {
+    "model": squeezenet_onnx,
+    "name": "SqueezeNet(Onnx)",
+  },
+  "mobilenetv2-1.0.onnx": {
+    "model": mobilenet_v2_onnx,
+    "name": "Mobilenet v2(Onnx)",
+  },
+  "resnet50v1.onnx": {
+    "model": resnet_v1_onnx,
+    "name": "ResNet50 v1(Onnx)",
+  },
+  "resnet50v2.onnx": {
+    "model": resnet_v2_onnx,
+    "name": "ResNet50 v2(Onnx)",
+  },
+  "inceptionv2.onnx": {
+    "model": inceptionv2_onnx,
+    "name": "Inception v2(Onnx)",
+  },
+  "densenet121.onnx": {
+    "model":densenet_onnx,
+    "name": "DenseNet(Onnx)",
+  },
+  "posenet": {
+    "model": posenet,
+    "name": "PoseNet",
+  },
+};
+
 let imageElement = null;
 let inputElement = null;
 let pickBtnEelement = null;
@@ -37,6 +81,25 @@ let canvasElement = null;
 let poseCanvas = null;
 let bkPoseImageSrc = null;
 let pnConfigDic = null;
+
+let preferDivElement = document.getElementById('preferDiv');
+let preferSelectElement = document.getElementById('preferSelect');
+
+function getPreferString(backend) {
+  let prefer;
+  let backendLC = backend.toLowerCase();
+
+  if (backendLC === 'wasm') {
+    prefer = 'fast';
+  } else if (backendLC === 'webgl') {
+    prefer = 'sustained';
+  } else if (backendLC === 'webml') {
+    prefer = preferSelectElement.options[preferSelectElement.selectedIndex].value;
+  }
+
+  return prefer;
+}
+
 const util = new Utils();
 class Logger {
   constructor($dom) {
@@ -103,7 +166,8 @@ class Benchmark {
   async executeAsync() {
     let computeResults = [];
     let decodeResults = [];
-    if (this.configuration.modelName === 'mobilenet' || this.configuration.modelName === 'squeezenet') {
+    let modelName = this.configuration.modelName;
+    if (tfliteModelArray.indexOf(modelName) !== -1 || onnxModelArray.indexOf(modelName) !== -1) {
       for (let i = 0; i < this.configuration.iteration; i++) {
         this.onExecuteSingle(i);
         await new Promise(resolve => requestAnimationFrame(resolve));
@@ -113,7 +177,7 @@ class Benchmark {
         this.printPredictResult();
         computeResults.push(elapsedTime);
       }
-    } else if (this.configuration.modelName === 'posenet') {
+    } else if (modelName === 'posenet') {
       let singlePose = null;
       for (let i = 0; i < this.configuration.iteration; i++) {
         this.onExecuteSingle(i);
@@ -143,7 +207,7 @@ class Benchmark {
       });
       bkPoseImageSrc = imageElement.src;
       imageElement.src = poseCanvas.toDataURL();
-    } else if (this.configuration.modelName === 'ssdmobilenet') {
+    } else if (modelName === 'ssd_mobilenet.tflite') {
       for (let i = 0; i < this.configuration.iteration; i++) {
         this.onExecuteSingle(i);
         await new Promise(resolve => requestAnimationFrame(resolve));
@@ -244,10 +308,11 @@ class WebMLJSBenchmark extends Benchmark {
     this.labels = null;
 
   }
-  async loadModelAndLabels() {
-    let arrayBuffer = await this.loadUrl(MODEL_DIC[this.configuration.modelName].modelFile, true);
+  async loadModelAndLabels(model) {
+    let url = '../examples/util/';
+    let arrayBuffer = await this.loadUrl(url + model.modelFile, true);
     let bytes = new Uint8Array(arrayBuffer);
-    let text = await this.loadUrl(MODEL_DIC[this.configuration.modelName].labelFile);
+    let text = await this.loadUrl(url + model.labelsFile);
     return {
       bytes: bytes,
       text: text
@@ -273,24 +338,31 @@ class WebMLJSBenchmark extends Benchmark {
     });
   }
   async setInputOutput() {
-    const channels = 3;
+    const configModelName = this.configuration.modelName;
+    const currentModel = modelDic[configModelName].model;
+    let width = currentModel.inputSize[1];
+    let height = currentModel.inputSize[0];
+    const channels = currentModel.inputSize[2];
+    const preOptions = currentModel.preOptions || {};
+    const mean = preOptions.mean || [0, 0, 0, 0];
+    const std  = preOptions.std  || [1, 1, 1, 1];
+    const norm = preOptions.norm || false;
+    const channelScheme = preOptions.channelScheme || 'RGB';
     const imageChannels = 4; // RGBA
-    let configModelName = this.configuration.modelName;
-    let width = MODEL_DIC[configModelName].width;;
-    let height = MODEL_DIC[configModelName].height;
     let drawContent;
-    if (configModelName === 'mobilenet' || configModelName === 'squeezenet') {
-      this.inputTensor = new Float32Array(MODEL_DIC[configModelName].inputTensorSize);
-      this.outputTensor = new Float32Array(MODEL_DIC[configModelName].outputTensorSize);
+
+    if (tfliteModelArray.indexOf(configModelName) !== -1 || onnxModelArray.indexOf(configModelName) !== -1) {
+      this.inputTensor = new Float32Array(currentModel.inputSize.reduce((a, b) => a * b));
+      this.outputTensor = new Float32Array(currentModel.outputSize);
       drawContent = imageElement;
-    } else if (configModelName === 'ssdmobilenet') {
+    } else if (configModelName === 'ssd_mobilenet.tflite') {
       if (bkPoseImageSrc !== null) {
         // reset for rerun with same image
         imageElement.src = bkPoseImageSrc;
       }
-      this.inputTensor = new Float32Array(MODEL_DIC[configModelName].inputTensorSize);
-      this.outputBoxTensor = new Float32Array(MODEL_DIC[configModelName].outputBoxTensorSize);
-      this.outputClassScoresTensor = new Float32Array(MODEL_DIC[configModelName].outputClassScoresTensorSize);
+      this.inputTensor = new Float32Array(currentModel.inputSize.reduce((a, b) => a * b));
+      this.outputBoxTensor = new Float32Array(currentModel.num_boxes * currentModel.box_size);
+      this.outputClassScoresTensor = new Float32Array(currentModel.num_boxes * currentModel.num_classes);
       this.anchors = generateAnchors({});
       drawContent = imageElement;
     } else if (configModelName === 'posenet') {
@@ -311,8 +383,8 @@ class WebMLJSBenchmark extends Benchmark {
 
       this.scaleWidth = getValidResolution(this.scaleFactor, width, this.outputStride);
       this.scaleHeight = getValidResolution(this.scaleFactor, height, this.outputStride);
-      this.inputTensor = new Float32Array(this.scaleWidth * this.scaleHeight * 3);
-      this.scaleInputSize = [1, this.scaleWidth, this.scaleHeight, 3];
+      this.inputTensor = new Float32Array(this.scaleWidth * this.scaleHeight * channels);
+      this.scaleInputSize = [1, this.scaleWidth, this.scaleHeight, channels];
 
       let HEATMAP_TENSOR_SIZE;
       if ((this.modelVersion == 0.75 || this.modelVersion == 0.5) && this.outputStride == 32) {
@@ -329,85 +401,98 @@ class WebMLJSBenchmark extends Benchmark {
       width = this.scaleWidth;
       height = this.scaleHeight;
     }
+
     canvasElement.setAttribute("width", width);
     canvasElement.setAttribute("height", height);
     let canvasContext = canvasElement.getContext('2d');
     canvasContext.drawImage(drawContent, 0, 0, width, height);
     let pixels = canvasContext.getImageData(0, 0, width, height).data;
-    if (configModelName === 'mobilenet' || configModelName === 'posenet' || configModelName === 'ssdmobilenet') {
-      const meanMN = 127.5;
-      const stdMN = 127.5;
+    if (canvasElement.width !== width || canvasElement.height !== height) {
+      throw new Error(`canvasElement.width(${canvasElement.width}) is not ${width} or canvasElement.height(${canvasElement.height}) is not ${height}`);
+    }
+    if (norm) {
+      pixels = new Float32Array(pixels).map(p => p / 255);
+    }
+
+    if (channelScheme === 'RGB') {
       // NHWC layout
       for (let y = 0; y < height; ++y) {
         for (let x = 0; x < width; ++x) {
           for (let c = 0; c < channels; ++c) {
             let value = pixels[y * width * imageChannels + x * imageChannels + c];
-            this.inputTensor[y * width * channels + x * channels + c] = (value - meanMN) / stdMN;
+            this.inputTensor[y * width * channels + x * channels + c] = (value - mean[c]) / std[c];
           }
         }
       }
-    } else if (configModelName === 'squeezenet') {
-      // The RGB mean values are from
-      // https://github.com/caffe2/AICamera/blob/master/app/src/main/cpp/native-lib.cpp#L108
-      const meanSN = [122.67891434, 116.66876762, 104.00698793];
+    } else if (channelScheme === 'BGR') {
       // NHWC layout
       for (let y = 0; y < height; ++y) {
         for (let x = 0; x < width; ++x) {
           for (let c = 0; c < channels; ++c) {
-            let value = pixels[y * width * imageChannels + x * imageChannels + c];
-            this.inputTensor[y * width * channels + x * channels + c] = value - meanSN[c];
+            let value = pixels[y * width * imageChannels + x * imageChannels + (channels - c - 1)];
+            this.inputTensor[y * width * channels + x * channels + c] = (value - mean[c]) / std[c];
           }
         }
       }
+    } else {
+      throw new Error(`Unknown color channel scheme ${channelScheme}`);
     }
   }
+
   async setupAsync() {
     await this.setInputOutput();
-    let targetModel;
-    if (this.configuration.modelName === 'mobilenet') {
-      let resultMN = await this.loadModelAndLabels();
-      this.labels = resultMN.text.split('\n');
-      let flatBuffer = new flatbuffers.ByteBuffer(resultMN.bytes);
-      targetModel = tflite.Model.getRootAsModel(flatBuffer);
-      if (this.configuration.backend !== 'native') {
-        this.model = new MobileNet(targetModel, this.configuration.backend);
-      } else {
-        this.model = new MobileNet(targetModel);
-      }
-    } else if (this.configuration.modelName === 'ssdmobilenet') {
-      let resultSSDMN = await this.loadModelAndLabels();
-      this.labels = resultSSDMN.text.split('\n');
-      let flatBuffer = new flatbuffers.ByteBuffer(resultSSDMN.bytes);
-      targetModel = tflite.Model.getRootAsModel(flatBuffer);
-      if (this.configuration.backend !== 'native') {
-        this.model = new SsdMobileNet(targetModel, this.configuration.backend);
-      } else {
-        this.model = new SsdMobileNet(targetModel);
-      }
-    } else if (this.configuration.modelName === 'squeezenet') {
-      let resultSN = await this.loadModelAndLabels();
-      this.labels = JSON.parse(resultSN.text);
-      let err = onnx.ModelProto.verify(resultSN.bytes);
+    let backend = this.configuration.backend.replace('native', 'WebML');
+    let modelName = this.configuration.modelName;
+    if (tfliteModelArray.indexOf(modelName) !== -1) {
+      let model = modelDic[modelName].model;
+      let resultTflite = await this.loadModelAndLabels(model);
+      this.labels = resultTflite.text.split('\n');
+      let flatBuffer = new flatbuffers.ByteBuffer(resultTflite.bytes);
+      let rawModel = tflite.Model.getRootAsModel(flatBuffer);
+      let postOptions = model.postOptions || {};
+      let kwargs = {
+        rawModel: rawModel,
+        backend: backend,
+        prefer: getPreferString(backend),
+        softmax: postOptions.softmax || false,
+      };
+      this.model = new TFliteModelImporter(kwargs);
+    } else if (onnxModelArray.indexOf(modelName) !== -1) {
+      let model = modelDic[modelName].model;
+      let resultONNX = await this.loadModelAndLabels(model);
+      this.labels = resultONNX.text.split('\n');
+      console.log(`labels: ${this.labels}`);
+      let err = onnx.ModelProto.verify(resultONNX.bytes);
       if (err) {
         throw new Error(`Invalid model ${err}`);
       }
-      targetModel = onnx.ModelProto.decode(resultSN.bytes);
-      if (this.configuration.backend !== 'native') {
-        this.model = new SqueezeNet(targetModel, this.configuration.backend);
-      } else {
-        this.model = new SqueezeNet(targetModel);
-      }
-    } else if (this.configuration.modelName === 'posenet') {
+      let rawModel = onnx.ModelProto.decode(resultONNX.bytes);
+      let postOptions = model.postOptions || {};
+      let kwargs = {
+        rawModel: rawModel,
+        backend: backend,
+        prefer: getPreferString(backend),
+        softmax: postOptions.softmax || false,
+      };
+      this.model = new OnnxModelImporter(kwargs);
+    } else if (modelName === 'ssd_mobilenet.tflite') {
+      let model = modelDic[modelName].model;
+      let resultSSDMN = await this.loadModelAndLabels(model);
+      this.labels = resultSSDMN.text.split('\n');
+      let flatBuffer = new flatbuffers.ByteBuffer(resultSSDMN.bytes);
+      let tfModel = tflite.Model.getRootAsModel(flatBuffer);
+      let kwargs = {
+        tfModel: tfModel,
+        backend: backend,
+        prefer: getPreferString(backend),
+      };
+      this.model = new SsdMobileNet(kwargs);
+    } else if (modelName === 'posenet') {
       let modelArch = ModelArch.get(this.modelVersion);
       let smType = 'Singleperson';
       let cacheMap = new Map();
-      if (this.configuration.backend !== 'native') {
-        this.model = new PoseNet(modelArch, this.modelVersion, this.outputStride,
-                                 this.scaleInputSize, smType, cacheMap, this.configuration.backend);
-      } else {
-        this.model = new PoseNet(modelArch, this.modelVersion, this.outputStride,
-                                 this.scaleInputSize, smType, cacheMap);
-      }
+      this.model = new PoseNet(modelArch, this.modelVersion, this.outputStride,
+                               this.scaleInputSize, smType, cacheMap, backend, getPreferString(backend));
     }
     await this.model.createCompiledModel();
   }
@@ -444,7 +529,22 @@ class WebMLJSBenchmark extends Benchmark {
     console.log(`compute result: ${result}`);
   }
   async finalizeAsync() {
+    this.inputTensor = null;
+    this.outputTensor = null;
+    this.modelVersion = null;
+    this.outputStride = null;
+    this.scaleFactor = null;
+    this.minScore = null;
+    this.scaleWidth = null;
+    this.scaleHeight = null;
+    this.scaleInputSize = null;
+    this.heatmapTensor = null;
+    this.offsetTensor  = null;
+    this.outputBoxTensor = null;
+    this.outputClassScoresTensor = null;
+    this.anchors = null;
     this.model = null;
+    this.labels = null;
     inputElement.removeAttribute('disabled');
     pickBtnEelement.setAttribute('class', 'btn btn-primary');
   }
@@ -473,7 +573,10 @@ async function run() {
     logger.group('Configuration');
     Object.keys(configuration).forEach(key => {
       if (key === 'backend' && configuration[key] === 'native') {
-        logger.log(`${key.padStart(12)}: ${getNativeAPI()}`);
+        let selectedOpt = preferSelectElement.options[preferSelectElement.selectedIndex];
+        logger.log(`${key.padStart(12)}: ${getNativeAPI(selectedOpt.value)}(${selectedOpt.text})`);
+      } else if (key === 'modelName') {
+        logger.log(`${key.padStart(12)}: ${modelDic[configuration[key]].name}`);
       } else {
         logger.log(`${key.padStart(12)}: ${configuration[key]}`);
       }
@@ -485,7 +588,7 @@ async function run() {
     let summary = await benchmark.runAsync(configuration);
     logger.groupEnd();
     logger.group('Result');
-    logger.log(`Compute Time: <em style="color:green;font-weight:bolder;">${summary.computeResults.mean.toFixed(2)}+-${summary.computeResults.std.toFixed(2)}</em> [ms]`);
+    logger.log(`Inference Time: <em style="color:green;font-weight:bolder;">${summary.computeResults.mean.toFixed(2)}+-${summary.computeResults.std.toFixed(2)}</em> [ms]`);
     if (summary.decodeResults !== null) {
       logger.log(`Decode Time: <em style="color:green;font-weight:bolder;">${summary.decodeResults.mean.toFixed(2)}+-${summary.decodeResults.std.toFixed(2)}</em> [ms]`);
     }
@@ -512,17 +615,17 @@ document.addEventListener('DOMContentLoaded', () => {
   let modelElement = document.getElementById('modelName');
   modelElement.addEventListener('change', (e) => {
     bkPoseImageSrc = null;
-    let modelName = modelElement.options[modelElement.selectedIndex].text;
+    let modelName = modelElement.options[modelElement.selectedIndex].value;
     let inputFile = document.getElementById('input').files[0];
     if (inputFile !== undefined) {
       imageElement.src = URL.createObjectURL(inputFile);
     } else {
-      if (modelName === 'PoseNet') {
+      if (modelName === 'posenet') {
         imageElement.src = document.getElementById('poseImage').src;
-      } else if (modelName === 'SSD MobileNet') {
+      } else if (modelName === 'ssd_mobilenet.tflite') {
         imageElement.src = document.getElementById('ssdMobileImage').src;
       } else {
-        imageElement.src = document.getElementById('mobileImage').src;
+        imageElement.src = document.getElementById('imageClassificationImage').src;
       }
     }
   }, false);
@@ -530,37 +633,62 @@ document.addEventListener('DOMContentLoaded', () => {
   let configurationsElement = document.getElementById('configurations');
   configurationsElement.addEventListener('change', (e) => {
     bkPoseImageSrc = null;
-    let modelName = modelElement.options[modelElement.selectedIndex].text;
+    let modelName = modelElement.options[modelElement.selectedIndex].value;
     let inputFile = document.getElementById('input').files[0];
     if (inputFile !== undefined) {
       imageElement.src = URL.createObjectURL(inputFile);
     } else {
-      if (modelName === 'PoseNet') {
+      if (modelName === 'posenet') {
         imageElement.src = document.getElementById('poseImage').src;
-      } else if (modelName === 'SSD MobileNet') {
+      } else if (modelName === 'ssd_mobilenet.tflite') {
         imageElement.src = document.getElementById('ssdMobileImage').src;
       } else {
-        imageElement.src = document.getElementById('mobileImage').src;
+        imageElement.src = document.getElementById('imageClassificationImage').src;
       }
+    }
+    let currentConfig = configurationsElement.options[configurationsElement.selectedIndex].text;
+    if (currentConfig.indexOf('WebML API') !== -1) {
+      preferDivElement.setAttribute('class', "prefer-show");
+      if (currentOS === 'Mac OS') {
+        for (var i=0; i<preferSelectElement.options.length; i++) {
+          let preferOpt = preferSelectElement.options[i];
+          if (preferOpt.value === 'low') {
+            preferOpt.disabled = true;
+          }
+        }
+      } else if (['Windows', 'Linux'].indexOf(currentOS) !== -1) {
+        for (var i=0; i<preferSelectElement.options.length; i++) {
+          let preferOpt = preferSelectElement.options[i];
+          if (preferOpt.value === 'sustained') {
+            preferOpt.selected = true;
+          } else if (preferOpt.value === 'fast') {
+            preferOpt.disabled = true;
+          } else if (preferOpt.value === 'low') {
+            preferOpt.disabled = true;
+          }
+        }
+      }
+    } else {
+      preferDivElement.setAttribute('class', "prefer-hidden");
     }
   }, false);
 
   let webmljsConfigurations = [{
     framework: 'webml-polyfill.js',
     backend: 'WASM',
-    modelName: 'mobilenet',
+    modelName: 'mobilenet_v1_1.0_224.tflite',
     iteration: 0
   },
   {
     framework: 'webml-polyfill.js',
-    backend: 'WebGL2',
-    modelName: 'mobilenet',
+    backend: 'WebGL',
+    modelName: 'mobilenet_v1_1.0_224.tflite',
     iteration: 0
   }];
   let webmlAPIConfigurations = [{
     framework: 'WebML API',
     backend: 'native',
-    modelName: 'mobilenet',
+    modelName: 'mobilenet_v1_1.0_224.tflite',
     iteration: 0
   }];
   let configurations = [];
@@ -572,6 +700,16 @@ document.addEventListener('DOMContentLoaded', () => {
     if (configuration.framework === 'WebML API') {
       if (navigator.ml.isPolyfill) {
         option.disabled = true;
+      }
+      if (['Android', 'Windows', 'Linux'].indexOf(currentOS) !== -1) {
+        for (var i=0; i<preferSelectElement.options.length; i++) {
+          let preferOp = preferSelectElement.options[i];
+          if (preferOp.text === 'sustained') {
+            preferOp.selected = true;
+          } else if (preferOp.text === 'fast') {
+            preferOp.disabled = true;
+          }
+        }
       }
     }
     document.querySelector('#configurations').appendChild(option);

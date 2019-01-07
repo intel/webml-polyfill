@@ -1,6 +1,6 @@
-const BOX_SIZE = 4;
-const NUM_CLASSES = 91;
-const NUM_BOXES = 1083 + 600 + 150 + 54 + 24 + 6;
+const BOX_SIZE = ssd_mobilenet_tflite.box_size;
+const NUM_CLASSES = ssd_mobilenet_tflite.num_classes;
+const NUM_BOXES = ssd_mobilenet_tflite.num_boxes;
 
 
 /**

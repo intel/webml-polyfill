@@ -1,7 +1,3 @@
-const INPUT_TENSOR_SIZE = 300*300*3;
-const MODEL_FILE = './model/ssd_mobilenet.tflite';
-const LABELS_FILE = './model/coco_labels_list.txt';
-
 class Utils {
   constructor() {
     this.tfModel;
@@ -12,7 +8,7 @@ class Utils {
     this.outputClassScoresTensor;
     this.anchors;
 
-    this.inputTensor = new Float32Array(INPUT_TENSOR_SIZE);
+    this.inputTensor = new Float32Array(ssd_mobilenet_tflite.inputSize.reduce((a, b) => a * b));
     this.outputBoxTensor = new Float32Array(NUM_BOXES * BOX_SIZE);
     this.outputClassScoresTensor = new Float32Array(NUM_BOXES * NUM_CLASSES);
     this.container = document.getElementById('container');
@@ -30,7 +26,7 @@ class Utils {
     let result;
     this.anchors = generateAnchors({});
     if (!this.tfModel) {
-      result = await this.loadModelAndLabels(MODEL_FILE, LABELS_FILE);
+      result = await this.loadModelAndLabels(ssd_mobilenet_tflite.modelFile, ssd_mobilenet_tflite.labelsFile);
       this.container.removeChild(progressContainer);
       this.labels = result.text.split('\n');
       console.log(`labels: ${this.labels}`);
@@ -99,7 +95,7 @@ class Utils {
           if (request.status === 200) {
               resolve(request.response);
           } else {
-              reject(new Error('Failed to load ' + modelUrl + ' status: ' + request.status));
+              reject(new Error('Failed to load ' + url + ' status: ' + request.status));
           }
         }
       };
@@ -119,12 +115,13 @@ class Utils {
   }
 
   prepareInputTensor(tensor, canvas) {
-    const width = 300;
-    const height = 300;
-    const channels = 3;
+    const width = ssd_mobilenet_tflite.inputSize[1];
+    const height = ssd_mobilenet_tflite.inputSize[0];
+    const channels = ssd_mobilenet_tflite.inputSize[2];
     const imageChannels = 4; // RGBA
-    const mean = 127.5;
-    const std = 127.5;
+    const mean = ssd_mobilenet_tflite.preOptions.mean || [0, 0, 0, 0];
+    const std  = ssd_mobilenet_tflite.preOptions.std  || [1, 1, 1, 1];
+
     if (canvas.width !== width || canvas.height !== height) {
       throw new Error(`canvas.width(${canvas.width}) or canvas.height(${canvas.height}) is not 300`);
     }
@@ -135,7 +132,7 @@ class Utils {
       for (let x = 0; x < width; ++x) {
         for (let c = 0; c < channels; ++c) {
           let value = pixels[y*width*imageChannels + x*imageChannels + c];
-          tensor[y*width*channels + x*channels + c] = (value - mean)/std;
+          tensor[y*width*channels + x*channels + c] = (value - mean[c])/std[c];
         }
       }
     }
