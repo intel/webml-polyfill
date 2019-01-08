@@ -648,9 +648,9 @@ export default class PreparedModel {
         OPS_CHECK(output.runtimeshape.DimensionsCount() <= 4);
 
         // init resizeBilinearParams
-        // default set align_corners to false
+        // default set align_corners to true
         let resizeBilinearParams = {
-          align_corners: false
+          align_corners: true
         }
         
         nn_ops.resizeBilinearFloat32(resizeBilinearParams, 
