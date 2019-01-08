@@ -12,7 +12,7 @@ Check out [TensorFlow Lite Models](https://github.com/tensorflow/models/blob/mas
 This model is converted from [Tensorflow SSD MobileNet model](http://download.tensorflow.org/models/object_detection/ssd_mobilenet_v1_coco_2017_11_17.tar.gz). You can use the following commands to convert your own model.
 
 ```sh
-python ${tensorflow_dir}/lib/python3.5/site-packages/tensorflow/python/tools/optimize_for_inference.py \
+python -m tensorflow.python.tools.optimize_for_inference \
 --input=${download_dir}/ssd_mobilenet_v1_coco_2017_11_17/frozen_inference_graph.pb \
 --output=${out_dir}/frozen_inference_graph_stripped.pb --frozen_graph=True \
 --input_names=Preprocessor/sub \
@@ -26,7 +26,7 @@ BoxPredictor_5/BoxEncodingPredictor/BiasAdd,BoxPredictor_5/ClassPredictor/BiasAd
 --alsologtostderr
 
 toco \
---input_file=${out_dir}/frozen_inference_graph_stripped.pb \
+--graph_def_file=${out_dir}/frozen_inference_graph_stripped.pb \
 --output_file=${out_dir}/ssd_mobilenet.tflite \
 --input_format=TENSORFLOW_GRAPHDEF --output_format=TFLITE \
 --input_shapes=1,300,300,3 --input_arrays=Preprocessor/sub \

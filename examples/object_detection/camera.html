@@ -2,12 +2,12 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>WebML SSD MobileNet Demo</title>
+    <title>WebML SSD MobileNet Camera Demo</title>
     <link rel="stylesheet" href="../third_party/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
     <style>
-      img {
+      video {
         display: none;
-        max-height: 400px;
+        max-height: 360px;
       }
       #canvas {
         display: none;
@@ -29,14 +29,14 @@
     <nav class="navbar navbar-expand-md navbar-dark bg-dark" style="width:100%">
       <span class="navbar-brand mb-0 h1">WebML SSD MobileNet Demo</span>
       <div class="btn-group mr-1">
-        <button id="backend" type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-          Setting...
-        </button>
-        <div class="dropdown-menu dropdown-menu-right">
-          <button class="dropdown-item disabled" type="button" id="wasm">WASM</button>
-          <button class="dropdown-item disabled" type="button" id="webgl">WebGL</button>
-          <button class="dropdown-item disabled" type="button" id="webml">WebML</button>
-        </div>
+          <button id="backend" type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Setting...
+          </button>
+          <div class="dropdown-menu dropdown-menu-right">
+            <button class="dropdown-item disabled" type="button" id="wasm">WASM</button>
+            <button class="dropdown-item disabled" type="button" id="webgl">WebGL</button>
+            <button class="dropdown-item disabled" type="button" id="webml">WebML</button>
+          </div>
       </div>
       <div class="btn-group prefer" style="display: none;">
         <button id="selectPrefer" type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -62,24 +62,9 @@
         </div>
       </div>
       <div class="row top-margin">
-        <div class="col">
-        </div>
-        <div class="col-8" align="center">
-          <img id="image" crossorigin="anonymous" class="img-fluid" alt="Responsive image" src="./img/image1.jpg">
+        <div class="col-12" align="center">
+          <video id="video" autoplay playsinline></video>
           <canvas id="canvasShow" width=400 height=400></canvas>
-        </div>
-        <div class="col">
-        </div>
-      </div>
-      <div class="row top-margin">
-        <div class="col">
-        </div>
-        <div class="col" align="center">
-            <label id="button" class="btn btn-primary disabled">
-                Pick Image <input type="file" id="input" accept="image/*" hidden disabled>
-            </label>
-        </div>
-        <div class="col">
         </div>
       </div>
       <div class="row">
@@ -91,15 +76,16 @@
     <script src="../third_party/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
     <script src="../third_party/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
     <script src="../third_party/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <script src="../third_party/stats.min.js"></script>
     <script src="../../dist/webml-polyfill.js"></script>
     <script src="../util/base.js"></script>
     <script src="../util/tflite/flatbuffers/js/flatbuffers.js"></script>
     <script src="../util/tflite/schema/schema_generated.js"></script>
     <script src="../util/tflite/TfLiteModelUtils.js"></script>
-    <script src="SsdMobileNet.js"></script>
-    <script src="DrawOutputs.js"></script>
+    <script src="../util/tflite/TFliteModelImporter.js"></script>
+    <script src="../util/decoders/SsdDecoder.js"></script>
     <script src="utils.js"></script>
-    <script src="main.js"></script>
+    <script src="camera.js"></script>
     <script>
       window.onload = function() {
         main();

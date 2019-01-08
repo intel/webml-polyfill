@@ -39,7 +39,7 @@ class Utils {
     result = await this.model.createCompiledModel();
     console.log(`compilation result: ${result}`);
     let start = performance.now();
-    result = await this.model.compute(this.inputTensor, this.outputTensor);
+    result = await this.model.compute([this.inputTensor], [this.outputTensor]);
     let elapsed = performance.now() - start;
     console.log(`warmup time: ${elapsed.toFixed(2)} ms`);
     this.initialized = true;
@@ -48,7 +48,7 @@ class Utils {
   async predict() {
     if (!this.initialized) return;
     let start = performance.now();
-    await this.model.compute(this.inputTensor, this.outputTensor);
+    await this.model.compute([this.inputTensor], [this.outputTensor]);
     let elapsed = performance.now() - start;
     return {
       time: elapsed,

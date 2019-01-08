@@ -188,8 +188,8 @@ const densenet_onnx = {
 
 const ssd_mobilenet_tflite = {
   modelName: 'SSD MobileNet(TFlite)',
-  modelFile: '../ssd_mobilenet/model/ssd_mobilenet.tflite',
-  labelsFile: '../ssd_mobilenet/model/coco_labels_list.txt',
+  modelFile: '../object_detection/model/ssd_mobilenet.tflite',
+  labelsFile: '../object_detection/model/coco_labels_list.txt',
   box_size: 4,
   num_classes: 91,
   num_boxes: 1083 + 600 + 150 + 54 + 24 + 6,

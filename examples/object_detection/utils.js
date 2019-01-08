@@ -1,14 +1,20 @@
+const BOX_SIZE = ssd_mobilenet_tflite.box_size;
+const NUM_CLASSES = ssd_mobilenet_tflite.num_classes;
+const NUM_BOXES = ssd_mobilenet_tflite.num_boxes;
+const INPUT_SIZE = ssd_mobilenet_tflite.inputSize;
+
 class Utils {
   constructor() {
-    this.tfModel;
+    this.rawModel;
     this.labels;
     this.model;
-    this.inputTensor;
+    this.inputTensor = [];
+    this.outputTensor = [];
     this.outputBoxTensor;
     this.outputClassScoresTensor;
     this.anchors;
 
-    this.inputTensor = new Float32Array(ssd_mobilenet_tflite.inputSize.reduce((a, b) => a * b));
+    this.inputTensor[0] = new Float32Array(INPUT_SIZE.reduce((a, b) => a * b));
     this.outputBoxTensor = new Float32Array(NUM_BOXES * BOX_SIZE);
     this.outputClassScoresTensor = new Float32Array(NUM_BOXES * NUM_CLASSES);
     this.container = document.getElementById('container');
@@ -25,25 +31,26 @@ class Utils {
     this.initialized = false;
     let result;
     this.anchors = generateAnchors({});
-    if (!this.tfModel) {
+    if (!this.rawModel) {
       result = await this.loadModelAndLabels(ssd_mobilenet_tflite.modelFile, ssd_mobilenet_tflite.labelsFile);
       this.container.removeChild(progressContainer);
       this.labels = result.text.split('\n');
       console.log(`labels: ${this.labels}`);
       let flatBuffer = new flatbuffers.ByteBuffer(result.bytes);
-      this.tfModel = tflite.Model.getRootAsModel(flatBuffer);
-      // printTfLiteModel(this.tfModel);
+      this.rawModel = tflite.Model.getRootAsModel(flatBuffer);
+      // printTfLiteModel(this.rawModel);
     }
     let kwargs = {
-      tfModel: this.tfModel,
+      rawModel: this.rawModel,
       backend: backend,
       prefer: prefer,
     };
-    this.model = new SsdMobileNet(kwargs);
+    this.model = new TFliteModelImporter(kwargs);
+    this.prepareoutputTensor(this.outputBoxTensor, this.outputClassScoresTensor);
     result = await this.model.createCompiledModel();
     console.log(`compilation result: ${result}`);
     let start = performance.now();
-    result = await this.model.compute(this.inputTensor, this.outputBoxTensor, this.outputClassScoresTensor);
+    result = await this.model.compute(this.inputTensor, this.outputTensor);
     let elapsed = performance.now() - start;
     console.log(`warmup time: ${elapsed.toFixed(2)} ms`);
     this.initialized = true;
@@ -58,7 +65,7 @@ class Utils {
     this.prepareInputTensor(this.inputTensor, this.canvasElement);
     // console.log('inputTensor2', this.inputTensor)
     let start = performance.now();
-    let result = await this.model.compute(this.inputTensor, this.outputBoxTensor, this.outputClassScoresTensor);
+    let result = await this.model.compute(this.inputTensor, this.outputTensor);
     // console.log('outputBoxTensor', this.outputBoxTensor)
     // console.log('outputClassScoresTensor', this.outputClassScoresTensor)
     // let startDecode = performance.now();
@@ -114,10 +121,11 @@ class Utils {
     });
   }
 
-  prepareInputTensor(tensor, canvas) {
-    const width = ssd_mobilenet_tflite.inputSize[1];
-    const height = ssd_mobilenet_tflite.inputSize[0];
-    const channels = ssd_mobilenet_tflite.inputSize[2];
+  prepareInputTensor(tensors, canvas) {
+    let tensor = tensors[0];
+    const width = INPUT_SIZE[1];
+    const height = INPUT_SIZE[0];
+    const channels = INPUT_SIZE[2];
     const imageChannels = 4; // RGBA
     const mean = ssd_mobilenet_tflite.preOptions.mean || [0, 0, 0, 0];
     const std  = ssd_mobilenet_tflite.preOptions.std  || [1, 1, 1, 1];
@@ -135,6 +143,24 @@ class Utils {
           tensor[y*width*channels + x*channels + c] = (value - mean[c])/std[c];
         }
       }
+    }
+  }
+
+  prepareoutputTensor(outputBoxTensor, outputClassScoresTensor) {
+    const outH = [1083, 600, 150, 54, 24, 6];
+    const boxLen = 4;
+    const classLen = 91;
+    let boxOffset = 0;
+    let classOffset = 0;
+    let boxTensor;
+    let classTensor;
+    for (let i = 0; i < 6; ++i) {
+      boxTensor = outputBoxTensor.subarray(boxOffset, boxOffset + boxLen * outH[i]);
+      classTensor = outputClassScoresTensor.subarray(classOffset, classOffset + classLen * outH[i]);
+      this.outputTensor[2 * i] = boxTensor;
+      this.outputTensor[2 * i + 1] = classTensor;
+      boxOffset += boxLen * outH[i];
+      classOffset += classLen * outH[i];
     }
   }
 
