@@ -1,4 +1,4 @@
-WebML Image classification Examples
+WebML Image Classification Examples
 ==
 This sample loads Image classification models trained by ImageNet, constructs and inferences it by WebML API.
 
@@ -12,6 +12,11 @@ URL Parameters for Image Classification Example
 Example
 -----------
 https://127.0.0.1/examples/image_classification/index.html?prefer=none&b=WASM&m=mobilenet_v1&t=tflite&s=image&d=0
+
+Screenshots
+-----------
+![screenshot](screenshot.png)
+
 
 Description
 -----------
