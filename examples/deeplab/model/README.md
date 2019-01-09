@@ -8,11 +8,11 @@ Download the following models to this directory:
 This directory should contain two files
 
 ```txt
-deeplab_mobilenetv2_513.tflite
 deeplab_mobilenetv2_513_dilated.tflite
+deeplab_mobilenetv2_513.tflite
 ```
 
-These two models are equivalent. The latter is used for platforms (Android) that do not natively support atrous convolution. They are converted from this [DeepLab checkpoint](http://download.tensorflow.org/models/deeplabv3_mnv2_pascal_trainval_2018_01_29.tar.gz). You can follow the steps below to convert your own model.
+These two models are equivalent. The latter (without `dilated` suffix) is used for platforms (Android) that do not natively support atrous convolution. They are converted from this [DeepLab checkpoint](http://download.tensorflow.org/models/deeplabv3_mnv2_pascal_trainval_2018_01_29.tar.gz). You can follow the steps below to convert your own model.
 
 ## Convert `.pb` to `.tflite`
 
