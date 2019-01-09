@@ -15,9 +15,7 @@ let currenttab = getUrlParam('s');
 function componentToggle() {
   $('#header-sticky-wrapper').attr('style', 'display:block');
   $('#query').slideToggle(300);
-  // $('#ictitle').slideToggle(300);
   $('.nav-pills').slideToggle(200);
-  // $('#progressContainer').slideToggle(200);
   $('.github-corner').slideToggle(100);
   $('#mobile-nav-toggle').slideToggle(100);
   $('#mobile-nav-toggle i').slideToggle(100);
@@ -185,7 +183,6 @@ $(document).ready(function () {
     $(this).on("mouseenter mouseleave touchstart touchcancel touchend", function (e) {
       let _this = this;
       if (e.type == "mouseenter" || e.type == "touchstart") {
-        //鼠标进入
         (function () {
           timeoutObj = setTimeout(function () {
             let modelid = _this.id.replace('l-', '');
