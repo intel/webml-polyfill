@@ -26,6 +26,7 @@ class Utils {
       prefer: prefer,
       softmax: this.postOptions.softmax || false,
     };
+
     if (this.modelFile.split('.').pop() === 'tflite') {
       if (!this.rawModel) {
         result = await this.loadModelAndLabels(this.modelFile, this.labelsFile);
@@ -123,7 +124,7 @@ class Utils {
     if (norm) {
       pixels = new Float32Array(pixels).map(p => p / 255);
     }
-
+    
     if (channelScheme === 'RGB') {
       // NHWC layout
       for (let y = 0; y < height; ++y) {
