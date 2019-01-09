@@ -1,8 +1,3 @@
-const BOX_SIZE = ssd_mobilenet_tflite.box_size;
-const NUM_CLASSES = ssd_mobilenet_tflite.num_classes;
-const NUM_BOXES = ssd_mobilenet_tflite.num_boxes;
-
-
 /**
 * Decode out box coordinate
 * See tensorflow ssd_mobilenet_v1 example for details:

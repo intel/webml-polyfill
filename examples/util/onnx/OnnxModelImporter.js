@@ -38,9 +38,13 @@ class OnnxModelImporter {
     this._execution = await this._compilation.createExecution();
   }
 
-  async compute(inputTensor, outputTensor) {
-    this._execution.setInput(0, inputTensor);
-    this._execution.setOutput(0, outputTensor);
+  async compute(inputTensors, outputTensors) {
+    inputTensors.forEach((inputTensor, i) => {
+      this._execution.setInput(i, inputTensor);
+    });
+    outputTensors.forEach((outputTensor, i) => {
+      this._execution.setOutput(i, outputTensor);
+    });
 
     let error = await this._execution.startCompute();
     if (error) {
