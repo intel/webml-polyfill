@@ -32,9 +32,13 @@ class PoseNet{
     await this._addTensorOperands();
     await this._model.finish();
     this._compilation = await this._model.createCompilation();
+
+    let start = performance.now();
     this._compilation.setPreference(getPreferCode(this._backend, this._prefer));
     await this._compilation.finish();
     this._execution = await this._compilation.createExecution();
+    let elapsed = performance.now() - start;
+    console.log(`compilation time: ${elapsed.toFixed(2)} ms`);
   }
 
   async computeSinglePose(inputTensor, heatmapTensor, offsetTensor) {
