@@ -150,7 +150,7 @@ function NMS(options, outputBoxTensor, outputClassScoresTensor) {
   // Using a little higher threshold and lower max detections can save inference time with little performance loss.
   const {
     score_threshold = 0.1, // 1e-8
-    iou_threshold = 0.6,
+    iou_threshold = 0.5,
     max_detections_per_class = 10, // 100
     max_total_detections = 100,
     num_boxes = 1083 + 600 + 150 + 54 + 24 + 6,
@@ -311,10 +311,17 @@ function visualize(canvasShowElement, totalDetections, imageSource, boxesList, s
       ctx.font = "20px Arial";
       let text = `${label}: ${prob.toFixed(2)}`;
       let width = ctx.measureText(text).width;
-      ctx.fillRect(xmin - 2, ymin - parseInt(ctx.font, 10), width + 4, parseInt(ctx.font, 10));
-      ctx.fillStyle = "white";
-      ctx.textAlign = 'start';
-      ctx.fillText(text, xmin, ymin - 3);
+      if (xmin >= 2 && ymin >= parseInt(ctx.font, 10)) {
+        ctx.fillRect(xmin - 2, ymin - parseInt(ctx.font, 10), width + 4, parseInt(ctx.font, 10));
+        ctx.fillStyle = "white";
+        ctx.textAlign = 'start';
+        ctx.fillText(text, xmin, ymin - 3);
+      } else {
+        ctx.fillRect(xmin + 2, ymin , width + 4,  parseInt(ctx.font, 10));
+        ctx.fillStyle = "white";
+        ctx.textAlign = 'start';
+        ctx.fillText(text, xmin + 2, ymin + 15);
+      }
     }
   }
 }
