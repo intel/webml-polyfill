@@ -1,10 +1,5 @@
-const BOX_SIZE = ssd_mobilenet_tflite.box_size;
-const NUM_CLASSES = ssd_mobilenet_tflite.num_classes;
-const NUM_BOXES = ssd_mobilenet_tflite.num_boxes;
-const INPUT_SIZE = ssd_mobilenet_tflite.inputSize;
-
 class Utils {
-  constructor() {
+  constructor(canvas, canvasShow) {
     this.rawModel;
     this.labels;
     this.model;
@@ -12,17 +7,18 @@ class Utils {
     this.outputTensor = [];
     this.outputBoxTensor;
     this.outputClassScoresTensor;
+    this.inputSize;
+    this.outputSize;
+    this.preOptions;
+    this.postOptions;
+    this.boxSize;
+    this.numClasses;
+    this.numBoxes;
     this.anchors;
-
-    this.inputTensor[0] = new Float32Array(INPUT_SIZE.reduce((a, b) => a * b));
-    this.outputBoxTensor = new Float32Array(NUM_BOXES * BOX_SIZE);
-    this.outputClassScoresTensor = new Float32Array(NUM_BOXES * NUM_CLASSES);
-    this.container = document.getElementById('container');
-    this.progressBar = document.getElementById('progressBar');
-    this.progressContainer = document.getElementById('progressContainer');
-    this.canvasElement = document.getElementById('canvas');
+    this.canvasElement = canvas;
     this.canvasContext = this.canvasElement.getContext('2d');
-    this.canvasShowElement = document.getElementById('canvasShow');
+    this.canvasShowElement = canvasShow;
+    this.updateProgress;
 
     this.initialized = false;
   }
@@ -32,8 +28,7 @@ class Utils {
     let result;
     this.anchors = generateAnchors({});
     if (!this.rawModel) {
-      result = await this.loadModelAndLabels(ssd_mobilenet_tflite.modelFile, ssd_mobilenet_tflite.labelsFile);
-      this.container.removeChild(progressContainer);
+      result = await this.loadModelAndLabels(this.modelFile, this.labelsFile);
       this.labels = result.text.split('\n');
       console.log(`labels: ${this.labels}`);
       let flatBuffer = new flatbuffers.ByteBuffer(result.bytes);
@@ -69,7 +64,7 @@ class Utils {
     // console.log('outputBoxTensor', this.outputBoxTensor)
     // console.log('outputClassScoresTensor', this.outputClassScoresTensor)
     // let startDecode = performance.now();
-    decodeOutputBoxTensor(this.outputBoxTensor, this.anchors);
+    decodeOutputBoxTensor({}, this.outputBoxTensor, this.anchors);
     // console.log(`Decode time: ${(performance.now() - startDecode).toFixed(2)} ms`);
     // let startNMS = performance.now();
     let [totalDetections, boxesList, scoresList, classesList] = NMS({}, this.outputBoxTensor, this.outputClassScoresTensor);
@@ -106,16 +101,8 @@ class Utils {
           }
         }
       };
-      if (progress) {
-        let self = this;
-        request.onprogress = function(ev) {
-          if (ev.lengthComputable) {
-            let percentComplete = ev.loaded / ev.total * 100;
-            percentComplete = percentComplete.toFixed(0);
-            self.progressBar.style = `width: ${percentComplete}%`;
-            self.progressBar.innerHTML = `${percentComplete}%`;
-          }
-        }
+      if (progress && typeof this.updateProgress !== 'undefined') {
+        request.onprogress = this.updateProgress;
       }
       request.send();
     });
@@ -123,15 +110,15 @@ class Utils {
 
   prepareInputTensor(tensors, canvas) {
     let tensor = tensors[0];
-    const width = INPUT_SIZE[1];
-    const height = INPUT_SIZE[0];
-    const channels = INPUT_SIZE[2];
+    const width = this.inputSize[1];
+    const height = this.inputSize[0];
+    const channels = this.inputSize[2];
     const imageChannels = 4; // RGBA
-    const mean = ssd_mobilenet_tflite.preOptions.mean || [0, 0, 0, 0];
-    const std  = ssd_mobilenet_tflite.preOptions.std  || [1, 1, 1, 1];
+    const mean = this.preOptions.mean || [0, 0, 0, 0];
+    const std  = this.preOptions.std  || [1, 1, 1, 1];
 
     if (canvas.width !== width || canvas.height !== height) {
-      throw new Error(`canvas.width(${canvas.width}) or canvas.height(${canvas.height}) is not 300`);
+      throw new Error(`canvas.width(${canvas.width}) is not ${width} or canvas.height(${canvas.height}) is not ${height}`);
     }
     let context = canvas.getContext('2d');
     let pixels = context.getImageData(0, 0, width, height).data;
@@ -168,5 +155,24 @@ class Utils {
     if (this.model._backend != 'WebML') {
       this.model._compilation._preparedModel._deleteAll();
     }
+  }
+
+  changeModelParam(newModel) {
+    this.inputSize = newModel.inputSize;
+    this.outputSize = newModel.outputSize;
+    this.modelFile = newModel.modelFile;
+    this.labelsFile = newModel.labelsFile;
+    this.boxSize = newModel.box_size;
+    this.numClasses = newModel.num_classes;
+    this.numBoxes = newModel.num_boxes;
+    this.preOptions = newModel.preOptions || {};
+    this.postOptions = newModel.postOptions || {};
+    this.inputTensor[0] = new Float32Array(this.inputSize.reduce((a, b) => a * b));
+    this.outputBoxTensor = new Float32Array(this.numBoxes * this.boxSize);
+    this.outputClassScoresTensor = new Float32Array(this.numBoxes * this.numClasses);
+    this.rawModel = null;
+
+    this.canvasElement.width = newModel.inputSize[1];
+    this.canvasElement.height = newModel.inputSize[0];
   }
 }

@@ -186,8 +186,8 @@ const densenet_onnx = {
   }
 };
 
-const ssd_mobilenet_tflite = {
-  modelName: 'SSD MobileNet(TFlite)',
+const ssd_mobilenetv1_tflite = {
+  modelName: 'SSD MobileNetV1(TFlite)',
   modelFile: '../object_detection/model/ssd_mobilenet.tflite',
   labelsFile: '../object_detection/model/coco_labels_list.txt',
   box_size: 4,
@@ -223,6 +223,10 @@ const imageClassificationModels = [
   inceptionv2_onnx,
   densenet_onnx,
 ];
+
+const objectDetectionModels = [
+  ssd_mobilenetv1_tflite,
+]
 
 function getOS() {
   var userAgent = window.navigator.userAgent,
