@@ -4,3 +4,4 @@
 [submodule "src/nn/wasm/src/external/tensorflow"]
 	path = src/nn/wasm/src/external/tensorflow
 	url = https://github.com/tensorflow/tensorflow.git
+	branch = r1.12

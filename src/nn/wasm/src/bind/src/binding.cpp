@@ -1,10 +1,10 @@
 #include <emscripten/bind.h>
 #include <emscripten/val.h>
 
-#include "external/tensorflow/tensorflow/lite/kernels/internal/types.h"
-#include "external/tensorflow/tensorflow/lite/kernels/internal/optimized/optimized_ops.h"
-#include "external/tensorflow/tensorflow/lite/kernels/internal/reference/reference_ops.h"
-#include "external/tensorflow/tensorflow/lite/kernels/internal/optimized/depthwiseconv_float.h"
+#include "external/tensorflow/tensorflow/contrib/lite/kernels/internal/types.h"
+#include "external/tensorflow/tensorflow/contrib/lite/kernels/internal/optimized/optimized_ops.h"
+#include "external/tensorflow/tensorflow/contrib/lite/kernels/internal/reference/reference_ops.h"
+#include "external/tensorflow/tensorflow/contrib/lite/kernels/internal/optimized/depthwiseconv_float.h"
 
 #include <vector>
 #include <cmath>
