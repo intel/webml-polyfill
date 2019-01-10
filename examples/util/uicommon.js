@@ -20,6 +20,16 @@ function isWebML() {
   }
 }
 
+function toggleFullScreen() {
+  if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen();
+  } else {
+    if (document.exitFullscreen) {
+      document.exitFullscreen(); 
+    }
+  }
+}
+
 $('#header').sticky({ topSpacing: 0, zIndex: '50' });
 
 $(window).scroll(function () {

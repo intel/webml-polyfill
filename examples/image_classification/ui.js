@@ -175,6 +175,17 @@ $(document).ready(function () {
     updateScenario(true, currentBackend, currentPrefer);
   });
 
+  $('#fullscreen i svg').click(function () {
+    $('#fullscreen i').toggle();
+    toggleFullScreen();
+    $('video').toggleClass('fullscreen');
+    $('#overlay').toggleClass('video-overlay');
+    $('#fps').toggleClass('fullscreen');
+    $('#fullscreen i').toggleClass('fullscreen');
+    $('#ictitle').toggleClass('fullscreen');
+    $('#inference').toggleClass('fullscreen');
+  });
+
 });
 
 $(document).ready(function () {
