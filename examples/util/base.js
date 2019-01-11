@@ -186,9 +186,37 @@ const densenet_onnx = {
   }
 };
 
-const ssd_mobilenet_tflite = {
-  modelName: 'SSD MobileNet(TFlite)',
-  modelFile: '../object_detection/model/ssd_mobilenet.tflite',
+const ssd_mobilenetv1_tflite = {
+  modelName: 'SSD MobileNetV1(TFlite)',
+  modelFile: '../object_detection/model/ssd_mobilenet_v1.tflite',
+  labelsFile: '../object_detection/model/coco_labels_list.txt',
+  box_size: 4,
+  num_classes: 91,
+  num_boxes: 1083 + 600 + 150 + 54 + 24 + 6,
+  inputSize: [300, 300, 3],
+  preOptions: {
+    mean: [127.5, 127.5, 127.5],
+    std: [127.5, 127.5, 127.5],
+  }
+};
+
+const ssd_mobilenetv2_tflite = {
+  modelName: 'SSD MobileNetV2(TFlite)',
+  modelFile: '../object_detection/model/ssd_mobilenet_v2.tflite',
+  labelsFile: '../object_detection/model/coco_labels_list.txt',
+  box_size: 4,
+  num_classes: 91,
+  num_boxes: 1083 + 600 + 150 + 54 + 24 + 6,
+  inputSize: [300, 300, 3],
+  preOptions: {
+    mean: [127.5, 127.5, 127.5],
+    std: [127.5, 127.5, 127.5],
+  }
+};
+
+const ssdlite_mobilenetv2_tflite = {
+  modelName: 'SSDLite MobileNetV2(TFlite)',
+  modelFile: '../object_detection/model/ssdlite_mobilenet_v2.tflite',
   labelsFile: '../object_detection/model/coco_labels_list.txt',
   box_size: 4,
   num_classes: 91,
@@ -222,6 +250,12 @@ const imageClassificationModels = [
   resnet_v2_onnx,
   inceptionv2_onnx,
   densenet_onnx,
+];
+
+const objectDetectionModels = [
+  ssd_mobilenetv1_tflite,
+  ssd_mobilenetv2_tflite,
+  ssdlite_mobilenetv2_tflite,
 ];
 
 function getOS() {
