@@ -385,7 +385,8 @@ export default class WebGLModel {
         const output = operands[outputs[0]];
         const crops = [[0, 0], [0, 0]];
         if (blockShape.value === undefined) {
-          // blockShape.dataSync() return Int32Array, here it should be convert to Array
+          // blockShape.dataSync() return Int32Array,
+          // which should be converted to Array here.
           blockShape.value = Array.apply([], blockShape.dataSync());
         }
         output.assign(input.batchToSpaceND(blockShape.value, crops));
@@ -410,37 +411,36 @@ export default class WebGLModel {
         output.assign(tf.maximum(in1, in2));
       } break;
       case OperationCode.TRANSPOSE_CONV: {
-        // should be modified
         const inCount = inputs.length;
-        if (inCount !== 6 && inCount !== 9) {
+        if (inCount !== 8 && inCount !== 10) {
           throw new Error('Invalid parameters number of TRANSPOSE_CONV');
         }
         let i = 0;
-        const outputShape = operands[inputs[i++]];
-        const filter = operands[inputs[i++]];
         const input = operands[inputs[i++]];
+        const filter = operands[inputs[i++]];
+        const bias = operands[inputs[i++]];
         const output = operands[outputs[0]];
         let strideW, strideH;
-        if (outputShape.value === undefined) {
-          outputShape.value = outputShape.dataSync();
-        }
-        if (inCount === 6) {
+        let activation;
+        if (inCount === 8) {
+          const outputShape = operands[inputs[i++]];
+          if (outputShape.value === undefined) {
+            outputShape.value = outputShape.dataSync();
+          }
           const paddingCode = operands[inputs[i++]].value[0];
           const padding = PaddingCodeMap.get(paddingCode);
           strideW = operands[inputs[i++]].value[0];
           strideH = operands[inputs[i++]].value[0];
-          output.assign(
-              input.conv2dTranspose(filter, outputShape.value, [strideH, strideW], padding));
+          activation = FuseFunctionMap.get(operands[inputs[i++]].value[0]);
+          output.assign(activation(
+              input.conv2dTranspose(filter,
+                                    outputShape.value,
+                                    [strideH, strideW],
+                                    padding)
+                   .add(bias)));
         } else {
-          const paddingLeft = operands[inputs[i++]].value[0];
-          const paddingRight = operands[inputs[i++]].value[0];
-          const paddingTop = operands[inputs[i++]].value[0];
-          const paddingBottom = operands[inputs[i++]].value[0];
-          strideW = operands[inputs[i++]].value[0];
-          strideH = operands[inputs[i++]].value[0];
-          output.assign(
-              input.pad([[0, 0], [paddingTop, paddingBottom], [paddingLeft, paddingRight], [0, 0]])
-                   .conv2dTranspose(filter, outputShape.value, [strideH, strideW], 'valid'));
+          throw new Error(
+              'TRANSPOSE_CONV with explicit padding is not supported yet');
         }
       } break;
       default: {

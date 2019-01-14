@@ -1198,7 +1198,6 @@ export const OperationCode = {
    *      must be >= 1.
    * * 2: An optional {@link ANEURALNETWORKS_BOOL} scalar, default to false.
    *      Set to true to specify NCHW data layout for input0 and output0.
-   *      Available since API level 29.
    *
    * Outputs:
    * * 0: A tensor of the same {@link OperandCode} as input0.
@@ -1300,8 +1299,6 @@ export const OperationCode = {
    * * 9: An {@link ANEURALNETWORKS_INT32} scalar, and has to be one of the
    *      {@link FuseCode} values. Specifies the activation to
    *      invoke on the result.
-   * * 10: An {@link ANEURALNETWORKS_BOOL} scalar, set to true to specify
-   *       NCHW data layout for input0 and output0. Set to false for NHWC.
    *
    * Inputs (implicit padding):
    * * 0: A 4-D tensor, of shape [batches, height, width, depth_in],
@@ -1328,8 +1325,6 @@ export const OperationCode = {
    * * 7: An {@link ANEURALNETWORKS_INT32} scalar, and has to be one of the
    *      {@link FuseCode} values. Specifies the activation to
    *      invoke on the result.
-   * * 8: An {@link ANEURALNETWORKS_BOOL} scalar, set to true to specify
-   *      NCHW data layout for input0 and output0. Set to false for NHWC.
    *
    * Outputs:
    * * 0: The output 4-D tensor, of shape

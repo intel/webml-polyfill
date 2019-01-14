@@ -319,16 +319,19 @@ class TFliteModelImporter {
           opType = this._nn.MAXIMUM;
         } break;
         case tflite.BuiltinOperator.TRANSPOSE_CONV: {
-          // should be define as
-          // https://android.googlesource.com/platform/frameworks/ml/+/master/nn/runtime/include/NeuralNetworks.h
           let options = operator.builtinOptions(new tflite.TransposeConvOptions());
           let paddingCode = PaddingCodeMap.get(options.padding());
           if (typeof paddingCode === 'undefined') {
             throw new Error(`Padding code ${options.padding()} is not supported.`);
           }
+          inputs = [inputs[2] /* input */, inputs[1] /* filter */, null, inputs[0] /* outputShape */];
+          // create a tensor specifying the bias
+          let outChannel = graph.tensors(inputs[1]).shapeArray()[0];
+          inputs[2] = this._addTensorFloat32(outChannel, [outChannel]);
           inputs.push(this._addScalarInt32(paddingCode));
           inputs.push(this._addScalarInt32(options.strideW()));
           inputs.push(this._addScalarInt32(options.strideH()));
+          inputs.push(this._addScalarInt32(this._nn.FUSED_NONE));
           opType = this._nn.TRANSPOSE_CONV;
         } break;
         default: {
