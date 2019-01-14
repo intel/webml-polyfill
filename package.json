@@ -1,6 +1,6 @@
 {
   "name": "webml-polyfill",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "WebML API polyfill",
   "main": "dist/webml-polyfill.js",
   "directories": {
@@ -10,6 +10,7 @@
     "watch": "webpack --watch",
     "start": "npm run build && http-server .",
     "build": "webpack",
+    "build-wasm": "node build.js --build-wasm",
     "test": "node test-ci.js"
   },
   "repository": {
@@ -36,7 +37,10 @@
     "ndarray-squeeze": "^1.0.2",
     "selenium-webdriver": "^3.1.0",
     "webpack": "^3.5.5",
-    "@tensorflow/tfjs-core": "0.13.12"
+    "npmlog": "^4.1.2",
+    "globby": "^8.0.1",
+    "rimraf": "^2.6.2",
+    "@tensorflow/tfjs-core": "0.14.4"
   },
   "dependencies": {}
 }

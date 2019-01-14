@@ -26,6 +26,12 @@ Production build:
 $ NODE_ENV=production npm run build
 ```
 
+WASM backend build:
+
+```sh
+$ npm run build-wasm
+```
+
 ### Test
 
 ```sh

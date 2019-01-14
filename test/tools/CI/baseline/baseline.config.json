@@ -9,7 +9,7 @@
         "fail": 0,
         "block": 0
     },
-    "Android-WebGL2": {
+    "Android-WebGL": {
         "total": 143,
         "pass": 123,
         "fail": 20,
@@ -21,7 +21,7 @@
         "fail": 0,
         "block": 0
     },
-    "Linux-WebGL2": {
+    "Linux-WebGL": {
         "total": 143,
         "pass": 125,
         "fail": 18,
@@ -33,7 +33,7 @@
         "fail": 0,
         "block": 0
     },
-    "Mac-WebGL2": {
+    "Mac-WebGL": {
         "total": 143,
         "pass": 125,
         "fail": 18,
@@ -45,7 +45,7 @@
         "fail": 0,
         "block": 0
     },
-    "Windows-WebGL2": {
+    "Windows-WebGL": {
         "total": 143,
         "pass": 125,
         "fail": 18,

@@ -14,7 +14,7 @@ describe('CTS Supplement Test', function() {
     let type1_length = product(type1.dimensions);
     let type2 = {type: nn.TENSOR_FLOAT32, dimensions: [1]};
     let type2_length = product(type2.dimensions);
-    let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 3]};
+    let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 1, 3]};
     let type4 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 1]};
     let type4_length = product(type4.dimensions);
 
@@ -38,7 +38,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();

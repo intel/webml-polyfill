@@ -33,14 +33,22 @@ class OnnxModelImporter {
 
     await this._model.finish();
     this._compilation = await this._model.createCompilation();
+
+    let start = performance.now();
     this._compilation.setPreference(getPreferCode(this._backend, this._prefer));
     await this._compilation.finish();
     this._execution = await this._compilation.createExecution();
+    let elapsed = performance.now() - start;
+    console.log(`compilation time: ${elapsed.toFixed(2)} ms`);
   }
 
-  async compute(inputTensor, outputTensor) {
-    this._execution.setInput(0, inputTensor);
-    this._execution.setOutput(0, outputTensor);
+  async compute(inputTensors, outputTensors) {
+    inputTensors.forEach((inputTensor, i) => {
+      this._execution.setInput(i, inputTensor);
+    });
+    outputTensors.forEach((outputTensor, i) => {
+      this._execution.setOutput(i, outputTensor);
+    });
 
     let error = await this._execution.startCompute();
     if (error) {

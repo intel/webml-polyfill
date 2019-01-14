@@ -55,7 +55,7 @@ class Utils {
     result = await this.model.createCompiledModel();
     console.log(`compilation result: ${result}`);
     let start = performance.now();
-    result = await this.model.compute(this.inputTensor, this.outputTensor);
+    result = await this.model.compute([this.inputTensor], [this.outputTensor]);
     let elapsed = performance.now() - start;
     console.log(`warmup time: ${elapsed.toFixed(2)} ms`);
     this.initialized = true;
@@ -68,7 +68,7 @@ class Utils {
                                  this.canvasElement.height);
     this.prepareInputTensor(this.inputTensor, this.canvasElement);
     let start = performance.now();
-    let result = await this.model.compute(this.inputTensor, this.outputTensor);
+    let result = await this.model.compute([this.inputTensor], [this.outputTensor]);
     let elapsed = performance.now() - start;
     return {
       time: elapsed.toFixed(2),
@@ -95,7 +95,7 @@ class Utils {
           if (request.status === 200) {
               resolve(request.response);
           } else {
-              reject(new Error('Failed to load ' + modelUrl + ' status: ' + request.status));
+              reject(new Error('Failed to load ' + url + ' status: ' + request.status));
           }
         }
       };
@@ -123,7 +123,7 @@ class Utils {
     if (norm) {
       pixels = new Float32Array(pixels).map(p => p / 255);
     }
-    
+
     if (channelScheme === 'RGB') {
       // NHWC layout
       for (let y = 0; y < height; ++y) {

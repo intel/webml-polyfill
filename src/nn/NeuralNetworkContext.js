@@ -72,6 +72,8 @@ export default class NeuralNetworkContext {
     this.TRANSPOSE = OperationCode.TRANSPOSE;
     this.MAXIMUM = OperationCode.MAXIMUM;
     this.TRANSPOSE_CONV = OperationCode.TRANSPOSE_CONV;
+    this.ATROUS_CONV_2D = OperationCode.ATROUS_CONV_2D;
+    this.ATROUS_DEPTHWISE_CONV_2D = OperationCode.ATROUS_DEPTHWISE_CONV_2D;
   }
 
   _initFusedActivationFunctionTypes() {

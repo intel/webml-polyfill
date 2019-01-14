@@ -23,6 +23,11 @@ depthwise_conv2d_float_large_2.mod.py
 depthwise_conv2d_float_large_2_weights_as_inputs.mod.py
 depthwise_conv2d_float_large_weights_as_inputs.mod.py
 depthwise_conv2d_float_weights_as_inputs.mod.py
+fully_connected_float_2.js
+fully_connected_float.js
+fully_connected_float_large.js
+fully_connected_float_large_weights_as_inputs.js
+fully_connected_float_weights_as_inputs.js
 max_pool_float_1.mod.py
 max_pool_float_2.mod.py
 max_pool_float_3.mod.py
@@ -30,5 +35,7 @@ mul.mod.py
 mul_relu.mod.py
 reshape.mod.py
 reshape_weights_as_inputs.mod.py
+resize_bilinear.mod.py
+resize_bilinear_2.mod.py
 softmax_float_1.mod.py
 softmax_float_2.mod.py

@@ -1,24 +1,24 @@
-const BOX_SIZE = 4;
-const NUM_CLASSES = 91;
-const NUM_BOXES = 1083 + 600 + 150 + 54 + 24 + 6;
-
-
 /**
 * Decode out box coordinate
 * See tensorflow ssd_mobilenet_v1 example for details:
 * https://github.com/tensorflow/models/blob/master/research/object_detection/box_coders/faster_rcnn_box_coder.py
 *
 */
-function decodeOutputBoxTensor(outputBoxTensor, anchors) {
-  if (outputBoxTensor.length % BOX_SIZE !== 0) {
-    throw new Error(`The length 0f outputTensorDecode should be the multiple of ${BOX_SIZE}!`);
+function decodeOutputBoxTensor(options, outputBoxTensor, anchors) {
+  const {
+    box_size = 4,
+    num_boxes = 1083 + 600 + 150 + 54 + 24 + 6
+  } = options;
+
+  if (outputBoxTensor.length % box_size !== 0) {
+    throw new Error(`The length 0f outputTensorDecode should be the multiple of ${box_size}!`);
   }
 
   // scale_factors: [y_scale, x_scale, height_scale, width_scale]
   const scale_factors = [10.0, 10.0, 5.0, 5.0];
   let boxOffset = 0;
   let ty, tx, th, tw, w, h, ycenter, xcenter;
-  for (let y = 0; y < NUM_BOXES; ++y) {
+  for (let y = 0; y < num_boxes; ++y) {
     const [ycenter_a, xcenter_a, ha, wa] = anchors[y]
     ty = outputBoxTensor[boxOffset] / scale_factors[0];
     tx = outputBoxTensor[boxOffset + 1] / scale_factors[1];
@@ -33,7 +33,7 @@ function decodeOutputBoxTensor(outputBoxTensor, anchors) {
     outputBoxTensor[boxOffset + 1] = xcenter - w / 2;
     outputBoxTensor[boxOffset + 2] = ycenter + h / 2;
     outputBoxTensor[boxOffset + 3] = xcenter + w / 2;
-    boxOffset += BOX_SIZE;
+    boxOffset += box_size;
   }
 }
 
@@ -150,9 +150,12 @@ function NMS(options, outputBoxTensor, outputClassScoresTensor) {
   // Using a little higher threshold and lower max detections can save inference time with little performance loss.
   const {
     score_threshold = 0.1, // 1e-8
-    iou_threshold = 0.6,
+    iou_threshold = 0.5,
     max_detections_per_class = 10, // 100
-    max_total_detections = 100
+    max_total_detections = 100,
+    num_boxes = 1083 + 600 + 150 + 54 + 24 + 6,
+    num_classes = 91,
+    box_size = 4
   } = options;
 
   let totalDetections = null;
@@ -161,15 +164,15 @@ function NMS(options, outputBoxTensor, outputClassScoresTensor) {
   let classesList = [];
 
   // Skip background 0
-  for (let x = 1; x < NUM_CLASSES; ++x) {
+  for (let x = 1; x < num_classes; ++x) {
     // let startNMS = performance.now();
     let boxes = [];
     let scores = [];
-    for (let y = 0; y < NUM_BOXES; ++y) {
-      let scoreIndex = y * NUM_CLASSES + x;
+    for (let y = 0; y < num_boxes; ++y) {
+      let scoreIndex = y * num_classes + x;
       if (outputClassScoresTensor[scoreIndex] > score_threshold) {
-        let boxIndexStart = y * BOX_SIZE;
-        boxes.push(outputBoxTensor.subarray(boxIndexStart, boxIndexStart + BOX_SIZE));
+        let boxIndexStart = y * box_size;
+        boxes.push(outputBoxTensor.subarray(boxIndexStart, boxIndexStart + box_size));
         scores.push(outputClassScoresTensor[scoreIndex]);
       }
     }
@@ -308,10 +311,17 @@ function visualize(canvasShowElement, totalDetections, imageSource, boxesList, s
       ctx.font = "20px Arial";
       let text = `${label}: ${prob.toFixed(2)}`;
       let width = ctx.measureText(text).width;
-      ctx.fillRect(xmin - 2, ymin - parseInt(ctx.font, 10), width + 4, parseInt(ctx.font, 10));
-      ctx.fillStyle = "white";
-      ctx.textAlign = 'start';
-      ctx.fillText(text, xmin, ymin - 3);
+      if (xmin >= 2 && ymin >= parseInt(ctx.font, 10)) {
+        ctx.fillRect(xmin - 2, ymin - parseInt(ctx.font, 10), width + 4, parseInt(ctx.font, 10));
+        ctx.fillStyle = "white";
+        ctx.textAlign = 'start';
+        ctx.fillText(text, xmin, ymin - 3);
+      } else {
+        ctx.fillRect(xmin + 2, ymin , width + 4,  parseInt(ctx.font, 10));
+        ctx.fillStyle = "white";
+        ctx.textAlign = 'start';
+        ctx.fillText(text, xmin + 2, ymin + 15);
+      }
     }
   }
 }

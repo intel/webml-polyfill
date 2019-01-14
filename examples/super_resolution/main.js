@@ -37,13 +37,6 @@ const availableModels = [
   srgan_128_4
 ];
 
-const preferMap = {
-  'MPS': 'sustained',
-  'BNNS': 'fast',
-  'sustained': 'MPS',
-  'fast': 'BNNS'
-};
-
 function main(camera) {
   const inputCanvas = document.getElementById('inputCanvas');
   const outputCanvas = document.getElementById('outputCanvas');

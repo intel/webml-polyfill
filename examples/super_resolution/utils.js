@@ -32,19 +32,17 @@ class Utils {
     result = await this.model.createCompiledModel();
     console.log(`compilation result: ${result}`);
     let start = performance.now();
-    result = await this.model.compute(this.inputTensor, this.outputTensor);
+    result = await this.model.compute([this.inputTensor], [this.outputTensor]);
     let elapsed = performance.now() - start;
     console.log(`warmup time: ${elapsed.toFixed(2)} ms`);
     this.initialized = true;
-
-    // console.log(this.model)
   }
 
   async predict(inputCanvas) {
     if (!this.initialized) return;
     this.prepareInputTensor(this.inputTensor, inputCanvas);
     let start = performance.now();
-    let result = await this.model.compute(this.inputTensor, this.outputTensor);
+    let result = await this.model.compute([this.inputTensor], [this.outputTensor]);
     let elapsed = performance.now() - start;
     return {time: elapsed.toFixed(2)};
   }
@@ -115,8 +113,6 @@ class Utils {
 
   // float [-1, 1] =>  uint8 [0, 255]
   drawResult(canvas) {
-    // console.log(this.outputTensor);
-
     const height = this.outputSize[0];
     const width = this.outputSize[1];
     const [mean, offset] = [127.5, 1];

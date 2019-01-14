@@ -1,183 +1,4 @@
-const mobilenet_v1_tflite = {
-  modelName: 'Mobilenet V1(TFlite)',
-  inputSize: [224, 224, 3],
-  outputSize: 1001,
-  modelFile: './model/mobilenet_v1_1.0_224.tflite',
-  labelsFile: './model/labels1001.txt',
-  preOptions: {
-    mean: [127.5, 127.5, 127.5],
-    std: [127.5, 127.5, 127.5],
-  }
-};
-const mobilenet_v2_tflite = {
-  modelName: 'Mobilenet V2(TFlite)',
-  inputSize: [224, 224, 3],
-  outputSize: 1001,
-  modelFile: './model/mobilenet_v2_1.0_224.tflite',
-  labelsFile: './model/labels1001.txt',
-  preOptions: {
-    mean: [127.5, 127.5, 127.5],
-    std: [127.5, 127.5, 127.5],
-  }
-};
-const inception_v3_tflite = {
-  modelName: 'Inception V3(TFlite)',
-  inputSize: [299, 299, 3],
-  outputSize: 1001,
-  modelFile: './model/inception_v3.tflite',
-  labelsFile: './model/labels1001.txt',
-  preOptions: {
-    mean: [127.5, 127.5, 127.5],
-    std: [127.5, 127.5, 127.5],
-  },
-};
-const inception_v4_tflite = {
-  modelName: 'Inception V4(TFlite)',
-  inputSize: [299, 299, 3],
-  outputSize: 1001,
-  modelFile: './model/inception_v4.tflite',
-  labelsFile: './model/labels1001.txt',
-  preOptions: {
-    mean: [127.5, 127.5, 127.5],
-    std: [127.5, 127.5, 127.5],
-  }
-};
-const squeezenet_tflite = {
-  modelName: 'Squeezenet(TFlite)',
-  inputSize: [224, 224, 3],
-  outputSize: 1001,
-  modelFile: './model/squeezenet.tflite',
-  labelsFile: './model/labels1001.txt',
-  preOptions: {
-    mean: [127.5, 127.5, 127.5],
-    std: [127.5, 127.5, 127.5],
-  }
-};
-const inception_resnet_v2_tflite = {
-  modelName: 'Incep. Res. V2(TFlite)',
-  inputSize: [299, 299, 3],
-  outputSize: 1001,
-  modelFile: './model/inception_resnet_v2.tflite',
-  labelsFile: './model/labels1001.txt',
-  preOptions: {
-    mean: [127.5, 127.5, 127.5],
-    std: [127.5, 127.5, 127.5],
-  },
-  postOptions: {
-    softmax: true,
-  }
-};
-const squeezenet_onnx = {
-  modelName: 'SqueezeNet(Onnx)',
-  modelFile: './model/squeezenet1.1.onnx',
-  labelsFile: './model/labels1000.txt',
-  inputSize: [224, 224, 3],
-  outputSize: 1000,
-  preOptions: {
-    // https://github.com/onnx/models/tree/master/models/image_classification/squeezenet#preprocessing
-    mean: [0.485, 0.456, 0.406],
-    std: [0.229, 0.224, 0.225],
-    norm: true
-  },
-  postOptions: {
-    softmax: true,
-  }
-};
-const mobilenet_v2_onnx = {
-  modelName: 'Mobilenet v2(Onnx)',
-  modelFile: './model/mobilenetv2-1.0.onnx',
-  labelsFile: './model/labels1000.txt',
-  inputSize: [224, 224, 3],
-  outputSize: 1000,
-  preOptions: {
-    // https://github.com/onnx/models/tree/master/models/image_classification/mobilenet#preprocessing
-    mean: [0.485, 0.456, 0.406],
-    std: [0.229, 0.224, 0.225],
-    norm: true
-  },
-  postOptions: {
-    softmax: true,
-  }
-};
-const resnet_v1_onnx = {
-  modelName: 'ResNet50 v1(Onnx)',
-  modelFile: './model/resnet50v1.onnx',
-  labelsFile: './model/labels1000.txt',
-  inputSize: [224, 224, 3],
-  outputSize: 1000,
-  preOptions: {
-    // https://github.com/onnx/models/tree/master/models/image_classification/resnet#preprocessing
-    mean: [0.485, 0.456, 0.406],
-    std: [0.229, 0.224, 0.225],
-    norm: true
-  },
-  postOptions: {
-    softmax: true,
-  }
-};
-const resnet_v2_onnx = {
-  modelName: 'ResNet50 v2(Onnx)',
-  modelFile: './model/resnet50v2.onnx',
-  labelsFile: './model/labels1000.txt',
-  inputSize: [224, 224, 3],
-  outputSize: 1000,
-  preOptions: {
-    // https://github.com/onnx/models/tree/master/models/image_classification/resnet#preprocessing
-    mean: [0.485, 0.456, 0.406],
-    std: [0.229, 0.224, 0.225],
-    norm: true
-  },
-  postOptions: {
-    softmax: true,
-  }
-};
-const inceptionv2_onnx = {
-  modelName: 'Inception v2(Onnx)',
-  modelFile: './model/inceptionv2.onnx',
-  labelsFile: './model/ilsvrc2012labels.txt',
-  inputSize: [224, 224, 3],
-  outputSize: 1000,
-};
-const densenet_onnx = {
-  modelName: 'DenseNet(Onnx)',
-  modelFile: './model/densenet121.onnx',
-  labelsFile: './model/labels1000.txt',
-  inputSize: [224, 224, 3],
-  outputSize: 1000,
-  preOptions: {
-    // mean and std should also be in BGR order
-    mean: [0.406, 0.456, 0.485],
-    std: [0.225, 0.224, 0.229],
-    norm: true,
-    channelScheme: 'BGR',
-  },
-  postOptions: {
-    softmax: true,
-  }
-};
-const preferMap = {
-  'MPS': 'sustained',
-  'BNNS': 'fast',
-  'sustained': 'MPS',
-  'fast': 'BNNS',
-};
-
 function main(camera) {
-  const availableModels = [
-    mobilenet_v1_tflite,
-    mobilenet_v2_tflite,
-    inception_v3_tflite,
-    inception_v4_tflite,
-    squeezenet_tflite,
-    inception_resnet_v2_tflite,
-    squeezenet_onnx,
-    mobilenet_v2_onnx,
-    resnet_v1_onnx,
-    resnet_v2_onnx,
-    inceptionv2_onnx,
-    densenet_onnx,
-  ];
-
   const videoElement = document.getElementById('video');
   const imageElement = document.getElementById('image');
   const inputElement = document.getElementById('input');
@@ -201,7 +22,7 @@ function main(camera) {
   utils.updateProgress = updateProgress;    //register updateProgress function if progressBar element exist
 
   function checkPreferParam() {
-    if (getOS() === 'Mac OS') {
+    if (currentOS === 'Mac OS') {
       let preferValue = getPreferParam();
       if (preferValue === 'invalid') {
         console.log("Invalid prefer, prefer should be 'fast' or 'sustained', try to use WASM.");
@@ -212,12 +33,12 @@ function main(camera) {
 
   checkPreferParam();
 
-  function showAlert(backend) {
+  function showAlert(backend, modelName) {
     let div = document.createElement('div');
     div.setAttribute('id', 'backendAlert');
     div.setAttribute('class', 'alert alert-warning alert-dismissible fade show');
     div.setAttribute('role', 'alert');
-    div.innerHTML = `<strong>Failed to setup ${backend} backend.</strong>`;
+    div.innerHTML = `<strong>Currently ${backend} backend doesn't support ${modelName} Model.</strong>`;
     div.innerHTML += `<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>`;
     let container = document.getElementById('container');
     container.insertBefore(div, container.firstElementChild);
@@ -247,7 +68,7 @@ function main(camera) {
 
   function updateBackend() {
     if (getUrlParams('api_info') === 'true') {
-      backend.innerHTML = currentBackend === 'WebML' ? currentBackend + '/' + getNativeAPI() : currentBackend;
+      backend.innerHTML = currentBackend === 'WebML' ? currentBackend + '/' + getNativeAPI(currentPrefer) : currentBackend;
     } else {
       backend.innerHTML = currentBackend;
     }
@@ -260,6 +81,7 @@ function main(camera) {
     streaming = false;
     if (newBackend !== "WebML") {
       selectPrefer.style.display = 'none';
+      currentPrefer = "sustained";
     } else {
       selectPrefer.style.display = 'inline';
     }
@@ -278,9 +100,13 @@ function main(camera) {
           startPredict();
         }
       }).catch((e) => {
-        console.warn(`Failed to change backend ${newBackend}, switch back to ${currentBackend}`);
+        let backend = newBackend;
+        if (newBackend === 'WebML') {
+          backend = 'WebML/' + getNativeAPI(currentPrefer);
+        }
+        console.warn(`Failed to change backend ${backend}, switch back to ${currentBackend}`);
         console.log(e);
-        showAlert(newBackend);
+        showAlert(backend, currentModel.modelName);
         changeBackend(currentBackend, true);
         updatePrefer();
         updateModel();
@@ -290,18 +116,18 @@ function main(camera) {
   }
 
   function changeModel(newModel) {
-    if (currentModel === newModel.modelName) {
+    if (currentModel.modelName === newModel.modelName) {
       return;
     }
     streaming = false;
     utils.deleteAll();
+    removeAlertElement();
     utils.changeModelParam(newModel);
     progressContainer.style.display = "inline";
-    currentPrefer = "sustained";
     selectModel.innerHTML = 'Setting...';
-    currentModel = newModel.modelName;
     setTimeout(() => {
       utils.init(currentBackend, currentPrefer).then(() => {
+        currentModel = newModel;
         updatePrefer();
         updateModel();
         updateBackend();
@@ -311,12 +137,22 @@ function main(camera) {
           streaming = true;
           startPredict();
         }
+      }).catch((e) => {
+        let backend = currentBackend;
+        if (currentBackend === 'WebML') {
+          backend = 'WebML/' + getNativeAPI(currentPrefer);
+        }
+        console.warn(`Currently ${newModel.modelName} doesn't support ${backend} backend`);
+        console.error(e);
+        showAlert(backend, newModel.modelName);
+        updateModel();
+        utils.changeModelParam(currentModel);
       });
     }, 10);
   }
 
   function updateModel() {
-    selectModel.innerHTML = currentModel;
+    selectModel.innerHTML = currentModel.modelName;
   }
 
   function changePrefer(newPrefer, force) {
@@ -325,6 +161,7 @@ function main(camera) {
     }
     streaming = false;
     utils.deleteAll();
+    removeAlertElement();
     selectPrefer.innerHTML = 'Setting...';
     setTimeout(() => {
       utils.init(currentBackend, newPrefer).then(() => {
@@ -339,10 +176,12 @@ function main(camera) {
           startPredict();
         }
       }).catch((e) => {
-        console.warn(`Failed to change backend ${preferMap[newPrefer]}, switch back to ${preferMap[currentPrefer]}`);
+        let currentBackend = 'WebML/' + getNativeAPI(currentPrefer);
+        let nextBackend = 'WebML/' + getNativeAPI(newPrefer);
+        console.warn(`Failed to change backend ${nextBackend}, switch back to ${currentBackend}`);
         console.error(e);
-        showAlert(preferMap[newPrefer]);
         changePrefer(currentPrefer, true);
+        showAlert(nextBackend, currentModel.modelName);
         updatePrefer();
         updateModel();
         updateBackend();
@@ -397,7 +236,7 @@ function main(camera) {
       probElement.innerHTML = `${c.prob}%`;
     });
   }
- 
+
   if (nnNative) {
     webml.setAttribute('class', 'dropdown-item');
     webml.onclick = function (e) {
@@ -432,7 +271,7 @@ function main(camera) {
   }
 
   // register models
-  for (let model of availableModels) {
+  for (let model of imageClassificationModels) {
     if (!fileExists(model.modelFile)) {
       continue;
     }
@@ -442,21 +281,45 @@ function main(camera) {
     $('.available-models').append(dropdownBtn);
     if (!currentModel) {
       utils.changeModelParam(model);
-      currentModel = model.modelName;
+      currentModel = model;
     }
   }
 
   // register prefers
-  if (getOS() === 'Mac OS' && currentBackend === 'WebML') {
+  if (currentBackend === 'WebML') {
     $('.prefer').css("display","inline");
-    let MPS = $('<button class="dropdown-item"/>')
-      .text('MPS')
-      .click(_ => changePrefer(preferMap['MPS']));
-    $('.preference').append(MPS);
-    let BNNS = $('<button class="dropdown-item"/>')
-      .text('BNNS')
-      .click(_ => changePrefer(preferMap['BNNS']));
-    $('.preference').append(BNNS);
+    let sustained = $('<button class="dropdown-item"/>')
+      .text('SUSTAINED_SPEED')
+      .click(_ => changePrefer('sustained'));
+    $('.preference').append(sustained);
+    if (currentOS === 'Android') {
+      let fast = $('<button class="dropdown-item"/>')
+        .text('FAST_SINGLE_ANSWER')
+        .click(_ => changePrefer('fast'));
+      $('.preference').append(fast);
+      let low = $('<button class="dropdown-item"/>')
+        .text('LOW_POWER')
+        .click(_ => changePrefer('low'));
+      $('.preference').append(low);
+    } else if (currentOS === 'Windows' || currentOS === 'Linux') {
+      let fast = $('<button class="dropdown-item" disabled />')
+        .text('FAST_SINGLE_ANSWER')
+        .click(_ => changePrefer('fast'));
+      $('.preference').append(fast);
+      let low = $('<button class="dropdown-item" disabled />')
+        .text('LOW_POWER')
+        .click(_ => changePrefer('low'));
+      $('.preference').append(low);
+    }  else if (currentOS === 'Mac OS') {
+      let fast = $('<button class="dropdown-item"/>')
+        .text('FAST_SINGLE_ANSWER')
+        .click(_ => changePrefer('fast'));
+      $('.preference').append(fast);
+      let low = $('<button class="dropdown-item" disabled />')
+        .text('LOW_POWER')
+        .click(_ => changePrefer('low'));
+      $('.preference').append(low);
+    }
     if (!currentPrefer) {
       currentPrefer = "sustained";
     }
@@ -484,7 +347,7 @@ function main(camera) {
     }).catch((e) => {
       console.warn(`Failed to init ${utils.model._backend}, try to use WASM`);
       console.error(e);
-      showAlert(utils.model._backend);
+      showAlert(utils.model._backend, currentModel.modelName);
       changeBackend('WASM');
     });
   } else {
@@ -504,7 +367,7 @@ function main(camera) {
       }).catch((e) => {
         console.warn(`Failed to init ${utils.model._backend}, try to use WASM`);
         console.error(e);
-        showAlert(utils.model._backend);
+        showAlert(utils.model._backend, currentModel.modelName);
         changeBackend('WASM');
       });
     }).catch((error) => {

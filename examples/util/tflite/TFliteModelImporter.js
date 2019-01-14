@@ -5,6 +5,7 @@ class TFliteModelImporter {
     this._compilation;
     this._execution;
     this._tensorIds = [];
+    this._operands = [];
     this._operandIndex = 0;
     this._options = {
       softmax: kwargs.softmax,
@@ -28,18 +29,26 @@ class TFliteModelImporter {
 
     this._addTensorOperands();
     this._addOpsAndParams();
-    this._addInputsOutputs()
+    this._addInputsOutputs();
 
     await this._model.finish();
     this._compilation = await this._model.createCompilation();
+
+    let start = performance.now();
     this._compilation.setPreference(getPreferCode(this._backend, this._prefer));
     await this._compilation.finish();
     this._execution = await this._compilation.createExecution();
+    let elapsed = performance.now() - start;
+    console.log(`compilation time: ${elapsed.toFixed(2)} ms`);
   }
 
-  async compute(inputTensor, outputTensor) {
-    this._execution.setInput(0, inputTensor);
-    this._execution.setOutput(0, outputTensor);
+  async compute(inputTensors, outputTensors) {
+    inputTensors.forEach((inputTensor, i) => {
+      this._execution.setInput(i, inputTensor);
+    });
+    outputTensors.forEach((outputTensor, i) => {
+      this._execution.setOutput(i, outputTensor);
+    });
 
     let error = await this._execution.startCompute();
     if (error) {
@@ -68,15 +77,15 @@ class TFliteModelImporter {
           throw new Error(`tensor type ${tensor.type()} is not supproted.`);
         }
       }
-      let tensorType = {type: type, dimensions: Array.from(tensor.shapeArray())};
-      let tensorId = this._operandIndex++;
-      this._model.addOperand(tensorType);
+      let dims = tensor.shapeArray().length ? Array.from(tensor.shapeArray()) : [1];
+      let tensorType = {type: type, dimensions: dims};
+      let tensorId = this._addOperand(tensorType);
       this._tensorIds.push(tensorId);
       let buffer = this._rawModel.buffers(tensor.buffer());
       if (buffer.dataLength() > 0) {
         let raw = buffer.dataArray();
         let data = new typedArray(raw.buffer, raw.byteOffset, raw.byteLength / typedArray.BYTES_PER_ELEMENT);
-        this._model.setOperandValue(tensorId, data);
+        this._setOperandValue(tensorId, data);
       }
     }
   }
@@ -92,20 +101,36 @@ class TFliteModelImporter {
     this._model.identifyInputsAndOutputs(inputs, outputs);
   }
 
-  _addScalarInt32(value) {
-    const scalarInt32Type = {type: this._nn.INT32};
+  _setOperandValue(index, value) {
+    this._model.setOperandValue(index, value);
+    this._operands[index] = value;
+  }
+
+  _addOperand(type, value) {
     let index = this._operandIndex++;
-    this._model.addOperand(scalarInt32Type);
-    this._model.setOperandValue(index, new Int32Array([value]));
+    this._model.addOperand(type);
+    if (typeof value !== 'undefined')
+      this._setOperandValue(index, value); 
     return index;
   }
 
+  _addScalarInt32(value) {
+    return this._addOperand({
+      type: this._nn.INT32
+    }, new Int32Array([value]));
+  }
+
   _addScalarFloat32(value) {
-    const scalarInt32Type = {type: this._nn.FLOAT32};
-    let index = this._operandIndex++;
-    this._model.addOperand(scalarInt32Type);
-    this._model.setOperandValue(index, new Float32Array([value]));
-    return index;
+    return this._addOperand({
+      type: this._nn.FLOAT32
+    }, new Float32Array([value]));
+  }
+
+  _addTensorFloat32(tensor, dims) {
+    return this._addOperand({
+      type: this._nn.TENSOR_FLOAT32,
+      dimensions: dims
+    }, new Float32Array(tensor));
   }
 
   _addOpsAndParams() {
@@ -127,8 +152,10 @@ class TFliteModelImporter {
       let operator = graph.operators(i);
       let opCode = this._rawModel.operatorCodes(operator.opcodeIndex()).builtinCode();
       let opType;
-      let inputs = Array.from(operator.inputsArray());
-      let outputs = Array.from(operator.outputsArray());
+      // some input/output tensors might be mapped to tensors
+      // e.g., skipped nodes in RESIZE_BILINEAR 
+      let inputs = Array.from(operator.inputsArray()).map(i => this._tensorIds[i]);
+      let outputs = Array.from(operator.outputsArray()).map(i => this._tensorIds[i]);
       switch (opCode) {
         case tflite.BuiltinOperator.ADD: {
           let options = operator.builtinOptions(new tflite.AddOptions());
@@ -155,14 +182,20 @@ class TFliteModelImporter {
             throw new Error(`Padding code ${options.padding()} is not supported.`);
           }
           inputs.push(this._addScalarInt32(paddingCode));
-          inputs.push(this._addScalarInt32(options.strideW()));
-          inputs.push(this._addScalarInt32(options.strideH()));
+          if (options.dilationWFactor() !== 1 || options.dilationWFactor() !== 1) {
+            inputs.push(this._addScalarInt32(options.dilationWFactor()));
+            inputs.push(this._addScalarInt32(options.dilationHFactor()));
+            opType = this._nn.ATROUS_CONV_2D;
+          } else {
+            inputs.push(this._addScalarInt32(options.strideW()));
+            inputs.push(this._addScalarInt32(options.strideH()));
+            opType = this._nn.CONV_2D;
+          }
           let fuseCode = FuseCodeMap.get(options.fusedActivationFunction());
           if (typeof fuseCode === 'undefined') {
             throw new Error(`Fuse code ${options.fusedActivationFunction()} is not supported.`);
           }
           inputs.push(this._addScalarInt32(fuseCode));
-          opType = this._nn.CONV_2D;
         } break;
         case tflite.BuiltinOperator.DEPTHWISE_CONV_2D: {
           let options = operator.builtinOptions(new tflite.DepthwiseConv2DOptions());
@@ -171,15 +204,21 @@ class TFliteModelImporter {
             throw new Error(`Padding code ${options.padding()} is not supported.`);
           }
           inputs.push(this._addScalarInt32(paddingCode));
-          inputs.push(this._addScalarInt32(options.strideW()));
-          inputs.push(this._addScalarInt32(options.strideH()));
+          if (options.dilationWFactor() !== 1 || options.dilationWFactor() !== 1) {
+            inputs.push(this._addScalarInt32(options.dilationWFactor()));
+            inputs.push(this._addScalarInt32(options.dilationHFactor()));
+            opType = this._nn.ATROUS_DEPTHWISE_CONV_2D;
+          } else {
+            inputs.push(this._addScalarInt32(options.strideW()));
+            inputs.push(this._addScalarInt32(options.strideH()));
+            opType = this._nn.DEPTHWISE_CONV_2D;
+          }
           inputs.push(this._addScalarInt32(options.depthMultiplier()));
           let fuseCode = FuseCodeMap.get(options.fusedActivationFunction());
           if (typeof fuseCode === 'undefined') {
             throw new Error(`Fuse code ${options.fusedActivationFunction()} is not supported.`);
           }
           inputs.push(this._addScalarInt32(fuseCode));
-          opType = this._nn.DEPTHWISE_CONV_2D;
         } break;
         case tflite.BuiltinOperator.AVERAGE_POOL_2D: {
           let options = operator.builtinOptions(new tflite.Pool2DOptions());
@@ -251,6 +290,19 @@ class TFliteModelImporter {
           inputs.push(this._addScalarInt32(fuseCode));
           opType = this._nn.FULLY_CONNECTED;
         } break;
+        case tflite.BuiltinOperator.RESIZE_BILINEAR: {
+          let newSize = this._operands[inputs[1]];
+          let oldSize = graph.tensors(inputs[0]).shapeArray().slice(1, 3);
+          if (newSize[0] === oldSize[0] && newSize[1] === oldSize[1]) {
+            // skip RESIZE_BILINEAR with the same input and output shape
+            this._tensorIds[outputs[0]] = this._tensorIds[inputs[0]];
+            continue;
+          }
+          inputs = [inputs[0]];
+          inputs.push(this._addScalarInt32(newSize[0]));
+          inputs.push(this._addScalarInt32(newSize[1]));
+          opType = this._nn.RESIZE_BILINEAR;
+        } break;
         case tflite.BuiltinOperator.LOGISTIC: {
           opType = this._nn.LOGISTIC;
         } break;
@@ -296,8 +348,7 @@ class TFliteModelImporter {
           // Add outputs
           outputs = [];
           let tensorType = {type: this._nn.TENSOR_FLOAT32, dimensions: Array.from(outputTensor.shapeArray())};
-          let tensorId = this._operandIndex++;
-          this._model.addOperand(tensorType);
+          let tensorId = this._addOperand(tensorType);
           this._tensorIds.push(tensorId);
           outputs.push(tensorId);
 

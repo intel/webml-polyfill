@@ -33,7 +33,7 @@ describe('CTS Supplement Test', function() {
 
     let compilation = await model.createCompilation();
 
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
 
     await compilation.finish();
 
@@ -82,7 +82,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -126,7 +126,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -170,7 +170,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -214,7 +214,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -258,7 +258,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -302,7 +302,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -348,7 +348,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -394,7 +394,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -440,7 +440,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -486,7 +486,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -532,7 +532,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -578,7 +578,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -622,7 +622,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -668,7 +668,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -714,7 +714,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -760,7 +760,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -806,7 +806,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -852,7 +852,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -898,7 +898,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -944,7 +944,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -988,7 +988,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -1035,7 +1035,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -1083,7 +1083,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -1131,7 +1131,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -1179,7 +1179,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -1227,7 +1227,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -1275,7 +1275,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -1321,7 +1321,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -1369,7 +1369,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -1417,7 +1417,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -1465,7 +1465,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -1513,7 +1513,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -1562,7 +1562,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -1607,7 +1607,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -1667,7 +1667,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -1716,7 +1716,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -1765,7 +1765,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -1814,7 +1814,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -1863,7 +1863,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -1908,7 +1908,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -1951,7 +1951,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -2002,7 +2002,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -2053,7 +2053,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -2107,7 +2107,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -2172,7 +2172,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -2202,7 +2202,7 @@ describe('CTS Supplement Test', function() {
     let type1_length = product(type1.dimensions);
     let type2 = {type: nn.TENSOR_FLOAT32, dimensions: [1]};
     let type2_length = product(type2.dimensions);
-    let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 3]};
+    let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 1, 3]};
     let type4 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 1]};
     let type4_length = product(type4.dimensions);
 
@@ -2226,7 +2226,117 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
+    await compilation.finish();
+
+    let execution = await compilation.createExecution();
+
+    let op1_input = new Float32Array(op1_value);
+    execution.setInput(0, op1_input);
+
+    let op3_output = new Float32Array(type4_length);
+    execution.setOutput(0, op3_output);
+
+    await execution.startCompute();
+
+    for (let i = 0; i < type4_length; ++i) {
+      assert.isTrue(almostEqualCTS(op3_output[i], op3_expect[i]));
+    }
+  });
+
+  it('check result for Fully connected float 3D input example/3', async function() {
+    let model = await nn.createModel(options);
+    let operandIndex = 0;
+
+    let op1_value = [ 1,  2,  3,  4,  5,  6,
+                      7,  8,  9, 10, 11, 12];
+    let op3_expect = [8, 17, 26, 35];
+
+    let type3 = {type: nn.INT32};
+    let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 6]};
+    let type1_length = product(type1.dimensions);
+    let type2 = {type: nn.TENSOR_FLOAT32, dimensions: [2]};
+    let type2_length = product(type2.dimensions);
+    let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 3]};
+    let type4 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2]};
+    let type4_length = product(type4.dimensions);
+
+    let op1 = operandIndex++;
+    model.addOperand(type0);
+    let op2 = operandIndex++;
+    model.addOperand(type1);
+    let b0 = operandIndex++;
+    model.addOperand(type2);
+    let op3 = operandIndex++;
+    model.addOperand(type4);
+    let act = operandIndex++;
+    model.addOperand(type3);
+
+    model.setOperandValue(op2, new Float32Array([1, 0, 1, 1, 0, 0, 0, 1, 0, 0, 1, 1]));
+    model.setOperandValue(b0, new Float32Array([0, 4]));
+    model.setOperandValue(act, new Int32Array([0]));
+    model.addOperation(nn.FULLY_CONNECTED, [op1, op2, b0, act], [op3]);
+
+    model.identifyInputsAndOutputs([op1], [op3]);
+    await model.finish();
+
+    let compilation = await model.createCompilation();
+    compilation.setPreference(getPreferenceCode(options.prefer));
+    await compilation.finish();
+
+    let execution = await compilation.createExecution();
+
+    let op1_input = new Float32Array(op1_value);
+    execution.setInput(0, op1_input);
+
+    let op3_output = new Float32Array(type4_length);
+    execution.setOutput(0, op3_output);
+
+    await execution.startCompute();
+
+    for (let i = 0; i < type4_length; ++i) {
+      assert.isTrue(almostEqualCTS(op3_output[i], op3_expect[i]));
+    }
+  });
+
+  it('check result for Fully connected float 3D input example/4', async function() {
+    let model = await nn.createModel(options);
+    let operandIndex = 0;
+
+    let op1_value = [ 1,  2,  3,  4,  5,  6,
+                      7,  8,  9, 10, 11, 12];
+    let op3_expect = [4, 5, 10, 8, 16, 11, 22, 14];
+
+    let type3 = {type: nn.INT32};
+    let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 3]};
+    let type1_length = product(type1.dimensions);
+    let type2 = {type: nn.TENSOR_FLOAT32, dimensions: [2]};
+    let type2_length = product(type2.dimensions);
+    let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 3]};
+    let type4 = {type: nn.TENSOR_FLOAT32, dimensions: [4, 2]};
+    let type4_length = product(type4.dimensions);
+
+    let op1 = operandIndex++;
+    model.addOperand(type0);
+    let op2 = operandIndex++;
+    model.addOperand(type1);
+    let b0 = operandIndex++;
+    model.addOperand(type2);
+    let op3 = operandIndex++;
+    model.addOperand(type4);
+    let act = operandIndex++;
+    model.addOperand(type3);
+
+    model.setOperandValue(op2, new Float32Array([1, 0, 1, 1, 0, 0]));
+    model.setOperandValue(b0, new Float32Array([0, 4]));
+    model.setOperandValue(act, new Int32Array([0]));
+    model.addOperation(nn.FULLY_CONNECTED, [op1, op2, b0, act], [op3]);
+
+    model.identifyInputsAndOutputs([op1], [op3]);
+    await model.finish();
+
+    let compilation = await model.createCompilation();
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -2280,7 +2390,175 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
+    await compilation.finish();
+
+    let execution = await compilation.createExecution();
+
+    let op1_input = new Float32Array(op1_value);
+    execution.setInput(0, op1_input);
+
+    let op3_output = new Float32Array(type4_length);
+    execution.setOutput(0, op3_output);
+
+    await execution.startCompute();
+
+    for (let i = 0; i < type4_length; ++i) {
+      assert.isTrue(almostEqualCTS(op3_output[i], op3_expect[i]));
+    }
+  });
+
+  it('check result for Fully connected float 4D input example/2', async function() {
+    let model = await nn.createModel(options);
+    let operandIndex = 0;
+
+    let op1_value = [ 1,  2,  3,  4,  5,  6,
+                      7,  8,  9, 10, 11, 12,
+                     13, 14, 15, 16, 17, 18,
+                     19, 20, 21, 22, 23, 24];
+    let op3_expect = [8, 17, 26, 35, 44, 53, 62, 71];
+
+    let type3 = {type: nn.INT32};
+    let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 6]};
+    let type1_length = product(type1.dimensions);
+    let type2 = {type: nn.TENSOR_FLOAT32, dimensions: [2]};
+    let type2_length = product(type2.dimensions);
+    let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2, 3]};
+    let type4 = {type: nn.TENSOR_FLOAT32, dimensions: [4, 2]};
+    let type4_length = product(type4.dimensions);
+
+    let op1 = operandIndex++;
+    model.addOperand(type0);
+    let op2 = operandIndex++;
+    model.addOperand(type1);
+    let b0 = operandIndex++;
+    model.addOperand(type2);
+    let op3 = operandIndex++;
+    model.addOperand(type4);
+    let act = operandIndex++;
+    model.addOperand(type3);
+
+    model.setOperandValue(op2, new Float32Array([1, 0, 1, 1, 0, 0, 0, 1, 0, 0, 1, 1]));
+    model.setOperandValue(b0, new Float32Array([0, 4]));
+    model.setOperandValue(act, new Int32Array([0]));
+    model.addOperation(nn.FULLY_CONNECTED, [op1, op2, b0, act], [op3]);
+
+    model.identifyInputsAndOutputs([op1], [op3]);
+    await model.finish();
+
+    let compilation = await model.createCompilation();
+    compilation.setPreference(getPreferenceCode(options.prefer));
+    await compilation.finish();
+
+    let execution = await compilation.createExecution();
+
+    let op1_input = new Float32Array(op1_value);
+    execution.setInput(0, op1_input);
+
+    let op3_output = new Float32Array(type4_length);
+    execution.setOutput(0, op3_output);
+
+    await execution.startCompute();
+
+    for (let i = 0; i < type4_length; ++i) {
+      assert.isTrue(almostEqualCTS(op3_output[i], op3_expect[i]));
+    }
+  });
+
+  it('check result for Fully connected float 4D input example/3', async function() {
+    let model = await nn.createModel(options);
+    let operandIndex = 0;
+
+    let op1_value = [ 1,  2,  3,  4,  5,  6,  7,  8,
+                      9, 10, 11, 12, 13, 14, 15, 16,
+                     17, 18, 19, 20, 21, 22, 23, 24];
+    let op3_expect = [17, 24, 23, 49, 56, 55, 81, 88, 87];
+
+    let type3 = {type: nn.INT32};
+    let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [3, 8]};
+    let type1_length = product(type1.dimensions);
+    let type2 = {type: nn.TENSOR_FLOAT32, dimensions: [3]};
+    let type2_length = product(type2.dimensions);
+    let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2, 3]};
+    let type4 = {type: nn.TENSOR_FLOAT32, dimensions: [3, 3]};
+    let type4_length = product(type4.dimensions);
+
+    let op1 = operandIndex++;
+    model.addOperand(type0);
+    let op2 = operandIndex++;
+    model.addOperand(type1);
+    let b0 = operandIndex++;
+    model.addOperand(type2);
+    let op3 = operandIndex++;
+    model.addOperand(type4);
+    let act = operandIndex++;
+    model.addOperand(type3);
+
+    model.setOperandValue(op2, new Float32Array([1, 0, 1, 1, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 0, 0, 1, 0, 1, 0, 1]));
+    model.setOperandValue(b0, new Float32Array([1, 2, 4]));
+    model.setOperandValue(act, new Int32Array([0]));
+    model.addOperation(nn.FULLY_CONNECTED, [op1, op2, b0, act], [op3]);
+
+    model.identifyInputsAndOutputs([op1], [op3]);
+    await model.finish();
+
+    let compilation = await model.createCompilation();
+    compilation.setPreference(getPreferenceCode(options.prefer));
+    await compilation.finish();
+
+    let execution = await compilation.createExecution();
+
+    let op1_input = new Float32Array(op1_value);
+    execution.setInput(0, op1_input);
+
+    let op3_output = new Float32Array(type4_length);
+    execution.setOutput(0, op3_output);
+
+    await execution.startCompute();
+
+    for (let i = 0; i < type4_length; ++i) {
+      assert.isTrue(almostEqualCTS(op3_output[i], op3_expect[i]));
+    }
+  });
+
+  it('check result for Fully connected float 4D input example/4', async function() {
+    let model = await nn.createModel(options);
+    let operandIndex = 0;
+
+    let op1_value = [ 1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12,
+                     13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24];
+    let op3_expect = [40, 44, 112, 116];
+
+    let type3 = {type: nn.INT32};
+    let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 12]};
+    let type1_length = product(type1.dimensions);
+    let type2 = {type: nn.TENSOR_FLOAT32, dimensions: [2]};
+    let type2_length = product(type2.dimensions);
+    let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2, 3]};
+    let type4 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2]};
+    let type4_length = product(type4.dimensions);
+
+    let op1 = operandIndex++;
+    model.addOperand(type0);
+    let op2 = operandIndex++;
+    model.addOperand(type1);
+    let b0 = operandIndex++;
+    model.addOperand(type2);
+    let op3 = operandIndex++;
+    model.addOperand(type4);
+    let act = operandIndex++;
+    model.addOperand(type3);
+
+    model.setOperandValue(op2, new Float32Array([1, 0, 1, 1, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 0, 0, 1, 0, 1, 0, 1]));
+    model.setOperandValue(b0, new Float32Array([1, 2]));
+    model.setOperandValue(act, new Int32Array([0]));
+    model.addOperation(nn.FULLY_CONNECTED, [op1, op2, b0, act], [op3]);
+
+    model.identifyInputsAndOutputs([op1], [op3]);
+    await model.finish();
+
+    let compilation = await model.createCompilation();
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -2330,7 +2608,7 @@ describe('CTS Supplement Test', function() {
 
     let compilation = await model.createCompilation();
 
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
 
     await compilation.finish();
 
@@ -2379,7 +2657,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -2423,7 +2701,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -2467,7 +2745,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -2511,7 +2789,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -2555,7 +2833,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -2599,7 +2877,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -2645,7 +2923,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -2691,7 +2969,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -2737,7 +3015,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -2783,7 +3061,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -2829,7 +3107,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -2875,7 +3153,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -2919,7 +3197,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -2965,7 +3243,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -3011,7 +3289,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -3057,7 +3335,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -3103,7 +3381,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -3149,7 +3427,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -3195,7 +3473,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -3241,7 +3519,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -3285,7 +3563,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -3332,7 +3610,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -3380,7 +3658,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -3428,7 +3706,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -3476,7 +3754,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -3524,7 +3802,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -3572,7 +3850,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -3618,7 +3896,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -3666,7 +3944,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -3714,7 +3992,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -3762,7 +4040,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -3810,7 +4088,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -3859,7 +4137,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -3904,7 +4182,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -3967,7 +4245,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -4016,7 +4294,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -4065,7 +4343,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -4114,7 +4392,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -4163,7 +4441,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -4208,7 +4486,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -4241,7 +4519,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
@@ -4256,6 +4534,677 @@ describe('CTS Supplement Test', function() {
 
     for (let i = 0; i < tensorLength; ++i) {
       assert.isTrue(almostEqualCTS(outputData[i], inputData[i]));
+    }
+  });
+
+  it('check result for Resize bilinear distorted example/1', async function() {
+    let model = await nn.createModel(options);
+    let operandIndex = 0;
+
+    let op1_value = [3, 4, 6, 10, 9, 10, 12, 16, 3, 4, 6, 10, 9, 10, 12, 16];
+    let op2_expect = [3, 4, 4.5, 7, 6, 10, 6, 10, 7, 8, 8.5, 11, 10, 14, 10, 14, 9, 10, 10.5, 13, 12, 16, 12, 16, 3, 4, 4.5, 7, 6, 10, 6, 10, 7, 8, 8.5, 11, 10, 14, 10, 14, 9, 10, 10.5, 13, 12, 16, 12, 16];
+
+    let type2 = {type: nn.INT32};
+    let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2, 2]};
+    let type0_length = product(type0.dimensions);
+    let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 3, 4, 2]};
+    let type1_length = product(type1.dimensions);
+
+    let op1 = operandIndex++;
+    model.addOperand(type0);
+    let op2 = operandIndex++;
+    model.addOperand(type1);
+    let height = operandIndex++;
+    model.addOperand(type2);
+    let width = operandIndex++;
+    model.addOperand(type2);
+
+    model.setOperandValue(height, new Int32Array([3]));
+    model.setOperandValue(width, new Int32Array([4]));
+    model.addOperation(nn.RESIZE_BILINEAR, [op1, height, width], [op2]);
+
+    model.identifyInputsAndOutputs([op1], [op2]);
+    await model.finish();
+
+    let compilation = await model.createCompilation();
+    compilation.setPreference(getPreferenceCode(options.prefer));
+    await compilation.finish();
+
+    let execution = await compilation.createExecution();
+
+    let op1_input = new Float32Array(op1_value);
+    execution.setInput(0, op1_input);
+
+    let op2_output = new Float32Array(type1_length);
+    execution.setOutput(0, op2_output);
+
+    await execution.startCompute();
+
+    for (let i = 0; i < type1_length; ++i) {
+      assert.isTrue(almostEqualCTS(op2_output[i], op2_expect[i]));
+    }
+  });
+
+  it('check result for Resize bilinear distorted example/2', async function() {
+    let model = await nn.createModel(options);
+    let operandIndex = 0;
+
+    let op1_value = [1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23];
+    let op2_expect = [1, 3, 9, 11, 13, 15, 9, 11, 1, 3, 9, 11, 13, 15, 9, 11];
+
+    let type2 = {type: nn.INT32};
+    let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 3, 4, 2]};
+    let type0_length = product(type0.dimensions);
+    let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2, 2]};
+    let type1_length = product(type1.dimensions);
+
+    let op1 = operandIndex++;
+    model.addOperand(type0);
+    let op2 = operandIndex++;
+    model.addOperand(type1);
+    let height = operandIndex++;
+    model.addOperand(type2);
+    let width = operandIndex++;
+    model.addOperand(type2);
+
+    model.setOperandValue(height, new Int32Array([2]));
+    model.setOperandValue(width, new Int32Array([2]));
+    model.addOperation(nn.RESIZE_BILINEAR, [op1, height, width], [op2]);
+
+    model.identifyInputsAndOutputs([op1], [op2]);
+    await model.finish();
+
+    let compilation = await model.createCompilation();
+    compilation.setPreference(getPreferenceCode(options.prefer));
+    await compilation.finish();
+
+    let execution = await compilation.createExecution();
+
+    let op1_input = new Float32Array(op1_value);
+    execution.setInput(0, op1_input);
+
+    let op2_output = new Float32Array(type1_length);
+    execution.setOutput(0, op2_output);
+
+    await execution.startCompute();
+
+    for (let i = 0; i < type1_length; ++i) {
+      assert.isTrue(almostEqualCTS(op2_output[i], op2_expect[i]));
+    }
+  });
+
+  it('check result for Resize bilinear distorted example/3', async function() {
+    let model = await nn.createModel(options);
+    let operandIndex = 0;
+
+    let op1_value = [1, 3, 5, 7, 9, 11, 13, 15, 1, 3, 5, 7, 9, 11, 13, 15, 1, 3, 5, 7, 9, 11, 13, 15, 1, 3, 5, 7, 9, 11, 13, 15];
+    let op2_expect = [1, 3, 6.3333335, 8.333334, 11.666667, 13.666667,1, 3, 6.3333335, 8.333334, 11.666667, 13.666667,1, 3, 6.3333335, 8.333334, 11.666667, 13.666667,1, 3, 6.3333335, 8.333334, 11.666667, 13.666667,1, 3, 6.3333335, 8.333334, 11.666667, 13.666667,1, 3, 6.3333335, 8.333334, 11.666667, 13.666667];
+
+    let type2 = {type: nn.INT32};
+    let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 4, 2]};
+    let type0_length = product(type0.dimensions);
+    let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 3, 3, 2]};
+    let type1_length = product(type1.dimensions);
+
+    let op1 = operandIndex++;
+    model.addOperand(type0);
+    let op2 = operandIndex++;
+    model.addOperand(type1);
+    let height = operandIndex++;
+    model.addOperand(type2);
+    let width = operandIndex++;
+    model.addOperand(type2);
+
+    model.setOperandValue(height, new Int32Array([3]));
+    model.setOperandValue(width, new Int32Array([3]));
+    model.addOperation(nn.RESIZE_BILINEAR, [op1, height, width], [op2]);
+
+    model.identifyInputsAndOutputs([op1], [op2]);
+    await model.finish();
+
+    let compilation = await model.createCompilation();
+    compilation.setPreference(getPreferenceCode(options.prefer));
+    await compilation.finish();
+
+    let execution = await compilation.createExecution();
+
+    let op1_input = new Float32Array(op1_value);
+    execution.setInput(0, op1_input);
+
+    let op2_output = new Float32Array(type1_length);
+    execution.setOutput(0, op2_output);
+
+    await execution.startCompute();
+
+    for (let i = 0; i < type1_length; ++i) {
+      assert.isTrue(almostEqualCTS(op2_output[i], op2_expect[i]));
+    }
+  });
+
+  it('check result for Resize bilinear distorted example/4', async function() {
+    let model = await nn.createModel(options);
+    let operandIndex = 0;
+
+    let op1_value = [1, 3, 5, 7, 9, 11, 13, 15, 1, 3, 5, 7, 9, 11, 13, 15, 1, 3, 5, 7, 9, 11, 13, 15, 1, 3, 5, 7, 9, 11, 13, 15];
+    let op2_expect = [1, 3, 3.6666667, 5.666667, 5, 7, 6.333333, 8.333333, 9, 11, 10.333333, 12.333333, 6.333334, 8.333334, 9.000001, 11.000001, 10.333334, 12.333334, 1, 3, 3.6666667, 5.666667, 5, 7, 6.333333, 8.333333, 9, 11, 10.333333, 12.333333, 6.333334, 8.333334, 9.000001, 11.000001, 10.333334, 12.333334];
+
+    let type2 = {type: nn.INT32};
+    let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 4, 2, 2]};
+    let type0_length = product(type0.dimensions);
+    let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 3, 3, 2]};
+    let type1_length = product(type1.dimensions);
+
+    let op1 = operandIndex++;
+    model.addOperand(type0);
+    let op2 = operandIndex++;
+    model.addOperand(type1);
+    let height = operandIndex++;
+    model.addOperand(type2);
+    let width = operandIndex++;
+    model.addOperand(type2);
+
+    model.setOperandValue(height, new Int32Array([3]));
+    model.setOperandValue(width, new Int32Array([3]));
+    model.addOperation(nn.RESIZE_BILINEAR, [op1, height, width], [op2]);
+
+    model.identifyInputsAndOutputs([op1], [op2]);
+    await model.finish();
+
+    let compilation = await model.createCompilation();
+    compilation.setPreference(getPreferenceCode(options.prefer));
+    await compilation.finish();
+
+    let execution = await compilation.createExecution();
+
+    let op1_input = new Float32Array(op1_value);
+    execution.setInput(0, op1_input);
+
+    let op2_output = new Float32Array(type1_length);
+    execution.setOutput(0, op2_output);
+
+    await execution.startCompute();
+
+    for (let i = 0; i < type1_length; ++i) {
+      assert.isTrue(almostEqualCTS(op2_output[i], op2_expect[i]));
+    }
+  });
+
+  it('check result for Resize bilinear remain size example/1', async function() {
+    let model = await nn.createModel(options);
+    let operandIndex = 0;
+
+    let op1_value = [1.0, 1.0, 2.0, 2.0];
+    let op2_expect = [1.0, 1.0, 2.0, 2.0];
+
+    let type2 = {type: nn.INT32};
+    let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2, 1]};
+    let type0_length = product(type0.dimensions);
+    let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2, 1]};
+    let type1_length = product(type1.dimensions);
+
+    let op1 = operandIndex++;
+    model.addOperand(type0);
+    let op2 = operandIndex++;
+    model.addOperand(type1);
+    let height = operandIndex++;
+    model.addOperand(type2);
+    let width = operandIndex++;
+    model.addOperand(type2);
+
+    model.setOperandValue(height, new Int32Array([2]));
+    model.setOperandValue(width, new Int32Array([2]));
+    model.addOperation(nn.RESIZE_BILINEAR, [op1, height, width], [op2]);
+
+    model.identifyInputsAndOutputs([op1], [op2]);
+    await model.finish();
+
+    let compilation = await model.createCompilation();
+    compilation.setPreference(getPreferenceCode(options.prefer));
+    await compilation.finish();
+
+    let execution = await compilation.createExecution();
+
+    let op1_input = new Float32Array(op1_value);
+    execution.setInput(0, op1_input);
+
+    let op2_output = new Float32Array(type1_length);
+    execution.setOutput(0, op2_output);
+
+    await execution.startCompute();
+
+    for (let i = 0; i < type1_length; ++i) {
+      assert.isTrue(almostEqualCTS(op2_output[i], op2_expect[i]));
+    }
+  });
+
+  it('check result for Resize bilinear remain size example/2', async function() {
+    let model = await nn.createModel(options);
+    let operandIndex = 0;
+
+    let op1_value = [1.0, 1.0, 2.0, 2.0, 1.0, 1.0, 2.0, 2.0];
+    let op2_expect = [1.0, 1.0, 2.0, 2.0, 1.0, 1.0, 2.0, 2.0];
+
+    let type2 = {type: nn.INT32};
+    let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2, 1]};
+    let type0_length = product(type0.dimensions);
+    let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2, 1]};
+    let type1_length = product(type1.dimensions);
+
+    let op1 = operandIndex++;
+    model.addOperand(type0);
+    let op2 = operandIndex++;
+    model.addOperand(type1);
+    let height = operandIndex++;
+    model.addOperand(type2);
+    let width = operandIndex++;
+    model.addOperand(type2);
+
+    model.setOperandValue(height, new Int32Array([2]));
+    model.setOperandValue(width, new Int32Array([2]));
+    model.addOperation(nn.RESIZE_BILINEAR, [op1, height, width], [op2]);
+
+    model.identifyInputsAndOutputs([op1], [op2]);
+    await model.finish();
+
+    let compilation = await model.createCompilation();
+    compilation.setPreference(getPreferenceCode(options.prefer));
+    await compilation.finish();
+
+    let execution = await compilation.createExecution();
+
+    let op1_input = new Float32Array(op1_value);
+    execution.setInput(0, op1_input);
+
+    let op2_output = new Float32Array(type1_length);
+    execution.setOutput(0, op2_output);
+
+    await execution.startCompute();
+
+    for (let i = 0; i < type1_length; ++i) {
+      assert.isTrue(almostEqualCTS(op2_output[i], op2_expect[i]));
+    }
+  });
+
+  it('check result for Resize bilinear remain size example/3', async function() {
+    let model = await nn.createModel(options);
+    let operandIndex = 0;
+
+    let op1_value = [1.0, 1.0, 2.0, 2.0, 1.0, 1.0, 2.0, 2.0];
+    let op2_expect = [1.0, 1.0, 2.0, 2.0, 1.0, 1.0, 2.0, 2.0];
+
+    let type2 = {type: nn.INT32};
+    let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2, 2]};
+    let type0_length = product(type0.dimensions);
+    let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2, 2]};
+    let type1_length = product(type1.dimensions);
+
+    let op1 = operandIndex++;
+    model.addOperand(type0);
+    let op2 = operandIndex++;
+    model.addOperand(type1);
+    let height = operandIndex++;
+    model.addOperand(type2);
+    let width = operandIndex++;
+    model.addOperand(type2);
+
+    model.setOperandValue(height, new Int32Array([2]));
+    model.setOperandValue(width, new Int32Array([2]));
+    model.addOperation(nn.RESIZE_BILINEAR, [op1, height, width], [op2]);
+
+    model.identifyInputsAndOutputs([op1], [op2]);
+    await model.finish();
+
+    let compilation = await model.createCompilation();
+    compilation.setPreference(getPreferenceCode(options.prefer));
+    await compilation.finish();
+
+    let execution = await compilation.createExecution();
+
+    let op1_input = new Float32Array(op1_value);
+    execution.setInput(0, op1_input);
+
+    let op2_output = new Float32Array(type1_length);
+    execution.setOutput(0, op2_output);
+
+    await execution.startCompute();
+
+    for (let i = 0; i < type1_length; ++i) {
+      assert.isTrue(almostEqualCTS(op2_output[i], op2_expect[i]));
+    }
+  });
+
+  it('check result for Resize bilinear remain size example/4', async function() {
+    let model = await nn.createModel(options);
+    let operandIndex = 0;
+
+    let op1_value = [1.0, 1.0, 2.0, 2.0, 1.0, 1.0, 2.0, 2.0, 1.0, 1.0, 2.0, 2.0, 1.0, 1.0, 2.0, 2.0];
+    let op2_expect = [1.0, 1.0, 2.0, 2.0, 1.0, 1.0, 2.0, 2.0, 1.0, 1.0, 2.0, 2.0, 1.0, 1.0, 2.0, 2.0];
+
+    let type2 = {type: nn.INT32};
+    let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2, 2]};
+    let type0_length = product(type0.dimensions);
+    let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2, 2]};
+    let type1_length = product(type1.dimensions);
+
+    let op1 = operandIndex++;
+    model.addOperand(type0);
+    let op2 = operandIndex++;
+    model.addOperand(type1);
+    let height = operandIndex++;
+    model.addOperand(type2);
+    let width = operandIndex++;
+    model.addOperand(type2);
+
+    model.setOperandValue(height, new Int32Array([2]));
+    model.setOperandValue(width, new Int32Array([2]));
+    model.addOperation(nn.RESIZE_BILINEAR, [op1, height, width], [op2]);
+
+    model.identifyInputsAndOutputs([op1], [op2]);
+    await model.finish();
+
+    let compilation = await model.createCompilation();
+    compilation.setPreference(getPreferenceCode(options.prefer));
+    await compilation.finish();
+
+    let execution = await compilation.createExecution();
+
+    let op1_input = new Float32Array(op1_value);
+    execution.setInput(0, op1_input);
+
+    let op2_output = new Float32Array(type1_length);
+    execution.setOutput(0, op2_output);
+
+    await execution.startCompute();
+
+    for (let i = 0; i < type1_length; ++i) {
+      assert.isTrue(almostEqualCTS(op2_output[i], op2_expect[i]));
+    }
+  });
+
+  it('check result for Resize bilinear zoom in example/1', async function() {
+    let model = await nn.createModel(options);
+    let operandIndex = 0;
+
+    let op1_value = [3, 4, 6, 10, 9, 10, 12, 16];
+    let op2_expect = [3, 3.6666667, 4, 5, 7, 8, 6, 8.6666667, 10, 9, 9.6666667, 10, 11, 13, 14, 12, 14.6666667, 16];
+    let type2 = {type: nn.INT32};
+    let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2, 1]};
+    let type0_length = product(type0.dimensions);
+    let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 3, 3, 1]};
+    let type1_length = product(type1.dimensions);
+
+    let op1 = operandIndex++;
+    model.addOperand(type0);
+    let op2 = operandIndex++;
+    model.addOperand(type1);
+    let height = operandIndex++;
+    model.addOperand(type2);
+    let width = operandIndex++;
+    model.addOperand(type2);
+
+    model.setOperandValue(height, new Int32Array([3]));
+    model.setOperandValue(width, new Int32Array([3]));
+    model.addOperation(nn.RESIZE_BILINEAR, [op1, height, width], [op2]);
+
+    model.identifyInputsAndOutputs([op1], [op2]);
+    await model.finish();
+
+    let compilation = await model.createCompilation();
+    compilation.setPreference(getPreferenceCode(options.prefer));
+    await compilation.finish();
+
+    let execution = await compilation.createExecution();
+
+    let op1_input = new Float32Array(op1_value);
+    execution.setInput(0, op1_input);
+
+    let op2_output = new Float32Array(type1_length);
+    execution.setOutput(0, op2_output);
+
+    await execution.startCompute();
+
+    for (let i = 0; i < type1_length; ++i) {
+      assert.isTrue(almostEqualCTS(op2_output[i], op2_expect[i]));
+    }
+  });
+
+  it('check result for Resize bilinear zoom in example/2', async function() {
+    let model = await nn.createModel(options);
+    let operandIndex = 0;
+
+    let op1_value = [3, 4, 6, 10, 9, 10, 12, 16, 3, 4, 6, 10, 9, 10, 12, 16];
+    let op2_expect = [3, 4, 5, 8, 6, 10, 7, 8, 9, 12, 10, 14, 9, 10, 11, 14, 12, 16, 3, 4, 5, 8, 6, 10, 7, 8, 9, 12, 10, 14, 9, 10, 11, 14, 12, 16];
+
+    let type2 = {type: nn.INT32};
+    let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2, 2]};
+    let type0_length = product(type0.dimensions);
+    let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 3, 3, 2]};
+    let type1_length = product(type1.dimensions);
+
+    let op1 = operandIndex++;
+    model.addOperand(type0);
+    let op2 = operandIndex++;
+    model.addOperand(type1);
+    let height = operandIndex++;
+    model.addOperand(type2);
+    let width = operandIndex++;
+    model.addOperand(type2);
+
+    model.setOperandValue(height, new Int32Array([3]));
+    model.setOperandValue(width, new Int32Array([3]));
+    model.addOperation(nn.RESIZE_BILINEAR, [op1, height, width], [op2]);
+
+    model.identifyInputsAndOutputs([op1], [op2]);
+    await model.finish();
+
+    let compilation = await model.createCompilation();
+    compilation.setPreference(getPreferenceCode(options.prefer));
+    await compilation.finish();
+
+    let execution = await compilation.createExecution();
+
+    let op1_input = new Float32Array(op1_value);
+    execution.setInput(0, op1_input);
+
+    let op2_output = new Float32Array(type1_length);
+    execution.setOutput(0, op2_output);
+
+    await execution.startCompute();
+
+    for (let i = 0; i < type1_length; ++i) {
+      assert.isTrue(almostEqualCTS(op2_output[i], op2_expect[i]));
+    }
+  });
+
+  it('check result for Resize bilinear zoom out example/1', async function() {
+    let model = await nn.createModel(options);
+    let operandIndex = 0;
+
+    let op1_value = [1, 3, 5, 7, 9, 11, 13, 15, 17];
+    let op2_expect = [1, 4, 10, 13];
+
+    let type2 = {type: nn.INT32};
+    let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 3, 3, 1]};
+    let type0_length = product(type0.dimensions);
+    let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2, 1]};
+    let type1_length = product(type1.dimensions);
+
+    let op1 = operandIndex++;
+    model.addOperand(type0);
+    let op2 = operandIndex++;
+    model.addOperand(type1);
+    let height = operandIndex++;
+    model.addOperand(type2);
+    let width = operandIndex++;
+    model.addOperand(type2);
+
+    model.setOperandValue(height, new Int32Array([2]));
+    model.setOperandValue(width, new Int32Array([2]));
+    model.addOperation(nn.RESIZE_BILINEAR, [op1, height, width], [op2]);
+
+    model.identifyInputsAndOutputs([op1], [op2]);
+    await model.finish();
+
+    let compilation = await model.createCompilation();
+    compilation.setPreference(getPreferenceCode(options.prefer));
+    await compilation.finish();
+
+    let execution = await compilation.createExecution();
+
+    let op1_input = new Float32Array(op1_value);
+    execution.setInput(0, op1_input);
+
+    let op2_output = new Float32Array(type1_length);
+    execution.setOutput(0, op2_output);
+
+    await execution.startCompute();
+
+    for (let i = 0; i < type1_length; ++i) {
+      assert.isTrue(almostEqualCTS(op2_output[i], op2_expect[i]));
+    }
+  });
+
+  it('check result for Resize bilinear zoom out example/2', async function() {
+    let model = await nn.createModel(options);
+    let operandIndex = 0;
+
+    let op1_value = [1, 3, 5, 7, 9, 11, 13, 15, 17, 1, 3, 5, 7, 9, 11, 13, 15, 17];
+    let op2_expect = [1, 4, 10, 13, 1, 4, 10, 13];
+
+    let type2 = {type: nn.INT32};
+    let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 3, 3, 1]};
+    let type0_length = product(type0.dimensions);
+    let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2, 1]};
+    let type1_length = product(type1.dimensions);
+
+    let op1 = operandIndex++;
+    model.addOperand(type0);
+    let op2 = operandIndex++;
+    model.addOperand(type1);
+    let height = operandIndex++;
+    model.addOperand(type2);
+    let width = operandIndex++;
+    model.addOperand(type2);
+
+    model.setOperandValue(height, new Int32Array([2]));
+    model.setOperandValue(width, new Int32Array([2]));
+    model.addOperation(nn.RESIZE_BILINEAR, [op1, height, width], [op2]);
+
+    model.identifyInputsAndOutputs([op1], [op2]);
+    await model.finish();
+
+    let compilation = await model.createCompilation();
+    compilation.setPreference(getPreferenceCode(options.prefer));
+    await compilation.finish();
+
+    let execution = await compilation.createExecution();
+
+    let op1_input = new Float32Array(op1_value);
+    execution.setInput(0, op1_input);
+
+    let op2_output = new Float32Array(type1_length);
+    execution.setOutput(0, op2_output);
+
+    await execution.startCompute();
+
+    for (let i = 0; i < type1_length; ++i) {
+      assert.isTrue(almostEqualCTS(op2_output[i], op2_expect[i]));
+    }
+  });
+
+  it('check result for Resize bilinear zoom out example/3', async function() {
+    let model = await nn.createModel(options);
+    let operandIndex = 0;
+
+    let op1_value = [1, 3, 5, 7, 9, 11, 13, 15, 17, 1, 3, 5, 7, 9, 11, 13, 15, 17];
+    let op2_expect = [1, 3, 7, 9, 10, 12, 11.5, 9];
+
+    let type2 = {type: nn.INT32};
+    let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 3, 3, 2]};
+    let type0_length = product(type0.dimensions);
+    let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2, 2]};
+    let type1_length = product(type1.dimensions);
+
+    let op1 = operandIndex++;
+    model.addOperand(type0);
+    let op2 = operandIndex++;
+    model.addOperand(type1);
+    let height = operandIndex++;
+    model.addOperand(type2);
+    let width = operandIndex++;
+    model.addOperand(type2);
+
+    model.setOperandValue(height, new Int32Array([2]));
+    model.setOperandValue(width, new Int32Array([2]));
+    model.addOperation(nn.RESIZE_BILINEAR, [op1, height, width], [op2]);
+
+    model.identifyInputsAndOutputs([op1], [op2]);
+    await model.finish();
+
+    let compilation = await model.createCompilation();
+    compilation.setPreference(getPreferenceCode(options.prefer));
+    await compilation.finish();
+
+    let execution = await compilation.createExecution();
+
+    let op1_input = new Float32Array(op1_value);
+    execution.setInput(0, op1_input);
+
+    let op2_output = new Float32Array(type1_length);
+    execution.setOutput(0, op2_output);
+
+    await execution.startCompute();
+
+    for (let i = 0; i < type1_length; ++i) {
+      assert.isTrue(almostEqualCTS(op2_output[i], op2_expect[i]));
+    }
+  });
+
+  it('check result for Resize bilinear zoom out example/4', async function() {
+    let model = await nn.createModel(options);
+    let operandIndex = 0;
+
+    let op1_value = [1, 3, 5, 7, 9, 11, 13, 15, 17, 1, 3, 5, 7, 9, 11, 13, 15, 17, 1, 3, 5, 7, 9, 11, 13, 15, 17, 1, 3, 5, 7, 9, 11, 13, 15, 17];
+    let op2_expect = [1, 3, 7, 9, 10, 12, 11.5, 9, 1, 3, 7, 9, 10, 12, 11.5, 9];
+
+    let type2 = {type: nn.INT32};
+    let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 3, 3, 2]};
+    let type0_length = product(type0.dimensions);
+    let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2, 2]};
+    let type1_length = product(type1.dimensions);
+
+    let op1 = operandIndex++;
+    model.addOperand(type0);
+    let op2 = operandIndex++;
+    model.addOperand(type1);
+    let height = operandIndex++;
+    model.addOperand(type2);
+    let width = operandIndex++;
+    model.addOperand(type2);
+
+    model.setOperandValue(height, new Int32Array([2]));
+    model.setOperandValue(width, new Int32Array([2]));
+    model.addOperation(nn.RESIZE_BILINEAR, [op1, height, width], [op2]);
+
+    model.identifyInputsAndOutputs([op1], [op2]);
+    await model.finish();
+
+    let compilation = await model.createCompilation();
+    compilation.setPreference(getPreferenceCode(options.prefer));
+    await compilation.finish();
+
+    let execution = await compilation.createExecution();
+
+    let op1_input = new Float32Array(op1_value);
+    execution.setInput(0, op1_input);
+
+    let op2_output = new Float32Array(type1_length);
+    execution.setOutput(0, op2_output);
+
+    await execution.startCompute();
+
+    for (let i = 0; i < type1_length; ++i) {
+      assert.isTrue(almostEqualCTS(op2_output[i], op2_expect[i]));
     }
   });
 
@@ -4274,7 +5223,7 @@ describe('CTS Supplement Test', function() {
     await model.finish();
 
     let compilation = await model.createCompilation();
-    compilation.setPreference(prefer);
+    compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
 
     let execution = await compilation.createExecution();
