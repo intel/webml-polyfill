@@ -38,6 +38,7 @@ const availableModels = [
 ];
 
 function main(camera) {
+  const videoElement = document.getElementById('video');
   const inputCanvas = document.getElementById('inputCanvas');
   const outputCanvas = document.getElementById('outputCanvas');
   const inputElement = document.getElementById('input');
@@ -121,6 +122,16 @@ function main(camera) {
     selectPrefer.innerHTML = preferMap[currentPrefer];
   }
 
+  function changeCanvasSize(newModel) {
+    let inputSize = newModel.inputSize;
+    let outputSize = newModel.outputSize;
+    inputCanvas.width = inputSize[1];
+    inputCanvas.height = inputSize[0];
+    outputCanvas.width = outputSize[1];
+    outputCanvas.height = outputSize[0];
+    inputCanvas.style = `width: ${outputSize[1]}px; height: ${outputSize[0]}px;`;
+  }
+
   function changeBackend(newBackend, force) {
     if (!force && currentBackend === newBackend) {
       return;
@@ -163,8 +174,8 @@ function main(camera) {
     }
     streaming = false;
     utils.deleteAll();
-    utils.changeModelParamAndCanvasSize(newModel, inputCanvas, outputCanvas);
-    inputCanvas.style = `width: ${newModel.outputSize[1]}px; height: ${newModel.outputSize[0]}px;`;
+    utils.changeModelParam(newModel, inputCanvas, outputCanvas);
+    changeCanvasSize(newModel);
     progressContainer.style.display = "inline";
     currentPrefer = "sustained";
     selectModel.innerHTML = 'Setting...';
@@ -294,8 +305,8 @@ function main(camera) {
       .click(_ => changeModel(model));
     $('.available-models').append(dropdownBtn);
     if (!currentModel) {
-      utils.changeModelParamAndCanvasSize(model, inputCanvas, outputCanvas);
-      inputCanvas.style = `width: ${model.outputSize[1]}px; height: ${model.outputSize[0]}px;`;
+      utils.changeModelParam(model, inputCanvas, outputCanvas);
+      changeCanvasSize(model);
       currentModel = model.modelName;
     }
   }
@@ -320,7 +331,15 @@ function main(camera) {
   async function computeAndDraw(imageUrl) {
     await utils.loadImage(imageUrl, inputCanvas);
     utils.predict(inputCanvas).then(ret => updateResult(ret));
+    let start = performance.now();
+    utils.drawResult(outputCanvas);
+    let elapsed = performance.now() - start;
+    console.log(`draw time: ${elapsed.toFixed(2)} ms`);
+  }
 
+  async function computeFromVideoAndDraw(videoElement) {
+    await utils.drawVideo(videoElement, inputCanvas);
+    utils.predict(inputCanvas).then(ret => updateResult(ret));
     let start = performance.now();
     utils.drawResult(outputCanvas);
     let elapsed = performance.now() - start;
@@ -351,7 +370,6 @@ function main(camera) {
       changeBackend('WebGL');
     });
   } else {
-    /*
     let stats = new Stats();
     stats.dom.style.cssText = 'position:fixed;top:60px;left:10px;cursor:pointer;opacity:0.9;z-index:10000';
     stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
@@ -366,10 +384,10 @@ function main(camera) {
         streaming = true;
         startPredict();
       }).catch((e) => {
-        console.warn(`Failed to init ${utils.model._backend}, try to use WASM`);
+        console.warn(`Failed to init ${utils.model._backend}, try to use WebGL`);
         console.error(e);
         showAlert(utils.model._backend);
-        changeBackend('WASM');
+        changeBackend('WebGL');
       });
     }).catch((error) => {
       console.log('getUserMedia error: ' + error.name, error);
@@ -378,12 +396,10 @@ function main(camera) {
     function startPredict() {
       if (streaming) {
         stats.begin();
-        utils.predict(videoElement).then(ret => updateResult(ret)).then(() => {
-          stats.end();
-          setTimeout(startPredict, 0);
-        });
+        computeFromVideoAndDraw(videoElement);
+        stats.end();
+        setTimeout(startPredict, 0);
       }
     }
-    */
   }
 }

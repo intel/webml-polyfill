@@ -89,6 +89,13 @@ class Utils {
     return promise;
   }
 
+  drawVideo(video, canvas) {
+    const ctx = canvas.getContext('2d');
+    ctx.save();
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    ctx.restore();
+  }
+
   // uint8 [0, 255] => float [-1, 1]
   prepareInputTensor(tensor, canvas) {
     const height = this.inputSize[0];
@@ -147,17 +154,12 @@ class Utils {
     }
   }
 
-  changeModelParamAndCanvasSize(newModel, inputCanvas, outputCanvas) {
+  changeModelParam(newModel) {
     this.modelFile = newModel.modelFile;
     this.inputSize = newModel.inputSize;
     this.outputSize = newModel.outputSize;
     this.inputTensor = new Float32Array(this.product(this.inputSize));
     this.outputTensor = new Float32Array(this.product(this.outputSize));
     this.rawModel = null;
-
-    inputCanvas.width = this.inputSize[1];
-    inputCanvas.height = this.inputSize[0];
-    outputCanvas.width = this.outputSize[1];
-    outputCanvas.height = this.outputSize[0];
   }
 }
