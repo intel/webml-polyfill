@@ -38,6 +38,7 @@ const availableModels = [
 ];
 
 function main(camera) {
+  const imageElement = document.getElementById('image');
   const videoElement = document.getElementById('video');
   const inputCanvas = document.getElementById('inputCanvas');
   const outputCanvas = document.getElementById('outputCanvas');
@@ -52,7 +53,6 @@ function main(camera) {
   const progressBar = document.getElementById('progressBar');
   const selectPrefer = document.getElementById('selectPrefer');
 
-  let imageUrl = './image/image0.png';
   let currentBackend = '';
   let currentModel = '';
   let currentPrefer = '';
@@ -129,7 +129,7 @@ function main(camera) {
     inputCanvas.height = inputSize[0];
     outputCanvas.width = outputSize[1];
     outputCanvas.height = outputSize[0];
-    inputCanvas.style = `width: ${outputSize[1]}px; height: ${outputSize[0]}px;`;
+    inputCanvas.style = `height: ${outputSize[0]}px;`;
   }
 
   function changeBackend(newBackend, force) {
@@ -151,7 +151,7 @@ function main(camera) {
         updateModel();
         updateBackend();
         if (!camera) {
-          computeAndDraw(imageUrl);
+          predictAndDraw(imageElement);
         } else {
           streaming = true;
           startPredict();
@@ -174,7 +174,7 @@ function main(camera) {
     }
     streaming = false;
     utils.deleteAll();
-    utils.changeModelParam(newModel, inputCanvas, outputCanvas);
+    utils.changeModelParam(newModel);
     changeCanvasSize(newModel);
     progressContainer.style.display = "inline";
     currentPrefer = "sustained";
@@ -186,7 +186,7 @@ function main(camera) {
         updateModel();
         updateBackend();
         if (!camera) {
-          computeAndDraw(imageUrl);
+          predictAndDraw(imageElement);
         } else {
           streaming = true;
           startPredict();
@@ -209,7 +209,7 @@ function main(camera) {
         updateModel();
         updateBackend();
         if (!camera) {
-          computeAndDraw(imageUrl);
+          predictAndDraw(imageElement);
         } else {
           streaming = true;
           startPredict();
@@ -305,7 +305,7 @@ function main(camera) {
       .click(_ => changeModel(model));
     $('.available-models').append(dropdownBtn);
     if (!currentModel) {
-      utils.changeModelParam(model, inputCanvas, outputCanvas);
+      utils.changeModelParam(model);
       changeCanvasSize(model);
       currentModel = model.modelName;
     }
@@ -327,21 +327,11 @@ function main(camera) {
     }
   }
 
-  // load img, predict, and draw result
-  async function computeAndDraw(imageUrl) {
-    await utils.loadImage(imageUrl, inputCanvas);
-    utils.predict(inputCanvas).then(ret => updateResult(ret));
+  async function predictAndDraw(imageElement) {
+    utils.predict(imageElement).then(ret => updateResult(ret));
     let start = performance.now();
-    utils.drawResult(outputCanvas);
-    let elapsed = performance.now() - start;
-    console.log(`draw time: ${elapsed.toFixed(2)} ms`);
-  }
-
-  async function computeFromVideoAndDraw(videoElement) {
-    await utils.drawVideo(videoElement, inputCanvas);
-    utils.predict(inputCanvas).then(ret => updateResult(ret));
-    let start = performance.now();
-    utils.drawResult(outputCanvas);
+    utils.drawOutput(outputCanvas, imageElement);
+    utils.drawInput(inputCanvas, imageElement);
     let elapsed = performance.now() - start;
     console.log(`draw time: ${elapsed.toFixed(2)} ms`);
   }
@@ -351,16 +341,19 @@ function main(camera) {
     inputElement.addEventListener('change', (e) => {
       let files = e.target.files;
       if (files.length > 0) {
-        imageUrl = URL.createObjectURL(files[0]);
-        computeAndDraw(imageUrl);
+        imageElement.src = URL.createObjectURL(files[0]);
       }
     }, false);
+
+    imageElement.onload = function() {
+      predictAndDraw(imageElement);
+    }
 
     utils.init(currentBackend, currentPrefer).then(() => {
       updateBackend();
       updateModel();
       updatePrefer();
-      computeAndDraw(imageUrl);
+      predictAndDraw(imageElement);
       buttonEelement.setAttribute('class', 'btn btn-primary');
       inputElement.removeAttribute('disabled');
     }).catch((e) => {
@@ -396,9 +389,10 @@ function main(camera) {
     function startPredict() {
       if (streaming) {
         stats.begin();
-        computeFromVideoAndDraw(videoElement);
-        stats.end();
-        setTimeout(startPredict, 0);
+        predictAndDraw(videoElement).then(_ => {
+          stats.end();
+          setTimeout(startPredict, 0);
+        });
       }
     }
   }

@@ -9,6 +9,10 @@ class Utils {
     this.outputSize;
     this.inputTensor;
     this.outputTensor;
+    this.inCanvas = document.createElement('canvas');
+    this.inCtx = this.inCanvas.getContext('2d');
+    this.outCanvas = document.createElement('canvas');
+    this.outCtx = this.outCanvas.getContext('2d');
   }
 
   async init(backend, prefer) {
@@ -38,9 +42,12 @@ class Utils {
     this.initialized = true;
   }
 
-  async predict(inputCanvas) {
+  async predict(imageSource) {
     if (!this.initialized) return;
-    this.prepareInputTensor(this.inputTensor, inputCanvas);
+    this.inCtx.drawImage(imageSource, 0, 0,
+                         this.inCanvas.width,
+                         this.inCanvas.height);
+    this.prepareInputTensor(this.inputTensor, this.inCanvas);
     let start = performance.now();
     let result = await this.model.compute([this.inputTensor], [this.outputTensor]);
     let elapsed = performance.now() - start;
@@ -76,26 +83,6 @@ class Utils {
     });
   }
 
-  loadImage(imageUrl, canvas) {
-    const ctx = canvas.getContext('2d');
-    const image = new Image();
-    const promise = new Promise((resolve, reject) => {
-      image.onload = () => {
-        ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
-        resolve(image);
-      };
-    });
-    image.src = imageUrl;
-    return promise;
-  }
-
-  drawVideo(video, canvas) {
-    const ctx = canvas.getContext('2d');
-    ctx.save();
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    ctx.restore();
-  }
-
   // uint8 [0, 255] => float [-1, 1]
   prepareInputTensor(tensor, canvas) {
     const height = this.inputSize[0];
@@ -118,15 +105,22 @@ class Utils {
     }
   }
 
+  drawInput(canvas, imageElement) {
+    if (imageElement.width) {
+      canvas.width = imageElement.width / imageElement.height * canvas.height;
+    } else {
+      canvas.width = imageElement.videoWidth / imageElement.videoHeight * canvas.height;
+    }
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(imageElement, 0, 0, canvas.width, canvas.height);
+  }
+
   // float [-1, 1] =>  uint8 [0, 255]
-  drawResult(canvas) {
+  drawOutput(canvas, imageElement) {
     const height = this.outputSize[0];
     const width = this.outputSize[1];
     const [mean, offset] = [127.5, 1];
     const bytes = new Uint8ClampedArray(width * height * 4);
-    if (canvas.width !== width || canvas.height !== height) {
-      throw new Error(`canvas.width(${canvas.width}) is not ${width} or canvas.height(${canvas.height}) is not ${height}`);
-    }
     for (let i = 0; i < height * width; ++i) {
       const j = i * 4;
       let r, g, b, a;
@@ -139,9 +133,16 @@ class Utils {
       bytes[j + 2] = Math.round(b);
       bytes[j + 3] = Math.round(a);
     }
-    const ctx = canvas.getContext('2d');
     const imageData = new ImageData(bytes, width, height);
-    ctx.putImageData(imageData, 0, 0);
+
+    if (imageElement.width) {
+      canvas.width = imageElement.width / imageElement.height * canvas.height;
+    } else {
+      canvas.width = imageElement.videoWidth / imageElement.videoHeight * canvas.height;
+    }
+    this.outCtx.putImageData(imageData, 0, 0);
+    const ctx = canvas.getContext('2d'); 
+    ctx.drawImage(this.outCanvas, 0, 0, canvas.width, canvas.height);
   }
 
   product(array) {
@@ -161,5 +162,9 @@ class Utils {
     this.inputTensor = new Float32Array(this.product(this.inputSize));
     this.outputTensor = new Float32Array(this.product(this.outputSize));
     this.rawModel = null;
+    this.inCanvas.width = this.inputSize[1];
+    this.inCanvas.height = this.inputSize[0];
+    this.outCanvas.width = this.outputSize[1];
+    this.outCanvas.height = this.outputSize[0];
   }
 }
