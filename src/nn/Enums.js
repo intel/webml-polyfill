@@ -960,18 +960,25 @@ export const OperationCode = {
 
   /** Resizes images to given size using the bilinear interpretation.
    *
-   * Resized images will be distorted if their output aspect ratio is not the same as
-   * input aspect ratio.
+   * Support align_corners parameter. Default value is FALSE (0).
    *
    * Supported tensor types:
    * * {@link TENSOR_FLOAT32}
    *
    * Supported tensor rank: 4, with "NHWC" data layout.
    *
-   * Inputs:
+   * Inputs (without align_corners):
    * * 0: A 4-D tensor, of shape [batches, height, width, depth], specifying the input.
    * * 1: An INT32 value, specifying the output height of the output tensor.
    * * 2: An INT32 value, specifying the output width of the output tensor.
+   *
+   * Inputs (with align_corners):
+   * * 0: A 4-D tensor, of shape [batches, height, width, depth], specifying the input.
+   * * 1: An INT32 value, specifying the output height of the output tensor.
+   * * 2: An INT32 value, specifying the output width of the output tensor.
+   * * 3: An INT32 value, specifying align_corners parameter. If TRUE (1), the centers of
+   *      the 4 corner pixels of the input and output tensors are aligned, preserving
+   *      the values at the corner pixels.
    *
    * Outputs:
    * * 0: The output 4-D tensor, of shape [batches, new_height, new_width, depth].
