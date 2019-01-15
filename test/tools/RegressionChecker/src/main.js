@@ -13,6 +13,11 @@ if (!fs.existsSync(outputPath)) {
     fs.mkdirSync(outputPath);
 }
 
+var debugPath = "./output/debug";
+if (!fs.existsSync(debugPath)) {
+    fs.mkdirSync(debugPath);
+}
+
 var htmlPath = outputPath + "/report-check-result.html";
 
 var htmlStream = fs.createWriteStream(htmlPath, {flags: "a"});
@@ -600,41 +605,65 @@ var matchFlag = null;
     .container {margin: 20px 20px}\n\
     .suggest {color:green}\n\
     .notsuggest {color:red}\n\
-    .tab-menu {margin: 10px 0px -10px 0px;}\n\
-    .tab-menu ul {height:30px;border-bottom:1px solid gray;list-style:none;padding-left:0;}\n\
-    .tab-menu ul li {float:left;width:150px;margin-right:3px;color:#000;border:solid 1px gray;border-bottom:none; text-align:center;line-height:30px;}\n\
-    .tab-menu ul li.active {background-color: #007bc7;color: #fff;}\n\
-    .tab-menu ul li:hover {cursor: pointer;}\n\
-    .tab-box div {display:none;}\n\
-    .tab-box div.active {display:block;}\n\
-    .tab-box div div.NewTestCase {display:block;}\n\
+    .box-menu {margin: 10px 0px -10px 0px;}\n\
+    .box-menu ul {height:30px;border-bottom:1px solid gray;list-style:none;padding-left:0;}\n\
+    .box-menu ul li {float:left;width:150px;margin-right:3px;color:#000;border:solid 1px gray;border-bottom:none; text-align:center;line-height:30px;}\n\
+    .box-menu ul li.active {background-color: #007bc7;color: #fff;}\n\
+    .box-menu ul li:hover {cursor: pointer;}\n\
+    .box-menu ul ul {height:30px;border-bottom:1px solid gray;list-style:none;padding-left:0;}\n\
+    .box-menu ul ul li {float:right;width:150px;margin-right:3px;color:#000;border:solid 1px gray;border-bottom:none; text-align:center;line-height:30px;}\n\
+    .box-menu ul ul li.active {background-color: #007bc7;color: #fff;}\n\
+    .box-menu ul ul li:hover {cursor: pointer;}\n\
+    .box-table div {display:none;}\n\
+    .box-table div.active {display:block;}\n\
+    .box-table div.box-table-all {display:block;}\n\
+    .box-table div.box-table-new {display:block;}\n\
     table {border: 1px solid #ddd; border-spacing:0;}\n\
     table tr th {border: 1px solid #000;background-color: #B0C4DE;}\n\
     table tr td {border: 1px solid #ddd}\n\
-    table tr.fail2pass {display:none;}\n\
+    table tr:nth-child(even){background: #F0F0F0;}\n\
+    table tr td.box-table-log-number {width:20px;overflow:hidden;text-align: center;text-overflow: ellipsis;border: 2px solid #FFFFFF;\
+        border-top: none;border-bottom: none;border-left: none;}\n\
+    table tr td.box-table-log-text {overflow:hidden;border:none;}\n\
+    table.box-table-log {border:1px solid #ddd;}\n\
     .warnning {color:red}\n\
     .pass {color:green}\n\
     .fail {color:red}\n\
     </style>\n\
     <script>\n\
-      function tab1_click() {\n\
-        document.getElementById('tab_menu2').classList.remove('active');\n\
-        document.getElementById('tab_menu1').classList.add('active');\n\
-        for ( let node of document.getElementsByClassName('pass2fail') ) {\n\
-          node.style.display = 'table-row';\n\
+      function click_box_menu(data) {\n\
+        var keyWord = data.getAttribute('data-info');\n\
+        var keyWordsAll = new Array();\n\
+        keyWordsAll.push('pass2fail');\n\
+        keyWordsAll.push('fail2pass');\n";
+
+        htmlStream.write(htmlDataHead);
+
+        let Backends;
+        for (let i = 0; i < testBackends.length; i++) {
+            if (i == 0) {
+                Backends = "'" + testBackends[i] + "'";
+            } else {
+                Backends = Backends + ",'" + testBackends[i] + "'";
+            }
+        }
+
+        htmlStream.write("        let Backends = [" + Backends + "];\n");
+
+        htmlDataHead = "\
+        for (let backend of Backends) {\n\
+            keyWordsAll.push(backend);\n\
         }\n\
-        for ( let node of document.getElementsByClassName('fail2pass') ) {\n\
-          node.style.display = 'none';\n\
-        }\n\
-      }\n\
-      function tab2_click() {\n\
-        document.getElementById('tab_menu1').classList.remove('active');\n\
-        document.getElementById('tab_menu2').classList.add('active');\n\
-        for ( let node of document.getElementsByClassName('pass2fail') ) {\n\
-          node.style.display = 'none';\n\
-        }\n\
-        for ( let node of document.getElementsByClassName('fail2pass') ) {\n\
-          node.style.display = 'table-row';\n\
+        for (let key of keyWordsAll) {\n\
+            let boxMenuKey = 'box-menu-' + key;\n\
+            let boxTableKey = 'box-table-' + key;\n\
+            if (key == keyWord) {\n\
+                document.getElementById(boxMenuKey).classList.add('active');\n\
+                document.getElementById(boxTableKey).classList.add('active');\n\
+            } else {\n\
+                document.getElementById(boxMenuKey).classList.remove('active');\n\
+                document.getElementById(boxTableKey).classList.remove('active');\n\
+            }\n\
         }\n\
       }\n\
     </script>\n\
@@ -643,7 +672,7 @@ var matchFlag = null;
         htmlStream.write(htmlDataHead);
     }
 
-    var createHtmlBodyContainerVersion = function(space) {
+    var bodyContainerVersion = function(space) {
         htmlStream.write(space + "<div>\n");
         htmlStream.write(space + "  <h2>PR Submission Checking Summary</h2>\n");
         htmlStream.write(space + "  <hr />\n");
@@ -655,7 +684,7 @@ var matchFlag = null;
         htmlStream.write(space + "<hr />\n");
     }
 
-    var createHtmlBodyContainerCrash = function(space) {
+    var bodyContainerCrash = function(space) {
         if (crashData.length !== 0) {
             htmlStream.write(space + "<div class='warnning' id='option_Crash'>\n");
             htmlStream.write(space + "  <h3>Warnning:</h3>\n");
@@ -670,66 +699,66 @@ var matchFlag = null;
         }
     }
 
-    var createHtmlBodyContainerNewTestCase = function(space) {
+    var bodyContainerNewTest = function(space) {
         if (newTestCaseData.get("caseCount") !== 0) {
             htmlStream.write(space + "<hr />\n");
 
-            htmlStream.write(space + "<div class='NewTestCase'>\n");
+            htmlStream.write(space + "<div class='box-table-new'>\n");
             htmlStream.write(space + "  <h3>NOTE: There are " + newTestCaseData.get("caseCount") +
                              " new test cases compared with the baseline, please double check.</h3>\n");
-            htmlStream.write(space + "</div>\n");
 
-            htmlStream.write(space + "<table>\n");
-            htmlStream.write(space + "  <thead>\n");
-            htmlStream.write(space + "    <tr>\n");
-            htmlStream.write(space + "      <th>Feature\n");
-            htmlStream.write(space + "      </th>\n");
-            htmlStream.write(space + "      <th>TestCase\n");
-            htmlStream.write(space + "      </th>\n");
+            htmlStream.write(space + "  <table>\n");
+            htmlStream.write(space + "    <thead>\n");
+            htmlStream.write(space + "      <tr>\n");
+            htmlStream.write(space + "        <th>Feature\n");
+            htmlStream.write(space + "        </th>\n");
+            htmlStream.write(space + "        <th>TestCase\n");
+            htmlStream.write(space + "        </th>\n");
 
             for (let backend of newTestCaseData.get("backends").keys()) {
-                htmlStream.write(space + "      <th>" + backend + "\n");
-                htmlStream.write(space + "      </th>\n");
+                htmlStream.write(space + "        <th>" + backend + "\n");
+                htmlStream.write(space + "        </th>\n");
             }
 
-            htmlStream.write(space + "    </tr>\n");
-            htmlStream.write(space + "  </thead>\n");
-            htmlStream.write(space + "  <tbody>\n");
+            htmlStream.write(space + "      </tr>\n");
+            htmlStream.write(space + "    </thead>\n");
+            htmlStream.write(space + "    <tbody>\n");
 
             for (let caseName of newTestCaseData.keys()) {
                 if (caseName !== "caseCount" && caseName !== "backends") {
-                    htmlStream.write(space + "    <tr >\n");
-                    htmlStream.write(space + "      <td >" + newTestCaseData.get(caseName).get("title") + "\n");
-                    htmlStream.write(space + "      </td>\n");
-                    htmlStream.write(space + "      <td >" + newTestCaseData.get(caseName).get("caseID") + "\n");
-                    htmlStream.write(space + "      </td>\n");
+                    htmlStream.write(space + "      <tr >\n");
+                    htmlStream.write(space + "        <td >" + newTestCaseData.get(caseName).get("title") + "\n");
+                    htmlStream.write(space + "        </td>\n");
+                    htmlStream.write(space + "        <td >" + newTestCaseData.get(caseName).get("caseID") + "\n");
+                    htmlStream.write(space + "        </td>\n");
 
                     for (let backend of newTestCaseData.get("backends").keys()) {
                         if (newTestCaseData.get(caseName).get("backend").has(backend)) {
                             if (newTestCaseData.get(caseName).get("backend").get(backend) == "Pass") {
-                                htmlStream.write(space + "      <td class='pass'>" +
+                                htmlStream.write(space + "        <td class='pass'>" +
                                                  newTestCaseData.get(caseName).get("backend").get(backend) + "\n");
-                                htmlStream.write(space + "      </td>\n");
+                                htmlStream.write(space + "        </td>\n");
                             } else {
-                                htmlStream.write(space + "      <td class='fail'>" +
+                                htmlStream.write(space + "        <td class='fail'>" +
                                                  newTestCaseData.get(caseName).get("backend").get(backend) + "\n");
-                                htmlStream.write(space + "          </td>\n");
+                                htmlStream.write(space + "            </td>\n");
                             }
                         }
                     }
 
-                    htmlStream.write(space + "    </tr>\n");
+                    htmlStream.write(space + "      </tr>\n");
                 }
             }
 
-            htmlStream.write(space + "  </tbody>\n");
-            htmlStream.write(space + "</table>\n");
+            htmlStream.write(space + "    </tbody>\n");
+            htmlStream.write(space + "  </table>\n");
+            htmlStream.write(space + "</div>\n");
 
             htmlStream.write(space + "<hr />\n");
         }
     }
 
-    var createHtmlBodyContainerSuggest = function(space) {
+    var bodyContainerSuggest = function(space) {
         htmlStream.write(space + "<div>\n");
         htmlStream.write(space + "  <h3>PR Submission Proposal:</h3>\n");
 
@@ -758,16 +787,24 @@ var matchFlag = null;
         htmlStream.write(space + "</div>\n");
     }
 
-    var createHtmlBodyContainerResultMenu =  function(space) {
-        htmlStream.write(space + "<div class='tab-menu'>\n");
+    var bodyContainerBoxMenu =  function(space) {
+        htmlStream.write(space + "<div class='box-menu'>\n");
         htmlStream.write(space + "  <ul>\n");
-        htmlStream.write(space + "    <li class='active' id='tab_menu1' onclick='javascript:tab1_click()'>Pass2Fail</li>\n");
-        htmlStream.write(space + "    <li id='tab_menu2' onclick='javascript:tab2_click()'>Fail2Pass</li>\n");
+        htmlStream.write(space + "    <li class='active' id='box-menu-pass2fail' data-info='pass2fail' onclick='javascript:click_box_menu(this)'>Pass2Fail</li>\n");
+        htmlStream.write(space + "    <li id='box-menu-fail2pass' data-info='fail2pass' onclick='javascript:click_box_menu(this)'>Fail2Pass</li>\n");
+        htmlStream.write(space + "    <ul>\n");
+
+        for (let backend of testBackends) {
+            htmlStream.write(space + "      <li id='box-menu-" + backend + "' data-info='" + backend +
+                             "' onclick='javascript:click_box_menu(this)'>log-" + backend + "</li>\n");
+        }
+
+        htmlStream.write(space + "    </ul>\n");
         htmlStream.write(space + "  </ul>\n");
         htmlStream.write(space + "</div>\n");
     }
 
-    var createHtmlBodyContainerResultBoxTable =  function(space, backend) {
+    var bodyContainerBoxTableBackend =  function(space, backend, key) {
         htmlStream.write(space + "<table>\n");
         htmlStream.write(space + "  <thead>\n");
         htmlStream.write(space + "    <tr>\n");
@@ -783,41 +820,30 @@ var matchFlag = null;
         htmlStream.write(space + "  </thead>\n");
         htmlStream.write(space + "  <tbody>\n");
 
-        if (pageData.get(backend).get("pass2fail").length == 0) {
-            htmlStream.write(space + "    <tr class='pass2fail'>\n");
-            htmlStream.write(space + "      <td colspan='4'>None changed\n");
-            htmlStream.write(space + "      </td>\n");
-            htmlStream.write(space + "    </tr>\n");
-        } else {
-            for (let i = 0; i < pageData.get(backend).get("pass2fail").length; i++) {
-                htmlStream.write(space + "      <tr class='pass2fail'>\n");
-                htmlStream.write(space + "        <td >" + pageData.get(backend).get("pass2fail")[i][0] + "\n");
-                htmlStream.write(space + "        </td>\n");
-                htmlStream.write(space + "        <td >" + pageData.get(backend).get("pass2fail")[i][1] + "\n");
-                htmlStream.write(space + "        </td>\n");
-                htmlStream.write(space + "        <td class='pass'>Pass\n");
-                htmlStream.write(space + "        </td>\n");
-                htmlStream.write(space + "        <td class='fail'>Fail\n");
-                htmlStream.write(space + "        </td>\n");
-                htmlStream.write(space + "      </tr>\n");
+        let keyArray = new Array();
+        for (let baseLinekey of baseLineData.keys()) {
+            for (let i = 0; i < pageData.get(backend).get(key).length; i++) {
+                if (baseLinekey == (pageData.get(backend).get(key)[i][0] + "-" + pageData.get(backend).get(key)[i][1])) {
+                    keyArray.push([pageData.get(backend).get(key)[i][0], pageData.get(backend).get(key)[i][1]]);
+                }
             }
         }
 
-        if (pageData.get(backend).get("fail2pass").length == 0) {
-            htmlStream.write(space + "    <tr class='fail2pass'>\n");
+        if (pageData.get(backend).get(key).length == 0) {
+            htmlStream.write(space + "    <tr>\n");
             htmlStream.write(space + "      <td colspan='4'>None changed\n");
             htmlStream.write(space + "      </td>\n");
             htmlStream.write(space + "    </tr>\n");
         } else {
-            for (let i = 0; i < pageData.get(backend).get("fail2pass").length; i++) {
-                htmlStream.write(space + "      <tr class='fail2pass'>\n");
-                htmlStream.write(space + "        <td >" + pageData.get(backend).get("fail2pass")[i][0] + "\n");
+            for (let i = 0; i < keyArray.length; i++) {
+                htmlStream.write(space + "      <tr>\n");
+                htmlStream.write(space + "        <td >" + keyArray[i][0] + "\n");
                 htmlStream.write(space + "        </td>\n");
-                htmlStream.write(space + "        <td >" + pageData.get(backend).get("fail2pass")[i][1] + "\n");
-                htmlStream.write(space + "        </td>\n");
-                htmlStream.write(space + "        <td class='fail'>Fail\n");
+                htmlStream.write(space + "        <td >" + keyArray[i][1] + "\n");
                 htmlStream.write(space + "        </td>\n");
                 htmlStream.write(space + "        <td class='pass'>Pass\n");
+                htmlStream.write(space + "        </td>\n");
+                htmlStream.write(space + "        <td class='fail'>Fail\n");
                 htmlStream.write(space + "        </td>\n");
                 htmlStream.write(space + "      </tr>\n");
             }
@@ -827,59 +853,80 @@ var matchFlag = null;
         htmlStream.write(space + "</table><br /><br />\n");
     }
 
-    var createHtmlBodyContainerResultBoxTableTotal =  function(space) {
-        htmlStream.write(space + "<table>\n");
-        htmlStream.write(space + "  <thead>\n");
-        htmlStream.write(space + "    <tr>\n");
-        htmlStream.write(space + "      <th rowspan='2'>Summary\n");
-        htmlStream.write(space + "      </th>\n");
+    var bodyContainerBoxTableTotal =  function(space) {
+        htmlStream.write(space + "<div class='box-table-all'>\n");
+        htmlStream.write(space + "  <table>\n");
+        htmlStream.write(space + "    <thead>\n");
+        htmlStream.write(space + "      <tr>\n");
+        htmlStream.write(space + "        <th rowspan='2'>Summary\n");
+        htmlStream.write(space + "        </th>\n");
         for (let i = 0; i < testBackends.length; i++) {
-            htmlStream.write(space + "      <th colspan='2'>" + testBackends[i] + "\n");
-            htmlStream.write(space + "      </th>\n");
+            htmlStream.write(space + "        <th colspan='2'>" + testBackends[i] + "\n");
+            htmlStream.write(space + "        </th>\n");
         }
 
-        htmlStream.write(space + "    </tr>\n");
-        htmlStream.write(space + "    <tr>\n");
+        htmlStream.write(space + "      </tr>\n");
+        htmlStream.write(space + "      <tr>\n");
         for (let i = 0; i < testBackends.length; i++) {
-            htmlStream.write(space + "      <th>Baseline\n");
-            htmlStream.write(space + "      </th>\n");
-            htmlStream.write(space + "      <th>Test Build\n");
-            htmlStream.write(space + "      </th>\n");
+            htmlStream.write(space + "        <th>Baseline\n");
+            htmlStream.write(space + "        </th>\n");
+            htmlStream.write(space + "        <th>Test Build\n");
+            htmlStream.write(space + "        </th>\n");
         }
 
-        htmlStream.write(space + "    </tr>\n");
-        htmlStream.write(space + "  </thead>\n");
-        htmlStream.write(space + "  <tbody>\n");
+        htmlStream.write(space + "      </tr>\n");
+        htmlStream.write(space + "    </thead>\n");
+        htmlStream.write(space + "    <tbody>\n");
 
         let TableTotalDataArray = ["Total", "Pass", "Fail", "Block", "PassRate%"];
         for (let i = 0; i < TableTotalDataArray.length; i++) {
-            htmlStream.write(space + "    <tr>\n");
-            htmlStream.write(space + "      <th>" + TableTotalDataArray[i] + "\n");
-            htmlStream.write(space + "      </th>\n");
+            htmlStream.write(space + "      <tr>\n");
+            htmlStream.write(space + "        <th>" + TableTotalDataArray[i] + "\n");
+            htmlStream.write(space + "        </th>\n");
 
             for (let j = 0; j < testBackends.length; j++) {
-                htmlStream.write(space + "      <td>" + pageDataTotal.get(testBackends[j]).get("Baseline")[i] + "\n");
-                htmlStream.write(space + "      </td>\n");
+                htmlStream.write(space + "        <td>" + pageDataTotal.get(testBackends[j]).get("Baseline")[i] + "\n");
+                htmlStream.write(space + "        </td>\n");
 
                 if (typeof pageDataTotal.get(testBackends[j]).get("grasp")[i] == "undefined") {
-                    htmlStream.write(space + "      <td>N/A\n");
+                    htmlStream.write(space + "        <td>N/A\n");
                 } else {
-                    htmlStream.write(space + "      <td>" + pageDataTotal.get(testBackends[j]).get("grasp")[i] + "\n");
+                    htmlStream.write(space + "        <td>" + pageDataTotal.get(testBackends[j]).get("grasp")[i] + "\n");
                 }
 
-                htmlStream.write(space + "      </td>\n");
+                htmlStream.write(space + "        </td>\n");
             }
 
+            htmlStream.write(space + "      </tr>\n");
+        }
+
+        htmlStream.write(space + "    </tbody>\n");
+        htmlStream.write(space + "  </table>\n");
+        htmlStream.write(space + "</div>\n");
+    }
+
+    var bodyContainerBoxTableLogBackend = function(space, backend) {
+        htmlStream.write(space + "<h3>Chromium log message for " + backend + " backend:</h3>\n");
+        htmlStream.write(space + "<table class='box-table-log'><br />\n");
+        htmlStream.write(space + "  <tbody>\n");
+
+        let fRead = fs.readFileSync(debugPath + "/debug-" + backend + ".log");
+        let fReadArray = fRead.toString().split("\n");
+
+        for (let i = 1; i < fReadArray.length; i++) {
+            htmlStream.write(space + "    <tr>\n");
+            htmlStream.write(space + "      <td class='box-table-log-number'>" + i + "</td>\n");
+            htmlStream.write(space + "      <td class='box-table-log-text'>" + fReadArray[i] + "</td>\n");
             htmlStream.write(space + "    </tr>\n");
         }
 
         htmlStream.write(space + "  </tbody>\n");
-        htmlStream.write(space + "</table>\n");
+        htmlStream.write(space + "</table><br /><br />\n");
     }
 
-    var createHtmlBodyContainerResultBox =  function(space) {
-        htmlStream.write(space + "<div class='tab-box'>\n");
-        htmlStream.write(space + "  <div class='active' id='tab_box'>\n");
+    var bodyContainerBoxTable =  function(space) {
+        htmlStream.write(space + "<div class='box-table'>\n");
+        htmlStream.write(space + "  <div class='active' id='box-table-pass2fail'>\n");
 
         for (let i = 0; i < testBackends.length; i++) {
             let flag = false;
@@ -891,31 +938,55 @@ var matchFlag = null;
             if (crashData.length !== 0 && flag) {
                 continue;
             } else {
-                createHtmlBodyContainerResultBoxTable(space + "    ", testBackends[i]);
+                bodyContainerBoxTableBackend(space + "    ", testBackends[i], "pass2fail");
             }
         }
 
-        createHtmlBodyContainerResultBoxTableTotal(space + "    ");
-        createHtmlBodyContainerNewTestCase(space + "    ");
+        htmlStream.write(space + "  </div>\n");
+        htmlStream.write(space + "  <div id='box-table-fail2pass'>\n");
+
+        for (let i = 0; i < testBackends.length; i++) {
+            let flag = false;
+
+            for (let j = 0; j < crashData.length; j++) {
+                if (testBackends[i] == crashData[j]) flag = true;
+            }
+
+            if (crashData.length !== 0 && flag) {
+                continue;
+            } else {
+                bodyContainerBoxTableBackend(space + "    ", testBackends[i], "fail2pass");
+            }
+        }
 
         htmlStream.write(space + "  </div>\n");
+
+        for (let testBackend of testBackends) {
+            htmlStream.write(space + "  <div id='box-table-" + testBackend + "'>\n");
+            bodyContainerBoxTableLogBackend(space + "    ", testBackend);
+            htmlStream.write(space + "  </div>\n");
+        }
+
+        bodyContainerBoxTableTotal(space + "  ");
+        bodyContainerNewTest(space + "  ");
+
         htmlStream.write(space + "</div>\n");
     }
 
-    var createHtmlBodyContainerResult = function(space) {
+    var bodyContainerBox = function(space) {
         htmlStream.write(space + "<h3>Result:</h3>\n");
 
-        createHtmlBodyContainerResultMenu(space);
-        createHtmlBodyContainerResultBox(space);
+        bodyContainerBoxMenu(space);
+        bodyContainerBoxTable(space);
     }
 
-    var createHtmlBodyContainer = function(space) {
+    var bodyContainer = function(space) {
         htmlStream.write(space + "<div class='container'>\n");
 
-        createHtmlBodyContainerVersion(space + "  ");
-        createHtmlBodyContainerCrash(space + "  ");
-        createHtmlBodyContainerSuggest(space + "  ");
-        createHtmlBodyContainerResult(space + "  ");
+        bodyContainerVersion(space + "  ");
+        bodyContainerCrash(space + "  ");
+        bodyContainerSuggest(space + "  ");
+        bodyContainerBox(space + "  ");
 
         htmlStream.write(space + "</div>\n");
     }
@@ -923,7 +994,7 @@ var matchFlag = null;
     var createHtmlBody = function(space) {
         htmlStream.write(space + "<body>\n");
 
-        createHtmlBodyContainer(space + "  ");
+        bodyContainer(space + "  ");
 
         htmlStream.write(space + "</body>\n");
     }
@@ -1108,6 +1179,7 @@ var matchFlag = null;
             }
         }
 
+        chromeOption = chromeOption.setChromeLogFile(debugPath + "/debug-" + backendModel + ".log");
         driver = new Builder()
             .forBrowser("chrome")
             .setChromeOptions(chromeOption)
