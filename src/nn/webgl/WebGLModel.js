@@ -365,7 +365,10 @@ export default class WebGLModel {
         const newHeight = operands[inputs[1]].value[0];
         const newWidth = operands[inputs[2]].value[0];
         const output = operands[outputs[0]];
-        const alignCorner = true;
+        let alignCorner = false;
+        if (inputs.length === 4) {
+          alignCorner = operands[inputs[3]].value[0] !== 0;
+        }
         output.assign(
             input.resizeBilinear([newHeight, newWidth], alignCorner));
       } break;
