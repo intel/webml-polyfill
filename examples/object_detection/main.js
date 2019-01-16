@@ -357,6 +357,8 @@ function main(camera) {
 
     function startPredict() {
       if (streaming) {
+        videoElement.width = videoElement.videoWidth;
+        videoElement.height = videoElement.videoHeight;
         stats.begin();
         utils.predict(videoElement).then(() => {
           stats.end();

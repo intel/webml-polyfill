@@ -2,7 +2,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>WebML SSD MobileNet Camera Demo</title>
+    <title>WebML Object Detection Camera Demo</title>
     <link rel="stylesheet" href="../third_party/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
     <style>
       video {
@@ -27,7 +27,7 @@
   </head>
   <body>
     <nav class="navbar navbar-expand-md navbar-dark bg-dark" style="width:100%">
-      <span class="navbar-brand mb-0 h1">WebML SSD MobileNet Demo</span>
+      <span class="navbar-brand mb-0 h1">WebML Object Detection Demo</span>
       <div class="btn-group mr-1">
           <button id="backend" type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             Setting...
@@ -91,6 +91,7 @@
     <script src="../util/tflite/TfLiteModelUtils.js"></script>
     <script src="../util/tflite/TFliteModelImporter.js"></script>
     <script src="../util/decoders/SsdDecoder.js"></script>
+    <script src="../util/decoders/Yolo2Decoder.js"></script>
     <script src="utils.js"></script>
     <script src="main.js"></script>
     <script>

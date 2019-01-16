@@ -279,11 +279,7 @@ function NMS(options, outputBoxTensor, outputClassScoresTensor) {
 */
 function visualize(canvasShowElement, totalDetections, imageSource, boxesList, scoresList, classesList, labels) {
   let ctx = canvasShowElement.getContext('2d');
-  if (imageSource.width) {
-    canvasShowElement.width = imageSource.width / imageSource.height * canvasShowElement.height;
-  } else {
-    canvasShowElement.width = imageSource.videoWidth / imageSource.videoHeight * canvasShowElement.height;
-  }
+  canvasShowElement.width = imageSource.width / imageSource.height * canvasShowElement.height;
 
   let colors = ['red', 'blue', 'green', 'yellowgreen', 'purple', 'orange'];
   ctx.drawImage(imageSource, 0, 0,

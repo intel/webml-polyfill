@@ -166,6 +166,15 @@ class TFliteModelImporter {
           inputs.push(this._addScalarInt32(fuseCode));
           opType = this._nn.ADD;
         } break;
+        case tflite.BuiltinOperator.MUL: {
+          let options = operator.builtinOptions(new tflite.MulOptions());
+          let fuseCode = FuseCodeMap.get(options.fusedActivationFunction());
+          if (typeof fuseCode === 'undefined') {
+            throw new Error(`Fuse code ${options.fusedActivationFunction()} is not supported.`);
+          }
+          inputs.push(this._addScalarInt32(fuseCode));
+          opType = this._nn.MUL;
+        } break;
         case tflite.BuiltinOperator.CONV_2D: {
           let options = operator.builtinOptions(new tflite.Conv2DOptions());
           let paddingCode = PaddingCodeMap.get(options.padding());
@@ -296,6 +305,9 @@ class TFliteModelImporter {
           inputs.push(this._addScalarInt32(newSize[1]));
 
           opType = this._nn.RESIZE_BILINEAR;
+        } break;
+        case tflite.BuiltinOperator.MAXIMUM: {
+          opType = this._nn.MAXIMUM;
         } break;
         default: {
           throw new Error(`operator type ${opCode} is not supported.`);

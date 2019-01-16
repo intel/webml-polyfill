@@ -190,6 +190,7 @@ const ssd_mobilenetv1_tflite = {
   modelName: 'SSD MobileNetV1(TFlite)',
   modelFile: '../object_detection/model/ssd_mobilenet_v1.tflite',
   labelsFile: '../object_detection/model/coco_labels_list.txt',
+  type: 'SSD',
   box_size: 4,
   num_classes: 91,
   num_boxes: 1083 + 600 + 150 + 54 + 24 + 6,
@@ -204,6 +205,7 @@ const ssd_mobilenetv2_tflite = {
   modelName: 'SSD MobileNetV2(TFlite)',
   modelFile: '../object_detection/model/ssd_mobilenet_v2.tflite',
   labelsFile: '../object_detection/model/coco_labels_list.txt',
+  type: 'SSD',
   box_size: 4,
   num_classes: 91,
   num_boxes: 1083 + 600 + 150 + 54 + 24 + 6,
@@ -218,6 +220,7 @@ const ssdlite_mobilenetv2_tflite = {
   modelName: 'SSDLite MobileNetV2(TFlite)',
   modelFile: '../object_detection/model/ssdlite_mobilenet_v2.tflite',
   labelsFile: '../object_detection/model/coco_labels_list.txt',
+  type: 'SSD',
   box_size: 4,
   num_classes: 91,
   num_boxes: 1083 + 600 + 150 + 54 + 24 + 6,
@@ -226,6 +229,19 @@ const ssdlite_mobilenetv2_tflite = {
     mean: [127.5, 127.5, 127.5],
     std: [127.5, 127.5, 127.5],
   }
+};
+
+const tiny_yolov2_tflite = {
+  modelName: 'Tiny YoloV2(TFlite)',
+  modelFile: '../object_detection/model/tiny_yolov2.tflite',
+  labelsFile: '../object_detection/model/coco_labels_list_part.txt',
+  type: 'YOLO',
+  inputSize: [416, 416, 3],
+  outputSize: 1 * 13 * 13 * 425,
+  anchors: [0.57273, 0.677385, 1.87446, 2.06253, 3.33843, 5.47434, 7.88282, 3.52778, 9.77052, 9.16828],
+  preOptions: {
+    norm: true,
+  },
 };
 
 const posenet = {
@@ -256,6 +272,7 @@ const objectDetectionModels = [
   ssd_mobilenetv1_tflite,
   ssd_mobilenetv2_tflite,
   ssdlite_mobilenetv2_tflite,
+  tiny_yolov2_tflite,
 ];
 
 function getOS() {
