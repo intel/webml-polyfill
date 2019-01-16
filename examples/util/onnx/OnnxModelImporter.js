@@ -5,6 +5,8 @@ class OnnxModelImporter {
     this._compilation;
     this._execution;
     this._tensorIds = [];
+    this._tensorTypes = [];
+    this._operations = [];
     this._operands = [];
     this._options = {
       softmax: kwargs.softmax, 
@@ -80,15 +82,8 @@ class OnnxModelImporter {
   _addTensorOperands() {
     const graph = this._rawModel.graph;
 
-    // key: input name of unsqueeze node, val: unsqueeze axes array
-    const unsqueezeAxes = {}; 
-    graph.node.filter(n => n.opType === 'Unsqueeze').forEach(n => 
-      unsqueezeAxes[n.input[0]] = getAttributeValue(n, 'axes')
-    );
-
     for (let i = 0; i < graph.input.length; ++i) {
-      const input = graph.input[i];
-      this._addTensorByValueInfo(input, unsqueezeAxes[input.name]);
+      this._addTensorByValueInfo(graph.input[i]);
     }
     for (let i = 0; i < graph.output.length; ++i) {
       this._addTensorByValueInfo(graph.output[i]);
@@ -105,12 +100,11 @@ class OnnxModelImporter {
     this._model.identifyInputsAndOutputs(inputs, outputs);
   }
 
-  _addTensorByValueInfo(valueInfo, unsqueezeAxes) {
+  _addTensorByValueInfo(valueInfo) {
     const name = valueInfo.name;
     if (this._tensorIds[name])
       throw new Error(`Tensor ${name} is already added`);
 
-    const initializer = getObjectByName(this._rawModel.graph.initializer, name);
     const tensorType = valueInfo.type.tensorType;
     let dims = tensorType.shape.dim.map(dim => dim.dimValue);
     if (dims.length == 4) {
@@ -120,19 +114,6 @@ class OnnxModelImporter {
       dims[1] = nchw[2];
       dims[2] = nchw[3];
       dims[3] = nchw[1];
-    }
-
-    if (typeof unsqueezeAxes !== 'undefined') {
-      if (!initializer)
-        throw new Error(`Unsqueezing an non-initializer is not supported.`);
-
-      for (let i of unsqueezeAxes)
-        // insert dim 1 to position i
-        dims.splice(i, 0, 1);
-
-      // (N)CHW -> (N)HWC
-      const C = dims.splice(dims.length-3, 1)[0];
-      dims.push(C);
     }
 
     let type;
@@ -153,6 +134,7 @@ class OnnxModelImporter {
     const tensorId = this._addNewTensorOperand(name, operandType);
 
     // set operand value
+    const initializer = getObjectByName(this._rawModel.graph.initializer, name);
     if (initializer) {
       let data = getTensorData(initializer);
       this._setOperandValue(tensorId, data);
@@ -162,19 +144,32 @@ class OnnxModelImporter {
   }
 
   _setOperandValue(index, value) {
-    this._model.setOperandValue(index, value);
+    // Cache operand value. It could be modified later: BN fusion/Unsqueeze
     this._operands[index] = value;
   }
 
   _addOperand(type, value) {
     let index = this._operandIndex++;
-    this._model.addOperand(type);
+    // Cache operand type. It could be modified later: Depthwise Conv
+    this._tensorTypes.push(type);
     if (typeof value !== 'undefined')
       this._setOperandValue(index, value); 
     return index;
   }
 
+  _addOperation(opCode, inputs, outputs) {
+    // Cache operaion. It depends on operands that have not yet been added
+    this._operations.push([opCode, inputs, outputs]);
+  }
+
   _addNewTensorOperand(name, type, value) {
+    if (this._tensorIds.hasOwnProperty(name)) {
+      let index = this._tensorIds[name];
+      if (typeof value !== 'undefined') {
+        this._setOperandValue(index, value); 
+      }
+      return index;
+    }
     let index = this._addOperand(type, value);
     this._tensorIds[name] = {id: index, type: type};
     return index;
@@ -716,8 +711,18 @@ class OnnxModelImporter {
           opCode = this._nn.RESHAPE;
         } break;
         case 'Unsqueeze': {
-          this._tensorIds[node.output[0]] = this._tensorIds[node.input[0]];
-          console.log(`Skip Unsqueeze: ${node.input[0]} -> ${node.output[0]}`);
+          const input = node.input[0];
+          const inputDims = this._getTensorTypeByName(input).dimensions;
+          const axes = getAttributeValue(node, 'axes');
+          for (let i of axes) {
+            inputDims.splice(i, 0, 1);
+          }
+          // (N)CHW -> (N)HWC
+          const C = inputDims.splice(inputDims.length-3, 1)[0];
+          inputDims.push(C);
+          const output = node.output[0];
+          this._tensorIds[output] = this._tensorIds[input];
+          console.log(`Skip Unsqueeze: ${input} -> ${output}`);
         } break;
         case 'Softmax': {
           console.log(`  inputs: [${node.input}]`);
@@ -751,7 +756,7 @@ class OnnxModelImporter {
         outputs = [this._getTensorIdByName(graph.output[0].name)];
 
         if (this._options.softmax && node.opType !== 'Softmax') {
-          this._model.addOperation(opCode, inputs, outputs);
+          this._addOperation(opCode, inputs, outputs);
 
           console.log(`opType: Softmax (appended automatically)`);
           console.log(`  inputs: [${node.output[0]}]`);
@@ -772,7 +777,18 @@ class OnnxModelImporter {
         }
       }
 
-      this._model.addOperation(opCode, inputs, outputs);      
+      this._addOperation(opCode, inputs, outputs);   
+    }
+
+    // Write back all cached operands and operations
+    for (const type of this._tensorTypes) {
+      this._model.addOperand(type);
+    }
+    for (const [index, value] of Object.entries(this._operands)) {
+      this._model.setOperandValue(index, value);
+    }
+    for (const [opCode, inputs, outputs] of this._operations) {
+      this._model.addOperation(opCode, inputs, outputs);
     }
   }
 }
