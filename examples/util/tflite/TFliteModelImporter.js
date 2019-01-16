@@ -291,16 +291,12 @@ class TFliteModelImporter {
           opType = this._nn.FULLY_CONNECTED;
         } break;
         case tflite.BuiltinOperator.RESIZE_BILINEAR: {
+          let options = operator.builtinOptions(new tflite.ResizeBilinearOptions());
           let newSize = this._operands[inputs[1]];
-          let oldSize = graph.tensors(inputs[0]).shapeArray().slice(1, 3);
-          if (newSize[0] === oldSize[0] && newSize[1] === oldSize[1]) {
-            // skip RESIZE_BILINEAR with the same input and output shape
-            this._tensorIds[outputs[0]] = this._tensorIds[inputs[0]];
-            continue;
-          }
           inputs = [inputs[0]];
           inputs.push(this._addScalarInt32(newSize[0]));
           inputs.push(this._addScalarInt32(newSize[1]));
+          inputs.push(this._addScalarInt32(options.alignCorners() ? 1 : 0));
           opType = this._nn.RESIZE_BILINEAR;
         } break;
         case tflite.BuiltinOperator.LOGISTIC: {
@@ -324,7 +320,8 @@ class TFliteModelImporter {
           if (typeof paddingCode === 'undefined') {
             throw new Error(`Padding code ${options.padding()} is not supported.`);
           }
-          inputs = [inputs[2] /* input */, inputs[1] /* filter */, null, inputs[0] /* outputShape */];
+          inputs = [inputs[2] /* input */, inputs[1] /* filter */,
+                    null /* bias */, inputs[0] /* outputShape */];
           // create a tensor specifying the bias
           let outChannel = graph.tensors(inputs[1]).shapeArray()[0];
           inputs[2] = this._addTensorFloat32(outChannel, [outChannel]);
