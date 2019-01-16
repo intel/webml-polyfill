@@ -32,4 +32,4 @@ Description
 
 Netron URLs
 ====
-It supports to use Netron Visualizer for deep learning and machine learning models, hover the model name two seconds, there will be a block to show the model description and Netron links, please upload [these models](model/README.md) to your website and update the links in [webml-polyfill/examples/util/base.js](../util/base.js). E.g. https://lutzroeder.github.io/netron/?url=https://yourhost/resnet50v2.onnx
+It supports to use Netron Visualizer for deep learning and machine learning models, hover the model name three seconds, it will show the model description and Netron links, please upload [these models](model/README.md) to your website (or CDN/OSS services) and update the modelCDNUrl links in [webml-polyfill/examples/util/base.js](../util/base.js). E.g. https://cdn_host_and_path/mobilenet_v1_1.0_224.tflite

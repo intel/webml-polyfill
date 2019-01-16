@@ -85,18 +85,15 @@ if (currentBackend === '') {
   }
 }
 
-// register models
-for (let model of imageClassificationModels) {
-  if (currentModel == model.modelName) {
-    utils.changeModelParam(model)
-  }
-}
-
 // register prefers
 if (getOS() === 'Mac OS' && currentBackend === 'WebML') {
   if (!currentPrefer) {
     currentPrefer = "sustained";
   }
+}
+
+function logConfig() {
+  console.log(`Model: ${currentModel}, Backend: ${currentBackend}, Prefer: ${currentPrefer}`);
 }
 
 async function startPredictCamera() {
@@ -120,14 +117,12 @@ async function utilsPredict(imageElement, backend, prefer) {
   if(track) {
     track.stop();
   }
-  showProgress();
+  await showProgress('Image predicting ...');
   try {
-    utils.deleteAll();
-  } catch (e) {
-     console.log('utils.deleteAll(): ' + e);
-  }
-  try {
-    await utils.init(backend, prefer);
+    let init = await utils.init(backend, prefer);    
+    if (init == 'NOT_LOADED') {
+      return;
+    }
     let ret = await utils.predict(imageElement);
     showResults();
     updateResult(ret);
@@ -140,9 +135,12 @@ async function utilsPredict(imageElement, backend, prefer) {
 
 async function utilsPredictCamera(backend, prefer) {
   streaming = true;
-  showProgress();
+  await showProgress('Camera predicting ...');
   try {
-    await utils.init(backend, prefer);
+    let init = await utils.init(backend, prefer);    
+    if (init == 'NOT_LOADED') {
+      return;
+    }
     let stream = await navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: "environment" } });
     video.srcObject = stream;
     track = stream.getTracks()[0];
@@ -160,8 +158,9 @@ async function updateScenario(camera, backend, prefer) {
   try {
     utils.deleteAll();
   } catch (e) {
-     console.log('utils.deleteAll(): ' + e);
+    // console.log('utils.deleteAll(): ' + e);
   }
+  logConfig();
   if (!camera) {
     utilsPredict(imageElement, backend, prefer);
   } else {
@@ -170,6 +169,24 @@ async function updateScenario(camera, backend, prefer) {
 }
 
 async function main(camera) {
+  try {
+    utils.deleteAll();
+  } catch (e) {
+    // console.log('utils.deleteAll(): ' + e);
+  }
+  logConfig();
+  await showProgress('Loading model ...');
+  for (let model of imageClassificationModels) {
+    if (currentModel == model.modelName) {
+      try {
+        await utils.loadModel(model);
+      }
+      catch (e) {
+        showAlert(e);
+        showError();
+      }
+    }
+  }
   if (!camera) {
     inputElement.addEventListener('change', (e) => {
       let files = e.target.files;
@@ -187,3 +204,4 @@ async function main(camera) {
     utilsPredictCamera(currentBackend, currentPrefer);
   }
 }
+

@@ -23,9 +23,9 @@ inception_resnet_v2.tflite
 
 squeezenet1.1.onnx
 mobilenetv2-1.0.onnx
-resnet50_v1.onnx
-resnet50_v2.onnx
-inception_v2.onnx
+resnet50v1.onnx
+resnet50v2.onnx
+inceptionv2.onnx
 densenet121.onnx
 ```
 

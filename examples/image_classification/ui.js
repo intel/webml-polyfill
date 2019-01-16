@@ -1,9 +1,3 @@
-if (!location.search) {
-  const strsearch = `?prefer=none&b=WASM&m=mobilenet_v1&t=tflite&s=image&d=0`;
-  const path = location.href;
-  location.href = path + strsearch;
-} 
-
 let up = getUrlParam('prefer');
 let ub = getUrlParam('b');
 let um = getUrlParam('m');
@@ -11,16 +5,22 @@ let ut = getUrlParam('t');
 let us = getUrlParam('s');
 let ud = getUrlParam('d');
 let currenttab = getUrlParam('s');
+let strsearch;
+
+if (!location.search) {
+  strsearch = `?prefer=none&b=WASM&m=mobilenet_v1&t=tflite&s=image&d=0`;
+  let path = location.href;
+  location.href = path + strsearch;
+}
 
 function componentToggle() {
-  $('#header-sticky-wrapper').attr('style', 'display:block');
-  $('#query').slideToggle(300);
-  $('.nav-pills').slideToggle(200);
-  $('.github-corner').slideToggle(100);
-  $('#mobile-nav-toggle').slideToggle(100);
-  $('#mobile-nav-toggle i').slideToggle(100);
-  $('footer').slideToggle(500);
-
+  // $('#header-sticky-wrapper').attr('style', 'display:block');
+  $('#header-sticky-wrapper').slideToggle();
+  $('#query').slideToggle();
+  $('.nav-pills').slideToggle();
+  $('.github-corner').slideToggle();
+  // $('#mobile-nav-toggle').slideToggle(100);
+  $('footer').slideToggle();
   $('#extra span').toggle();
 }
 
@@ -40,42 +40,35 @@ $(document).ready(function () {
 
   if (hasUrlParam('b')) {
     $('.backend input').removeAttr('checked');
-    $('.backend label').removeClass('cked');
+    $('.backend label').removeClass('checked');
     $('#' + getUrlParam('b')).attr('checked', 'checked');
-    $('#l-' + getUrlParam('b')).addClass('cked');
-  }
-
-  if(currentOS != 'Mac OS') {
-    $('#fast').hide();
-    $('#l-fast').hide();
-    $('#low').hide();
-    $('#l-low').hide();
+    $('#l-' + getUrlParam('b')).addClass('checked');
   }
 
   if (hasUrlParam('m') && hasUrlParam('t')) {
     $('.model input').removeAttr('checked');
-    $('.model label').removeClass('cked');
+    $('.model label').removeClass('checked');
     let m_t = getUrlParam('m') + '_' + getUrlParam('t');
     $('#' + m_t).attr('checked', 'checked');
-    $('#l-' + m_t).addClass('cked');
+    $('#l-' + m_t).addClass('checked');
   }
 
   if (hasUrlParam('prefer')) {
     $('.prefer input').removeAttr('checked');
-    $('.prefer label').removeClass('cked');
+    $('.prefer label').removeClass('checked');
     $('#' + getUrlParam('prefer')).attr('checked', 'checked');
-    $('#l-' + getUrlParam('prefer')).addClass('cked');
+    $('#l-' + getUrlParam('prefer')).addClass('checked');
 
     if(ub == 'WASM' || ub == 'WebGL') {
       $('.ml').removeAttr('checked');
-      $('.lml').removeClass('cked');
+      $('.lml').removeClass('checked');
     }
   }
 
-  function updateTitle(backend, prefer) {
+  function updateTitle(backend, prefer, model, modeltype) {
     let currentprefertext;
     if (backend == 'WASM' || backend == 'WebGL') {
-      $('#ictitle').html(`Image Classfication / ${backend} / ${um} (${ut})`);
+      $('#ictitle').html(`Image Classfication / ${backend} / ${model} (${modeltype})`);
     } else if (backend == 'WebML') {
       if (getUrlParam('p') == 'fast') {
         prefer = 'FAST_SINGLE_ANSWER';
@@ -84,22 +77,22 @@ $(document).ready(function () {
       } else if (getUrlParam('p') == 'low') {
         prefer = 'LOW_POWER';
       }
-      $('#ictitle').html(`Image Classfication / ${backend} / ${prefer} / ${um} (${ut})`);
+      $('#ictitle').html(`Image Classfication / ${backend} / ${prefer} / ${model} (${modeltype})`);
     }
   }
-  updateTitle(ub, up);
+  updateTitle(ub, up, um, ut);
 
   $('input:radio[name=b]').click(function () {
     $('.alert').hide();
     let rid = $("input:radio[name='b']:checked").attr('id');
     $('.backend input').removeAttr('checked');
-    $('.backend label').removeClass('cked');
+    $('.backend label').removeClass('checked');
     $('#' + rid).attr('checked', 'checked');
-    $('#l-' + rid).addClass('cked');
+    $('#l-' + rid).addClass('checked');
 
     if(rid == 'WASM' || rid == 'WebGL') {
       $('.ml').removeAttr('checked');
-      $('.lml').removeClass('cked');
+      $('.lml').removeClass('checked');
     }
 
     if(rid == 'WASM' || rid == 'WebGL') {
@@ -110,9 +103,9 @@ $(document).ready(function () {
       currentPrefer = rid;
     }
 
-    updateTitle(currentBackend, currentPrefer);
+    updateTitle(currentBackend, currentPrefer, `${um}`, `${ut}`);
 
-    let strsearch = `?prefer=${currentPrefer}&b=${currentBackend}&m=${um}&t=${ut}&s=image&d=${ud}`;
+    strsearch = `?prefer=${currentPrefer}&b=${currentBackend}&m=${um}&t=${ut}&s=image&d=${ud}`;
     window.history.pushState(null, null, strsearch);
 
     if (currenttab == 'camera') {
@@ -123,6 +116,7 @@ $(document).ready(function () {
   });
 
   $('input:radio[name=m]').click(function () {
+    $('.alert').hide();
     let rid = $("input:radio[name='m']:checked").attr('id');
     if (rid.indexOf('_onnx') > -1) {
       um = rid.replace('_onnx', '');
@@ -132,20 +126,45 @@ $(document).ready(function () {
       um = rid.replace('_tflite', '');
       ut = 'tflite';
     }
-    let strsearch = `?prefer=${up}&b=${ub}&m=${um}&t=${ut}&s=${us}&d=${ud}`;
-    location.href = strsearch;
+    if(currentBackend && currentPrefer) {
+      strsearch= `?prefer=${currentPrefer}&b=${currentBackend}&m=${um}&t=${ut}&s=${us}&d=${ud}`;
+    } else {
+      strsearch = `?prefer=${up}&b=${ub}&m=${um}&t=${ut}&s=${us}&d=${ud}`;
+    }
+    // location.href = strsearch;
+    window.history.pushState(null, null, strsearch);
+    
+
+    if (`${um}` && `${ut}`) {
+      $('.model input').removeAttr('checked');
+      $('.model label').removeClass('checked');
+      let m_t = `${um}` + '_' + `${ut}`;
+      $('#' + m_t).attr('checked', 'checked');
+      $('#l-' + m_t).addClass('checked');
+    }
+
+    currentModel = `${um}_${ut}`;
+    updateTitle(currentBackend, currentPrefer, `${um}`, `${ut}`);
+    (us == 'camera') ? main(true) : main();
   });
 
   $('#extra').click(function () {
-    $('#header-sticky-wrapper').slideToggle(200);
     componentToggle();
     let display;
     if (ud == '0') {
       display = '1';
+      ud = '1';
     } else {
       display = '0';
+      ud = '0';
     }
-    let strsearch = `?prefer=${up}&b=${ub}&m=${um}&t=${ut}&s=${us}&d=${display}`;
+
+    let strsearch;
+    if(currentBackend && currentPrefer) {
+      strsearch= `?prefer=${currentPrefer}&b=${currentBackend}&m=${um}&t=${ut}&s=${us}&d=${display}`;
+    } else {
+      strsearch = `?prefer=${up}&b=${ub}&m=${um}&t=${ut}&s=${us}&d=${display}`;
+    }
     window.history.pushState(null, null, strsearch);
   });
 });
@@ -157,7 +176,7 @@ $(document).ready(function () {
     $('ul.nav-pills #img').addClass('active');
     $('#imagetab').addClass('active');
     $('#cameratab').removeClass('active');
-    let strsearch = `?prefer=${up}&b=${ub}&m=${um}&t=${ut}&s=image&d=${ud}`;
+    strsearch = `?prefer=${up}&b=${ub}&m=${um}&t=${ut}&s=image&d=${ud}`;
     window.history.pushState(null, null, strsearch)
     currenttab = 'image';
     updateScenario(false, currentBackend, currentPrefer);
@@ -169,7 +188,7 @@ $(document).ready(function () {
     $('ul.nav-pills #cam').addClass('active');
     $('#cameratab').addClass('active');
     $('#imagetab').removeClass('active');
-    let strsearch = `?prefer=${up}&b=${ub}&m=${um}&t=${ut}&s=camera&d=${ud}`;
+    strsearch = `?prefer=${up}&b=${ub}&m=${um}&t=${ut}&s=camera&d=${ud}`;
     window.history.pushState(null, null, strsearch)
     currenttab = 'camera';
     updateScenario(true, currentBackend, currentPrefer);
@@ -207,29 +226,29 @@ $(document).ready(function () {
                   $('#introdescription').addClass('dnone');
                 }
 
-                if (model.introUrl) {
-                  $('#introurl').html('Paper');
-                  $('#introurl').attr('href', model.introUrl);
-                  $('#introurl').removeClass('dnone');
+                if (model.paperUrl) {
+                  $('#paperurl').html('Paper');
+                  $('#paperurl').attr('href', model.paperUrl);
+                  $('#paperurl').removeClass('dnone');
                 } else {
-                  $('#introurl').addClass('dnone');
+                  $('#paperurl').addClass('dnone');
                 }
 
-                if (model.netronUrl) {
+                if (model.modelCDNUrl) {
                   $('#netronurl').html(model.modelName + ' Model Viewer');
-                  $('#netronurl').attr('href', model.netronUrl);
+                  $('#netronurl').attr('href', `https://lutzroeder.github.io/netron/?url=${model.modelCDNUrl}`);
                   $('#netronurl').removeClass('dnone');
                 } else {
                   $('#netronurl').addClass('dnone');
                 }
               }
             }
-          }, 2000);
+          }, 3000);
         }(this));
       } else if (e.type == "mouseleave" || e.type == "touchcancel" || e.type == "touchend") {
         if (timeoutObj != null) {
           clearTimeout(timeoutObj);
-          $('#intro').delay(3000).slideUp();
+          $('#intro').delay(1000).slideUp();
         }
       }
     });
@@ -238,13 +257,13 @@ $(document).ready(function () {
 
 $(window).load(function () {
   if (ud != '0') {
-    $('#header-sticky-wrapper').slideToggle();
     componentToggle();
   }
 });
 
-function showProgress() {
-  $('#progressmodel').fadeIn();
+async function showProgress(text) {
+  $('#progressmodel').show();
+  await $('#progressstep').html(text);
   $('.shoulddisplay').hide();
   $('.icdisplay').hide();
   $('#resulterror').hide();
@@ -269,9 +288,5 @@ function updateLoading(c) {
 }
 
 $(window).load(function () {
-  if (us == 'camera') {
-    main(true);
-  } else {
-    main();
-  }
+  (us == 'camera') ? main(true) : main();
 })
