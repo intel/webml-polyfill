@@ -33,7 +33,7 @@ class Utils {
       console.log(`labels: ${this.labels}`);
       let flatBuffer = new flatbuffers.ByteBuffer(result.bytes);
       this.rawModel = tflite.Model.getRootAsModel(flatBuffer);
-      // printTfLiteModel(this.rawModel);
+      printTfLiteModel(this.rawModel);
     }
     let kwargs = {
       rawModel: this.rawModel,
