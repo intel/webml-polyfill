@@ -71,6 +71,7 @@
               <li><a href='../deeplab/index.html'>Semantic Segmentation</a></li>
             </ul>
           </li>
+          <li><a href='../model.html'>Models</a></li>
         </ul>
       </nav>
     </div>
@@ -81,7 +82,7 @@
       <table id='filter' class='t-filter table table-condensed'>
         <tbody>
           <tr class='model'>
-            <th class='text-center' rowspan='2'>Model</th>
+            <th class='text-center' rowspan='2'><a href='../model.html' title='View model details'>Model</a></th>
             <td>
               <img src='../static/img/l-tflite.png' alt='TensorFlow Lite Format' title='TensorFlow Lite Format'>
               <input type='radio' class='d-none' name='m' id='mobilenet_v1_tflite' value='mobilenet_v1_tflite' checked>
@@ -145,13 +146,6 @@
           </tr>
         </tbody>
       </table>
-      <div id='intro'>
-        <button type='button' id='xclose' class='xclose dnone' data-dismiss='alert' aria-label='Close'><span
-            aria-hidden='true'>&times;</span></button>
-        <div id='introdescription' class='mb-1'></div>
-        <a id='paperurl' href='' target='_blank' title='Visit paper for this model'></a> <a id='netronurl' href=''
-          target='_blank' title='View model visualizer via Netron'></a>
-      </div>
     </div>
   </form>
 
@@ -195,7 +189,7 @@
       <div class='tab-content clearfix' style='display: none;' id='progressmodel'>
         <div class='loading-page'>
           <div class='counter'>
-            <div class="loading">
+            <div class='loading'>
               <div></div>
               <div></div>
               <div></div>
@@ -247,15 +241,15 @@
             <div id='fps'></div>
             <div id='fullscreen'>
               <i class='fa expand'>
-                <svg aria-hidden="true" data-prefix="fas" data-icon="expand" class="svg-inline--fa fa-expand fa-w-14"
-                  role="img" viewBox="0 0 448 512">
-                  <path fill="currentColor" d="M0 180V56c0-13.3 10.7-24 24-24h124c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12H64v84c0 6.6-5.4 12-12 12H12c-6.6 0-12-5.4-12-12zM288 44v40c0 6.6 5.4 12 12 12h84v84c0 6.6 5.4 12 12 12h40c6.6 0 12-5.4 12-12V56c0-13.3-10.7-24-24-24H300c-6.6 0-12 5.4-12 12zm148 276h-40c-6.6 0-12 5.4-12 12v84h-84c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12h124c13.3 0 24-10.7 24-24V332c0-6.6-5.4-12-12-12zM160 468v-40c0-6.6-5.4-12-12-12H64v-84c0-6.6-5.4-12-12-12H12c-6.6 0-12 5.4-12 12v124c0 13.3 10.7 24 24 24h124c6.6 0 12-5.4 12-12z"></path>
+                <svg aria-hidden='true' data-prefix='fas' data-icon='expand' class='svg-inline--fa fa-expand fa-w-14'
+                  role='img' viewBox='0 0 448 512'>
+                  <path fill='currentColor' d='M0 180V56c0-13.3 10.7-24 24-24h124c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12H64v84c0 6.6-5.4 12-12 12H12c-6.6 0-12-5.4-12-12zM288 44v40c0 6.6 5.4 12 12 12h84v84c0 6.6 5.4 12 12 12h40c6.6 0 12-5.4 12-12V56c0-13.3-10.7-24-24-24H300c-6.6 0-12 5.4-12 12zm148 276h-40c-6.6 0-12 5.4-12 12v84h-84c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12h124c13.3 0 24-10.7 24-24V332c0-6.6-5.4-12-12-12zM160 468v-40c0-6.6-5.4-12-12-12H64v-84c0-6.6-5.4-12-12-12H12c-6.6 0-12 5.4-12 12v124c0 13.3 10.7 24 24 24h124c6.6 0 12-5.4 12-12z'></path>
                 </svg>
               </i>
               <i class='fa compress' style='display:none;'>
-                <svg aria-hidden="true" data-prefix="fas" data-icon="compress" class="svg-inline--fa fa-compress fa-w-14"
-                  role="img" viewBox="0 0 448 512">
-                  <path fill="currentColor" d="M436 192H312c-13.3 0-24-10.7-24-24V44c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v84h84c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12zm-276-24V44c0-6.6-5.4-12-12-12h-40c-6.6 0-12 5.4-12 12v84H12c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12h124c13.3 0 24-10.7 24-24zm0 300V344c0-13.3-10.7-24-24-24H12c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12h84v84c0 6.6 5.4 12 12 12h40c6.6 0 12-5.4 12-12zm192 0v-84h84c6.6 0 12-5.4 12-12v-40c0-6.6-5.4-12-12-12H312c-13.3 0-24 10.7-24 24v124c0 6.6 5.4 12 12 12h40c6.6 0 12-5.4 12-12z"></path>
+                <svg aria-hidden='true' data-prefix='fas' data-icon='compress' class='svg-inline--fa fa-compress fa-w-14'
+                  role='img' viewBox='0 0 448 512'>
+                  <path fill='currentColor' d='M436 192H312c-13.3 0-24-10.7-24-24V44c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v84h84c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12zm-276-24V44c0-6.6-5.4-12-12-12h-40c-6.6 0-12 5.4-12 12v84H12c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12h124c13.3 0 24-10.7 24-24zm0 300V344c0-13.3-10.7-24-24-24H12c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12h84v84c0 6.6 5.4 12 12 12h40c6.6 0 12-5.4 12-12zm192 0v-84h84c6.6 0 12-5.4 12-12v-40c0-6.6-5.4-12-12-12H312c-13.3 0-24 10.7-24 24v124c0 6.6 5.4 12 12 12h40c6.6 0 12-5.4 12-12z'></path>
                 </svg>
               </i>
             </div>

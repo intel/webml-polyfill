@@ -4,7 +4,6 @@ let um = getUrlParam('m');
 let ut = getUrlParam('t');
 let us = getUrlParam('s');
 let ud = getUrlParam('d');
-let currenttab = getUrlParam('s');
 let strsearch;
 
 if (!location.search) {
@@ -22,6 +21,26 @@ function componentToggle() {
   // $('#mobile-nav-toggle').slideToggle(100);
   $('footer').slideToggle();
   $('#extra span').toggle();
+}
+
+function disableModel() {
+  if (`${um}` && `${ut}`) {
+    let m_t = `${um}` + '_' + `${ut}`;
+    $('.model input').attr('disabled', false)
+    $('.model label').removeClass('cursordefault');
+    $('#' + m_t).attr('disabled', true)
+    $('#l-' + m_t).addClass('cursordefault');
+  }
+}
+
+function checkedModelStyle() {
+  if (`${um}` && `${ut}`) {
+    $('.model input').removeAttr('checked');
+    $('.model label').removeClass('checked');
+    let m_t = `${um}` + '_' + `${ut}`;
+    $('#' + m_t).attr('checked', 'checked');
+    $('#l-' + m_t).addClass('checked');
+  }
 }
 
 $(document).ready(function () {
@@ -46,11 +65,7 @@ $(document).ready(function () {
   }
 
   if (hasUrlParam('m') && hasUrlParam('t')) {
-    $('.model input').removeAttr('checked');
-    $('.model label').removeClass('checked');
-    let m_t = getUrlParam('m') + '_' + getUrlParam('t');
-    $('#' + m_t).attr('checked', 'checked');
-    $('#l-' + m_t).addClass('checked');
+    checkedModelStyle();
   }
 
   if (hasUrlParam('prefer')) {
@@ -104,11 +119,10 @@ $(document).ready(function () {
     }
 
     updateTitle(currentBackend, currentPrefer, `${um}`, `${ut}`);
-
-    strsearch = `?prefer=${currentPrefer}&b=${currentBackend}&m=${um}&t=${ut}&s=image&d=${ud}`;
+    strsearch = `?prefer=${currentPrefer}&b=${currentBackend}&m=${um}&t=${ut}&s=${us}&d=${ud}`;
     window.history.pushState(null, null, strsearch);
 
-    if (currenttab == 'camera') {
+    if (us == 'camera') {
       updateScenario(true, currentBackend, currentPrefer);
     } else {
       updateScenario(false, currentBackend, currentPrefer);
@@ -133,16 +147,9 @@ $(document).ready(function () {
     }
     // location.href = strsearch;
     window.history.pushState(null, null, strsearch);
-    
 
-    if (`${um}` && `${ut}`) {
-      $('.model input').removeAttr('checked');
-      $('.model label').removeClass('checked');
-      let m_t = `${um}` + '_' + `${ut}`;
-      $('#' + m_t).attr('checked', 'checked');
-      $('#l-' + m_t).addClass('checked');
-    }
-
+    checkedModelStyle();
+    disableModel();
     currentModel = `${um}_${ut}`;
     updateTitle(currentBackend, currentPrefer, `${um}`, `${ut}`);
     (us == 'camera') ? main(true) : main();
@@ -176,9 +183,9 @@ $(document).ready(function () {
     $('ul.nav-pills #img').addClass('active');
     $('#imagetab').addClass('active');
     $('#cameratab').removeClass('active');
-    strsearch = `?prefer=${up}&b=${ub}&m=${um}&t=${ut}&s=image&d=${ud}`;
+    us = 'image';
+    strsearch = `?prefer=${up}&b=${ub}&m=${um}&t=${ut}&s=${us}&d=${ud}`;
     window.history.pushState(null, null, strsearch)
-    currenttab = 'image';
     updateScenario(false, currentBackend, currentPrefer);
   });
 
@@ -188,9 +195,9 @@ $(document).ready(function () {
     $('ul.nav-pills #cam').addClass('active');
     $('#cameratab').addClass('active');
     $('#imagetab').removeClass('active');
-    strsearch = `?prefer=${up}&b=${ub}&m=${um}&t=${ut}&s=camera&d=${ud}`;
+    us = 'camera';
+    strsearch = `?prefer=${up}&b=${ub}&m=${um}&t=${ut}&s=${us}&d=${ud}`;
     window.history.pushState(null, null, strsearch)
-    currenttab = 'camera';
     updateScenario(true, currentBackend, currentPrefer);
   });
 
@@ -205,54 +212,6 @@ $(document).ready(function () {
     $('#inference').toggleClass('fullscreen');
   });
 
-});
-
-$(document).ready(function () {
-  $('.model label').each(function () {
-    let timeoutObj = null;
-    $(this).on("mouseenter mouseleave touchstart touchcancel touchend", function (e) {
-      let _this = this;
-      if (e.type == "mouseenter" || e.type == "touchstart") {
-        (function () {
-          timeoutObj = setTimeout(function () {
-            let modelid = _this.id.replace('l-', '');
-            for (model of imageClassificationModels) {
-              if (modelid == model.modelName) {
-                $('#intro').slideDown();
-                if (model.intro) {
-                  $('#introdescription').html(model.intro);
-                  $('#introdescription').removeClass('dnone');
-                } else {
-                  $('#introdescription').addClass('dnone');
-                }
-
-                if (model.paperUrl) {
-                  $('#paperurl').html('Paper');
-                  $('#paperurl').attr('href', model.paperUrl);
-                  $('#paperurl').removeClass('dnone');
-                } else {
-                  $('#paperurl').addClass('dnone');
-                }
-
-                if (model.modelCDNUrl) {
-                  $('#netronurl').html(model.modelName + ' Model Viewer');
-                  $('#netronurl').attr('href', `https://lutzroeder.github.io/netron/?url=${model.modelCDNUrl}`);
-                  $('#netronurl').removeClass('dnone');
-                } else {
-                  $('#netronurl').addClass('dnone');
-                }
-              }
-            }
-          }, 3000);
-        }(this));
-      } else if (e.type == "mouseleave" || e.type == "touchcancel" || e.type == "touchend") {
-        if (timeoutObj != null) {
-          clearTimeout(timeoutObj);
-          $('#intro').delay(1000).slideUp();
-        }
-      }
-    });
-  })
 });
 
 $(window).load(function () {
@@ -288,5 +247,6 @@ function updateLoading(c) {
 }
 
 $(window).load(function () {
+  disableModel();
   (us == 'camera') ? main(true) : main();
 })

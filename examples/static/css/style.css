@@ -870,6 +870,18 @@ footer {
   margin-right: 14px;
 }
 
+.modelcv tbody td.name {
+  text-transform: capitalize;
+  min-width: 100px;
+}
+
+.modelcv th {
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+}
+
 .t-filter tr:hover {
   background-color: rgba(5, 255, 163, 0.05) !important;
 }
@@ -914,6 +926,14 @@ footer {
 .checked:hover {
   background-color: rgba(255, 111, 97, 0.9);
   border: 1px solid rgba(255, 111, 97, 1.0);
+}
+
+.cursorpointer {
+  cursor: pointer;
+}
+
+.cursordefault {
+  cursor: default !important;
 }
 
 .t-filter input[type=radio] {

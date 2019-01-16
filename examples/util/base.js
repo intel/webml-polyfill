@@ -27,7 +27,7 @@ const mobilenet_v1_tflite = {
     mean: [127.5, 127.5, 127.5],
     std: [127.5, 127.5, 127.5],
   },
-  intro: 'An efficient Convolutional Neural Networks for Mobile Vision Applications. Loading MobileNet model trained by ImageNet in TensorFlow Lite format, constructs and inferences it by WebML API.',
+  intro: 'An efficient Convolutional Neural Networks for Mobile Vision Applications.',
   paperUrl: 'https://arxiv.org/pdf/1704.04861.pdf',
   modelCDNUrl: 'https://cdn_host_and_path/mobilenet_v1_1.0_224.tflite'
 };
@@ -41,7 +41,7 @@ const mobilenet_v2_tflite = {
     mean: [127.5, 127.5, 127.5],
     std: [127.5, 127.5, 127.5],
   },
-  intro: 'MobileNetV2 improves the state of the art performance of mobile models. Loading MobileNet model v2.0 trained by ImageNet in TensorFlow Lite format, constructs and inferences it by WebML API.',
+  intro: 'MobileNetV2 improves the state of the art performance of mobile models.',
   paperUrl: 'https://arxiv.org/abs/1801.04381',
   modelCDNUrl: 'https://cdn_host_and_path/mobilenet_v2_1.0_224.tflite'
 };
@@ -55,7 +55,7 @@ const inception_v3_tflite = {
     mean: [127.5, 127.5, 127.5],
     std: [127.5, 127.5, 127.5],
   },
-  intro: 'Inception-v3 is trained for the ImageNet Large Visual Recognition Challenge. Loading Inception-v3 model trained by ImageNet in TensorFlow Lite format, constructs and inferences it by WebML API.',
+  intro: 'Inception-v3 is trained for the ImageNet Large Visual Recognition Challenge.',
   paperUrl: 'http://arxiv.org/abs/1512.00567',
   modelCDNUrl: 'https://cdn_host_and_path/inception_v3.tflite'
 };
@@ -69,7 +69,7 @@ const inception_v4_tflite = {
     mean: [127.5, 127.5, 127.5],
     std: [127.5, 127.5, 127.5],
   },
-  intro: 'Inception architecture that has been shown to achieve very good performance at relatively low computational cost. Loading Inception-v4 model trained by ImageNet in TensorFlow Lite format, constructs and inferences it by WebML API.',
+  intro: 'Inception architecture that has been shown to achieve very good performance at relatively low computational cost.',
   paperUrl: 'https://arxiv.org/abs/1602.07261',
   modelCDNUrl: 'https://cdn_host_and_path/inception_v4.tflite'
 };
@@ -83,7 +83,7 @@ const squeezenet_tflite = {
     mean: [127.5, 127.5, 127.5],
     std: [127.5, 127.5, 127.5],
   },
-  intro: 'A light-weight CNN providing Alexnet level accuracy with 50X fewer parameters. Loading SqueezeNet model trained by ImageNet in TensorFlow Lite format, constructs and inferences it by WebML API.',
+  intro: 'A light-weight CNN providing Alexnet level accuracy with 50X fewer parameters.',
   paperUrl: 'https://arxiv.org/abs/1602.07360',
   modelCDNUrl: 'https://cdn_host_and_path/squeezenet.tflite'
 };
@@ -119,7 +119,7 @@ const squeezenet_onnx = {
   postOptions: {
     softmax: true,
   },
-  intro: 'A light-weight CNN providing Alexnet level accuracy with 50X fewer parameters. Loading SqueezeNet model trained by ImageNet in ONNX format, constructs and inferences it by WebML API.',
+  intro: 'A light-weight CNN providing Alexnet level accuracy with 50X fewer parameters.',
   paperUrl: 'https://arxiv.org/abs/1602.07360',
   modelCDNUrl: 'https://cdn_host_and_path/squeezenet1.1.onnx'
 };
@@ -138,7 +138,7 @@ const mobilenet_v2_onnx = {
   postOptions: {
     softmax: true,
   },
-  intro: 'MobileNetV2 improves the state of the art performance of mobile models. Loading MobileNet model v2.0 in ONNX format, constructs and inferences it by WebML API.',
+  intro: 'MobileNetV2 improves the state of the art performance of mobile models.',
   paperUrl: 'https://arxiv.org/abs/1801.04381',
   modelCDNUrl: 'https://cdn_host_and_path/mobilenetv2-1.0.onnx'
 };
@@ -186,7 +186,7 @@ const inception_v2_onnx = {
   labelsFile: '../image_classification/model/ilsvrc2012labels.txt',
   inputSize: [224, 224, 3],
   outputSize: 1000,
-  intro: 'Inception-v2 is trained for the ImageNet Large Visual Recognition Challenge. Loading Inception-v2 model trained by ImageNet in ONNX format, constructs and inferences it by WebML API.',
+  intro: 'Inception-v2 is trained for the ImageNet Large Visual Recognition Challenge.',
   paperUrl: 'https://arxiv.org/abs/1512.00567',
   modelCDNUrl: 'https://cdn_host_and_path/inceptionv2.onnx'
 };
@@ -206,7 +206,7 @@ const densenet_onnx = {
   postOptions: {
     softmax: true,
   },
-  intro: 'Dense Convolutional Network (DenseNet) connects each layer to every other layer in a feed-forward fashion.  DenseNets have several compelling advantages: they alleviate the vanishing-gradient problem, strengthen feature propagation, encourage feature reuse, and substantially reduce the number of parameters. ',
+  intro: 'Dense Convolutional Network (DenseNet) connects each layer to every other layer in a feed-forward fashion. DenseNets have several compelling advantages: they alleviate the vanishing-gradient problem, strengthen feature propagation, encourage feature reuse, and substantially reduce the number of parameters. ',
   paperUrl: 'https://arxiv.org/abs/1608.06993',
   modelCDNUrl: 'https://cdn_host_and_path/densenet121.onnx'
 };
