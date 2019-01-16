@@ -1,21 +1,21 @@
 // reference from https://github.com/experiencor/keras-yolo2
 // https://github.com/experiencor/keras-yolo2/blob/master/LICENSE
 class bounding_box {
-	constructor(xmin, ymin, xmax, ymax, confidence = None, classes = None){
-		this.xmin = xmin;
-		this.ymin = ymin;
-		this.xmax = xmax;
-		this.ymax = ymax;
-		
-		this.confidence = confidence;
-		this.classes = classes;
+  constructor(xmin, ymin, xmax, ymax, confidence = None, classes = None) {
+    this.xmin = xmin;
+    this.ymin = ymin;
+    this.xmax = xmax;
+    this.ymax = ymax;
 
-		this.label = -1;
+    this.confidence = confidence;
+    this.classes = classes;
+
+    this.label = -1;
     this.score = -1;
   }
 
-	get_label() {
-		if (this.label == -1) {
+  get_label() {
+    if (this.label === -1) {
       let max = 0;
       let index = 0;
       for (let i = 0; i < this.classes.length; ++i) {
@@ -26,14 +26,14 @@ class bounding_box {
       }
       this.label = index;
     }
-		
+
     return this.label;
   }
-	
-	get_score() {
-		if (this.score == -1)
+
+  get_score() {
+    if (this.score === -1)
       this.score = this.classes[this.get_label()];
-			
+
     return this.score;
   }
 }
@@ -89,7 +89,7 @@ function decodeYOLOv2(options, output, img_width, img_height, anchors) {
     w = anchors[2 * b + 0] * Math.exp(w) / grid_w;   // unit: image width
     h = anchors[2 * b + 1] * Math.exp(h) / grid_h;   // unit: image height
     confidence = output[size * index + 4];
-    
+
     box = new bounding_box(x-w/2, y-h/2, x+w/2, y+h/2, confidence, class_i);
     boxes.push(box);
   });
@@ -138,12 +138,12 @@ function decodeYOLOv2(options, output, img_width, img_height, anchors) {
 
 function getBoxes(results, img_width, img_height, margin) {
   let object_boxes = [];
-	for (let i = 0; i < results.length; ++i) {
+  for (let i = 0; i < results.length; ++i) {
     // display detected object
     let class_id = results[i][0];
-		let x = Math.floor(results[i][1]);
-		let y = Math.floor(results[i][2]);
-		let w = Math.floor(results[i][3] / 2);
+    let x = Math.floor(results[i][1]);
+    let y = Math.floor(results[i][2]);
+    let w = Math.floor(results[i][3] / 2);
     let h = Math.floor(results[i][4] / 2);
     let prob = results[i][5];
 
@@ -196,37 +196,36 @@ function drawBoxes(image, canvas, object_boxes, labels) {
 }
 
 function bbox_iou(box1, box2) {
-	let intersect_w = _interval_overlap([box1.xmin, box1.xmax], [box2.xmin, box2.xmax]);
-	let intersect_h = _interval_overlap([box1.ymin, box1.ymax], [box2.ymin, box2.ymax]);
-	let intersect = intersect_w * intersect_h;
+  let intersect_w = _interval_overlap([box1.xmin, box1.xmax], [box2.xmin, box2.xmax]);
+  let intersect_h = _interval_overlap([box1.ymin, box1.ymax], [box2.ymin, box2.ymax]);
+  let intersect = intersect_w * intersect_h;
   let w1 = box1.xmax - box1.xmin;
   let h1 = box1.ymax - box1.ymin;
   let w2 = box2.xmax - box2.xmin;
   let h2 = box2.ymax - box2.ymin;
-	let union = w1 * h1 + w2 * h2 - intersect;
+  let union = w1 * h1 + w2 * h2 - intersect;
   return intersect / union;
 }
 
-function _interval_overlap(interval_a, interval_b){
-	let [x1, x2] = interval_a;
-	let [x3, x4] = interval_b;
+function _interval_overlap(interval_a, interval_b) {
+  let [x1, x2] = interval_a;
+  let [x3, x4] = interval_b;
 
-	if (x3 < x1) {
-		if (x4 < x1)
-			return 0;
-		else
+  if (x3 < x1) {
+    if (x4 < x1)
+      return 0;
+    else
       return Math.min(x2, x4) - x1;
-    }
-	else {
-		if (x2 < x3)
-			 return 0;
-		else
-			return Math.min(x2, x4) - x3;          
-    }
+  } else {
+    if (x2 < x3)
+      return 0;
+    else
+      return Math.min(x2, x4) - x3;
+  }
 }
 
 function _sigmoid(x) {
-    return 1 / (1 + Math.exp(-x));
+  return 1 / (1 + Math.exp(-x));
 }
 
 function _softmax(arr) {
