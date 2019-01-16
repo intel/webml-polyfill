@@ -37,10 +37,10 @@ describe('CTS Supplement Test', function() {
       
       model.setOperandValue(op2, new Float32Array([-0.966213, -0.467474, -0.82203, -0.579455, 0.0278809, -0.79946, -0.684259, 0.563238, 0.37289, 0.738216, 0.386045, -0.917775, 0.184325, -0.270568, 0.82236, 0.0973683, -0.941308, -0.144706]));
       model.setOperandValue(bias, new Float32Array([0]));
-      model.setOperandValue(pad, new Int32Array([2]));//PADDING_VALID
+      model.setOperandValue(pad, new Int32Array([2]));
       model.setOperandValue(rate_w, new Int32Array([1]));
       model.setOperandValue(rate_h, new Int32Array([1]));
-      model.setOperandValue(act, new Int32Array([0]));//FUSED_NONE
+      model.setOperandValue(act, new Int32Array([0]));
 
       model.addOperation(nn.ATROUS_CONV_2D, [op1, op2, bias, pad, rate_w, rate_h, act], [op3]);
       model.identifyInputsAndOutputs([op1], [op3]);
@@ -100,10 +100,10 @@ describe('CTS Supplement Test', function() {
       
       model.setOperandValue(op2, new Float32Array([-0.966213, -0.467474, -0.82203, -0.579455, 0.0278809, -0.79946, -0.684259, 0.563238, 0.37289, 0.738216, 0.386045, -0.917775, 0.184325, -0.270568, 0.82236, 0.0973683, -0.941308, -0.144706]));
       model.setOperandValue(bias, new Float32Array([0]));
-      model.setOperandValue(pad, new Int32Array([2]));//PADDING_VALID
+      model.setOperandValue(pad, new Int32Array([2]));
       model.setOperandValue(rate_w, new Int32Array([1]));
       model.setOperandValue(rate_h, new Int32Array([1]));
-      model.setOperandValue(act, new Int32Array([0]));//FUSED_NONE
+      model.setOperandValue(act, new Int32Array([0]));
 
       model.addOperation(nn.ATROUS_CONV_2D, [op1, op2, bias, pad, rate_w, rate_h, act], [op3]);
       model.identifyInputsAndOutputs([op1], [op3]);
@@ -163,10 +163,10 @@ describe('CTS Supplement Test', function() {
         
         model.setOperandValue(op2, new Float32Array([-0.966213, -0.467474, -0.82203, -0.579455, 0.0278809, -0.79946, -0.684259, 0.563238, 0.37289, 0.738216, 0.386045, -0.917775, 0.184325, -0.270568, 0.82236, 0.0973683, -0.941308, -0.144706]));
         model.setOperandValue(bias, new Float32Array([0]));
-        model.setOperandValue(pad, new Int32Array([2]));//PADDING_VALID
-        model.setOperandValue(rate_w, new Int32Array([2]));//RATE_2
+        model.setOperandValue(pad, new Int32Array([2]));
+        model.setOperandValue(rate_w, new Int32Array([2]));
         model.setOperandValue(rate_h, new Int32Array([2]));
-        model.setOperandValue(act, new Int32Array([0]));//FUSED_NONE
+        model.setOperandValue(act, new Int32Array([0]));
   
         model.addOperation(nn.ATROUS_CONV_2D, [op1, op2, bias, pad, rate_w, rate_h, act], [op3]);
         model.identifyInputsAndOutputs([op1], [op3]);
@@ -226,10 +226,10 @@ describe('CTS Supplement Test', function() {
         
         model.setOperandValue(op2, new Float32Array([-0.966213, -0.467474, -0.82203, -0.579455, 0.0278809, -0.79946, -0.684259, 0.563238, 0.37289, 0.738216, 0.386045, -0.917775, 0.184325, -0.270568, 0.82236, 0.0973683, -0.941308, -0.144706]));
         model.setOperandValue(bias, new Float32Array([0]));
-        model.setOperandValue(pad, new Int32Array([2]));//PADDING_VALID
-        model.setOperandValue(rate_w, new Int32Array([2]));//RATE_2
+        model.setOperandValue(pad, new Int32Array([2]));
+        model.setOperandValue(rate_w, new Int32Array([2]));
         model.setOperandValue(rate_h, new Int32Array([2]));
-        model.setOperandValue(act, new Int32Array([0]));//FUSED_NONE
+        model.setOperandValue(act, new Int32Array([0]));
   
         model.addOperation(nn.ATROUS_CONV_2D, [op1, op2, bias, pad, rate_w, rate_h, act], [op3]);
         model.identifyInputsAndOutputs([op1], [op3]);
