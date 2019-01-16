@@ -62,7 +62,7 @@ function main(camera) {
   utils.updateProgress = updateProgress; // register updateProgress function if progressBar element exist
 
   function checkPreferParam() {
-    if (getOS() === 'Mac OS') {
+    if (currentOS === 'Mac OS') {
       let preferValue = getPreferParam();
       if (preferValue === 'invalid') {
         console.log("Invalid prefer, prefer should be 'fast' or 'sustained', try to use WebGL.");
@@ -73,12 +73,12 @@ function main(camera) {
 
   checkPreferParam();
 
-  function showAlert(backend) {
+  function showAlert(backend, modelName) {
     let div = document.createElement('div');
     div.setAttribute('id', 'backendAlert');
     div.setAttribute('class', 'alert alert-warning alert-dismissible fade show');
     div.setAttribute('role', 'alert');
-    div.innerHTML = `<strong>Failed to setup ${backend} backend.</strong>`;
+    div.innerHTML = `<strong>Currently ${backend} doesn't support ${modelName} Model.</strong>`;
     div.innerHTML += `<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>`;
     let container = document.getElementById('container');
     container.insertBefore(div, container.firstElementChild);
@@ -108,7 +108,7 @@ function main(camera) {
 
   function updateBackend() {
     if (getUrlParams('api_info') === 'true') {
-      backend.innerHTML = currentBackend === 'WebML' ? currentBackend + '/' + getNativeAPI() : currentBackend;
+      backend.innerHTML = currentBackend === 'WebML' ? currentBackend + '/' + getNativeAPI(currentPrefer) : currentBackend;
     } else {
       backend.innerHTML = currentBackend;
     }
@@ -123,13 +123,12 @@ function main(camera) {
   }
 
   function changeCanvasSize(newModel) {
-    let inputSize = newModel.inputSize;
-    let outputSize = newModel.outputSize;
+    const inputSize = newModel.inputSize;
+    const outputSize = newModel.outputSize;
     inputCanvas.width = inputSize[1];
     inputCanvas.height = inputSize[0];
     outputCanvas.width = outputSize[1];
     outputCanvas.height = outputSize[0];
-    inputCanvas.style = `height: ${outputSize[0]}px;`;
   }
 
   function changeBackend(newBackend, force) {
@@ -159,7 +158,7 @@ function main(camera) {
       }).catch((e) => {
         console.warn(`Failed to change backend ${newBackend}, switch back to ${currentBackend}`);
         console.log(e);
-        showAlert(newBackend);
+        showAlert(newBackend, currentModel);
         changeBackend(currentBackend, true);
         updatePrefer();
         updateModel();
@@ -174,6 +173,7 @@ function main(camera) {
     }
     streaming = false;
     utils.deleteAll();
+    removeAlertElement();
     utils.changeModelParam(newModel);
     changeCanvasSize(newModel);
     progressContainer.style.display = "inline";
@@ -201,6 +201,7 @@ function main(camera) {
     }
     streaming = false;
     utils.deleteAll();
+    removeAlertElement();
     selectPrefer.innerHTML = 'Setting...';
     setTimeout(() => {
       utils.init(currentBackend, newPrefer).then(() => {
@@ -215,12 +216,13 @@ function main(camera) {
           startPredict();
         }
       }).catch((e) => {
-        console.warn(`Failed to change backend ${preferMap[newPrefer]}, switch back to ${preferMap[currentPrefer]}`);
+        let currentBackend = 'WebML/' + getNativeAPI(currentPrefer);
+        let nextBackend = 'WebML/' + getNativeAPI(newPrefer);
+        console.warn(`Failed to change backend ${nextBackend}, switch back to ${currentBackend}`);
         console.error(e);
-        showAlert(preferMap[newPrefer]);
         changePrefer(currentPrefer, true);
+        showAlert(nextBackend, currentModel);
         updatePrefer();
-        updateModel();
         updateBackend();
       });
     }, 10);
@@ -312,16 +314,40 @@ function main(camera) {
   }
 
   // register prefers
-  if (getOS() === 'Mac OS' && currentBackend === 'WebML') {
+  if (currentBackend === 'WebML') {
     $('.prefer').css("display","inline");
-    let MPS = $('<button class="dropdown-item"/>')
-      .text('MPS')
-      .click(_ => changePrefer(preferMap['MPS']));
-    $('.preference').append(MPS);
-    let BNNS = $('<button class="dropdown-item"/>')
-      .text('BNNS')
-      .click(_ => changePrefer(preferMap['BNNS']));
-    $('.preference').append(BNNS);
+    let sustained = $('<button class="dropdown-item"/>')
+      .text('SUSTAINED_SPEED')
+      .click(_ => changePrefer('sustained'));
+    $('.preference').append(sustained);
+    if (currentOS === 'Android') {
+      let fast = $('<button class="dropdown-item"/>')
+        .text('FAST_SINGLE_ANSWER')
+        .click(_ => changePrefer('fast'));
+      $('.preference').append(fast);
+      let low = $('<button class="dropdown-item"/>')
+        .text('LOW_POWER')
+        .click(_ => changePrefer('low'));
+      $('.preference').append(low);
+    } else if (currentOS === 'Windows' || currentOS === 'Linux') {
+      let fast = $('<button class="dropdown-item" disabled />')
+        .text('FAST_SINGLE_ANSWER')
+        .click(_ => changePrefer('fast'));
+      $('.preference').append(fast);
+      let low = $('<button class="dropdown-item" disabled />')
+        .text('LOW_POWER')
+        .click(_ => changePrefer('low'));
+      $('.preference').append(low);
+    }  else if (currentOS === 'Mac OS') {
+      let fast = $('<button class="dropdown-item"/>')
+        .text('FAST_SINGLE_ANSWER')
+        .click(_ => changePrefer('fast'));
+      $('.preference').append(fast);
+      let low = $('<button class="dropdown-item" disabled />')
+        .text('LOW_POWER')
+        .click(_ => changePrefer('low'));
+      $('.preference').append(low);
+    }
     if (!currentPrefer) {
       currentPrefer = "sustained";
     }
@@ -359,7 +385,7 @@ function main(camera) {
     }).catch((e) => {
       console.warn(`Failed to init ${utils.model._backend}, try to use WebGL`);
       console.error(e);
-      showAlert(utils.model._backend);
+      showAlert(utils.model._backend, currentModel);
       changeBackend('WebGL');
     });
   } else {
@@ -379,7 +405,7 @@ function main(camera) {
       }).catch((e) => {
         console.warn(`Failed to init ${utils.model._backend}, try to use WebGL`);
         console.error(e);
-        showAlert(utils.model._backend);
+        showAlert(utils.model._backend, currentModel);
         changeBackend('WebGL');
       });
     }).catch((error) => {
