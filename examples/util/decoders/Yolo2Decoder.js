@@ -1,3 +1,5 @@
+// reference from https://github.com/experiencor/keras-yolo2
+// https://github.com/experiencor/keras-yolo2/blob/master/LICENSE
 class bounding_box {
 	constructor(xmin, ymin, xmax, ymax, confidence = None, classes = None){
 		this.xmin = xmin;
@@ -47,7 +49,6 @@ function decodeYOLOv2(options, output, img_width, img_height, anchors) {
   } = options;
 
   let size = 4 + 1 + nb_class;  // (x, y, w, h) + confidence + classes
-  let boxes = [];
 
   // decode the output by the network
   for (let i = 0; i < grid_h * grid_w * nb_box; ++i) {
@@ -55,44 +56,45 @@ function decodeYOLOv2(options, output, img_width, img_height, anchors) {
   }
 
   let classes = [];
+  let indexes = [];
   for (let i = 0; i < grid_h * grid_w * nb_box; ++i) {
     let classes_i = output.slice((nb_class + 5) * i + 5, (nb_class + 5) * (i + 1));
     classes_i = _softmax(classes_i);
+    let isOutputClass = false;
     for (let j = 0; j < nb_class; ++j) {
       let tmp = (output[size * i + 4] * classes_i[j]);
-      classes_i[j] = tmp > obj_threshold ? tmp : 0;
-    }
-    classes.push(classes_i);
-  }
-
-  let off_b = 4 + 1 + nb_class;   // (x, y , w, h) + confidence + class
-  let off_col = nb_box * off_b;
-  let off_row = grid_w * off_col;
-  for (let row = 0; row < grid_h; ++row){
-    for (let col = 0; col < grid_w; ++col) {
-      for (let b = 0; b < nb_box; ++b) {
-        // from 4th element onwards are confidence and class classes
-        let class_i = classes[grid_w * nb_box * row + nb_box * col + b];
-        if (class_i.reduce((a, b) => { return a + b; }) > 0) {
-          // first 4 elements are x, y, w, and h
-          let x = output[off_row * row + off_col * col + off_b * b + 0]; 
-          let y = output[off_row * row + off_col * col + off_b * b + 1];
-          let w = output[off_row * row + off_col * col + off_b * b + 2];
-          let h = output[off_row * row + off_col * col + off_b * b + 3];
-          x = (col + _sigmoid(x)) / grid_w;  // center position, unit: image width
-          y = (row + _sigmoid(y)) / grid_h;  // center position, unit: image height
-          w = anchors[2 * b + 0] * Math.exp(w) / grid_w;   // unit: image width
-          h = anchors[2 * b + 1] * Math.exp(h) / grid_h;   // unit: image height
-          confidence = output[off_row * row + off_col * col + off_b * b + 4];
-          
-          box = new bounding_box(x-w/2, y-h/2, x+w/2, y+h/2, confidence, class_i);
-          boxes.push(box);
-        }
+      classes_i[j] = 0;
+      if (tmp > obj_threshold) {
+        classes_i[j] = tmp;
+        isOutputClass = true;
       }
     }
+    classes.push(classes_i);
+    if (isOutputClass) indexes.push(i);
   }
 
-  // suppress non-maximal boxes
+  // get bounding boxes
+  let boxes = [];
+  indexes.forEach((index) => {
+    let class_i = classes[index];
+    let b = index % nb_box;
+    let col = (index - b) / nb_box % grid_w;
+    let row = ((index - b) / nb_box - col) / grid_w % grid_h;
+    let x = output[size * index + 0];
+    let y = output[size * index + 1];
+    let w = output[size * index + 2];
+    let h = output[size * index + 3];
+    x = (col + _sigmoid(x)) / grid_w;  // center position, unit: image width
+    y = (row + _sigmoid(y)) / grid_h;  // center position, unit: image height
+    w = anchors[2 * b + 0] * Math.exp(w) / grid_w;   // unit: image width
+    h = anchors[2 * b + 1] * Math.exp(h) / grid_h;   // unit: image height
+    confidence = output[size * index + 4];
+    
+    box = new bounding_box(x-w/2, y-h/2, x+w/2, y+h/2, confidence, class_i);
+    boxes.push(box);
+  });
+
+  // suppress non-maximal boxes (NMS)
   let tmp_boxes = [];
   let sorted_boxes = [];
   for (let c = 0; c < nb_class; ++c) {
@@ -146,8 +148,10 @@ function getBoxes(results, img_width, img_height, margin) {
     let prob = results[i][5];
 
     // used for output square boxes
-		// if (w < h) w = h;   
-		// else h = w;
+    // if (w < h)
+    //   w = h;
+    // else
+    //   h = w;
 
     [xmin, xmax, ymin, ymax] = crop(x, y, w, h, margin, img_width, img_height);
     object_boxes.push([class_id, xmin, xmax, ymin, ymax, prob]);
