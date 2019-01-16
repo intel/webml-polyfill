@@ -284,13 +284,6 @@ class TFliteModelImporter {
         case tflite.BuiltinOperator.RESIZE_BILINEAR: {
           let options = operator.builtinOptions(new tflite.ResizeBilinearOptions());
           let newSize = this._operands[inputs[1]];
-          let oldSize = graph.tensors(inputs[0]).shapeArray().slice(1, 3);
-          if (newSize[0] === oldSize[0] && newSize[1] === oldSize[1]) {
-            // skip RESIZE_BILINEAR with the same input and output shape
-            this._tensorIds[outputs[0]] = this._tensorIds[inputs[0]];
-            continue;
-          }
-
           inputs = [inputs[0]];
           inputs.push(this._addScalarInt32(newSize[0]));
           inputs.push(this._addScalarInt32(newSize[1]));
