@@ -1,5 +1,5 @@
 const path = require('path');
-const webpack = require('webpack')
+const portfinder = require('portfinder');
 
 const config = {
   entry: ['./src/WebMLPolyfill.js'],
@@ -15,20 +15,31 @@ const config = {
   },
   externals: {
     'fs': true
+  },
+  devtool: 'source-map',
+  devServer: {
+    // enable https
+    https: process.env.HTTPS === 'true' || false,
+    // allow connections from LAN
+    host: '0.0.0.0',
+    // allow connections using hostname
+    disableHostCheck: true,
   }
 };
 
 if (process.env.NODE_ENV === 'production') {
-  config.plugins = [
-    new webpack.DefinePlugin({ 'process.env.NODE_ENV': JSON.stringify('production') }),
-    new webpack.optimize.ModuleConcatenationPlugin(),
-    new webpack.optimize.UglifyJsPlugin({
-      compress: { warnings: false, unused: false },
-      output: { comments: false }
-    })
-  ]
+  config.mode = 'production';
 } else {
-  config.plugins = [new webpack.DefinePlugin({ 'process.env.NODE_ENV': JSON.stringify('development') })]
+  config.mode = 'development';
 }
 
-module.exports = config
+module.exports = new Promise((resolve) => {
+  const basePort = 8080;
+  portfinder.getPort({
+    port: basePort
+  }, (_, port) => {
+    config.devServer.port = port;
+    config.devServer.public = `localhost:${port}`;
+    resolve(config);
+  });
+});
