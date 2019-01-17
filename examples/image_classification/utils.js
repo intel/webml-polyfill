@@ -14,13 +14,22 @@ class Utils {
     this.canvasElement = canvas;
     this.canvasContext = this.canvasElement.getContext('2d');
     this.updateProgress;
+    this.backend = '';
+    this.prefer = '';
     this.initialized = false;
     this.loaded = false;
     this.outstandingRequest = null;
   }
 
   async loadModel(model) {
-    this.loaded = false;
+    if (this.loaded && this.modelFile === model.modelFile) {
+      return 'LOADED';
+    }
+    // reset all states
+    this.loaded = this.initialized = false;
+    this.backend = this.prefer = '';
+
+    // set new model params
     this.inputSize = model.inputSize;
     this.outputSize = model.outputSize;
     this.modelFile = model.modelFile;
@@ -52,12 +61,19 @@ class Utils {
       printOnnxModel(this.rawModel);
     }
     this.loaded = true;
+    return 'SUCCESS';
   }
 
   async init(backend, prefer) {
-    if (!this.loaded)
+    if (!this.loaded) {
       return 'NOT_LOADED';
+    }
+    if (this.initialized && backend === this.backend && prefer === this.prefer) {
+      return 'INITIALIZED';
+    }
     this.initialized = false;
+    this.backend = backend;
+    this.prefer = prefer;
     let configs = {
       rawModel: this.rawModel,
       backend: backend,

@@ -122,12 +122,7 @@ $(document).ready(() => {
     updateTitle(currentBackend, currentPrefer, `${um}`, `${ut}`);
     strsearch = `?prefer=${currentPrefer}&b=${currentBackend}&m=${um}&t=${ut}&s=${us}&d=${ud}`;
     window.history.pushState(null, null, strsearch);
-
-    if (us == 'camera') {
-      updateScenario(true, currentBackend, currentPrefer);
-    } else {
-      updateScenario(false, currentBackend, currentPrefer);
-    }
+    updateScenario(us === 'camera');
   });
 
   $('input:radio[name=m]').click(() => {
@@ -188,7 +183,7 @@ $(document).ready(() => {
     us = 'image';
     strsearch = `?prefer=${up}&b=${ub}&m=${um}&t=${ut}&s=${us}&d=${ud}`;
     window.history.pushState(null, null, strsearch)
-    updateScenario(false, currentBackend, currentPrefer);
+    updateScenario(false);
   });
 
   $('#cam').click(() => {
@@ -200,7 +195,7 @@ $(document).ready(() => {
     us = 'camera';
     strsearch = `?prefer=${up}&b=${ub}&m=${um}&t=${ut}&s=${us}&d=${ud}`;
     window.history.pushState(null, null, strsearch)
-    updateScenario(true, currentBackend, currentPrefer);
+    updateScenario(true);
   });
 
   $('#fullscreen i svg').click(() => {
