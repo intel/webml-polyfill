@@ -1,14 +1,13 @@
-function getSearchParams_prefer() {
+const getSearchParamsPrefer = () => {
   let searchParams = new URLSearchParams(location.search);
   return searchParams.has('prefer') ? searchParams.get('prefer') : '';
 }
 
-function getSearchParams_backend() {
+const getSearchParamsBackend = () => {
   let searchParams = new URLSearchParams(location.search);
   return searchParams.has('b') ? searchParams.get('b') : '';
 }
-
-function getSearchParams_model() {
+const getSearchParamsModel = () => {
   let searchParams = new URLSearchParams(location.search);
   if (searchParams.has('m') && searchParams.has('t')) {
     return searchParams.get('m') + '_' + searchParams.get('t');
@@ -23,17 +22,15 @@ const inputElement = document.getElementById('input');
 const canvasElement = document.getElementById('canvas');
 const progressBar = document.getElementById('progressBar');
 
-let currentBackend = getSearchParams_backend();
-let currentModel = getSearchParams_model();
-let currentPrefer = getSearchParams_prefer();
+let currentBackend = getSearchParamsBackend();
+let currentModel = getSearchParamsModel();
+let currentPrefer = getSearchParamsPrefer();
 let streaming = false;
 let stats = new Stats();
 let track;
 
-let utils = new Utils(canvasElement);
-utils.updateProgress = updateProgress;    //register updateProgress function if progressBar element exist
-
-function showAlert(error) {
+const showAlert = (error) => {
+  console.error(error);
   let div = document.createElement('div');
   // div.setAttribute('id', 'backendAlert');
   div.setAttribute('class', 'backendAlert alert alert-warning alert-dismissible fade show');
@@ -44,7 +41,7 @@ function showAlert(error) {
   container.insertBefore(div, container.firstElementChild);
 }
 
-function updateProgress(ev) {
+const updateProgress = (ev) => {
   if (ev.lengthComputable) {
     let percentComplete = ev.loaded / ev.total * 100;
     percentComplete = percentComplete.toFixed(0);
@@ -54,7 +51,10 @@ function updateProgress(ev) {
   }
 }
 
-function updateResult(result) {
+let utils = new Utils(canvasElement);
+utils.updateProgress = updateProgress;    //register updateProgress function if progressBar element exist
+
+const updateResult = (result) => {
   try {
     console.log(`Inference time: ${result.time} ms`);
     let inferenceTimeElement = document.getElementById('inferenceTime');
@@ -92,11 +92,16 @@ if (getOS() === 'Mac OS' && currentBackend === 'WebML') {
   }
 }
 
-function logConfig() {
+const logConfig = () => {
   console.log(`Model: ${currentModel}, Backend: ${currentBackend}, Prefer: ${currentPrefer}`);
 }
 
-async function startPredictCamera() {
+const errorHandler = (e) => {
+  showAlert(e);
+  showError();
+}
+
+const startPredictCamera = async () => {
   if (streaming) {
     try {
       stats.begin();
@@ -105,13 +110,12 @@ async function startPredictCamera() {
       stats.end();
       setTimeout(startPredictCamera, 0);
     } catch (e) {
-      showAlert(e);
-      showError();
+      errorHandler(e);
     }
   }
 }
 
-async function utilsPredict(imageElement, backend, prefer) {
+const utilsPredict = async (imageElement, backend, prefer) => {
   streaming = false;
   // Stop webcam opened by navigator.getUserMedia if user visits 'LIVE CAMERA' tab before
   if(track) {
@@ -128,12 +132,11 @@ async function utilsPredict(imageElement, backend, prefer) {
     updateResult(ret);
   }
   catch (e) {
-    showAlert(e);
-    showError();
+    errorHandler(e);
   }
 }
 
-async function utilsPredictCamera(backend, prefer) {
+const utilsPredictCamera = async (backend, prefer) => {
   streaming = true;
   await showProgress('Camera predicting ...');
   try {
@@ -148,12 +151,15 @@ async function utilsPredictCamera(backend, prefer) {
     showResults();
   } 
   catch (e) {
-    showAlert(e);
-    showError();
+    errorHandler(e);
   }
 }
 
-async function updateScenario(camera, backend, prefer) {
+const predictPath = (camera) => {
+  (!camera) ? utilsPredict(imageElement, currentBackend, currentPrefer) : utilsPredictCamera(currentBackend, currentPrefer);
+}
+
+const updateScenario = async (camera, backend, prefer) => {
   streaming = false;
   try {
     utils.deleteAll();
@@ -161,14 +167,22 @@ async function updateScenario(camera, backend, prefer) {
     // console.log('utils.deleteAll(): ' + e);
   }
   logConfig();
-  if (!camera) {
-    utilsPredict(imageElement, backend, prefer);
-  } else {
-    utilsPredictCamera(backend, prefer);
-  }
+  predictPath(camera);
 }
 
-async function main(camera) {
+inputElement.addEventListener('change', (e) => {
+  let files = e.target.files;
+  if (files.length > 0) {
+    imageElement.src = URL.createObjectURL(files[0]);
+  }
+}, false);
+
+imageElement.addEventListener('load', () => {
+  utilsPredict(imageElement, currentBackend, currentPrefer);
+}, false);
+
+const main = async (camera) => {
+  streaming = false;
   try {
     utils.deleteAll();
   } catch (e) {
@@ -182,26 +196,10 @@ async function main(camera) {
         await utils.loadModel(model);
       }
       catch (e) {
-        showAlert(e);
-        showError();
+        errorHandler(e);
       }
     }
   }
-  if (!camera) {
-    inputElement.addEventListener('change', (e) => {
-      let files = e.target.files;
-      if (files.length > 0) {
-        imageElement.src = URL.createObjectURL(files[0]);
-      }
-    }, false);
-
-    imageElement.onload = function () {
-      utilsPredict(imageElement, currentBackend, currentPrefer);
-    }
-
-    utilsPredict(imageElement, currentBackend, currentPrefer);
-  } else {
-    utilsPredictCamera(currentBackend, currentPrefer);
-  }
+  predictPath(camera);
 }
 

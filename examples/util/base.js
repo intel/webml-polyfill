@@ -7,8 +7,6 @@ if (navigator.ml.isPolyfill) {
   nnPolyfill = navigator.ml_polyfill.getNeuralNetworkContext();
 }
 
-const currentOS = getOS();
-
 const preferMap = {
   'MPS': 'sustained',
   'BNNS': 'fast',
@@ -283,7 +281,7 @@ const objectDetectionModels = [
   ssdlite_mobilenetv2_tflite,
 ];
 
-function getOS() {
+const getOS = () => {
   var userAgent = window.navigator.userAgent,
       platform = window.navigator.platform,
       macosPlatforms = ['Macintosh', 'MacIntel', 'MacPPC', 'Mac68K'],
@@ -306,7 +304,9 @@ function getOS() {
   return os;
 }
 
-function getNativeAPI(preferString) {
+const currentOS = getOS();
+
+const getNativeAPI = (preferString) => {
   const apiMapping = {
     'Android': {
       'sustained': 'NN',
@@ -329,12 +329,12 @@ function getNativeAPI(preferString) {
   return apiMapping[currentOS][preferString];
 }
 
-function getUrlParams( prop ) {
+const getUrlParams = (prop) => {
   var params = {};
   var search = decodeURIComponent( window.location.href.slice( window.location.href.indexOf( '?' ) + 1 ) );
   var definitions = search.split( '&' );
 
-  definitions.forEach( function( val, key ) {
+  definitions.forEach((val, key) => {
     var parts = val.split( '=', 2 );
       params[ parts[ 0 ] ] = parts[ 1 ];
   } );
@@ -342,7 +342,7 @@ function getUrlParams( prop ) {
   return ( prop && prop in params ) ? params[ prop ] : params;
 }
 
-function getPreferParam() {
+const getPreferParam = () => {
   // workaround for using MPS backend on Mac OS by visiting URL with 'prefer=sustained'
   // workaround for using BNNS backend on Mac OS by visiting URL with 'prefer=fast'
   // use 'sustained' as default for Mac OS
@@ -360,7 +360,7 @@ function getPreferParam() {
   return prefer;
 }
 
-function getPrefer(backend) {
+const getPrefer = (backend) => {
   let nn = navigator.ml.getNeuralNetworkContext();
   let prefer = nn.PREFER_FAST_SINGLE_ANSWER;
   if (currentOS === 'Mac OS' && backend === 'WebML') {
@@ -374,7 +374,7 @@ function getPrefer(backend) {
   return prefer;
 }
 
-function getPreferCode(backend, prefer) {
+const getPreferCode = (backend, prefer) => {
   let preferCode;
   let nn = navigator.ml.getNeuralNetworkContext();
   if (backend === 'WASM') {

@@ -12,7 +12,7 @@ if (!location.search) {
   location.href = path + strsearch;
 }
 
-function componentToggle() {
+const componentToggle = () => {
   // $('#header-sticky-wrapper').attr('style', 'display:block');
   $('#header-sticky-wrapper').slideToggle();
   $('#query').slideToggle();
@@ -23,7 +23,7 @@ function componentToggle() {
   $('#extra span').toggle();
 }
 
-function disableModel() {
+const disableModel = () => {
   if (`${um}` && `${ut}`) {
     let m_t = `${um}` + '_' + `${ut}`;
     $('.model input').attr('disabled', false)
@@ -33,7 +33,7 @@ function disableModel() {
   }
 }
 
-function checkedModelStyle() {
+const checkedModelStyle = () => {
   if (`${um}` && `${ut}`) {
     $('.model input').removeAttr('checked');
     $('.model label').removeClass('checked');
@@ -43,7 +43,7 @@ function checkedModelStyle() {
   }
 }
 
-$(document).ready(function () {
+$(document).ready(() => {
 
   if (us == 'camera') {
     $('.nav-pills li').removeClass('active');
@@ -55,6 +55,7 @@ $(document).ready(function () {
     $('.nav-pills #img').addClass('active');
     $('#cameratab').removeClass('active');
     $('#imagetab').addClass('active');
+    $('#fps').html('');
   }
 
   if (hasUrlParam('b')) {
@@ -74,13 +75,13 @@ $(document).ready(function () {
     $('#' + getUrlParam('prefer')).attr('checked', 'checked');
     $('#l-' + getUrlParam('prefer')).addClass('checked');
 
-    if(ub == 'WASM' || ub == 'WebGL') {
+    if (ub == 'WASM' || ub == 'WebGL') {
       $('.ml').removeAttr('checked');
       $('.lml').removeClass('checked');
     }
   }
 
-  function updateTitle(backend, prefer, model, modeltype) {
+  const updateTitle = (backend, prefer, model, modeltype) => {
     let currentprefertext;
     if (backend == 'WASM' || backend == 'WebGL') {
       $('#ictitle').html(`Image Classfication / ${backend} / ${model} (${modeltype})`);
@@ -97,7 +98,7 @@ $(document).ready(function () {
   }
   updateTitle(ub, up, um, ut);
 
-  $('input:radio[name=b]').click(function () {
+  $('input:radio[name=b]').click(() => {
     $('.alert').hide();
     let rid = $("input:radio[name='b']:checked").attr('id');
     $('.backend input').removeAttr('checked');
@@ -105,12 +106,12 @@ $(document).ready(function () {
     $('#' + rid).attr('checked', 'checked');
     $('#l-' + rid).addClass('checked');
 
-    if(rid == 'WASM' || rid == 'WebGL') {
+    if (rid == 'WASM' || rid == 'WebGL') {
       $('.ml').removeAttr('checked');
       $('.lml').removeClass('checked');
     }
 
-    if(rid == 'WASM' || rid == 'WebGL') {
+    if (rid == 'WASM' || rid == 'WebGL') {
       currentBackend = rid;
       currentPrefer = 'none';
     } else if (rid == 'fast' || rid == 'sustained' || rid == 'low') {
@@ -129,7 +130,7 @@ $(document).ready(function () {
     }
   });
 
-  $('input:radio[name=m]').click(function () {
+  $('input:radio[name=m]').click(() => {
     $('.alert').hide();
     let rid = $("input:radio[name='m']:checked").attr('id');
     if (rid.indexOf('_onnx') > -1) {
@@ -140,8 +141,8 @@ $(document).ready(function () {
       um = rid.replace('_tflite', '');
       ut = 'tflite';
     }
-    if(currentBackend && currentPrefer) {
-      strsearch= `?prefer=${currentPrefer}&b=${currentBackend}&m=${um}&t=${ut}&s=${us}&d=${ud}`;
+    if (currentBackend && currentPrefer) {
+      strsearch = `?prefer=${currentPrefer}&b=${currentBackend}&m=${um}&t=${ut}&s=${us}&d=${ud}`;
     } else {
       strsearch = `?prefer=${up}&b=${ub}&m=${um}&t=${ut}&s=${us}&d=${ud}`;
     }
@@ -155,7 +156,7 @@ $(document).ready(function () {
     (us == 'camera') ? main(true) : main();
   });
 
-  $('#extra').click(function () {
+  $('#extra').click(() => {
     componentToggle();
     let display;
     if (ud == '0') {
@@ -167,8 +168,8 @@ $(document).ready(function () {
     }
 
     let strsearch;
-    if(currentBackend && currentPrefer) {
-      strsearch= `?prefer=${currentPrefer}&b=${currentBackend}&m=${um}&t=${ut}&s=${us}&d=${display}`;
+    if (currentBackend && currentPrefer) {
+      strsearch = `?prefer=${currentPrefer}&b=${currentBackend}&m=${um}&t=${ut}&s=${us}&d=${display}`;
     } else {
       strsearch = `?prefer=${up}&b=${ub}&m=${um}&t=${ut}&s=${us}&d=${display}`;
     }
@@ -176,9 +177,10 @@ $(document).ready(function () {
   });
 });
 
-$(document).ready(function () {
-  $('#img').click(function () {
+$(document).ready(() => {
+  $('#img').click(() => {
     $('.alert').hide();
+    $('#fps').html('');
     $('ul.nav-pills li').removeClass('active');
     $('ul.nav-pills #img').addClass('active');
     $('#imagetab').addClass('active');
@@ -189,7 +191,7 @@ $(document).ready(function () {
     updateScenario(false, currentBackend, currentPrefer);
   });
 
-  $('#cam').click(function () {
+  $('#cam').click(() => {
     $('.alert').hide();
     $('ul.nav-pills li').removeClass('active');
     $('ul.nav-pills #cam').addClass('active');
@@ -201,7 +203,7 @@ $(document).ready(function () {
     updateScenario(true, currentBackend, currentPrefer);
   });
 
-  $('#fullscreen i svg').click(function () {
+  $('#fullscreen i svg').click(() => {
     $('#fullscreen i').toggle();
     toggleFullScreen();
     $('video').toggleClass('fullscreen');
@@ -214,13 +216,13 @@ $(document).ready(function () {
 
 });
 
-$(window).load(function () {
+$(window).load(() => {
   if (ud != '0') {
     componentToggle();
   }
 });
 
-async function showProgress(text) {
+const showProgress = async (text) => {
   $('#progressmodel').show();
   await $('#progressstep').html(text);
   $('.shoulddisplay').hide();
@@ -228,25 +230,25 @@ async function showProgress(text) {
   $('#resulterror').hide();
 }
 
-function showResults() {
+const showResults = () => {
   $('#progressmodel').hide();
   $('.icdisplay').fadeIn();
   $('.shoulddisplay').fadeIn();
   $('#resulterror').hide();
 }
 
-function showError() {
+const showError = () => {
   $('#progressmodel').hide();
   $('.icdisplay').hide();
   $('.shoulddisplay').hide();
   $('#resulterror').fadeIn();
 }
 
-function updateLoading(c) {
+const updateLoading = (c) => {
   $(".loading-page .counter h1").html(c + "%");
 }
 
-$(window).load(function () {
+$(window).load(() => {
   disableModel();
   (us == 'camera') ? main(true) : main();
 })
