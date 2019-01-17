@@ -3,6 +3,7 @@ describe('CTS Real Model Test', function() {
   const nn = navigator.ml.getNeuralNetworkContext();
   
   it('Check result for concatenation by squeezenet0_concat4', async function() {
+    this.timeout(120000);
     let model = await nn.createModel(options);
     let operandIndex = 0;
 

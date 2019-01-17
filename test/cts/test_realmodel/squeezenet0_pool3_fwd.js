@@ -3,6 +3,7 @@ describe('CTS Real Model Test', function() {
   const nn = navigator.ml.getNeuralNetworkContext();
 
   it('Check result for average_pool_2d by squeezenet0_pool3_fwd', async function() {
+    this.timeout(120000);
     let model = await nn.createModel(options);
     let operandIndex = 0;
 

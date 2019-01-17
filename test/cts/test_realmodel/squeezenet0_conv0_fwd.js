@@ -3,7 +3,7 @@ describe('CTS Real Model Test', function() {
   const nn = navigator.ml.getNeuralNetworkContext();
 
   it('Check result for conv_2d by squeezenet0_conv0_fwd', async function() {
-    this.timeout(60000);
+    this.timeout(120000);
     let model = await nn.createModel(options);
     let operandIndex = 0;
 

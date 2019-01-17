@@ -1,8 +1,9 @@
 describe('CTS Real Model Test', function() {
   const assert = chai.assert;
   const nn = navigator.ml.getNeuralNetworkContext();
-  
+
   it('Check result for concatenation by squeezenet0_concat0', async function() {
+    this.timeout(120000);
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -32,7 +33,7 @@ describe('CTS Real Model Test', function() {
       }
       input2_value = file_data;
     });
-    await fetch('./cts/test_realmodel/resources/squeezenet0_concat0').then((res) => { 
+    await fetch('./cts/test_realmodel/resources/squeezenet0_concat0').then((res) => {
       return res.text();
     }).then((text) => {
       let arr = text.split(',');
@@ -43,7 +44,7 @@ describe('CTS Real Model Test', function() {
       }
       output_expect = file_data;
     });
-    
+
     let type2 = {type: nn.INT32};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 55, 55, 64]};
     let type1_length = product(type1.dimensions);
