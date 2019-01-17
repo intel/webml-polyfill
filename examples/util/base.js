@@ -18,7 +18,7 @@ const preferMap = {
 };
 
 const mobilenet_v1_tflite = {
-  modelName: 'Mobilenet V1(TFlite)',
+  modelName: 'mobilenet_v1_tflite',
   inputSize: [224, 224, 3],
   outputSize: 1001,
   modelFile: '../image_classification/model/mobilenet_v1_1.0_224.tflite',
@@ -26,11 +26,13 @@ const mobilenet_v1_tflite = {
   preOptions: {
     mean: [127.5, 127.5, 127.5],
     std: [127.5, 127.5, 127.5],
-  }
+  },
+  intro: 'An efficient Convolutional Neural Networks for Mobile Vision Applications.',
+  paperUrl: 'https://arxiv.org/pdf/1704.04861.pdf',
+  modelCDNUrl: 'https://cdn_host_and_path/mobilenet_v1_1.0_224.tflite'
 };
-
 const mobilenet_v2_tflite = {
-  modelName: 'Mobilenet V2(TFlite)',
+  modelName: 'mobilenet_v2_tflite',
   inputSize: [224, 224, 3],
   outputSize: 1001,
   modelFile: '../image_classification/model/mobilenet_v2_1.0_224.tflite',
@@ -38,11 +40,13 @@ const mobilenet_v2_tflite = {
   preOptions: {
     mean: [127.5, 127.5, 127.5],
     std: [127.5, 127.5, 127.5],
-  }
+  },
+  intro: 'MobileNetV2 improves the state of the art performance of mobile models.',
+  paperUrl: 'https://arxiv.org/abs/1801.04381',
+  modelCDNUrl: 'https://cdn_host_and_path/mobilenet_v2_1.0_224.tflite'
 };
-
 const inception_v3_tflite = {
-  modelName: 'Inception V3(TFlite)',
+  modelName: 'inception_v3_tflite',
   inputSize: [299, 299, 3],
   outputSize: 1001,
   modelFile: '../image_classification/model/inception_v3.tflite',
@@ -51,10 +55,12 @@ const inception_v3_tflite = {
     mean: [127.5, 127.5, 127.5],
     std: [127.5, 127.5, 127.5],
   },
+  intro: 'Inception-v3 is trained for the ImageNet Large Visual Recognition Challenge.',
+  paperUrl: 'http://arxiv.org/abs/1512.00567',
+  modelCDNUrl: 'https://cdn_host_and_path/inception_v3.tflite'
 };
-
 const inception_v4_tflite = {
-  modelName: 'Inception V4(TFlite)',
+  modelName: 'inception_v4_tflite',
   inputSize: [299, 299, 3],
   outputSize: 1001,
   modelFile: '../image_classification/model/inception_v4.tflite',
@@ -62,11 +68,13 @@ const inception_v4_tflite = {
   preOptions: {
     mean: [127.5, 127.5, 127.5],
     std: [127.5, 127.5, 127.5],
-  }
+  },
+  intro: 'Inception architecture that has been shown to achieve very good performance at relatively low computational cost.',
+  paperUrl: 'https://arxiv.org/abs/1602.07261',
+  modelCDNUrl: 'https://cdn_host_and_path/inception_v4.tflite'
 };
-
 const squeezenet_tflite = {
-  modelName: 'Squeezenet(TFlite)',
+  modelName: 'squeezenet_tflite',
   inputSize: [224, 224, 3],
   outputSize: 1001,
   modelFile: '../image_classification/model/squeezenet.tflite',
@@ -74,11 +82,13 @@ const squeezenet_tflite = {
   preOptions: {
     mean: [127.5, 127.5, 127.5],
     std: [127.5, 127.5, 127.5],
-  }
+  },
+  intro: 'A light-weight CNN providing Alexnet level accuracy with 50X fewer parameters.',
+  paperUrl: 'https://arxiv.org/abs/1602.07360',
+  modelCDNUrl: 'https://cdn_host_and_path/squeezenet.tflite'
 };
-
 const inception_resnet_v2_tflite = {
-  modelName: 'Incep. Res. V2(TFlite)',
+  modelName: 'inception_resnet_v2_tflite',
   inputSize: [299, 299, 3],
   outputSize: 1001,
   modelFile: '../image_classification/model/inception_resnet_v2.tflite',
@@ -89,11 +99,13 @@ const inception_resnet_v2_tflite = {
   },
   postOptions: {
     softmax: true,
-  }
+  },
+  intro: 'Inception architecture that has been shown to achieve very good performance at relatively low computational cost, and training with residual connections accelerates the training of Inception networks significantly. There is also some evidence of residual Inception networks outperforming similarly expensive Inception networks without residual connections.',
+  paperUrl: 'https://arxiv.org/abs/1602.07261',
+  modelCDNUrl: 'https://cdn_host_and_path/inception_resnet_v2.tflite'
 };
-
 const squeezenet_onnx = {
-  modelName: 'SqueezeNet(Onnx)',
+  modelName: 'squeezenet_onnx',
   modelFile: '../image_classification/model/squeezenet1.1.onnx',
   labelsFile: '../image_classification/model/labels1000.txt',
   inputSize: [224, 224, 3],
@@ -106,11 +118,13 @@ const squeezenet_onnx = {
   },
   postOptions: {
     softmax: true,
-  }
+  },
+  intro: 'A light-weight CNN providing Alexnet level accuracy with 50X fewer parameters.',
+  paperUrl: 'https://arxiv.org/abs/1602.07360',
+  modelCDNUrl: 'https://cdn_host_and_path/squeezenet1.1.onnx'
 };
-
 const mobilenet_v2_onnx = {
-  modelName: 'Mobilenet v2(Onnx)',
+  modelName: 'mobilenet_v2_onnx',
   modelFile: '../image_classification/model/mobilenetv2-1.0.onnx',
   labelsFile: '../image_classification/model/labels1000.txt',
   inputSize: [224, 224, 3],
@@ -123,11 +137,13 @@ const mobilenet_v2_onnx = {
   },
   postOptions: {
     softmax: true,
-  }
+  },
+  intro: 'MobileNetV2 improves the state of the art performance of mobile models.',
+  paperUrl: 'https://arxiv.org/abs/1801.04381',
+  modelCDNUrl: 'https://cdn_host_and_path/mobilenetv2-1.0.onnx'
 };
-
 const resnet_v1_onnx = {
-  modelName: 'ResNet50 v1(Onnx)',
+  modelName: 'resnet_v1_onnx',
   modelFile: '../image_classification/model/resnet50v1.onnx',
   labelsFile: '../image_classification/model/labels1000.txt',
   inputSize: [224, 224, 3],
@@ -140,11 +156,13 @@ const resnet_v1_onnx = {
   },
   postOptions: {
     softmax: true,
-  }
+  },
+  intro: 'A residual learning framework to ease the training of networks that are substantially deeper than those used previously. This result won the 1st place on the ILSVRC 2015 classification task.',
+  paperUrl: 'https://arxiv.org/abs/1512.03385',
+  modelCDNUrl: 'https://cdn_host_and_path/resnet50v1.onnx'
 };
-
 const resnet_v2_onnx = {
-  modelName: 'ResNet50 v2(Onnx)',
+  modelName: 'resnet_v2_onnx',
   modelFile: '../image_classification/model/resnet50v2.onnx',
   labelsFile: '../image_classification/model/labels1000.txt',
   inputSize: [224, 224, 3],
@@ -157,19 +175,23 @@ const resnet_v2_onnx = {
   },
   postOptions: {
     softmax: true,
-  }
+  },
+  intro: 'Deep residual networks have emerged as a family of extremely deep architectures showing compelling accuracy and nice convergence behaviors. It reports improved results using a 1001-layer ResNet on CIFAR-10 (4.62% error) and CIFAR-100, and a 200-layer ResNet on ImageNet.',
+  paperUrl: 'https://arxiv.org/abs/1603.05027',
+  modelCDNUrl: 'https://cdn_host_and_path/resnet50v2.onnx'
 };
-
-const inceptionv2_onnx = {
-  modelName: 'Inception v2(Onnx)',
+const inception_v2_onnx = {
+  modelName: 'inception_v2_onnx',
   modelFile: '../image_classification/model/inceptionv2.onnx',
   labelsFile: '../image_classification/model/ilsvrc2012labels.txt',
   inputSize: [224, 224, 3],
   outputSize: 1000,
+  intro: 'Inception-v2 is trained for the ImageNet Large Visual Recognition Challenge.',
+  paperUrl: 'https://arxiv.org/abs/1512.00567',
+  modelCDNUrl: 'https://cdn_host_and_path/inceptionv2.onnx'
 };
-
 const densenet_onnx = {
-  modelName: 'DenseNet(Onnx)',
+  modelName: 'densenet_onnx',
   modelFile: '../image_classification/model/densenet121.onnx',
   labelsFile: '../image_classification/model/labels1000.txt',
   inputSize: [224, 224, 3],
@@ -183,7 +205,10 @@ const densenet_onnx = {
   },
   postOptions: {
     softmax: true,
-  }
+  },
+  intro: 'Dense Convolutional Network (DenseNet) connects each layer to every other layer in a feed-forward fashion. DenseNets have several compelling advantages: they alleviate the vanishing-gradient problem, strengthen feature propagation, encourage feature reuse, and substantially reduce the number of parameters. ',
+  paperUrl: 'https://arxiv.org/abs/1608.06993',
+  modelCDNUrl: 'https://cdn_host_and_path/densenet121.onnx'
 };
 
 const ssd_mobilenetv1_tflite = {
@@ -248,7 +273,7 @@ const imageClassificationModels = [
   mobilenet_v2_onnx,
   resnet_v1_onnx,
   resnet_v2_onnx,
-  inceptionv2_onnx,
+  inception_v2_onnx,
   densenet_onnx,
 ];
 
