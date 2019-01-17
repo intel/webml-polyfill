@@ -1,18 +1,22 @@
-describe('CTS', function() {
+describe('CTS Supplement Test', function() {
   const assert = chai.assert;
   const nn = navigator.ml.getNeuralNetworkContext();
 
-  it('check result for Resize bilinear with inputs(without align_corners) example/2', async function() {
+  it('check result for Resize bilinear by align_corners(TRUE) zoom out example/9', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
-    let op1_value = [3, 4, 6, 10, 9, 10, 12, 16];
-    let op2_expect = [3, 4, 5, 8, 6, 10, 7, 8, 9, 12, 10, 14, 9, 10, 11, 14, 12, 16];
+    let op1_value = [1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31,
+                     1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31,
+                     1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31,
+                     1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31];
+    let op2_expect = [1, 3, 13, 15, 17, 19, 29, 31,
+                      1, 3, 13, 15, 17, 19, 29, 31];
 
     let type2 = {type: nn.INT32};
-    let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2, 2]};
+    let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 4, 4, 2]};
     let type0_length = product(type0.dimensions);
-    let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 3, 3, 2]};
+    let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2, 2]};
     let type1_length = product(type1.dimensions);
 
     let op1 = operandIndex++;
@@ -23,10 +27,13 @@ describe('CTS', function() {
     model.addOperand(type2);
     let width = operandIndex++;
     model.addOperand(type2);
+    let align_corners = operandIndex++;
+    model.addOperand(type2);
 
-    model.setOperandValue(height, new Int32Array([3]));
-    model.setOperandValue(width, new Int32Array([3]));
-    model.addOperation(nn.RESIZE_BILINEAR, [op1, height, width], [op2]);
+    model.setOperandValue(height, new Int32Array([2]));
+    model.setOperandValue(width, new Int32Array([2]));
+    model.setOperandValue(align_corners, new Int32Array([1]));
+    model.addOperation(nn.RESIZE_BILINEAR, [op1, height, width, align_corners], [op2]);
 
     model.identifyInputsAndOutputs([op1], [op2]);
     await model.finish();
