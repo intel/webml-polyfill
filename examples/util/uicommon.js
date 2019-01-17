@@ -1,14 +1,14 @@
-let getUrlParam = function (key) {
+const getUrlParam = (key) => {
   let searchParams = new URLSearchParams(location.search);
   return searchParams.get(key);
 }
 
-let hasUrlParam = function (key) {
+const hasUrlParam = (key) => {
   let searchParams = new URLSearchParams(location.search);
   return searchParams.has(key);
 }
 
-function isWebML() {
+const isWebML = () => {
   if (navigator.ml && navigator.ml.getNeuralNetworkContext()) {
     if (!navigator.ml.isPolyfill) {
       return true;
@@ -20,19 +20,24 @@ function isWebML() {
   }
 }
 
-function toggleFullScreen() {
-  if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen();
-  } else {
-    if (document.exitFullscreen) {
-      document.exitFullscreen(); 
-    }
+const toggleFullScreen = () => {
+  let doc = window.document;
+  let docEl = doc.documentElement;
+
+  let requestFullScreen = docEl.requestFullscreen || docEl.mozRequestFullScreen || docEl.webkitRequestFullScreen || docEl.msRequestFullscreen;
+  let cancelFullScreen = doc.exitFullscreen || doc.mozCancelFullScreen || doc.webkitExitFullscreen || doc.msExitFullscreen;
+
+  if(!doc.fullscreenElement && !doc.mozFullScreenElement && !doc.webkitFullscreenElement && !doc.msFullscreenElement) {
+    requestFullScreen.call(docEl);
+  }
+  else {
+    cancelFullScreen.call(doc);
   }
 }
 
 $('#header').sticky({ topSpacing: 0, zIndex: '50' });
 
-$(window).scroll(function () {
+$(window).scroll(() => {
   if ($(this).scrollTop() > 10) {
     $('#header').fadeOut();
     $('.scrolltop').fadeIn();
@@ -42,14 +47,14 @@ $(window).scroll(function () {
   }
 });
 
-$('.scrolltop, #logo a').click(function () {
+$('.scrolltop, #logo a').click(() => {
   $('html, body').animate({
     scrollTop: 0
   }, 1000, 'easeInOutExpo');
   return false;
 });
 
-$(document).ready(function () {
+$(document).ready(() => {
   $('.nav-menu').superfish({
     animation: { opacity: 'show' },
     speed: 400
@@ -73,18 +78,18 @@ $(document).ready(function () {
     $('#mobile-nav .menu-has-children i.chevron-down').html(chevrondown);
     $('#mobile-nav .menu-has-children i.chevron-up').html(chevronup);
 
-    $(document).on('click', '.menu-has-children i', function (e) {
+    $(document).on('click', '.menu-has-children i', (e) => {
       $(this).nextAll('ul').eq(0).slideToggle();
       $('.menu-has-children i').toggle();
     });
 
-    $(document).on('click', '#mobile-nav-toggle', function (e) {
+    $(document).on('click', '#mobile-nav-toggle', (e) => {
       $('body').toggleClass('mobile-nav-active');
       $('#mobile-nav-toggle i').toggle();
       $('#mobile-body-overly').toggle();
     });
 
-    $(document).click(function (e) {
+    $(document).click((e) => {
       var container = $('#mobile-nav, #mobile-nav-toggle');
       if (!container.is(e.target) && container.has(e.target).length === 0) {
         if ($('body').hasClass('mobile-nav-active')) {
