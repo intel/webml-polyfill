@@ -16,7 +16,6 @@ const config = {
   externals: {
     'fs': true
   },
-  devtool: 'source-map',
   devServer: {
     // enable https
     https: process.env.HTTPS === 'true' || false,
@@ -24,13 +23,20 @@ const config = {
     host: '0.0.0.0',
     // allow connections using hostname
     disableHostCheck: true,
+    // serve bundle files from /dist/ without writing to disk
+    publicPath: '/dist/',
   }
 };
 
 if (process.env.NODE_ENV === 'production') {
   config.mode = 'production';
+  // generate a separate source map file
+  // exclude it from production server if you don't want to enable source map
+  config.devtool = 'source-map';
 } else {
   config.mode = 'development';
+  // inline the source map in bundle file for remote debugging
+  config.devtool = 'inline-source-map';
 }
 
 module.exports = new Promise((resolve) => {
