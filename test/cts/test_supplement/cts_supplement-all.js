@@ -4719,7 +4719,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
-  it('check result for Resize bilinear distorted example/1', async function() {
+  it('check result for Resize bilinear with inputs (without align_corners) distorted example/1', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -4767,7 +4767,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
-  it('check result for Resize bilinear distorted example/2', async function() {
+  it('check result for Resize bilinear with inputs (without align_corners) distorted example/2', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -4815,7 +4815,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
-  it('check result for Resize bilinear distorted example/3', async function() {
+  it('check result for Resize bilinear with inputs (without align_corners) distorted example/3', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -4863,7 +4863,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
-  it('check result for Resize bilinear distorted example/4', async function() {
+  it('check result for Resize bilinear with inputs (without align_corners) distorted example/4', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -4911,7 +4911,457 @@ describe('CTS Supplement Test', function() {
     }
   });
 
-  it('check result for Resize bilinear remain size example/1', async function() {
+  it('check result for Resize bilinear by align_corners(FALSE) distorted example/5', async function() {
+    let model = await nn.createModel(options);
+    let operandIndex = 0;
+
+    let op1_value = [1, 3, 5, 7, 9, 11, 13, 15, 1, 3, 5, 7, 9, 11, 13, 15, 1, 3, 5, 7, 9, 11, 13, 15, 1, 3, 5, 7, 9, 11, 13, 15];
+    let op2_expect = [1, 3, 3.6666667, 5.666667, 5, 7, 6.333333, 8.333333, 9, 11, 10.333333, 12.333333, 6.333334, 8.333334, 9.000001, 11.000001, 10.333334, 12.333334, 1, 3, 3.6666667, 5.666667, 5, 7, 6.333333, 8.333333, 9, 11, 10.333333, 12.333333, 6.333334, 8.333334, 9.000001, 11.000001, 10.333334, 12.333334];
+
+    let type2 = {type: nn.INT32};
+    let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 4, 2, 2]};
+    let type0_length = product(type0.dimensions);
+    let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 3, 3, 2]};
+    let type1_length = product(type1.dimensions);
+
+    let op1 = operandIndex++;
+    model.addOperand(type0);
+    let op2 = operandIndex++;
+    model.addOperand(type1);
+    let height = operandIndex++;
+    model.addOperand(type2);
+    let width = operandIndex++;
+    model.addOperand(type2);
+    let align_corners = operandIndex++;
+    model.addOperand(type2);
+
+    model.setOperandValue(height, new Int32Array([3]));
+    model.setOperandValue(width, new Int32Array([3]));
+    model.setOperandValue(align_corners, new Int32Array([0]));
+    model.addOperation(nn.RESIZE_BILINEAR, [op1, height, width, align_corners], [op2]);
+
+    model.identifyInputsAndOutputs([op1], [op2]);
+    await model.finish();
+
+    let compilation = await model.createCompilation();
+    compilation.setPreference(getPreferenceCode(options.prefer));
+    await compilation.finish();
+
+    let execution = await compilation.createExecution();
+
+    let op1_input = new Float32Array(op1_value);
+    execution.setInput(0, op1_input);
+
+    let op2_output = new Float32Array(type1_length);
+    execution.setOutput(0, op2_output);
+
+    await execution.startCompute();
+
+    for (let i = 0; i < type1_length; ++i) {
+      assert.isTrue(almostEqualCTS(op2_output[i], op2_expect[i]));
+    }
+  });
+
+  it('check result for Resize bilinear by align_corners(TRUE) distorted example/6', async function() {
+    let model = await nn.createModel(options);
+    let operandIndex = 0;
+
+    let op1_value = [1, 3, 5, 7, 9, 11, 13, 15, 1, 3, 5, 7, 9, 11, 13, 15, 1, 3, 5, 7, 9, 11, 13, 15, 1, 3, 5, 7, 9, 11, 13, 15];
+    let op2_expect = [1, 3, 3, 5, 5, 7, 5, 7, 7, 9, 9, 11, 9, 11, 11, 13, 13, 15, 1, 3, 3, 5, 5, 7, 5, 7, 7, 9, 9, 11, 9, 11, 11, 13, 13, 15];
+
+    let type2 = {type: nn.INT32};
+    let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 4, 2, 2]};
+    let type0_length = product(type0.dimensions);
+    let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 3, 3, 2]};
+    let type1_length = product(type1.dimensions);
+
+    let op1 = operandIndex++;
+    model.addOperand(type0);
+    let op2 = operandIndex++;
+    model.addOperand(type1);
+    let height = operandIndex++;
+    model.addOperand(type2);
+    let width = operandIndex++;
+    model.addOperand(type2);
+    let align_corners = operandIndex++;
+    model.addOperand(type2);
+
+    model.setOperandValue(height, new Int32Array([3]));
+    model.setOperandValue(width, new Int32Array([3]));
+    model.setOperandValue(align_corners, new Int32Array([1]));
+    model.addOperation(nn.RESIZE_BILINEAR, [op1, height, width, align_corners], [op2]);
+
+    model.identifyInputsAndOutputs([op1], [op2]);
+    await model.finish();
+
+    let compilation = await model.createCompilation();
+    compilation.setPreference(getPreferenceCode(options.prefer));
+    await compilation.finish();
+
+    let execution = await compilation.createExecution();
+
+    let op1_input = new Float32Array(op1_value);
+    execution.setInput(0, op1_input);
+
+    let op2_output = new Float32Array(type1_length);
+    execution.setOutput(0, op2_output);
+
+    await execution.startCompute();
+
+    for (let i = 0; i < type1_length; ++i) {
+      assert.isTrue(almostEqualCTS(op2_output[i], op2_expect[i]));
+    }
+  });
+
+  it('check result for Resize bilinear with inputs (without align_corners) distorted example/7', async function() {
+    let model = await nn.createModel(options);
+    let operandIndex = 0;
+
+    let op1_value = [1, 3, 5, 7, 9, 11, 13, 15,
+                     1, 3, 5, 7, 9, 11, 13, 15,
+                     1, 3, 5, 7, 9, 11, 13, 15,
+                     1, 3, 5, 7, 9, 11, 13, 15];
+    let op2_expect = [1, 3, 9, 11,
+                      1, 3, 9, 11,
+                      1, 3, 9, 11,
+                      1, 3, 9, 11,
+                      1, 3, 9, 11,
+                      1, 3, 9, 11,
+                      1, 3, 9, 11,
+                      1, 3, 9, 11];
+
+    let type2 = {type: nn.INT32};
+    let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 4, 2]};
+    let type0_length = product(type0.dimensions);
+    let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 4, 2, 2]};
+    let type1_length = product(type1.dimensions);
+
+    let op1 = operandIndex++;
+    model.addOperand(type0);
+    let op2 = operandIndex++;
+    model.addOperand(type1);
+    let height = operandIndex++;
+    model.addOperand(type2);
+    let width = operandIndex++;
+    model.addOperand(type2);
+
+    model.setOperandValue(height, new Int32Array([4]));
+    model.setOperandValue(width, new Int32Array([2]));
+    model.addOperation(nn.RESIZE_BILINEAR, [op1, height, width], [op2]);
+
+    model.identifyInputsAndOutputs([op1], [op2]);
+    await model.finish();
+
+    let compilation = await model.createCompilation();
+    compilation.setPreference(getPreferenceCode(options.prefer));
+    await compilation.finish();
+
+    let execution = await compilation.createExecution();
+
+    let op1_input = new Float32Array(op1_value);
+    execution.setInput(0, op1_input);
+
+    let op2_output = new Float32Array(type1_length);
+    execution.setOutput(0, op2_output);
+
+    await execution.startCompute();
+
+    for (let i = 0; i < type1_length; ++i) {
+      assert.isTrue(almostEqualCTS(op2_output[i], op2_expect[i]));
+    }
+  });
+
+  it('check result for Resize bilinear by align_corners(FALSE) distorted example/8', async function() {
+    let model = await nn.createModel(options);
+    let operandIndex = 0;
+
+    let op1_value = [1, 3, 5, 7, 9, 11, 13, 15,
+                     1, 3, 5, 7, 9, 11, 13, 15,
+                     1, 3, 5, 7, 9, 11, 13, 15,
+                     1, 3, 5, 7, 9, 11, 13, 15];
+    let op2_expect = [1, 3, 9, 11,
+                      1, 3, 9, 11,
+                      1, 3, 9, 11,
+                      1, 3, 9, 11,
+                      1, 3, 9, 11,
+                      1, 3, 9, 11,
+                      1, 3, 9, 11,
+                      1, 3, 9, 11];
+
+    let type2 = {type: nn.INT32};
+    let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 4, 2]};
+    let type0_length = product(type0.dimensions);
+    let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 4, 2, 2]};
+    let type1_length = product(type1.dimensions);
+
+    let op1 = operandIndex++;
+    model.addOperand(type0);
+    let op2 = operandIndex++;
+    model.addOperand(type1);
+    let height = operandIndex++;
+    model.addOperand(type2);
+    let width = operandIndex++;
+    model.addOperand(type2);
+    let align_corners = operandIndex++;
+    model.addOperand(type2);
+
+    model.setOperandValue(height, new Int32Array([4]));
+    model.setOperandValue(width, new Int32Array([2]));
+    model.setOperandValue(align_corners, new Int32Array([0]));
+    model.addOperation(nn.RESIZE_BILINEAR, [op1, height, width, align_corners], [op2]);
+
+    model.identifyInputsAndOutputs([op1], [op2]);
+    await model.finish();
+
+    let compilation = await model.createCompilation();
+    compilation.setPreference(getPreferenceCode(options.prefer));
+    await compilation.finish();
+
+    let execution = await compilation.createExecution();
+
+    let op1_input = new Float32Array(op1_value);
+    execution.setInput(0, op1_input);
+
+    let op2_output = new Float32Array(type1_length);
+    execution.setOutput(0, op2_output);
+
+    await execution.startCompute();
+
+    for (let i = 0; i < type1_length; ++i) {
+      assert.isTrue(almostEqualCTS(op2_output[i], op2_expect[i]));
+    }
+  });
+
+  it('check result for Resize bilinear by align_corners(TRUE) distorted example/9', async function() {
+    let model = await nn.createModel(options);
+    let operandIndex = 0;
+
+    let op1_value = [1, 3, 5, 7, 9, 11, 13, 15,
+                     1, 3, 5, 7, 9, 11, 13, 15,
+                     1, 3, 5, 7, 9, 11, 13, 15,
+                     1, 3, 5, 7, 9, 11, 13, 15];
+    let op2_expect = [1, 3, 13, 15,
+                      1, 3, 13, 15,
+                      1, 3, 13, 15,
+                      1, 3, 13, 15,
+                      1, 3, 13, 15,
+                      1, 3, 13, 15,
+                      1, 3, 13, 15,
+                      1, 3, 13, 15];
+
+    let type2 = {type: nn.INT32};
+    let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 4, 2]};
+    let type0_length = product(type0.dimensions);
+    let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 4, 2, 2]};
+    let type1_length = product(type1.dimensions);
+
+    let op1 = operandIndex++;
+    model.addOperand(type0);
+    let op2 = operandIndex++;
+    model.addOperand(type1);
+    let height = operandIndex++;
+    model.addOperand(type2);
+    let width = operandIndex++;
+    model.addOperand(type2);
+    let align_corners = operandIndex++;
+    model.addOperand(type2);
+
+    model.setOperandValue(height, new Int32Array([4]));
+    model.setOperandValue(width, new Int32Array([2]));
+    model.setOperandValue(align_corners, new Int32Array([1]));
+    model.addOperation(nn.RESIZE_BILINEAR, [op1, height, width, align_corners], [op2]);
+
+    model.identifyInputsAndOutputs([op1], [op2]);
+    await model.finish();
+
+    let compilation = await model.createCompilation();
+    compilation.setPreference(getPreferenceCode(options.prefer));
+    await compilation.finish();
+
+    let execution = await compilation.createExecution();
+
+    let op1_input = new Float32Array(op1_value);
+    execution.setInput(0, op1_input);
+
+    let op2_output = new Float32Array(type1_length);
+    execution.setOutput(0, op2_output);
+
+    await execution.startCompute();
+
+    for (let i = 0; i < type1_length; ++i) {
+      assert.isTrue(almostEqualCTS(op2_output[i], op2_expect[i]));
+    }
+  });
+
+  it('check result for Resize bilinear with inputs (without align_corners) distorted example/10', async function() {
+    let model = await nn.createModel(options);
+    let operandIndex = 0;
+
+    let op1_value = [1, 3, 5, 7, 9, 11, 13, 15,
+                     1, 3, 5, 7, 9, 11, 13, 15,
+                     1, 3, 5, 7, 9, 11, 13, 15,
+                     1, 3, 5, 7, 9, 11, 13, 15];
+    let op2_expect = [1, 3, 3, 5, 5, 7, 5, 7,
+                      1, 3, 3, 5, 5, 7, 5, 7,
+                      1, 3, 3, 5, 5, 7, 5, 7,
+                      1, 3, 3, 5, 5, 7, 5, 7];
+
+    let type2 = {type: nn.INT32};
+    let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 4, 2, 2]};
+    let type0_length = product(type0.dimensions);
+    let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 4, 2]};
+    let type1_length = product(type1.dimensions);
+
+    let op1 = operandIndex++;
+    model.addOperand(type0);
+    let op2 = operandIndex++;
+    model.addOperand(type1);
+    let height = operandIndex++;
+    model.addOperand(type2);
+    let width = operandIndex++;
+    model.addOperand(type2);
+
+    model.setOperandValue(height, new Int32Array([2]));
+    model.setOperandValue(width, new Int32Array([4]));
+    model.addOperation(nn.RESIZE_BILINEAR, [op1, height, width], [op2]);
+
+    model.identifyInputsAndOutputs([op1], [op2]);
+    await model.finish();
+
+    let compilation = await model.createCompilation();
+    compilation.setPreference(getPreferenceCode(options.prefer));
+    await compilation.finish();
+
+    let execution = await compilation.createExecution();
+
+    let op1_input = new Float32Array(op1_value);
+    execution.setInput(0, op1_input);
+
+    let op2_output = new Float32Array(type1_length);
+    execution.setOutput(0, op2_output);
+
+    await execution.startCompute();
+
+    for (let i = 0; i < type1_length; ++i) {
+      assert.isTrue(almostEqualCTS(op2_output[i], op2_expect[i]));
+    }
+  });
+
+  it('check result for Resize bilinear by align_corners(FALSE) distorted example/11', async function() {
+    let model = await nn.createModel(options);
+    let operandIndex = 0;
+
+    let op1_value = [1, 3, 5, 7, 9, 11, 13, 15,
+                     1, 3, 5, 7, 9, 11, 13, 15,
+                     1, 3, 5, 7, 9, 11, 13, 15,
+                     1, 3, 5, 7, 9, 11, 13, 15];
+    let op2_expect = [1, 3, 3, 5, 5, 7, 5, 7,
+                      1, 3, 3, 5, 5, 7, 5, 7,
+                      1, 3, 3, 5, 5, 7, 5, 7,
+                      1, 3, 3, 5, 5, 7, 5, 7];
+
+    let type2 = {type: nn.INT32};
+    let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 4, 2, 2]};
+    let type0_length = product(type0.dimensions);
+    let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 4, 2]};
+    let type1_length = product(type1.dimensions);
+
+    let op1 = operandIndex++;
+    model.addOperand(type0);
+    let op2 = operandIndex++;
+    model.addOperand(type1);
+    let height = operandIndex++;
+    model.addOperand(type2);
+    let width = operandIndex++;
+    model.addOperand(type2);
+    let align_corners = operandIndex++;
+    model.addOperand(type2);
+
+    model.setOperandValue(height, new Int32Array([2]));
+    model.setOperandValue(width, new Int32Array([4]));
+    model.setOperandValue(align_corners, new Int32Array([0]));
+    model.addOperation(nn.RESIZE_BILINEAR, [op1, height, width, align_corners], [op2]);
+
+    model.identifyInputsAndOutputs([op1], [op2]);
+    await model.finish();
+
+    let compilation = await model.createCompilation();
+    compilation.setPreference(getPreferenceCode(options.prefer));
+    await compilation.finish();
+
+    let execution = await compilation.createExecution();
+
+    let op1_input = new Float32Array(op1_value);
+    execution.setInput(0, op1_input);
+
+    let op2_output = new Float32Array(type1_length);
+    execution.setOutput(0, op2_output);
+
+    await execution.startCompute();
+
+    for (let i = 0; i < type1_length; ++i) {
+      assert.isTrue(almostEqualCTS(op2_output[i], op2_expect[i]));
+    }
+  });
+
+  it('check result for Resize bilinear by align_corners(TRUE) distorted example/12', async function() {
+    let model = await nn.createModel(options);
+    let operandIndex = 0;
+
+    let op1_value = [1, 3, 5, 7, 9, 11, 13, 15,
+                     1, 3, 5, 7, 9, 11, 13, 15,
+                     1, 3, 5, 7, 9, 11, 13, 15,
+                     1, 3, 5, 7, 9, 11, 13, 15];
+    let op2_expect = [1,  3, 2.3333335, 4.3333335, 3.6666667, 5.6666667,  5,  7,
+                      9, 11, 10.333333, 12.333333, 11.666667, 13.666667, 13, 15,
+                      1,  3, 2.3333335, 4.3333335, 3.6666667, 5.6666667,  5,  7,
+                      9, 11, 10.333333, 12.333333, 11.666667, 13.666667, 13, 15];
+
+    let type2 = {type: nn.INT32};
+    let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 4, 2, 2]};
+    let type0_length = product(type0.dimensions);
+    let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 4, 2]};
+    let type1_length = product(type1.dimensions);
+
+    let op1 = operandIndex++;
+    model.addOperand(type0);
+    let op2 = operandIndex++;
+    model.addOperand(type1);
+    let height = operandIndex++;
+    model.addOperand(type2);
+    let width = operandIndex++;
+    model.addOperand(type2);
+    let align_corners = operandIndex++;
+    model.addOperand(type2);
+
+    model.setOperandValue(height, new Int32Array([2]));
+    model.setOperandValue(width, new Int32Array([4]));
+    model.setOperandValue(align_corners, new Int32Array([1]));
+    model.addOperation(nn.RESIZE_BILINEAR, [op1, height, width, align_corners], [op2]);
+
+    model.identifyInputsAndOutputs([op1], [op2]);
+    await model.finish();
+
+    let compilation = await model.createCompilation();
+    compilation.setPreference(getPreferenceCode(options.prefer));
+    await compilation.finish();
+
+    let execution = await compilation.createExecution();
+
+    let op1_input = new Float32Array(op1_value);
+    execution.setInput(0, op1_input);
+
+    let op2_output = new Float32Array(type1_length);
+    execution.setOutput(0, op2_output);
+
+    await execution.startCompute();
+
+    for (let i = 0; i < type1_length; ++i) {
+      assert.isTrue(almostEqualCTS(op2_output[i], op2_expect[i]));
+    }
+  });
+
+  it('check result for Resize bilinear with inputs (without align_corners) remain size example/1', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -4959,7 +5409,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
-  it('check result for Resize bilinear remain size example/2', async function() {
+  it('check result for Resize bilinear with inputs (without align_corners) remain size example/2', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -5007,7 +5457,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
-  it('check result for Resize bilinear remain size example/3', async function() {
+  it('check result for Resize bilinear with inputs (without align_corners) remain size example/3', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -5055,7 +5505,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
-  it('check result for Resize bilinear remain size example/4', async function() {
+  it('check result for Resize bilinear with inputs (without align_corners) remain size example/4', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -5103,7 +5553,110 @@ describe('CTS Supplement Test', function() {
     }
   });
 
-  it('check result for Resize bilinear zoom in example/1', async function() {
+  it('check result for Resize bilinear by align_corners(FALSE) remain size example/5', async function() {
+    let model = await nn.createModel(options);
+    let operandIndex = 0;
+
+    let op1_value = [1.0, 1.0, 2.0, 2.0, 1.0, 1.0, 2.0, 2.0, 1.0, 1.0, 2.0, 2.0, 1.0, 1.0, 2.0, 2.0];
+    let op2_expect = [1.0, 1.0, 2.0, 2.0, 1.0, 1.0, 2.0, 2.0, 1.0, 1.0, 2.0, 2.0, 1.0, 1.0, 2.0, 2.0];
+
+    let type2 = {type: nn.INT32};
+    let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2, 2]};
+    let type0_length = product(type0.dimensions);
+    let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2, 2]};
+    let type1_length = product(type1.dimensions);
+
+    let op1 = operandIndex++;
+    model.addOperand(type0);
+    let op2 = operandIndex++;
+    model.addOperand(type1);
+    let height = operandIndex++;
+    model.addOperand(type2);
+    let width = operandIndex++;
+    model.addOperand(type2);
+    let align_corners = operandIndex++;
+    model.addOperand(type2);
+
+    model.setOperandValue(height, new Int32Array([2]));
+    model.setOperandValue(width, new Int32Array([2]));
+    model.setOperandValue(align_corners, new Int32Array([0]));
+    model.addOperation(nn.RESIZE_BILINEAR, [op1, height, width, align_corners], [op2]);
+
+    model.identifyInputsAndOutputs([op1], [op2]);
+    await model.finish();
+
+    let compilation = await model.createCompilation();
+    compilation.setPreference(getPreferenceCode(options.prefer));
+    await compilation.finish();
+
+    let execution = await compilation.createExecution();
+
+    let op1_input = new Float32Array(op1_value);
+    execution.setInput(0, op1_input);
+
+    let op2_output = new Float32Array(type1_length);
+    execution.setOutput(0, op2_output);
+
+    await execution.startCompute();
+
+    for (let i = 0; i < type1_length; ++i) {
+      assert.isTrue(almostEqualCTS(op2_output[i], op2_expect[i]));
+    }
+  });
+
+  it('check result for Resize bilinear by align_corners(TRUE) remain size example/6', async function() {
+    let model = await nn.createModel(options);
+    let operandIndex = 0;
+
+    let op1_value = [1.0, 1.0, 2.0, 2.0, 1.0, 1.0, 2.0, 2.0, 1.0, 1.0, 2.0, 2.0, 1.0, 1.0, 2.0, 2.0];
+    let op2_expect = [1.0, 1.0, 2.0, 2.0, 1.0, 1.0, 2.0, 2.0, 1.0, 1.0, 2.0, 2.0, 1.0, 1.0, 2.0, 2.0];
+
+    let type2 = {type: nn.INT32};
+    let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2, 2]};
+    let type0_length = product(type0.dimensions);
+    let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2, 2]};
+    let type1_length = product(type1.dimensions);
+
+    let op1 = operandIndex++;
+    model.addOperand(type0);
+    let op2 = operandIndex++;
+    model.addOperand(type1);
+    let height = operandIndex++;
+    model.addOperand(type2);
+    let width = operandIndex++;
+    model.addOperand(type2);
+    let align_corners = operandIndex++;
+    model.addOperand(type2);
+
+    model.setOperandValue(height, new Int32Array([2]));
+    model.setOperandValue(width, new Int32Array([2]));
+    model.setOperandValue(align_corners, new Int32Array([1]));
+
+    model.addOperation(nn.RESIZE_BILINEAR, [op1, height, width, align_corners], [op2]);
+
+    model.identifyInputsAndOutputs([op1], [op2]);
+    await model.finish();
+
+    let compilation = await model.createCompilation();
+    compilation.setPreference(getPreferenceCode(options.prefer));
+    await compilation.finish();
+
+    let execution = await compilation.createExecution();
+
+    let op1_input = new Float32Array(op1_value);
+    execution.setInput(0, op1_input);
+
+    let op2_output = new Float32Array(type1_length);
+    execution.setOutput(0, op2_output);
+
+    await execution.startCompute();
+
+    for (let i = 0; i < type1_length; ++i) {
+      assert.isTrue(almostEqualCTS(op2_output[i], op2_expect[i]));
+    }
+  });
+
+  it('check result for Resize bilinear with inputs (without align_corners) zoom in example/1', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -5150,7 +5703,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
-  it('check result for Resize bilinear zoom in example/2', async function() {
+  it('check result for Resize bilinear with inputs (without align_corners) zoom in example/2', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -5198,7 +5751,279 @@ describe('CTS Supplement Test', function() {
     }
   });
 
-  it('check result for Resize bilinear zoom out example/1', async function() {
+  it('check result for Resize bilinear by align_corners(FALSE) zoom in example/3', async function() {
+    let model = await nn.createModel(options);
+    let operandIndex = 0;
+
+    let op1_value = [3, 4, 6, 10, 9, 10, 12, 16, 3, 4, 6, 10, 9, 10, 12, 16];
+    let op2_expect = [3, 4, 5, 8, 6, 10, 7, 8, 9, 12, 10, 14, 9, 10, 11, 14, 12, 16, 3, 4, 5, 8, 6, 10, 7, 8, 9, 12, 10, 14, 9, 10, 11, 14, 12, 16];
+
+    let type2 = {type: nn.INT32};
+    let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2, 2]};
+    let type0_length = product(type0.dimensions);
+    let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 3, 3, 2]};
+    let type1_length = product(type1.dimensions);
+
+    let op1 = operandIndex++;
+    model.addOperand(type0);
+    let op2 = operandIndex++;
+    model.addOperand(type1);
+    let height = operandIndex++;
+    model.addOperand(type2);
+    let width = operandIndex++;
+    model.addOperand(type2);
+    let align_corners = operandIndex++;
+    model.addOperand(type2);
+
+    model.setOperandValue(height, new Int32Array([3]));
+    model.setOperandValue(width, new Int32Array([3]));
+    model.setOperandValue(align_corners, new Int32Array([0]));
+    model.addOperation(nn.RESIZE_BILINEAR, [op1, height, width, align_corners], [op2]);
+
+    model.identifyInputsAndOutputs([op1], [op2]);
+    await model.finish();
+
+    let compilation = await model.createCompilation();
+    compilation.setPreference(getPreferenceCode(options.prefer));
+    await compilation.finish();
+
+    let execution = await compilation.createExecution();
+
+    let op1_input = new Float32Array(op1_value);
+    execution.setInput(0, op1_input);
+
+    let op2_output = new Float32Array(type1_length);
+    execution.setOutput(0, op2_output);
+
+    await execution.startCompute();
+
+    for (let i = 0; i < type1_length; ++i) {
+      assert.isTrue(almostEqualCTS(op2_output[i], op2_expect[i]));
+    }
+  });
+
+  it('check result for Resize bilinear by align_corners(TRUE) zoom in example/4', async function() {
+    let model = await nn.createModel(options);
+    let operandIndex = 0;
+
+    let op1_value = [3, 4, 6, 10, 9, 10, 12, 16, 3, 4, 6, 10, 9, 10, 12, 16];
+    let op2_expect = [3, 4, 4.5, 7, 6, 10, 6, 7, 7.5, 10, 9, 13, 9, 10, 10.5, 13, 12, 16, 3, 4, 4.5, 7, 6, 10, 6, 7, 7.5, 10, 9, 13, 9, 10, 10.5, 13, 12, 16];
+
+    let type2 = {type: nn.INT32};
+    let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2, 2]};
+    let type0_length = product(type0.dimensions);
+    let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 3, 3, 2]};
+    let type1_length = product(type1.dimensions);
+
+    let op1 = operandIndex++;
+    model.addOperand(type0);
+    let op2 = operandIndex++;
+    model.addOperand(type1);
+    let height = operandIndex++;
+    model.addOperand(type2);
+    let width = operandIndex++;
+    model.addOperand(type2);
+    let align_corners = operandIndex++;
+    model.addOperand(type2);
+
+    model.setOperandValue(height, new Int32Array([3]));
+    model.setOperandValue(width, new Int32Array([3]));
+    model.setOperandValue(align_corners, new Int32Array([1]));
+    model.addOperation(nn.RESIZE_BILINEAR, [op1, height, width, align_corners], [op2]);
+
+    model.identifyInputsAndOutputs([op1], [op2]);
+    await model.finish();
+
+    let compilation = await model.createCompilation();
+    compilation.setPreference(getPreferenceCode(options.prefer));
+    await compilation.finish();
+
+    let execution = await compilation.createExecution();
+
+    let op1_input = new Float32Array(op1_value);
+    execution.setInput(0, op1_input);
+
+    let op2_output = new Float32Array(type1_length);
+    execution.setOutput(0, op2_output);
+
+    await execution.startCompute();
+
+    for (let i = 0; i < type1_length; ++i) {
+      assert.isTrue(almostEqualCTS(op2_output[i], op2_expect[i]));
+    }
+  });
+
+  it('check result for Resize bilinear with inputs (without align_corners) zoom in example/5', async function() {
+    let model = await nn.createModel(options);
+    let operandIndex = 0;
+
+    let op1_value = [3, 4, 6, 10, 9, 10, 12, 16, 3, 4, 6, 10, 9, 10, 12, 16];
+    let op2_expect = [3,  4,  4.5,  7,  6, 10,  6, 10,
+                      6,  7,  7.5, 10,  9, 13,  9, 13,
+                      9, 10, 10.5, 13, 12, 16, 12, 16,
+                      9, 10, 10.5, 13, 12, 16, 12, 16,
+                      3,  4,  4.5,  7,  6, 10,  6, 10,
+                      6,  7,  7.5, 10,  9, 13,  9, 13,
+                      9, 10, 10.5, 13, 12, 16, 12, 16,
+                      9, 10, 10.5, 13, 12, 16, 12, 16];
+
+    let type2 = {type: nn.INT32};
+    let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2, 2]};
+    let type0_length = product(type0.dimensions);
+    let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 4, 4, 2]};
+    let type1_length = product(type1.dimensions);
+
+    let op1 = operandIndex++;
+    model.addOperand(type0);
+    let op2 = operandIndex++;
+    model.addOperand(type1);
+    let height = operandIndex++;
+    model.addOperand(type2);
+    let width = operandIndex++;
+    model.addOperand(type2);
+
+    model.setOperandValue(height, new Int32Array([4]));
+    model.setOperandValue(width, new Int32Array([4]));
+    model.addOperation(nn.RESIZE_BILINEAR, [op1, height, width], [op2]);
+
+    model.identifyInputsAndOutputs([op1], [op2]);
+    await model.finish();
+
+    let compilation = await model.createCompilation();
+    compilation.setPreference(getPreferenceCode(options.prefer));
+    await compilation.finish();
+
+    let execution = await compilation.createExecution();
+
+    let op1_input = new Float32Array(op1_value);
+    execution.setInput(0, op1_input);
+
+    let op2_output = new Float32Array(type1_length);
+    execution.setOutput(0, op2_output);
+
+    await execution.startCompute();
+
+    for (let i = 0; i < type1_length; ++i) {
+      assert.isTrue(almostEqualCTS(op2_output[i], op2_expect[i]));
+    }
+  });
+
+  it('check result for Resize bilinear by align_corners(FALSE) zoom in example/6', async function() {
+    let model = await nn.createModel(options);
+    let operandIndex = 0;
+
+    let op1_value = [3, 4, 6, 10, 9, 10, 12, 16, 3, 4, 6, 10, 9, 10, 12, 16];
+    let op2_expect = [3,  4,  4.5,  7,  6, 10,  6, 10,
+                      6,  7,  7.5, 10,  9, 13,  9, 13,
+                      9, 10, 10.5, 13, 12, 16, 12, 16,
+                      9, 10, 10.5, 13, 12, 16, 12, 16,
+                      3,  4,  4.5,  7,  6, 10,  6, 10,
+                      6,  7,  7.5, 10,  9, 13,  9, 13,
+                      9, 10, 10.5, 13, 12, 16, 12, 16,
+                      9, 10, 10.5, 13, 12, 16, 12, 16];
+    let type2 = {type: nn.INT32};
+    let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2, 2]};
+    let type0_length = product(type0.dimensions);
+    let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 4, 4, 2]};
+    let type1_length = product(type1.dimensions);
+
+    let op1 = operandIndex++;
+    model.addOperand(type0);
+    let op2 = operandIndex++;
+    model.addOperand(type1);
+    let height = operandIndex++;
+    model.addOperand(type2);
+    let width = operandIndex++;
+    model.addOperand(type2);
+    let align_corners = operandIndex++;
+    model.addOperand(type2);
+
+    model.setOperandValue(height, new Int32Array([4]));
+    model.setOperandValue(width, new Int32Array([4]));
+    model.setOperandValue(align_corners, new Int32Array([0]));
+    model.addOperation(nn.RESIZE_BILINEAR, [op1, height, width, align_corners], [op2]);
+
+    model.identifyInputsAndOutputs([op1], [op2]);
+    await model.finish();
+
+    let compilation = await model.createCompilation();
+    compilation.setPreference(getPreferenceCode(options.prefer));
+    await compilation.finish();
+
+    let execution = await compilation.createExecution();
+
+    let op1_input = new Float32Array(op1_value);
+    execution.setInput(0, op1_input);
+
+    let op2_output = new Float32Array(type1_length);
+    execution.setOutput(0, op2_output);
+
+    await execution.startCompute();
+
+    for (let i = 0; i < type1_length; ++i) {
+      assert.isTrue(almostEqualCTS(op2_output[i], op2_expect[i]));
+    }
+  });
+
+  it('check result for Resize bilinear by align_corners(TRUE) zoom in example/7', async function() {
+    let model = await nn.createModel(options);
+    let operandIndex = 0;
+
+    let op1_value = [3, 4, 6, 10, 9, 10, 12, 16, 3, 4, 6, 10, 9, 10, 12, 16];
+    let op2_expect = [3,  4,  4,  6,  5,  8,  6, 10,
+                      5,  6,  6,  8,  7, 10,  8, 12,
+                      7,  8,  8, 10,  9, 12, 10, 14,
+                      9, 10, 10, 12, 11, 14, 12, 16,
+                      3,  4,  4,  6,  5,  8,  6, 10,
+                      5,  6,  6,  8,  7, 10,  8, 12,
+                      7,  8,  8, 10,  9, 12, 10, 14,
+                      9, 10, 10, 12, 11, 14, 12, 16];
+
+    let type2 = {type: nn.INT32};
+    let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2, 2]};
+    let type0_length = product(type0.dimensions);
+    let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 4, 4, 2]};
+    let type1_length = product(type1.dimensions);
+
+    let op1 = operandIndex++;
+    model.addOperand(type0);
+    let op2 = operandIndex++;
+    model.addOperand(type1);
+    let height = operandIndex++;
+    model.addOperand(type2);
+    let width = operandIndex++;
+    model.addOperand(type2);
+    let align_corners = operandIndex++;
+    model.addOperand(type2);
+
+    model.setOperandValue(height, new Int32Array([4]));
+    model.setOperandValue(width, new Int32Array([4]));
+    model.setOperandValue(align_corners, new Int32Array([1]));
+    model.addOperation(nn.RESIZE_BILINEAR, [op1, height, width, align_corners], [op2]);
+
+    model.identifyInputsAndOutputs([op1], [op2]);
+    await model.finish();
+
+    let compilation = await model.createCompilation();
+    compilation.setPreference(getPreferenceCode(options.prefer));
+    await compilation.finish();
+
+    let execution = await compilation.createExecution();
+
+    let op1_input = new Float32Array(op1_value);
+    execution.setInput(0, op1_input);
+
+    let op2_output = new Float32Array(type1_length);
+    execution.setOutput(0, op2_output);
+
+    await execution.startCompute();
+
+    for (let i = 0; i < type1_length; ++i) {
+      assert.isTrue(almostEqualCTS(op2_output[i], op2_expect[i]));
+    }
+  });
+
+  it('check result for Resize bilinear with inputs (without align_corners) zoom out example/1', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -5246,7 +6071,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
-  it('check result for Resize bilinear zoom out example/2', async function() {
+  it('check result for Resize bilinear with inputs (without align_corners) zoom out example/2', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -5294,7 +6119,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
-  it('check result for Resize bilinear zoom out example/3', async function() {
+  it('check result for Resize bilinear with inputs (without align_corners) zoom out example/3', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -5342,7 +6167,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
-  it('check result for Resize bilinear zoom out example/4', async function() {
+  it('check result for Resize bilinear with inputs (without align_corners) zoom out example/4', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -5367,6 +6192,274 @@ describe('CTS Supplement Test', function() {
     model.setOperandValue(height, new Int32Array([2]));
     model.setOperandValue(width, new Int32Array([2]));
     model.addOperation(nn.RESIZE_BILINEAR, [op1, height, width], [op2]);
+
+    model.identifyInputsAndOutputs([op1], [op2]);
+    await model.finish();
+
+    let compilation = await model.createCompilation();
+    compilation.setPreference(getPreferenceCode(options.prefer));
+    await compilation.finish();
+
+    let execution = await compilation.createExecution();
+
+    let op1_input = new Float32Array(op1_value);
+    execution.setInput(0, op1_input);
+
+    let op2_output = new Float32Array(type1_length);
+    execution.setOutput(0, op2_output);
+
+    await execution.startCompute();
+
+    for (let i = 0; i < type1_length; ++i) {
+      assert.isTrue(almostEqualCTS(op2_output[i], op2_expect[i]));
+    }
+  });
+
+  it('check result for Resize bilinear by align_corners(FALSE) zoom out example/5', async function() {
+    let model = await nn.createModel(options);
+    let operandIndex = 0;
+
+    let op1_value = [1, 3, 5, 7, 9, 11, 13, 15, 17, 1, 3, 5, 7, 9, 11, 13, 15, 17, 1, 3, 5, 7, 9, 11, 13, 15, 17, 1, 3, 5, 7, 9, 11, 13, 15, 17];
+    let op2_expect = [1, 3, 7, 9, 10, 12, 11.5, 9, 1, 3, 7, 9, 10, 12, 11.5, 9];
+
+    let type2 = {type: nn.INT32};
+    let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 3, 3, 2]};
+    let type0_length = product(type0.dimensions);
+    let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2, 2]};
+    let type1_length = product(type1.dimensions);
+
+    let op1 = operandIndex++;
+    model.addOperand(type0);
+    let op2 = operandIndex++;
+    model.addOperand(type1);
+    let height = operandIndex++;
+    model.addOperand(type2);
+    let width = operandIndex++;
+    model.addOperand(type2);
+    let align_corners = operandIndex++;
+    model.addOperand(type2);
+
+    model.setOperandValue(height, new Int32Array([2]));
+    model.setOperandValue(width, new Int32Array([2]));
+    model.setOperandValue(align_corners, new Int32Array([0]));
+    model.addOperation(nn.RESIZE_BILINEAR, [op1, height, width, align_corners], [op2]);
+
+    model.identifyInputsAndOutputs([op1], [op2]);
+    await model.finish();
+
+    let compilation = await model.createCompilation();
+    compilation.setPreference(getPreferenceCode(options.prefer));
+    await compilation.finish();
+
+    let execution = await compilation.createExecution();
+
+    let op1_input = new Float32Array(op1_value);
+    execution.setInput(0, op1_input);
+
+    let op2_output = new Float32Array(type1_length);
+    execution.setOutput(0, op2_output);
+
+    await execution.startCompute();
+
+    for (let i = 0; i < type1_length; ++i) {
+      assert.isTrue(almostEqualCTS(op2_output[i], op2_expect[i]));
+    }
+  });
+
+  it('check result for Resize bilinear by align_corners(TRUE) zoom out example/6', async function() {
+    let model = await nn.createModel(options);
+    let operandIndex = 0;
+
+    let op1_value = [1, 3, 5, 7, 9, 11, 13, 15, 17, 1, 3, 5, 7, 9, 11, 13, 15, 17, 1, 3, 5, 7, 9, 11, 13, 15, 17, 1, 3, 5, 7, 9, 11, 13, 15, 17];
+    let op2_expect = [1, 3, 9, 11, 7, 9, 15, 17, 1, 3, 9, 11, 7, 9, 15, 17];
+
+    let type2 = {type: nn.INT32};
+    let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 3, 3, 2]};
+    let type0_length = product(type0.dimensions);
+    let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2, 2]};
+    let type1_length = product(type1.dimensions);
+
+    let op1 = operandIndex++;
+    model.addOperand(type0);
+    let op2 = operandIndex++;
+    model.addOperand(type1);
+    let height = operandIndex++;
+    model.addOperand(type2);
+    let width = operandIndex++;
+    model.addOperand(type2);
+    let align_corners = operandIndex++;
+    model.addOperand(type2);
+
+    model.setOperandValue(height, new Int32Array([2]));
+    model.setOperandValue(width, new Int32Array([2]));
+    model.setOperandValue(align_corners, new Int32Array([1]));
+    model.addOperation(nn.RESIZE_BILINEAR, [op1, height, width, align_corners], [op2]);
+
+    model.identifyInputsAndOutputs([op1], [op2]);
+    await model.finish();
+
+    let compilation = await model.createCompilation();
+    compilation.setPreference(getPreferenceCode(options.prefer));
+    await compilation.finish();
+
+    let execution = await compilation.createExecution();
+
+    let op1_input = new Float32Array(op1_value);
+    execution.setInput(0, op1_input);
+
+    let op2_output = new Float32Array(type1_length);
+    execution.setOutput(0, op2_output);
+
+    await execution.startCompute();
+
+    for (let i = 0; i < type1_length; ++i) {
+      assert.isTrue(almostEqualCTS(op2_output[i], op2_expect[i]));
+    }
+  });
+
+  it('check result for Resize bilinear with inputs (without align_corners) zoom out example/7', async function() {
+    let model = await nn.createModel(options);
+    let operandIndex = 0;
+
+    let op1_value = [1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31,
+                     1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31,
+                     1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31,
+                     1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31];
+    let op2_expect = [1, 3, 9, 11,
+                      1, 3, 9, 11,
+                      1, 3, 9, 11,
+                      1, 3, 9, 11];
+
+    let type2 = {type: nn.INT32};
+    let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 4, 4, 2]};
+    let type0_length = product(type0.dimensions);
+    let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2, 2]};
+    let type1_length = product(type1.dimensions);
+
+    let op1 = operandIndex++;
+    model.addOperand(type0);
+    let op2 = operandIndex++;
+    model.addOperand(type1);
+    let height = operandIndex++;
+    model.addOperand(type2);
+    let width = operandIndex++;
+    model.addOperand(type2);
+
+    model.setOperandValue(height, new Int32Array([2]));
+    model.setOperandValue(width, new Int32Array([2]));
+    model.addOperation(nn.RESIZE_BILINEAR, [op1, height, width], [op2]);
+
+    model.identifyInputsAndOutputs([op1], [op2]);
+    await model.finish();
+
+    let compilation = await model.createCompilation();
+    compilation.setPreference(getPreferenceCode(options.prefer));
+    await compilation.finish();
+
+    let execution = await compilation.createExecution();
+
+    let op1_input = new Float32Array(op1_value);
+    execution.setInput(0, op1_input);
+
+    let op2_output = new Float32Array(type1_length);
+    execution.setOutput(0, op2_output);
+
+    await execution.startCompute();
+
+    for (let i = 0; i < type1_length; ++i) {
+      assert.isTrue(almostEqualCTS(op2_output[i], op2_expect[i]));
+    }
+  });
+
+  it('check result for Resize bilinear by align_corners(FALSE) zoom out example/8', async function() {
+    let model = await nn.createModel(options);
+    let operandIndex = 0;
+
+    let op1_value = [1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31,
+                     1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31,
+                     1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31,
+                     1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31];
+    let op2_expect = [1, 3, 9, 11,
+                      1, 3, 9, 11,
+                      1, 3, 9, 11,
+                      1, 3, 9, 11];
+
+    let type2 = {type: nn.INT32};
+    let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 4, 4, 2]};
+    let type0_length = product(type0.dimensions);
+    let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2, 2]};
+    let type1_length = product(type1.dimensions);
+
+    let op1 = operandIndex++;
+    model.addOperand(type0);
+    let op2 = operandIndex++;
+    model.addOperand(type1);
+    let height = operandIndex++;
+    model.addOperand(type2);
+    let width = operandIndex++;
+    model.addOperand(type2);
+    let align_corners = operandIndex++;
+    model.addOperand(type2);
+
+    model.setOperandValue(height, new Int32Array([2]));
+    model.setOperandValue(width, new Int32Array([2]));
+    model.setOperandValue(align_corners, new Int32Array([0]));
+    model.addOperation(nn.RESIZE_BILINEAR, [op1, height, width, align_corners], [op2]);
+
+    model.identifyInputsAndOutputs([op1], [op2]);
+    await model.finish();
+
+    let compilation = await model.createCompilation();
+    compilation.setPreference(getPreferenceCode(options.prefer));
+    await compilation.finish();
+
+    let execution = await compilation.createExecution();
+
+    let op1_input = new Float32Array(op1_value);
+    execution.setInput(0, op1_input);
+
+    let op2_output = new Float32Array(type1_length);
+    execution.setOutput(0, op2_output);
+
+    await execution.startCompute();
+
+    for (let i = 0; i < type1_length; ++i) {
+      assert.isTrue(almostEqualCTS(op2_output[i], op2_expect[i]));
+    }
+  });
+
+  it('check result for Resize bilinear by align_corners(TRUE) zoom out example/9', async function() {
+    let model = await nn.createModel(options);
+    let operandIndex = 0;
+
+    let op1_value = [1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31,
+                     1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31,
+                     1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31,
+                     1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31];
+    let op2_expect = [1, 3, 13, 15, 17, 19, 29, 31,
+                      1, 3, 13, 15, 17, 19, 29, 31];
+
+    let type2 = {type: nn.INT32};
+    let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 4, 4, 2]};
+    let type0_length = product(type0.dimensions);
+    let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2, 2]};
+    let type1_length = product(type1.dimensions);
+
+    let op1 = operandIndex++;
+    model.addOperand(type0);
+    let op2 = operandIndex++;
+    model.addOperand(type1);
+    let height = operandIndex++;
+    model.addOperand(type2);
+    let width = operandIndex++;
+    model.addOperand(type2);
+    let align_corners = operandIndex++;
+    model.addOperand(type2);
+
+    model.setOperandValue(height, new Int32Array([2]));
+    model.setOperandValue(width, new Int32Array([2]));
+    model.setOperandValue(align_corners, new Int32Array([1]));
+    model.addOperation(nn.RESIZE_BILINEAR, [op1, height, width, align_corners], [op2]);
 
     model.identifyInputsAndOutputs([op1], [op2]);
     await model.finish();

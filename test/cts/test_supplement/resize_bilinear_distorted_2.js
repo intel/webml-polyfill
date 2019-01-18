@@ -2,7 +2,7 @@ describe('CTS Supplement Test', function() {
   const assert = chai.assert;
   const nn = navigator.ml.getNeuralNetworkContext();
 
-  it('check result for Resize bilinear distorted example/2', async function() {
+  it('check result for Resize bilinear with inputs (without align_corners) distorted example/2', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
