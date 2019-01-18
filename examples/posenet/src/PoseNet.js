@@ -1,5 +1,5 @@
 class PoseNet{
-  constructor(modelArch, version, outputStride, inputShape, type, cacheMap, backend, prefer) {
+  constructor(modelArch, version, dilated, outputStride, inputShape, type, cacheMap, backend, prefer) {
     this._modelArch = modelArch;
     this._model = null;
     this._compilation;
@@ -7,6 +7,7 @@ class PoseNet{
     this._tensorIds = [];
     this._operandIndex = 0;
     this._version = version;
+    this._dilated = dilated;
     this._outputStride = outputStride;
     this._inputShape = inputShape;
     this._outputLayer = [];
@@ -146,7 +147,7 @@ class PoseNet{
           outputLayerIndex++;
         }
         const data = await getDimensionData("separableConv", this._version, i, manifest, this._cacheMap);
-        if (this._modelArch[i].rate == 1) {
+        if (this._dilated || this._modelArch[i].rate === 1) { 
           dimensionWeights.push(reshape(data.shapeWeights[0]));
           dimensionWeights.push(reshape(data.shapeWeights[1]));
           weights.push(new Float32Array(transposeWeights(data.weights[0], data.shapeWeights[0])));
@@ -207,12 +208,19 @@ class PoseNet{
           const paddingCode = this._nn.PADDING_SAME;
           const fuseCode = this._nn.FUSED_RELU6;
           if (j == 0) {
-            const opType = this._nn.DEPTHWISE_CONV_2D;
+            let opType;
             const multiplier = 1;
             let outputs = this._outputLayer[outputLayerIndex];
             inputs.push(this._addScalarInt32(paddingCode));
-            inputs.push(this._addScalarInt32(this._modelArch[i].stride));
-            inputs.push(this._addScalarInt32(this._modelArch[i].stride));
+            if (this._dilated && this._modelArch[i].rate !== 1) {
+              inputs.push(this._addScalarInt32(this._modelArch[i].rate));
+              inputs.push(this._addScalarInt32(this._modelArch[i].rate));
+              opType = this._nn.ATROUS_DEPTHWISE_CONV_2D;
+            } else {
+              inputs.push(this._addScalarInt32(this._modelArch[i].stride));
+              inputs.push(this._addScalarInt32(this._modelArch[i].stride));
+              opType = this._nn.DEPTHWISE_CONV_2D;
+            }
             inputs.push(this._addScalarInt32(multiplier));
             inputs.push(this._addScalarInt32(fuseCode));
             this._model.addOperation(opType, inputs, [outputs]);

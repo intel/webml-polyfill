@@ -235,6 +235,11 @@ model.onFinishChange((model) => {
   initModel();
 });
 
+dilated.onFinishChange((dilated) => {
+  guiState.dilated = dilated;
+  initModel();
+});
+
 outputStride.onFinishChange((outputStride) => {
   guiState.outputStride = parseInt(outputStride);
   initModel();

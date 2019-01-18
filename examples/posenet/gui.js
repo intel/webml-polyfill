@@ -2,6 +2,7 @@ let guiState;
 guiState = {
   algorithm: 'multi-pose',
   model: 1.01,
+  dilated: false, 
   outputStride: 16,
   scaleFactor: 0.5,
   scoreThreshold: 0.5,
@@ -15,6 +16,7 @@ guiState = {
 const gui = new dat.GUI({width: 300});
 gui.domElement.id = 'gui';
 const model = gui.add(guiState, 'model', [0.50, 0.75, 1.00, 1.01]);
+const dilated = gui.add(guiState, 'dilated');
 const outputStride = gui.add(guiState, 'outputStride', [8, 16, 32]);
 const scaleFactor = gui.add(guiState, 'scaleFactor', [0.25, 0.5, 0.75, 1.00]).listen();
 const scoreThreshold = gui.add(guiState, 'scoreThreshold', 0.0, 1.0).listen();

@@ -82,6 +82,7 @@ class Utils{
     this.model;
     // single input
     this._version;
+    this._dilated;
     this._outputStride;
     this._minScore;
     this._scaleFactor;
@@ -101,6 +102,7 @@ class Utils{
     this.initialized = false;
     // single input
     this._version = guiState.model;
+    this._dilated = guiState.dilated;
     this._outputStride = guiState.outputStride;
     this._minScore = guiState.scoreThreshold;
     this._scaleFactor = guiState.scaleFactor;
@@ -131,11 +133,11 @@ class Utils{
     this.offsetTensor = new Float32Array(this.OFFSET_TENSOR_SIZE);
     this.displacementFwd = new Float32Array(this.DISPLACEMENT_FWD_SIZE);
     this.displacementBwd = new Float32Array(this.DISPLACEMENT_BWD_SIZE);
-    this.model = new PoseNet(this.modelArch, Number(this._version), Number(this._outputStride),
+    this.model = new PoseNet(this.modelArch, Number(this._version), this._dilated, Number(this._outputStride),
                              this.scaleInputSize, this._type, this._cacheMap, backend, prefer);
     let start = performance.now();
     result = await this.model.createCompiledModel();
-    console.log('compilation result: ${result}');
+    console.log(`compilation result: ${result}`);
     let elapsed = performance.now() - start;
     console.log(`Compilation time: ${elapsed.toFixed(2)} ms`);
     this.initialized = true;
