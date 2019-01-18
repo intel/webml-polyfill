@@ -1,6 +1,8 @@
 1. `./resources/data` file which come from `test_data_set_1/input_0.pb` of [Squeezenet](https://s3.amazonaws.com/onnx-model-zoo/squeezenet/squeezenet1.1/squeezenet1.1.tar.gz) file.
 2. Those weight and bias files which come from `squeezenet1.1.onnx` of [Squeezenet](https://s3.amazonaws.com/onnx-model-zoo/squeezenet/squeezenet1.1/squeezenet1.1.tar.gz) file.
-`./resources/squeezenet0_conv0_weight
+
+`
+./resources/squeezenet0_conv0_weight
 ./resources/squeezenet0_conv1_weight
 ./resources/squeezenet0_conv2_weight
 ./resources/squeezenet0_conv3_weight
@@ -26,6 +28,9 @@
 ./resources/squeezenet0_conv23_weight
 ./resources/squeezenet0_conv24_weight
 ./resources/squeezenet0_conv25_weight
+`
+
+`
 ./resources/squeezenet0_conv0_bias
 ./resources/squeezenet0_conv1_bias
 ./resources/squeezenet0_conv2_bias
@@ -51,4 +56,5 @@
 ./resources/squeezenet0_conv22_bias
 ./resources/squeezenet0_conv23_bias
 ./resources/squeezenet0_conv24_bias
-./resources/squeezenet0_conv25_bias`
+./resources/squeezenet0_conv25_bias
+`
