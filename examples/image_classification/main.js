@@ -123,6 +123,7 @@ const utilsPredict = async (imageElement, backend, prefer) => {
   }
   await showProgress('Image predicting ...');
   try {
+    // return immediately if model, backend, prefer are all unchanged
     let init = await utils.init(backend, prefer);    
     if (init == 'NOT_LOADED') {
       return;
@@ -159,13 +160,8 @@ const predictPath = (camera) => {
   (!camera) ? utilsPredict(imageElement, currentBackend, currentPrefer) : utilsPredictCamera(currentBackend, currentPrefer);
 }
 
-const updateScenario = async (camera, backend, prefer) => {
+const updateScenario = async (camera) => {
   streaming = false;
-  try {
-    utils.deleteAll();
-  } catch (e) {
-    // console.log('utils.deleteAll(): ' + e);
-  }
   logConfig();
   predictPath(camera);
 }
