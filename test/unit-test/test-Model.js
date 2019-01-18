@@ -4657,7 +4657,7 @@ describe('Unit Test/Model Test', function() {
       });
     });
 
-    it('raise error when input3 of inputs(with align_corners) is not INT32 type for "RESIZE_BILINEAR" operation', () => {
+    it('raise error when input3 of inputs (with align_corners) is not INT32 type for "RESIZE_BILINEAR" operation', () => {
       return nn.createModel(options).then((model) => {
         let batches = 2;
         let height = 3;
@@ -4678,7 +4678,7 @@ describe('Unit Test/Model Test', function() {
       });
     });
 
-    it('raise error when input3(INT32 type) of inputs(with align_corners) has a negative value for "RESIZE_BILINEAR" operation', () => {
+    it('raise error when input3(INT32 type) of inputs (with align_corners) has a negative value for "RESIZE_BILINEAR" operation', () => {
       return nn.createModel(options).then((model) => {
         let batches = 2;
         let height = 3;
@@ -4700,7 +4700,7 @@ describe('Unit Test/Model Test', function() {
       });
     });
 
-    it('raise error when input3(INT32 type) of inputs(with align_corners) has a value which is greater than 1 for "RESIZE_BILINEAR" operation', () => {
+    it('raise error when input3(INT32 type) of inputs (with align_corners) has a value which is greater than 1 for "RESIZE_BILINEAR" operation', () => {
       return nn.createModel(options).then((model) => {
         let batches = 2;
         let height = 3;
@@ -4866,7 +4866,7 @@ describe('Unit Test/Model Test', function() {
       });
     });
 
-    it('raise error when the length of inputs(without align_corners) is greater than 3 for "RESIZE_BILINEAR" operation', () => {
+    it('raise error when the length of inputs (without align_corners) is greater than 3 for "RESIZE_BILINEAR" operation', () => {
       return nn.createModel(options).then((model) => {
         let batches = 2;
         let height = 3;
@@ -4887,7 +4887,7 @@ describe('Unit Test/Model Test', function() {
       });
     });
 
-    it('raise error when the length of inputs(without align_corners) is less than 3 for "RESIZE_BILINEAR" operation', () => {
+    it('raise error when the length of inputs (without align_corners) is less than 3 for "RESIZE_BILINEAR" operation', () => {
       return nn.createModel(options).then((model) => {
         let batches = 2;
         let height = 3;
@@ -4906,7 +4906,7 @@ describe('Unit Test/Model Test', function() {
       });
     });
 
-    it('raise error when the length of inputs(with align_corners) is greater than 4 for "RESIZE_BILINEAR" operation', () => {
+    it('raise error when the length of inputs (with align_corners) is greater than 4 for "RESIZE_BILINEAR" operation', () => {
       return nn.createModel(options).then((model) => {
         let batches = 2;
         let height = 3;
@@ -4928,7 +4928,7 @@ describe('Unit Test/Model Test', function() {
       });
     });
 
-    it('raise error when the length of inputs(with align_corners) is less than 4 for "RESIZE_BILINEAR" operation', () => {
+    it('raise error when the length of inputs (with align_corners) is less than 4 for "RESIZE_BILINEAR" operation', () => {
       return nn.createModel(options).then((model) => {
         let batches = 2;
         let height = 3;

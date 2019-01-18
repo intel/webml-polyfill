@@ -4537,7 +4537,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
-  it('check result for Resize bilinear with inputs(without align_corners) distorted example/1', async function() {
+  it('check result for Resize bilinear with inputs (without align_corners) distorted example/1', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -4585,7 +4585,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
-  it('check result for Resize bilinear with inputs(without align_corners) distorted example/2', async function() {
+  it('check result for Resize bilinear with inputs (without align_corners) distorted example/2', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -4633,7 +4633,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
-  it('check result for Resize bilinear with inputs(without align_corners) distorted example/3', async function() {
+  it('check result for Resize bilinear with inputs (without align_corners) distorted example/3', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -4681,7 +4681,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
-  it('check result for Resize bilinear with inputs(without align_corners) distorted example/4', async function() {
+  it('check result for Resize bilinear with inputs (without align_corners) distorted example/4', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -4831,7 +4831,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
-  it('check result for Resize bilinear with inputs(without align_corners) distorted example/7', async function() {
+  it('check result for Resize bilinear with inputs (without align_corners) distorted example/7', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -5011,7 +5011,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
-  it('check result for Resize bilinear with inputs(without align_corners) distorted example/10', async function() {
+  it('check result for Resize bilinear with inputs (without align_corners) distorted example/10', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -5179,7 +5179,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
-  it('check result for Resize bilinear with inputs(without align_corners) remain size example/1', async function() {
+  it('check result for Resize bilinear with inputs (without align_corners) remain size example/1', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -5227,7 +5227,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
-  it('check result for Resize bilinear with inputs(without align_corners) remain size example/2', async function() {
+  it('check result for Resize bilinear with inputs (without align_corners) remain size example/2', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -5275,7 +5275,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
-  it('check result for Resize bilinear with inputs(without align_corners) remain size example/3', async function() {
+  it('check result for Resize bilinear with inputs (without align_corners) remain size example/3', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -5323,7 +5323,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
-  it('check result for Resize bilinear with inputs(without align_corners) remain size example/4', async function() {
+  it('check result for Resize bilinear with inputs (without align_corners) remain size example/4', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -5474,7 +5474,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
-  it('check result for Resize bilinear with inputs(without align_corners) zoom in example/1', async function() {
+  it('check result for Resize bilinear with inputs (without align_corners) zoom in example/1', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -5521,7 +5521,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
-  it('check result for Resize bilinear with inputs(without align_corners) zoom in example/2', async function() {
+  it('check result for Resize bilinear with inputs (without align_corners) zoom in example/2', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -5671,7 +5671,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
-  it('check result for Resize bilinear with inputs(without align_corners) zoom in example/5', async function() {
+  it('check result for Resize bilinear with inputs (without align_corners) zoom in example/5', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -5841,7 +5841,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
-  it('check result for Resize bilinear with inputs(without align_corners) zoom out example/1', async function() {
+  it('check result for Resize bilinear with inputs (without align_corners) zoom out example/1', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -5889,7 +5889,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
-  it('check result for Resize bilinear with inputs(without align_corners) zoom out example/2', async function() {
+  it('check result for Resize bilinear with inputs (without align_corners) zoom out example/2', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -5937,7 +5937,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
-  it('check result for Resize bilinear with inputs(without align_corners) zoom out example/3', async function() {
+  it('check result for Resize bilinear with inputs (without align_corners) zoom out example/3', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -5985,7 +5985,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
-  it('check result for Resize bilinear with inputs(without align_corners) zoom out example/4', async function() {
+  it('check result for Resize bilinear with inputs (without align_corners) zoom out example/4', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -6135,7 +6135,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
-  it('check result for Resize bilinear with inputs(without align_corners) zoom out example/7', async function() {
+  it('check result for Resize bilinear with inputs (without align_corners) zoom out example/7', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
