@@ -98,7 +98,7 @@ const logConfig = () => {
 
 const errorHandler = (e) => {
   showAlert(e);
-  showError();
+  showError(null, null);
 }
 
 const startPredictCamera = async () => {
