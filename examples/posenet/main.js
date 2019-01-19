@@ -235,8 +235,8 @@ model.onFinishChange((model) => {
   initModel();
 });
 
-dilated.onFinishChange((dilated) => {
-  guiState.dilated = dilated;
+use_atrous_conv.onFinishChange((use_atrous_conv) => {
+  guiState.use_atrous_conv = use_atrous_conv;
   initModel();
 });
 

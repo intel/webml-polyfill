@@ -1,5 +1,5 @@
 class PoseNet{
-  constructor(modelArch, version, dilated, outputStride, inputShape, type, cacheMap, backend, prefer) {
+  constructor(modelArch, version, use_atrous_conv, outputStride, inputShape, type, cacheMap, backend, prefer) {
     this._modelArch = modelArch;
     this._model = null;
     this._compilation;
@@ -7,7 +7,7 @@ class PoseNet{
     this._tensorIds = [];
     this._operandIndex = 0;
     this._version = version;
-    this._dilated = dilated;
+    this._use_atrous_conv = use_atrous_conv;
     this._outputStride = outputStride;
     this._inputShape = inputShape;
     this._outputLayer = [];
@@ -147,7 +147,7 @@ class PoseNet{
           outputLayerIndex++;
         }
         const data = await getDimensionData("separableConv", this._version, i, manifest, this._cacheMap);
-        if (this._dilated || this._modelArch[i].rate === 1) { 
+        if (this._use_atrous_conv || this._modelArch[i].rate === 1) { 
           dimensionWeights.push(reshape(data.shapeWeights[0]));
           dimensionWeights.push(reshape(data.shapeWeights[1]));
           weights.push(new Float32Array(transposeWeights(data.weights[0], data.shapeWeights[0])));
@@ -212,7 +212,7 @@ class PoseNet{
             const multiplier = 1;
             let outputs = this._outputLayer[outputLayerIndex];
             inputs.push(this._addScalarInt32(paddingCode));
-            if (this._dilated && this._modelArch[i].rate !== 1) {
+            if (this._use_atrous_conv && this._modelArch[i].rate !== 1) {
               inputs.push(this._addScalarInt32(this._modelArch[i].rate));
               inputs.push(this._addScalarInt32(this._modelArch[i].rate));
               opType = this._nn.ATROUS_DEPTHWISE_CONV_2D;
