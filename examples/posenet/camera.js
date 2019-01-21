@@ -53,6 +53,11 @@ model.onFinishChange((model) => {
   initModel();
 });
 
+use_atrous_conv.onFinishChange((use_atrous_conv) => {
+  guiState.use_atrous_conv = use_atrous_conv;
+  initModel();
+});
+
 outputStride.onFinishChange((outputStride) => {
   guiState.outputStride = parseInt(outputStride);
   initModel();
