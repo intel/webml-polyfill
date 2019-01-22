@@ -1,5 +1,5 @@
 ## How to Download
-Download [ssd_mobilenet_v1](https://drive.google.com/file/d/1JlAXwCQztZ-ySmIQ8rZtJ0pncaPhCDm5/view?usp=sharing), [ssd_mobilenet_v2](https://drive.google.com/file/d/1JTotD3hmFL9ObHc-q-PlhBxYe3IqlQXH/view?usp=sharing),  [ssdlite_mobilenet_v2](https://drive.google.com/file/d/1YWDKpyUnMG6L4ddmt4wGGvOjx17e-9Fg/view?usp=sharing), [tiny_yolov2](https://drive.google.com/file/d/1iBC4sHFYaREOT5R4AK6aTc8JJwL0FPLR/view?usp=sharing), and put them here.
+Download [ssd_mobilenet_v1](https://drive.google.com/file/d/1JlAXwCQztZ-ySmIQ8rZtJ0pncaPhCDm5/view?usp=sharing), [ssd_mobilenet_v2](https://drive.google.com/file/d/1JTotD3hmFL9ObHc-q-PlhBxYe3IqlQXH/view?usp=sharing),  [ssdlite_mobilenet_v2](https://drive.google.com/file/d/1YWDKpyUnMG6L4ddmt4wGGvOjx17e-9Fg/view?usp=sharing), [tiny_yolov2_coco](https://drive.google.com/file/d/1hosLKiVNiaDGV8QUGRwvrRC37oXKnLAr/view?usp=sharing), [tiny_yolov2_voc](https://drive.google.com/file/d/1fXksVZeVYsRyf_UnLDJf8-nkbCQmhW9J/view?usp=sharing), and put them here.
 
 The model files are:
 
@@ -53,6 +53,7 @@ Current WebML API doesn't support "Squeeze" operation. "Squeeze", "Reshape" and 
 
 ###  For Tiny-Yolo Models:
 
+#### Tiny-Yolo-COCO
 Check out [kaka-lin/object-detection](https://github.com/kaka-lin/object-detection) for details.
 
 This model is converted from [Tiny Yolo V2](https://drive.google.com/file/d/14-5ZojD1HSgMKnv6_E3WUcBPxaVm52X2/view?usp=sharing). You can use the following commands to convert your own model.
@@ -61,4 +62,17 @@ This model is converted from [Tiny Yolo V2](https://drive.google.com/file/d/14-5
 tflite_convert \
 --keras_model_file=${download_model_dir}/tiny-yolo.h5 \
 --output_file=${out_dir}/tiny_yolov2.tflite
+```
+
+#### Tiny-Yolo-VOC
+This tflite model is converted from a keras model, which is converted from Darknet by [YAD2K](https://github.com/allanzelener/YAD2K). 
+
+For keras model generating, you can go [here](https://pjreddie.com/darknet/yolov2/) to download tiny-yolo-voc weight and cfg file, and then follow the step of [YAD2K](https://github.com/allanzelener/YAD2K) to convert them to a keras model.
+
+After get a keras model, you can then use the following commands to convert your own tflite model.
+
+```sh
+tflite_convert \
+--keras_model_file=${model_dir}/tiny-yolov2-voc.h5 \
+--output_file=${out_dir}/tiny_yolov2_voc.tflite
 ```

@@ -16,6 +16,7 @@ class Utils {
     this.numClasses;
     this.numBoxes;
     this.anchors;
+    this.margin;
     this.canvasElement = canvas;
     this.canvasContext = this.canvasElement.getContext('2d');
     this.canvasShowElement = canvasShow;
@@ -74,6 +75,7 @@ class Utils {
     // console.log(`Decode time: ${(performance.now() - startDecode).toFixed(2)} ms`);
     // let startNMS = performance.now();
     let [totalDetections, boxesList, scoresList, classesList] = NMS({}, this.outputBoxTensor, this.outputClassScoresTensor);
+    boxesList = cropSSDBox(imageSource, totalDetections, boxesList, this.margin);
     // console.log(`NMS time: ${(performance.now() - startNMS).toFixed(2)} ms`);
     // let startVisual = performance.now();
     visualize(this.canvasShowElement, totalDetections, imageSource, boxesList, scoresList, classesList, this.labels);
@@ -93,9 +95,8 @@ class Utils {
     let elapsed = performance.now() - start;
     console.log(`Inference time: ${elapsed.toFixed(2)} ms`);
     // let decodeStart = performance.now();
-    let decode_out = decodeYOLOv2({}, this.outputTensor[0], imageSource.width, imageSource.height, this.anchors);
-    let margin = [1.0, 1.0, 1.0, 1.0];
-    let boxes = getBoxes(decode_out, imageSource.width, imageSource.height, margin);
+    let decode_out = decodeYOLOv2({nb_class: this.numClasses}, this.outputTensor[0], imageSource.width, imageSource.height, this.anchors);
+    let boxes = getBoxes(decode_out, imageSource.width, imageSource.height, this.margin);
     // console.log(`Decode time: ${(performance.now() - decodeStart).toFixed(2)} ms`);
     // let drawStart = performance.now();
     drawBoxes(imageSource, this.canvasShowElement, boxes, this.labels);
@@ -203,13 +204,14 @@ class Utils {
     this.modelFile = newModel.modelFile;
     this.modelType = newModel.type;
     this.labelsFile = newModel.labelsFile;
+    this.numClasses = newModel.num_classes;
+    this.margin = newModel.margin;
     this.preOptions = newModel.preOptions || {};
     this.postOptions = newModel.postOptions || {};
     this.inputTensor = [new Float32Array(this.inputSize.reduce((a, b) => a * b))];
     if (this.modelType === 'SSD') {
       this.anchors = generateAnchors({});
       this.boxSize = newModel.box_size;
-      this.numClasses = newModel.num_classes;
       this.numBoxes = newModel.num_boxes;
       this.outputBoxTensor = new Float32Array(this.numBoxes * this.boxSize);
       this.outputClassScoresTensor = new Float32Array(this.numBoxes * this.numClasses);
