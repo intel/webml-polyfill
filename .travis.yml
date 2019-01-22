@@ -5,12 +5,13 @@ matrix:
     - os: osx
       node_js: '8'
       sudo: 'required'
-before_install:
-  - wget https://dl.google.com/chrome/mac/stable/GGRO/googlechrome.dmg
-  - hdiutil attach googlechrome.dmg
-  - cp -R "/Volumes/Google Chrome/Google Chrome.app" /Applications
 install:
   - npm install
   - npm run build
 script:
-  - npm test
+  - export COMMITTER_EMAIL="$(git log -1 $TRAVIS_COMMIT --pretty="%cE")"
+  - export AUTHOR_NAME="$(git log -1 $TRAVIS_COMMIT --pretty="%aN")"
+  - if (COMMITTER_EMAIL.match("intel")) {
+  - git log -1 $TRAVIS_COMMIT --pretty="%cE"
+  - git log -1
+  - }
