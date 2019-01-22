@@ -38,7 +38,7 @@ class bounding_box {
   }
 }
 
-function decodeYOLOv2(options, output, img_width, img_height, anchors) {
+function decodeYOLOv2(options, output, anchors) {
   const {
     nb_class = 80,
     nb_box = 5,
@@ -127,33 +127,27 @@ function decodeYOLOv2(options, output, img_width, img_height, anchors) {
     if (Math.max(...true_boxes[i].classes) === 0) continue;
     let predicted_class_id = true_boxes[i].get_label();
     let score = true_boxes[i].score;
-    let a = (true_boxes[i].xmax + true_boxes[i].xmin) * img_width / 2;
-    let b = (true_boxes[i].ymax + true_boxes[i].ymin) * img_height / 2;
-    let c = (true_boxes[i].xmax - true_boxes[i].xmin) * img_width;
-    let d = (true_boxes[i].ymax - true_boxes[i].ymin) * img_height;
+    let a = (true_boxes[i].xmax + true_boxes[i].xmin) / 2;
+    let b = (true_boxes[i].ymax + true_boxes[i].ymin) / 2;
+    let c = (true_boxes[i].xmax - true_boxes[i].xmin);
+    let d = (true_boxes[i].ymax - true_boxes[i].ymin);
     result.push([predicted_class_id, a, b, c, d, score]);
   }
   return result;
 }
 
-function getBoxes(results, img_width, img_height, margin) {
+function getBoxes(results, margin) {
   let object_boxes = [];
   for (let i = 0; i < results.length; ++i) {
     // display detected object
     let class_id = results[i][0];
-    let x = Math.floor(results[i][1]);
-    let y = Math.floor(results[i][2]);
-    let w = Math.floor(results[i][3] / 2);
-    let h = Math.floor(results[i][4] / 2);
+    let x = results[i][1];
+    let y = results[i][2];
+    let w = results[i][3];
+    let h = results[i][4];
     let prob = results[i][5];
 
-    // used for output square boxes
-    // if (w < h)
-    //   w = h;
-    // else
-    //   h = w;
-
-    [xmin, xmax, ymin, ymax] = crop(x, y, w, h, margin, img_width, img_height);
+    [xmin, xmax, ymin, ymax] = cropYoloBox(x, y, w, h, margin);
     object_boxes.push([class_id, xmin, xmax, ymin, ymax, prob]);
   }
   return object_boxes;
@@ -166,13 +160,13 @@ function drawBoxes(image, canvas, object_boxes, labels) {
   ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
 
   // drawBox
-  let colors = ['purple', 'blue', 'green', 'yellowgreen', 'red', 'orange'];
+  let colors = ['purple', 'orange', 'green', 'yellowgreen', 'red', 'blue'];
   object_boxes.forEach(box => {
     let label = labels[box[0]];
-    let xmin = box[1] / image.height * canvas.height;
-    let xmax = box[2] / image.height * canvas.height;
-    let ymin = box[3] / image.height * canvas.height;
-    let ymax = box[4] / image.height * canvas.height;
+    let xmin = box[1] * canvas.width;
+    let xmax = box[2] * canvas.width;
+    let ymin = box[3] * canvas.height;
+    let ymax = box[4] * canvas.height;
     let prob = box[5];
     ctx.strokeStyle = colors[box[0] % colors.length];
     ctx.fillStyle = colors[box[0] % colors.length];
@@ -240,16 +234,16 @@ function _softmax(arr) {
   return arr;
 }
 
-// crop image
-function crop(x, y, w, h, margin, img_width, img_height) {
-  let xmin = Math.floor(x - w * margin[0]);
-  let xmax = Math.floor(x + w * margin[1]);
-  let ymin = Math.floor(y - h * margin[2]);
-  let ymax = Math.floor(y + h * margin[3]);
+// crop box
+function cropYoloBox(x, y, w, h, margin) {
+  let xmin = x - w/2 * margin[0];
+  let xmax = x + w/2 * margin[1];
+  let ymin = y - h/2 * margin[2];
+  let ymax = y + h/2 * margin[3];
 
   if (xmin < 0) xmin = 0;
   if (ymin < 0) ymin = 0;
-  if (xmax > img_width) xmax = img_width;
-  if (ymax > img_height) ymax = img_height;
+  if (xmax > 1) xmax = 1;
+  if (ymax > 1) ymax = 1;
   return [xmin, xmax, ymin, ymax];
 }

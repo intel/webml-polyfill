@@ -7,7 +7,8 @@ The model files are:
 ssd_mobilenet_v1.tflite
 ssd_mobilenet_v2.tflite
 ssdlite_mobilenet_v2.tflite
-tiny_yolov2.tflite
+tiny_yolov2_coco.tflite
+tiny_yolov2_voc.tflite
 ```
 
 ## How to Generate
@@ -61,7 +62,7 @@ This model is converted from [Tiny Yolo V2](https://drive.google.com/file/d/14-5
 ```sh
 tflite_convert \
 --keras_model_file=${download_model_dir}/tiny-yolo.h5 \
---output_file=${out_dir}/tiny_yolov2.tflite
+--output_file=${out_dir}/tiny_yolov2_coco.tflite
 ```
 
 #### Tiny-Yolo-VOC

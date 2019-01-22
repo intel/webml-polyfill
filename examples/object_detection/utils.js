@@ -95,8 +95,8 @@ class Utils {
     let elapsed = performance.now() - start;
     console.log(`Inference time: ${elapsed.toFixed(2)} ms`);
     // let decodeStart = performance.now();
-    let decode_out = decodeYOLOv2({nb_class: this.numClasses}, this.outputTensor[0], imageSource.width, imageSource.height, this.anchors);
-    let boxes = getBoxes(decode_out, imageSource.width, imageSource.height, this.margin);
+    let decode_out = decodeYOLOv2({nb_class: this.numClasses}, this.outputTensor[0], this.anchors);
+    let boxes = getBoxes(decode_out, this.margin);
     // console.log(`Decode time: ${(performance.now() - decodeStart).toFixed(2)} ms`);
     // let drawStart = performance.now();
     drawBoxes(imageSource, this.canvasShowElement, boxes, this.labels);
