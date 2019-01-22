@@ -46,7 +46,6 @@ const updateProgress = (ev) => {
     let percentComplete = ev.loaded / ev.total * 100;
     percentComplete = percentComplete.toFixed(0);
     progressBar.style = `width: ${percentComplete}%`;
-    progressBar.innerHTML = `Loading Model: ${percentComplete}%`;
     updateLoading(percentComplete);
   }
 }
@@ -98,7 +97,7 @@ const logConfig = () => {
 
 const errorHandler = (e) => {
   showAlert(e);
-  showError();
+  showError(null, null);
 }
 
 const startPredictCamera = async () => {

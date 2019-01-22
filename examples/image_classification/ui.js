@@ -7,7 +7,7 @@ let ud = getUrlParam('d');
 let strsearch;
 
 if (!location.search) {
-  strsearch = `?prefer=none&b=WASM&m=mobilenet_v1&t=tflite&s=image&d=0`;
+  strsearch = `?prefer=none&b=WASM&m=none&t=none&s=image&d=0`;
   let path = location.href;
   location.href = path + strsearch;
 }
@@ -84,7 +84,7 @@ $(document).ready(() => {
   const updateTitle = (backend, prefer, model, modeltype) => {
     let currentprefertext;
     if (backend == 'WASM' || backend == 'WebGL') {
-      $('#ictitle').html(`Image Classfication / ${backend} / ${model} (${modeltype})`);
+      $('#ictitle').html(`Image Classification / ${backend} / ${model} (${modeltype})`);
     } else if (backend == 'WebML') {
       if (getUrlParam('p') == 'fast') {
         prefer = 'FAST_SINGLE_ANSWER';
@@ -93,7 +93,7 @@ $(document).ready(() => {
       } else if (getUrlParam('p') == 'low') {
         prefer = 'LOW_POWER';
       }
-      $('#ictitle').html(`Image Classfication / ${backend} / ${prefer} / ${model} (${modeltype})`);
+      $('#ictitle').html(`Image Classification / ${backend} / ${prefer} / ${model} (${modeltype})`);
     }
   }
   updateTitle(ub, up, um, ut);
@@ -122,6 +122,12 @@ $(document).ready(() => {
     updateTitle(currentBackend, currentPrefer, `${um}`, `${ut}`);
     strsearch = `?prefer=${currentPrefer}&b=${currentBackend}&m=${um}&t=${ut}&s=${us}&d=${ud}`;
     window.history.pushState(null, null, strsearch);
+
+    if(um === 'none') {
+      showError('No model selected', 'Please select a model to start prediction.');
+      return;
+    }
+
     updateScenario(us === 'camera');
   });
 
@@ -182,7 +188,13 @@ $(document).ready(() => {
     $('#cameratab').removeClass('active');
     us = 'image';
     strsearch = `?prefer=${up}&b=${ub}&m=${um}&t=${ut}&s=${us}&d=${ud}`;
-    window.history.pushState(null, null, strsearch)
+    window.history.pushState(null, null, strsearch);
+    
+    if(um === 'none') {
+      showError('No model selected', 'Please select a model to start prediction.');
+      return;
+    }
+
     updateScenario(false);
   });
 
@@ -194,7 +206,13 @@ $(document).ready(() => {
     $('#imagetab').removeClass('active');
     us = 'camera';
     strsearch = `?prefer=${up}&b=${ub}&m=${um}&t=${ut}&s=${us}&d=${ud}`;
-    window.history.pushState(null, null, strsearch)
+    window.history.pushState(null, null, strsearch);
+    
+    if(um === 'none') {
+      showError('No model selected', 'Please select a model to start prediction.');
+      return;
+    }
+
     updateScenario(true);
   });
 
@@ -209,12 +227,6 @@ $(document).ready(() => {
     $('#inference').toggleClass('fullscreen');
   });
 
-});
-
-$(window).load(() => {
-  if (ud != '0') {
-    componentToggle();
-  }
 });
 
 const showProgress = async (text) => {
@@ -232,11 +244,18 @@ const showResults = () => {
   $('#resulterror').hide();
 }
 
-const showError = () => {
+const showError = (title, description) => {
   $('#progressmodel').hide();
   $('.icdisplay').hide();
   $('.shoulddisplay').hide();
   $('#resulterror').fadeIn();
+  if (title && description) {
+    $('.errortitle').html(title);
+    $('.errordescription').html(description);
+  } else {
+    $('.errortitle').html('Prediction Failed');
+    $('.errordescription').html('Please check error log for more details');
+  }
 }
 
 const updateLoading = (c) => {
@@ -244,6 +263,13 @@ const updateLoading = (c) => {
 }
 
 $(window).load(() => {
+  if (ud != '0') {
+    componentToggle();
+  }
   disableModel();
-  (us == 'camera') ? main(true) : main();
+  if(um === 'none') {
+    showError('No model selected', 'Please select a model to start prediction.');
+    return;
+  }
+  (us === 'camera') ? main(true) : main();
 })
