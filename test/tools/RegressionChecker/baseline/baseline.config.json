@@ -1,84 +1,96 @@
 {
     "Version": {
-        "chromium": "46503cb",
-        "polyfill": "5644d44"
+        "chromium": "8b58220",
+        "polyfill": "c261a0a"
     },
     "Android-NNAPI": {
-        "total": 606,
-        "pass": 420,
-        "fail": 186,
+        "total": 650,
+        "pass": 425,
+        "fail": 225,
         "block": 0
     },
     "Android-WASM": {
-        "total": 606,
-        "pass": 413,
-        "fail": 193,
+        "total": 650,
+        "pass": 453,
+        "fail": 197,
         "block": 0
     },
     "Android-WebGL": {
-        "total": 606,
-        "pass": 338,
-        "fail": 268,
+        "total": 650,
+        "pass": 453,
+        "fail": 197,
         "block": 0
     },
     "Linux-clDNN": {
-        "total": 606,
-        "pass": 337,
-        "fail": 269,
+        "total": 650,
+        "pass": 383,
+        "fail": 267,
+        "block": 0
+    },
+    "Linux-MKLDNN": {
+        "total": 650,
+        "pass": 237,
+        "fail": 413,
         "block": 0
     },
     "Linux-WASM": {
-        "total": 606,
-        "pass": 413,
-        "fail": 193,
+        "total": 650,
+        "pass": 453,
+        "fail": 197,
         "block": 0
     },
     "Linux-WebGL": {
-        "total": 606,
-        "pass": 396,
-        "fail": 210,
+        "total": 650,
+        "pass": 453,
+        "fail": 197,
         "block": 0
     },
     "Mac-BNNS": {
-        "total": 606,
-        "pass": 268,
-        "fail": 338,
+        "total": 650,
+        "pass": 271,
+        "fail": 379,
         "block": 0
     },
     "Mac-MPS": {
-        "total": 606,
-        "pass": 277,
-        "fail": 329,
+        "total": 650,
+        "pass": 279,
+        "fail": 371,
         "block": 0
     },
     "Mac-WASM": {
-        "total": 606,
-        "pass": 413,
-        "fail": 193,
+        "total": 650,
+        "pass": 453,
+        "fail": 197,
         "block": 0
     },
     "Mac-WebGL": {
-        "total": 606,
-        "pass": 396,
-        "fail": 210,
+        "total": 650,
+        "pass": 453,
+        "fail": 197,
         "block": 0
     },
     "Windows-clDNN": {
-        "total": 606,
-        "pass": 337,
-        "fail": 269,
+        "total": 650,
+        "pass": 383,
+        "fail": 267,
+        "block": 0
+    },
+    "Windows-MKLDNN": {
+        "total": 650,
+        "pass": 237,
+        "fail": 413,
         "block": 0
     },
     "Windows-WASM": {
-        "total": 606,
-        "pass": 413,
-        "fail": 193,
+        "total": 650,
+        "pass": 453,
+        "fail": 197,
         "block": 0
     },
     "Windows-WebGL": {
-        "total": 606,
-        "pass": 396,
-        "fail": 210,
+        "total": 650,
+        "pass": 453,
+        "fail": 197,
         "block": 0
     }
 }
