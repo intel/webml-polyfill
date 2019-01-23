@@ -133,7 +133,43 @@ class TFliteModelImporter {
     }, new Float32Array(tensor));
   }
 
-  _addOpsAndParams() {
+  async * layerIterator(inputTensors) {
+    const graph = this._rawModel.subgraphs(0);
+    const operatorsLength = graph.operatorsLength();
+    for (let lastNode = 0; lastNode < operatorsLength; ++lastNode) {
+      this._tensorIds = [];
+      this._operands = [];
+      this._operandIndex = 0;
+      if (this._backend !== 'WebML' && this._compilation) {
+        this._compilation._preparedModel._deleteAll();
+      }
+
+      this._model = await this._nn.createModel({backend: this._backend});
+      this._addTensorOperands();
+      lastNode = this._addOpsAndParams(lastNode);
+
+      const operator = graph.operators(lastNode);
+      const opCode = this._rawModel.operatorCodes(operator.opcodeIndex()).builtinCode();
+      const opcodeName = tflite.BuiltinOperator[opCode];
+
+      const inputs = Array.from(graph.operators(0).inputsArray());
+      const outputs = Array.from(operator.outputsArray());
+      this._model.identifyInputsAndOutputs(inputs, outputs);
+
+      await this._model.finish();
+      this._compilation = await this._model.createCompilation();
+      this._compilation.setPreference(getPreferCode(this._backend, this._prefer));
+      await this._compilation.finish();
+      this._execution = await this._compilation.createExecution();
+
+      const outputSize = this._operandTypes[outputs[0]].dimensions.reduce((a,b)=>a*b);
+      const outputTensor = new Float32Array(outputSize);  
+      await this.compute(inputTensors, [outputTensor]);
+      yield {outputName: opcodeName, tensor: outputTensor};
+    }
+  }
+
+  _addOpsAndParams(lastNode) {
     const PaddingCodeMap = new Map([
       [tflite.Padding.SAME, this._nn.PADDING_SAME],
       [tflite.Padding.VALID, this._nn.PADDING_VALID]
@@ -148,7 +184,11 @@ class TFliteModelImporter {
 
     let graph = this._rawModel.subgraphs(0);
     let operatorsLength = graph.operatorsLength();
-    for (let i = 0; i < operatorsLength; ++i) {
+    let i;
+    if (typeof lastNode === 'undefined') {
+      lastNode = operatorsLength - 1;
+    }
+    for (i = 0; i <= lastNode; ++i) {
       let operator = graph.operators(i);
       let opCode = this._rawModel.operatorCodes(operator.opcodeIndex()).builtinCode();
       let opType;
@@ -318,5 +358,6 @@ class TFliteModelImporter {
 
       this._model.addOperation(opType, inputs, outputs);
     }
+    return i - 1;
   }
 }

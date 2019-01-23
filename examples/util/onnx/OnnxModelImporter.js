@@ -59,6 +59,41 @@ class OnnxModelImporter {
     return 'success';
   }
 
+  async * layerIterator(inputTensors) {
+    const graph = this._rawModel.graph;
+    const operatorsLength = graph.node.length;
+    for (let lastNode = 0; lastNode < operatorsLength; ++lastNode) {
+      this._tensorIds = [];
+      this._tensorTypes = [];
+      this._operations = [];
+      this._operands = [];
+      this._operandIndex = 0;
+      if (this._backend !== 'WebML' && this._compilation) {
+        this._compilation._preparedModel._deleteAll();
+      }
+
+      this._model = await this._nn.createModel({backend: this._backend});
+      this._addTensorOperands();
+      lastNode = this._addOpsAndParams(lastNode);
+
+      const outputName = graph.node[lastNode].output[0];
+      const inputs = [this._getTensorIdByName(graph.node[0].input[0])];
+      const outputs = [this._getTensorIdByName(outputName)];
+      this._model.identifyInputsAndOutputs(inputs, outputs);
+
+      await this._model.finish();
+      this._compilation = await this._model.createCompilation();
+      this._compilation.setPreference(getPreferCode(this._backend, this._prefer));
+      await this._compilation.finish();
+      this._execution = await this._compilation.createExecution();
+
+      const outputSize = this._getTensorTypeByName(outputName).dimensions.reduce((a, b) => a * b);
+      const outputTensor = new Float32Array(outputSize);  
+      await this.compute(inputTensors, [outputTensor]);
+      yield {outputName: outputName, tensor: outputTensor};
+    }
+  }
+
   _getOperandValue(id) {
     return this._operands[id];
   }
@@ -204,9 +239,13 @@ class OnnxModelImporter {
     return info.type;
   }
 
-  _addOpsAndParams() {
+  _addOpsAndParams(lastNode) {
     const graph = this._rawModel.graph;
-    for (let i = 0; i < graph.node.length; ++i) {
+    let i;
+    if (typeof lastNode === 'undefined') {
+      lastNode = graph.node.length - 1;
+    }
+    for (i = 0; i <= lastNode; ++i) {
       let node = graph.node[i];
       console.log(`opType: ${node.opType}`);
       let opCode;
@@ -731,8 +770,6 @@ class OnnxModelImporter {
           // Set beta to 1.0
           inputs.push(this._addScalarFloat32(1.0));
           const output = node.output[0];
-          outputs.push(this._getTensorIdByName(output));
-
           const inputType = this._getTensorTypeByName(input);
           const outputType = {type: this._nn.TENSOR_FLOAT32, dimensions: inputType.dimensions};
           const outputId = this._addNewTensorOperand(output, outputType);
@@ -790,5 +827,6 @@ class OnnxModelImporter {
     for (const [opCode, inputs, outputs] of this._operations) {
       this._model.addOperation(opCode, inputs, outputs);
     }
+    return i - 1;
   }
 }
