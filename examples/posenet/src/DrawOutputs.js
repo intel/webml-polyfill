@@ -14,7 +14,7 @@
  * limitations under the License.
  * =============================================================================
  */
-const boundingBoxColor = 'red';
+const boundingBoxColor = 'rgba(255, 111, 97, 1.0)';
 const color = 'aqua';
 const lineWidth = 2;
 

@@ -16,7 +16,9 @@
  */
 
 function getInput(inputElement) {
+  console.log(inputElement)
   let reader = new FileReader();
+  console.log(reader)
   const promise = new Promise((resolve, reject) => {
     reader.onload = function(e){
       resolve(e.target.result);
@@ -28,7 +30,8 @@ function getInput(inputElement) {
 
 function getURL(version) {
   let address;
-  const urlBase = 'https://storage.googleapis.com/tfjs-models/weights/posenet/';
+  // const urlBase = 'https://storage.googleapis.com/tfjs-models/weights/posenet/';
+  const urlBase = '../posenet/model/';
   switch (version) {
     case 1.01:
       address = urlBase + 'mobilenet_v1_101/';

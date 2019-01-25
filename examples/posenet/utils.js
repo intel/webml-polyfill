@@ -82,7 +82,7 @@ class Utils{
     this.model;
     // single input
     this._version;
-    this._use_atrous_conv;   // If set to true, will use ATROUS_DEPTHWISE_CONV2D in this model
+    this._useAtrousConv;   // If set to true, will use ATROUS_DEPTHWISE_CONV2D in this model
     this._outputStride;
     this._minScore;
     this._scaleFactor;
@@ -92,27 +92,22 @@ class Utils{
     this._type;
     this.initialized = false;
     this._cacheMap = new Map();
-
-    this.container = document.getElementById('container');
-    this.progressBar = document.getElementById('progressBar');
-    this.progressContainer = document.getElementById('progressContainer');
+    this.compilationTime;
   }
   
   async init(backend, prefer, inputSize) {
     this.initialized = false;
     // single input
     this._version = guiState.model;
-    this._use_atrous_conv = guiState.use_atrous_conv;
+    this._useAtrousConv = guiState.useAtrousConv;
     this._outputStride = guiState.outputStride;
     this._minScore = guiState.scoreThreshold;
     this._scaleFactor = guiState.scaleFactor;
+    
     // multiple input
     this._nmsRadius = guiState.multiPoseDetection.nmsRadius;
     this._maxDetection = guiState.multiPoseDetection.maxDetections;
     this._type = "Multiperson";
-    progressContainer.style.display = 'inline';
-    progressBar.style = `width: ${0}%`;
-    progressBar.innerHTML = `${0}%`;
     let result;
 
     this.modelArch = ModelArch.get(Number(this._version));
@@ -133,17 +128,15 @@ class Utils{
     this.offsetTensor = new Float32Array(this.OFFSET_TENSOR_SIZE);
     this.displacementFwd = new Float32Array(this.DISPLACEMENT_FWD_SIZE);
     this.displacementBwd = new Float32Array(this.DISPLACEMENT_BWD_SIZE);
-    this.model = new PoseNet(this.modelArch, Number(this._version), this._use_atrous_conv, Number(this._outputStride),
+    this.model = new PoseNet(this.modelArch, Number(this._version), this._useAtrousConv, Number(this._outputStride),
                              this.scaleInputSize, this._type, this._cacheMap, backend, prefer);
     let start = performance.now();
     result = await this.model.createCompiledModel();
     console.log(`compilation result: ${result}`);
     let elapsed = performance.now() - start;
     console.log(`Compilation time: ${elapsed.toFixed(2)} ms`);
+    this.compilationTime = elapsed.toFixed(2);
     this.initialized = true;
-    if (this.initialized == true) {
-      progressContainer.style.display = 'none';
-    }
   }
 
   async predict(scaleCanvas, type) {
