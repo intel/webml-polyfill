@@ -20,6 +20,20 @@ const componentToggle = () => {
   $('#extra span').toggle();
 }
 
+const optionCompact = () => {
+  for (s of $('#my-gui-container ul li .property-name')) {
+    if(s.innerText == 'Model') { s.setAttribute('title', 'Model: The larger the value, the larger the size of the layers, and more accurate the model at the cost of speed.'); }
+    if(s.innerText == 'UseAtrousConv' || s.innerText == 'useAtrousConv') { s.innerText = 'AtrousConv'; s.setAttribute('title', 'UseAtrousConvOps'); }
+    if(s.innerText == 'OutputStride') { s.innerText = 'Stride'; s.setAttribute('title', 'OutputStride: The desired stride for the output decides output dimension of model. The higher the number, the faster the performance but slower the accuracy. '); }
+    if(s.innerText == 'ScaleFactor') { s.innerText = 'Scale'; s.setAttribute('title', 'ScaleFactor: Scale down the image size before feed it through model, set this number lower to scale down the image and increase the speed when feeding through the network at the cost of accuracy.'); }
+    if(s.innerText == 'ScoreThreshold') { s.innerText = 'Threshold'; s.setAttribute('title', 'ScoreThreshold: Score is the probability of keypoint and pose, set score threshold higher to reduce the number of poses to draw on image and visa versa.'); }
+    if(s.innerText == 'NmsRadius') { s.innerText = 'Radius'; s.setAttribute('title', 'NmsRadius: The minimal distance value between two poses under multiple poses situation. The smaller this value, the poses in image are more concentrated.'); }
+    if(s.innerText == 'MaxDetections') { s.innerText = 'Detections'; s.setAttribute('title', 'MaxDetections: The maximul number of poses to be detected in multiple poses situation.'); }
+    if(s.innerText == 'ShowPose') { s.innerText = 'Pose'; s.setAttribute('title', 'ShowPose'); }
+    if(s.innerText == 'ShowBoundingBox') { s.innerText = 'Bounding'; s.setAttribute('title', 'ShowBoundingBox'); }
+  }
+}
+
 $(document).ready(() => {
 
   if (us == 'camera') {
@@ -62,21 +76,7 @@ $(document).ready(() => {
   $('#posenet ul li .c input[type=text]').attr('title', 'Update value by dragging mouse up/down on inputbox');
   $('#my-gui-container ul li.string').remove();
 
-  for (s of $('#my-gui-container ul li .property-name')) {
-
-    
-
-    if(s.innerText == 'Model') { s.setAttribute('title', 'Model: The larger the value, the larger the size of the layers, and more accurate the model at the cost of speed.'); }
-
-    if(s.innerText == 'UseAtrousConv' || s.innerText == 'useAtrousConv') { s.innerText = 'AtrousConv'; s.setAttribute('title', 'UseAtrousConvOps'); }
-    if(s.innerText == 'OutputStride') { s.innerText = 'Stride'; s.setAttribute('title', 'OutputStride: The desired stride for the output decides output dimension of model. The higher the number, the faster the performance but slower the accuracy. '); }
-    if(s.innerText == 'ScaleFactor') { s.innerText = 'Scale'; s.setAttribute('title', 'ScaleFactor: Scale down the image size before feed it through model, set this number lower to scale down the image and increase the speed when feeding through the network at the cost of accuracy.'); }
-    if(s.innerText == 'ScoreThreshold') { s.innerText = 'Threshold'; s.setAttribute('title', 'ScoreThreshold: Score is the probability of keypoint and pose, set score threshold higher to reduce the number of poses to draw on image and visa versa.'); }
-    if(s.innerText == 'NmsRadius') { s.innerText = 'Radius'; s.setAttribute('title', 'NmsRadius: The minimal distance value between two poses under multiple poses situation. The smaller this value, the poses in image are more concentrated.'); }
-    if(s.innerText == 'MaxDetections') { s.innerText = 'Detections'; s.setAttribute('title', 'MaxDetections: The maximul number of poses to be detected in multiple poses situation.'); }
-    if(s.innerText == 'ShowPose') { s.innerText = 'Pose'; s.setAttribute('title', 'ShowPose'); }
-    if(s.innerText == 'ShowBoundingBox') { s.innerText = 'Bounding'; s.setAttribute('title', 'ShowBoundingBox'); }
-  }
+  optionCompact();
 
   const updateTitle = (backend, prefer) => {
     let currentprefertext;
@@ -114,6 +114,13 @@ $(document).ready(() => {
     } else if (rid == 'fast' || rid == 'sustained' || rid == 'low') {
       currentBackend = 'WebML';
       currentPrefer = rid;
+    }
+
+    if(currentBackend === 'none' || currentBackend === '') {
+      $('#option').hide();
+    } else {
+      $('#option').show();
+      optionCompact();
     }
 
     updateTitle(currentBackend, currentPrefer);
@@ -233,9 +240,12 @@ $(window).load(() => {
   if (ud != '0') {
     componentToggle();
   }
-  if(currentBackend === 'none') {
+  if(currentBackend === 'none' || currentBackend === '') {
     showError('No backend selected', 'Please select a backend to start prediction.');
+    $('#option').hide();
     return;
+  } else {
+    $('#option').show();
   }
   (us === 'camera') ? main(true) : main(false);
 })

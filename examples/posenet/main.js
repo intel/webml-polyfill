@@ -133,29 +133,29 @@ useAtrousConv.onFinishChange((useAtrousConv) => {
 scoreThreshold.onChange((scoreThreshold) => {
   guiState.scoreThreshold = parseFloat(scoreThreshold);
   util._minScore = guiState.scoreThreshold;
-  drawResult(false, false);
+  (currentTab == 'image') ? drawResult(false, false) : poseDetectionFrame();
 });
 
 nmsRadius.onChange((nmsRadius) => {
   guiState.multiPoseDetection.nmsRadius = parseInt(nmsRadius);
   util._nmsRadius = guiState.multiPoseDetection.nmsRadius;
-  drawResult(false, true);
+  (currentTab == 'image') ? drawResult(false, true) : poseDetectionFrame();
 });
 
 maxDetections.onChange((maxDetections) => {
   guiState.multiPoseDetection.maxDetections = parseInt(maxDetections);
   util._maxDetection = guiState.multiPoseDetection.maxDetections;
-  drawResult(false, true);
+  (currentTab == 'image') ? drawResult(false, true) : poseDetectionFrame();
 });
 
 showPose.onChange((showPose) => {
   guiState.showPose = showPose;
-  drawResult(false, false);
+  (currentTab == 'image') ? drawResult(false, false) : poseDetectionFrame();
 });
 
 showBoundingBox.onChange((showBoundingBox) => {
   guiState.showBoundingBox = showBoundingBox;
-  drawResult(false, false);
+  (currentTab == 'image') ? drawResult(false, false) : poseDetectionFrame();
 });
 
 const drawImage = (image, canvas, w, h) => {
@@ -190,6 +190,9 @@ const loadImage = (imagePath, canvas) => {
 let singlePose, multiPoses;
 const drawResult = async (predict = true, decode = true) => {
   streaming = false;
+  if(track) {
+    track.stop();
+  }
   try {
     let _inputElement = inputElement.files[0];
     let imageUrl;
@@ -218,7 +221,7 @@ const drawResult = async (predict = true, decode = true) => {
     if (predict && decode) {
       const elapsed = predictTime + decodeTime;
       const inferenceTimeElement = document.getElementById('inferenceTime');
-      inferenceTimeElement.innerHTML = `inference: <span class='ir'>${elapsed.toFixed(2)} ms</span> compilation: <span class='ir'>${util.compilationTime} ms</span> predicting: <span class='ir'>${predictTime.toFixed(2)} ms</span> decoding: <span class='ir'>${decodeTime.toFixed(2)} ms</span>`;
+      inferenceTimeElement.innerHTML = `inference: <span class='ir'>${elapsed.toFixed(2)} ms</span> predicting: <span class='ir'>${predictTime.toFixed(2)} ms</span> decoding: <span class='ir'>${decodeTime.toFixed(2)} ms</span>`;
     }
     util.drawPoses(canvassingle, singlePose);
     util.drawPoses(canvasmulti, multiPoses);
@@ -231,10 +234,10 @@ const drawResult = async (predict = true, decode = true) => {
 
 const setupCamera = async () => {
   showProgress('Starting camera ...');
-  streaming = true;
   const stream = await navigator.mediaDevices.getUserMedia({ 'audio': false, 'video': {facingMode: 'user'}});
   video.srcObject = stream;
   track = stream.getTracks()[0];
+  streaming = true;
   return new Promise((resolve) => {
     video.onloadedmetadata = () => {
       resolve(video);
@@ -260,7 +263,7 @@ const predict = async (video) => {
   util.drawPoses(canvas, util.decodePose(type));
   const elapsed = performance.now() - start;
   const inferenceTimeElement = document.getElementById('inferenceTime');
-  inferenceTimeElement.innerHTML = `inference: <span class='ir'>${elapsed.toFixed(2)} ms</span> compilation: <span class='ir'>${util.compilationTime} ms</span>`;
+  inferenceTimeElement.innerHTML = `inference: <span class='ir'>${elapsed.toFixed(2)} ms</span>`;
   stats.end();
 }
 

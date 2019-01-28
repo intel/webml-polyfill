@@ -197,6 +197,14 @@ section {
   padding: 85px 0;
 }
 
+#posenet section {
+  padding: 0px 0;
+}
+
+#model section {
+  padding: 20px 0;
+}
+
 .card {
   position: relative;
   padding: 0;
@@ -1664,6 +1672,13 @@ button.xclose {
   margin: 0 auto;
 }
 
+#posenet #my-gui-container {
+  margin-bottom: -0.1rem;
+}
+
+#posenet #my-gui-container.fullscreen ul li {
+  margin-bottom: 0.3rem; 
+}
 #posenet #my-gui-container.fullscreen ul li .c input[type=checkbox]:before {
   border-color: rgba(255, 255, 255, 0.2);
 }
@@ -1671,6 +1686,10 @@ button.xclose {
 #posenet #my-gui-container.fullscreen ul li .c input[type=checkbox]:hover::before {
   border-color: rgba(255, 255, 255, 0.2);
   background: rgba(255, 255, 255, 0.2);
+}
+
+#posenet #my-gui-container.fullscreen ul li .c input[type=checkbox]:after {
+  background-color: rgba(255, 255, 255, 0.0);
 }
 
 #posenet #my-gui-container.fullscreen ul li select {
@@ -1695,14 +1714,33 @@ button.xclose {
   border-top-color: rgba(255, 255, 255, 0.1);
 }
 
+#posenet #my-gui-container.fullscreen ul li .c input[type=checkbox] {
+  background: transparent;
+  color: transparent;
+  border: 0px !important;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+}
+
 #posenet ul li .c {
   display: inline;
 }
 
 #posenet ul li .c input[type=checkbox] {
-  width: 0px !important;
+  border: 0px !important;
   cursor: pointer;
-  margin-right: 1rem;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background: transparent;
+  height: 0px;
+  width: 0px !important;
+}
+
+#posenet ul li .c input[type=checkbox]:hover, #posenet ul li .c input[type=checkbox]:active {
+  border: 0px !important;
+  overflow: hidden;
 }
 
 #posenet ul li .c input[type=checkbox]:before {
@@ -1711,12 +1749,12 @@ button.xclose {
   transition: all 0.3s ease-in-out;
   content: "";
   position: absolute;
-  left: 0;
+  top: -0.15rem;
+  left: -0.29rem;
   z-index: 1;
-  width: 1rem;
-  height: 1rem;
+  width: 1.4rem;
+  height: 1.4rem;
   border: 1px solid rgba(255, 111, 97, 0.1);
-  background: transparent;
   cursor: pointer;
 }
 
@@ -1731,7 +1769,7 @@ button.xclose {
   -ms-transform: rotate(-45deg);
   -o-transform: rotate(-45deg);
   transform: rotate(-45deg);
-  height: .5rem;
+  height: .6rem;
   border-color: rgba(255, 111, 97, 0.9);
   border-top-style: none;
   border-right-style: none;
@@ -1739,11 +1777,11 @@ button.xclose {
 #posenet ul li .c input[type=checkbox]:after {
   content: "";
   position: absolute;
-  top: -0.125rem;
-  left: 0;
-  width: 1.1rem;
-  height: 1.1rem;
-  background: transparent;
+  top: 0rem;
+  left: -0.29rem;
+  width: 1.4rem;
+  height: 1.4rem;
+  background: rgba(255, 255, 255, 1.0);
   cursor: pointer;
 }
 

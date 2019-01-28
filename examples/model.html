@@ -30,7 +30,7 @@
   <link href='static/css/style.css' rel='stylesheet'>
 </head>
 
-<body>
+<body id='model'>
   <header id='header'>
     <div class='container'>
       <div id='logo' class='pull-left'>
@@ -71,12 +71,34 @@
       </nav>
     </div>
   </header>
-
   <section class='models' id='models'>
     <div class='container'>
-      <h2 class='text-center'>
-          Image Classification - Supported Models
-      </h2>
+      <h3 class='text-center mb-4 mt-1'>
+          Supported Models
+      </h3>
+      <h4 class='text-center'>
+          Human Pose Estimation
+      </h4>
+      <div class="table-responsive-sm">
+        <table id='modelcv-hpe' class='modelcv table table-borderless table-hover'>
+          <caption>Human Pose Estimation - Computer Vision based models</caption>
+          <thead>
+            <tr>
+              <th scope='col'>Model</th>
+              <th scope='col'>Format</th>
+              <th scope='col'>Paper</th>
+              <th scope='col' title='Netron Model Visualizer'>Netron</th>
+              <th scope='col'>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+          </tbody>
+        </table>
+      </div>
+
+      <h4 class='text-center'>
+          Image Classification
+      </h4>
       <div class="table-responsive-sm">
         <table id='modelcv-ic' class='modelcv table table-borderless table-hover'>
           <caption>Image Classification - Computer Vision based models</caption>
@@ -182,6 +204,7 @@
 
     $(document).ready(function () {
       showModel('#modelcv-ic tbody', imageClassificationModels)
+      showModel('#modelcv-hpe tbody', humanPoseEstimationModels)
     });
   </script>
   

@@ -257,7 +257,10 @@ const posenet = {
   preOptions: {
     mean: [127.5, 127.5, 127.5],
     std: [127.5, 127.5, 127.5],
-  }
+  },
+  intro: 'PoseNet is a machine learning model that allows for Real-time Human Pose Estimation which can be used to estimate either a single pose or multiple poses.',
+  paperUrl: 'https://arxiv.org/abs/1803.08225',
+  modelCDNUrl: 'https://cdn_host_and_path/'
 };
 
 const imageClassificationModels = [
@@ -279,6 +282,10 @@ const objectDetectionModels = [
   ssd_mobilenetv1_tflite,
   ssd_mobilenetv2_tflite,
   ssdlite_mobilenetv2_tflite,
+];
+
+const humanPoseEstimationModels = [
+  posenet,
 ];
 
 const getOS = () => {

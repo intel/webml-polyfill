@@ -2009,7 +2009,7 @@
           });
           if (window.innerHeight - top - CLOSE_BUTTON_HEIGHT < h) {
             dom.addClass(root.domElement, GUI.CLASS_TOO_TALL);
-            r// oot.__ul.style.height = window.innerHeight - top - CLOSE_BUTTON_HEIGHT + 'px';
+            // root.__ul.style.height = window.innerHeight - top - CLOSE_BUTTON_HEIGHT + 'px';
           } else {
             dom.removeClass(root.domElement, GUI.CLASS_TOO_TALL);
             root.__ul.style.height = 'auto';

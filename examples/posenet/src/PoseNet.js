@@ -17,6 +17,7 @@ class PoseNet {
     this._cacheMap = cacheMap;
     this._backend = backend;
     this._prefer = prefer;
+    this._compilationTime = '';
     if (this._backend === 'WebML') {
       if (nnNative === null) {
         throw Error('Fails to initialize neural network context');
@@ -40,6 +41,7 @@ class PoseNet {
     this._execution = await this._compilation.createExecution();
     let elapsed = performance.now() - start;
     console.log(`compilation time: ${elapsed.toFixed(2)} ms`);
+    this._compilationTime = elapsed.toFixed(2);
   }
 
   async computeSinglePose(inputTensor, heatmapTensor, offsetTensor) {

@@ -92,7 +92,6 @@ class Utils{
     this._type;
     this.initialized = false;
     this._cacheMap = new Map();
-    this.compilationTime;
   }
   
   async init(backend, prefer, inputSize) {
@@ -130,12 +129,7 @@ class Utils{
     this.displacementBwd = new Float32Array(this.DISPLACEMENT_BWD_SIZE);
     this.model = new PoseNet(this.modelArch, Number(this._version), this._useAtrousConv, Number(this._outputStride),
                              this.scaleInputSize, this._type, this._cacheMap, backend, prefer);
-    let start = performance.now();
     result = await this.model.createCompiledModel();
-    console.log(`compilation result: ${result}`);
-    let elapsed = performance.now() - start;
-    console.log(`Compilation time: ${elapsed.toFixed(2)} ms`);
-    this.compilationTime = elapsed.toFixed(2);
     this.initialized = true;
   }
 
