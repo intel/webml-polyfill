@@ -218,4 +218,50 @@ class Utils {
       this.model._compilation._preparedModel._deleteAll();
     }
   }
+
+
+  // for debugging
+  async iterateLayers(configs) {
+    if (!this.initialized) return;
+
+    let iterators = [];
+    for (let config of configs) {
+      let importer = this.modelFile.split('.').pop() === 'tflite' ? TFliteModelImporter : OnnxModelImporter;
+      let model = await new importer({
+        rawModel: this.rawModel,
+        backend: config.backend,
+        prefer: config.prefer || null,
+      });
+      iterators.push(model.layerIterator([this.inputTensor]));
+    }
+
+    while (true) {
+
+      let layerOutputs = [];
+      for (let it of iterators) {
+        layerOutputs.push(await it.next());
+      }
+
+      let baselineOutput = layerOutputs[0];
+      if (baselineOutput.done) {
+        break;
+      }
+
+      console.debug(`\n\n\nLayer ${baselineOutput.value.outputName}`);
+
+      for (let i = 0; i < configs.length; ++i) {
+        console.debug(`\n${configs[i].backend}:`);
+        console.debug(`\n${layerOutputs[i].value.tensor}`);
+
+        if (i > 0) {
+          let sum = 0;
+          for (let j = 0; j < baselineOutput.value.tensor.length; j++) {
+            sum += Math.pow(layerOutputs[i].value.tensor[j] - baselineOutput.value.tensor[j], 2);
+          }
+          let variance = sum / baselineOutput.value.tensor.length;
+          console.debug(`var with ${configs[0].backend}: ${variance}`);
+        }
+      }
+    }
+  }
 }
