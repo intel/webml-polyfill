@@ -152,7 +152,7 @@ class TFliteModelImporter {
       const opCode = this._rawModel.operatorCodes(operator.opcodeIndex()).builtinCode();
       const opcodeName = tflite.BuiltinOperator[opCode];
 
-      const inputs = Array.from(graph.operators(0).inputsArray());
+      const inputs = Array.from(graph.inputsArray());
       const outputs = Array.from(operator.outputsArray());
       this._model.identifyInputsAndOutputs(inputs, outputs);
 
@@ -162,7 +162,7 @@ class TFliteModelImporter {
       await this._compilation.finish();
       this._execution = await this._compilation.createExecution();
 
-      const outputSize = this._operandTypes[outputs[0]].dimensions.reduce((a,b)=>a*b);
+      const outputSize = graph.tensors(outputs[0]).shapeArray().reduce((a,b)=>a*b);
       const outputTensor = new Float32Array(outputSize);  
       await this.compute(inputTensors, [outputTensor]);
       yield {outputName: opcodeName, tensor: outputTensor};

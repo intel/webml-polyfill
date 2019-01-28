@@ -15,6 +15,8 @@ const availableModels = [
   },
 ];
 
+utils = new Utils();
+
 function main(camera) {
 
   const videoElement = document.getElementById('video');
@@ -52,7 +54,6 @@ function main(camera) {
   let renderer = new Renderer(outputCanvas);
   renderer.setup();
 
-  let utils = new Utils();
   // register updateProgress function if progressBar element exist
   utils.progressCallback = updateProgress;
 
