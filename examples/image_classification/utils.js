@@ -221,7 +221,7 @@ class Utils {
 
 
   // for debugging
-  async iterateLayers(configs) {
+  async iterateLayers(configs, layerList) {
     if (!this.initialized) return;
 
     let iterators = [];
@@ -232,7 +232,7 @@ class Utils {
         backend: config.backend,
         prefer: config.prefer || null,
       });
-      iterators.push(model.layerIterator([this.inputTensor]));
+      iterators.push(model.layerIterator([this.inputTensor], layerList));
     }
 
     while (true) {
@@ -242,12 +242,12 @@ class Utils {
         layerOutputs.push(await it.next());
       }
 
-      let baselineOutput = layerOutputs[0];
-      if (baselineOutput.done) {
+      let refOutput = layerOutputs[0];
+      if (refOutput.done) {
         break;
       }
 
-      console.debug(`\n\n\nLayer ${baselineOutput.value.outputName}`);
+      console.debug(`\n\n\nLayer(${refOutput.value.layerId}) ${refOutput.value.outputName}`);
 
       for (let i = 0; i < configs.length; ++i) {
         console.debug(`\n${configs[i].backend}:`);
@@ -255,10 +255,10 @@ class Utils {
 
         if (i > 0) {
           let sum = 0;
-          for (let j = 0; j < baselineOutput.value.tensor.length; j++) {
-            sum += Math.pow(layerOutputs[i].value.tensor[j] - baselineOutput.value.tensor[j], 2);
+          for (let j = 0; j < refOutput.value.tensor.length; j++) {
+            sum += Math.pow(layerOutputs[i].value.tensor[j] - refOutput.value.tensor[j], 2);
           }
-          let variance = sum / baselineOutput.value.tensor.length;
+          let variance = sum / refOutput.value.tensor.length;
           console.debug(`var with ${configs[0].backend}: ${variance}`);
         }
       }

@@ -133,10 +133,9 @@ class TFliteModelImporter {
     }, new Float32Array(tensor));
   }
 
-  async * layerIterator(inputTensors) {
+  async * layerIterator(inputTensors, layerList) {
     const graph = this._rawModel.subgraphs(0);
-    const operatorsLength = graph.operatorsLength();
-    for (let lastNode = 0; lastNode < operatorsLength; ++lastNode) {
+    const getLayerOutput = async (lastNode) => {
       this._tensorIds = [];
       this._operands = [];
       this._operandIndex = 0;
@@ -149,11 +148,9 @@ class TFliteModelImporter {
       lastNode = this._addOpsAndParams(lastNode);
 
       const operator = graph.operators(lastNode);
-      const opCode = this._rawModel.operatorCodes(operator.opcodeIndex()).builtinCode();
-      const opcodeName = tflite.BuiltinOperator[opCode];
-
       const inputs = Array.from(graph.inputsArray());
       const outputs = Array.from(operator.outputsArray());
+      const outputName = graph.tensors(outputs[0]).name();
       this._model.identifyInputsAndOutputs(inputs, outputs);
 
       await this._model.finish();
@@ -165,7 +162,23 @@ class TFliteModelImporter {
       const outputSize = graph.tensors(outputs[0]).shapeArray().reduce((a,b)=>a*b);
       const outputTensor = new Float32Array(outputSize);  
       await this.compute(inputTensors, [outputTensor]);
-      yield {outputName: opcodeName, tensor: outputTensor};
+      return {layerId: lastNode, outputName: outputName, tensor: outputTensor};
+    }
+
+    const operatorsLength = graph.operatorsLength();
+    if (typeof layerList === 'undefined') {
+      for (let lastNode = 0; lastNode < operatorsLength;) {
+        const layerOutput = await getLayerOutput(lastNode);
+        yield layerOutput;
+        lastNode = layerOutput.layerId + 1;
+      }
+    } else {
+      for (let layerId of layerList) {
+        if (layerId >= operatorsLength || layerId < 0) {
+          throw new Error(`Illegal layer ${layerId}`);
+        }
+        yield await getLayerOutput(layerId);
+      }
     }
   }
 

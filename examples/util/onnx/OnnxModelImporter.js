@@ -59,10 +59,9 @@ class OnnxModelImporter {
     return 'success';
   }
 
-  async * layerIterator(inputTensors) {
+  async * layerIterator(inputTensors, layerList) {
     const graph = this._rawModel.graph;
-    const operatorsLength = graph.node.length;
-    for (let lastNode = 0; lastNode < operatorsLength; ++lastNode) {
+    const getLayerOutput = async (lastNode) => {
       this._tensorIds = [];
       this._tensorTypes = [];
       this._operations = [];
@@ -90,7 +89,23 @@ class OnnxModelImporter {
       const outputSize = this._getTensorTypeByName(outputName).dimensions.reduce((a, b) => a * b);
       const outputTensor = new Float32Array(outputSize);  
       await this.compute(inputTensors, [outputTensor]);
-      yield {outputName: outputName, tensor: outputTensor};
+      return {layerId: lastNode, outputName: outputName, tensor: outputTensor};
+    }
+
+    const operatorsLength = graph.node.length;
+    if (typeof layerList === 'undefined') {
+      for (let lastNode = 0; lastNode < operatorsLength;) {
+        const layerOutput = await getLayerOutput(lastNode);
+        yield layerOutput;
+        lastNode = layerOutput.layerId + 1;
+      }
+    } else {
+      for (let layerId of layerList) {
+        if (layerId >= operatorsLength || layerId < 0) {
+          throw new Error(`Illegal layer ${layerId}`);
+        }
+        yield await getLayerOutput(layerId);
+      }
     }
   }
 
