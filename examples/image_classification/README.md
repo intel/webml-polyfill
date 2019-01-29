@@ -1,6 +1,6 @@
-WebML Image Classification Examples
+WebNN API Image Classification Examples
 ==
-This sample loads Image classification models trained by ImageNet, constructs and inferences it by WebML API.
+This sample loads Image classification models trained by ImageNet, constructs and inferences it by WebNN API.
 
 Download Model
 -----------
@@ -22,7 +22,7 @@ Description
 -----------
 | Parameter | Value | Description | Note |
 |----|------|------|-----------|
-| prefer | sustained, fast, low | Preferred backend for WebML backend<br>sustained == GPU<br>fast == CPU<br>low == Low Power |Only work for WebML backend, useless when backend is WASM or WebGL |
+| prefer | sustained, fast, low | Preferred backend for WebNN API backend<br>sustained == GPU<br>fast == CPU<br>low == Low Power |Only work for WebNN API backend, useless when backend is WASM or WebGL |
 | b | WASM, WebGL, WebML | Backend | Case sensitive |
 | m | // for tflite format <br>mobilenet_v1, mobilenet_v2, squeezenet, inception_v3, inception_v4, inception_resnet_v2 <br><br>// for onnx format <br>mobilenet_v2, squeezenet, resnet_v1, resnet_v2, inception_v2, densenet| Model and it's version ||
 | t | tfile<br>onnx| Model format  | |

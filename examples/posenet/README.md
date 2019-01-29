@@ -1,10 +1,8 @@
-# WebML PoseNet Sample   
-This sample loads a pretrained posenet model, constructs and infers it by WebML API.    
-## Screen Shoot    
-<p float="left">
-  <img align="left" src="https://i.imgur.com/8brxB77.png" width="400px"height="300px"/>
-  <img src="https://i.imgur.com/EG1TR20.png" width="300px" height="300px"/>   
-</p> 
+# WebNN API PoseNet Example   
+This example loads a pretrained posenet model, constructs and infers it by WebNN API.  
+
+## Screenshot   
+![PoseNet Screenshot](./img/posenet.png)
        
 ## Usage        
 PoseNet can be used to estimate either a single pose or multiple poses, so there are two versions, one is for single pose detection with an assumption that is there exists only one persion in image or video, another one is for multiple poses detection used to detect several person poses. At the same time, there are various parameters shown in above control pad could affect PoseNet model's accuracy and cost time.    
