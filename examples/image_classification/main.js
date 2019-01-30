@@ -43,10 +43,12 @@ const showAlert = (error) => {
 
 const updateProgress = (ev) => {
   if (ev.lengthComputable) {
-    let percentComplete = ev.loaded / ev.total * 100;
+    let totalSize = ev.total / (1000 * 1000);
+    let loadedSize = ev.loaded / (1000 * 1000);
+    let percentComplete = ev.loaded / ev.total * 100;    
     percentComplete = percentComplete.toFixed(0);
     progressBar.style = `width: ${percentComplete}%`;
-    updateLoading(percentComplete);
+    updateLoading(loadedSize.toFixed(1), totalSize.toFixed(1), percentComplete);
   }
 }
 
@@ -120,7 +122,7 @@ const utilsPredict = async (imageElement, backend, prefer) => {
   if(track) {
     track.stop();
   }
-  await showProgress('Image predicting ...');
+  await showProgress('Image inferencing ...');
   try {
     // return immediately if model, backend, prefer are all unchanged
     let init = await utils.init(backend, prefer);    
@@ -138,7 +140,7 @@ const utilsPredict = async (imageElement, backend, prefer) => {
 
 const utilsPredictCamera = async (backend, prefer) => {
   streaming = true;
-  await showProgress('Camera predicting ...');
+  await showProgress('Camera inferencing ...');
   try {
     let init = await utils.init(backend, prefer);    
     if (init == 'NOT_LOADED') {

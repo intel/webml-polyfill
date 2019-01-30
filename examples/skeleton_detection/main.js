@@ -199,7 +199,7 @@ const drawResult = async (predict = true, decode = true) => {
     if (_inputElement != undefined) {
       imageUrl = await getInput(_inputElement);
     } else {
-      imageUrl = '../posenet/img/download.png';
+      imageUrl = '../skeleton_detection/img/download.png';
     }
 
     await loadImage(imageUrl, canvassingle);

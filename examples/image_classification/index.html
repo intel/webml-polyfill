@@ -28,14 +28,9 @@
   <meta name='theme-color' content='#ffffff'>
   <link href='../static/lib/bootstrap/css/bootstrap.min.css' rel='stylesheet'>
   <link href='../static/css/style.css' rel='stylesheet'>
-  <style>
-    section {
-      padding: 0px 0;
-    }
-  </style>
 </head>
 
-<body>
+<body id='imageclassification'>
   <header id='header'>
     <div class='container'>
       <div id='logo' class='pull-left'>
@@ -67,8 +62,8 @@
             <ul>
               <li><a href='../image_classification/index.html'>Image Classification</a></li>
               <li><a href='../object_detection/index.html'>Object Detection</a></li>
-              <li><a href='../posenet/index.html'>Human Pose Estimation</a></li>
-              <li><a href='../deeplab/index.html'>Semantic Segmentation</a></li>
+              <li><a href='../skeleton_detection/index.html'>Skeleton Detection</a></li>
+              <li><a href='../semantic_segmentation/index.html'>Semantic Segmentation</a></li>
             </ul>
           </li>
           <li><a href='../model.html'>Models</a></li>
@@ -301,6 +296,10 @@
           <div class='webmlbadge mb-4'>
             <div class='webml-title'>WebNN API</div>
             <div id='webmlstatus'></div>
+          </div>
+          <div class='webmlbadge mb-4'>
+            <div class='webml-title'>W3C Spec</div>
+            <div class='webml-status-true'><a href='https://webmachinelearning.github.io/webnn/#usecases' title='W3C Web Neural Network API Use Cases'>Use Cases</a></div>
           </div>
           <p>&copy;2019 <a href='../index.html'>WebNN API</a></p>
         </div>
