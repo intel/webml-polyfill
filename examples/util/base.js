@@ -285,7 +285,7 @@ const deeplab_mobilenet_v2_513_dilated_tflite = {
   labelsFile: '../semantic_segmentation/model/labels.txt',
   inputSize: [513, 513, 3],
   outputSize: [513, 513, 21],
-  intro: 'Extend DeepLabv3 to include a simple yet effective decoder module to refine the segmentation results especially along object boundaries. Furthermore, in this encoder-decoder structure one can arbitrarily control the resolution of extracted encoder features by atrous convolution to trade-off precision and runtime.',
+  intro: 'Equivalent to the model above (without dilated suffix) but only available on platforms that natively support atrous convolution.',
   paperUrl: 'https://arxiv.org/abs/1802.02611'
 }
 
