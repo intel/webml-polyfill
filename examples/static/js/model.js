@@ -1,5 +1,5 @@
 function getModelName(modelname) {
-  return modelname.replace('_tflite', '').replace('_onnx', '').replace('_', ' ').replace('_', ' ');
+  return modelname.replace('_tflite', '').replace('_onnx', '').replace(/_/g, ' ');
 }
 
 function isTFLite(modelname){
