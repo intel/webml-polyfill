@@ -3263,6 +3263,1298 @@ describe('Unit Test/Model Test', function() {
       });
     });
 
+    it('"the length of inputs (explicit padding) being 10, 4-D tensor as input0 of TENSOR_FLOAT32 type, 4-D tensor as input1 of TENSOR_FLOAT32 type, 1-D tensor as input2 of TENSOR_FLOAT32 type, the type of input3 to input8 being INT32 type, input9 also having INT32 type with value of 0-3, 4-D tensor as output having same type as input0 and input1" are ok for "ATROUS_CONV_2D" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 32, 32, 3]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [6, 5, 5, 3]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [6]});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(9, new Int32Array([nn.FUSED_NONE]));
+        // Assume no padding and rate=1
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 28, 28, 6]});
+        assert.doesNotThrow(() => {
+          model.addOperation(nn.ATROUS_CONV_2D, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [10]);
+        });
+      });
+    });
+
+    it('"the length of inputs (implicit padding) being 7, 4-D tensor as input0 of TENSOR_FLOAT32 type, 4-D tensor as input1 of TENSOR_FLOAT32 type, 1-D tensor as input2 of TENSOR_FLOAT32 type, the type of input3 to input5 being INT32 type, input6 also having INT32 type with value of 0-3, 4-D tensor as output having same type as input0 and input1" are ok for "ATROUS_CONV_2D" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 32, 32, 3]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [6, 5, 5, 3]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [6]});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(6, new Int32Array([nn.FUSED_NONE]));
+        // Assume no padding and rate=1
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 28, 28, 6]});
+        assert.doesNotThrow(() => {
+          model.addOperation(nn.ATROUS_CONV_2D, [0, 1, 2, 3, 4, 5, 6], [7]);
+        });
+      });
+    });
+
+    it('"the length of inputs (implicit padding) being 7, 4-D tensor as input0 of TENSOR_QUANT8_ASYMM type having input_scale, 4-D tensor as input1 of TENSOR_QUANT8_ASYMM type having filter_scale, 1-D tensor as input2 of TENSOR_INT32 type having zeroPoint of 0 with bias_scale being equal to the product of input_scale and filter_scale, the type of input3 to input5 being INT32 type, input6 also having INT32 type with value of 0-3, 4-D tensor as output of same type as input0 and input1 with output_scale being greater than the product of input_scale and filter_scale" are ok for "ATROUS_CONV_2D" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let input_scale = 0.5;
+        model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [100, 32, 32, 3], scale: input_scale, zeroPoint: 1});
+        let filter_scale = 0.2;
+        model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [6, 5, 5, 3], scale: filter_scale, zeroPoint: 2});
+        let bias_scale = input_scale * filter_scale;
+        model.addOperand({type: nn.TENSOR_INT32, dimensions: [6], scale: bias_scale, zeroPoint: 0});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(6, new Int32Array([nn.FUSED_NONE]));
+        // Assume no padding and rate=1
+        let output_scale = input_scale * filter_scale + 1.0;
+        model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [100, 28, 28, 6], scale: output_scale, zeroPoint: 10});
+        assert.doesNotThrow(() => {
+          model.addOperation(nn.ATROUS_CONV_2D, [0, 1, 2, 3, 4, 5, 6], [7]);
+        });
+      });
+    });
+
+    it('raise when input0 and input1 are not 4-D tensors for "ATROUS_CONV_2D" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [32, 32, 3]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [5, 5, 3]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [1]});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(6, new Int32Array([nn.FUSED_NONE]));
+        // Assume no padding and rate=1
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [1, 28, 28, 6]});
+        assert.throws(() => {
+          model.addOperation(nn.ATROUS_CONV_2D, [0, 1, 2, 3, 4, 5, 6], [7]);
+        });
+      });
+    });
+
+    it('raise error when input2 is not 1-D tensor for "ATROUS_CONV_2D" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 32, 32, 3]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [6, 5, 5, 3]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [6, 1]});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(6, new Int32Array([nn.FUSED_NONE]));
+        // Assume no padding and rate=1
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 28, 28, 6]});
+        assert.throws(() => {
+          model.addOperation(nn.ATROUS_CONV_2D, [0, 1, 2, 3, 4, 5, 6], [7]);
+        });
+      });
+    });
+
+    it('raise error when the length of inputs(implicit padding) being 7, the types of input3 to input5 are not identical INT32 type for "ATROUS_CONV_2D" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 32, 32, 3]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [6, 5, 5, 3]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [6]});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.FLOAT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(6, new Int32Array([nn.FUSED_NONE]));
+        // Assume no padding and rate=1
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 28, 28, 6]});
+        assert.throws(() => {
+          model.addOperation(nn.ATROUS_CONV_2D, [0, 1, 2, 3, 4, 5, 6], [7]);
+        });
+      });
+    });
+
+    it('raise error when the length of inputs(explicit padding) being 10 , the types of input3 to input8 are not identical INT32 type for "ATROUS_CONV_2D" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 32, 32, 3]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [6, 5, 5, 3]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [6]});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.FLOAT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(6, new Int32Array([nn.FUSED_NONE]));
+        // Assume no padding and rate=1
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 28, 28, 6]});
+        assert.throws(() => {
+          model.addOperation(nn.ATROUS_CONV_2D, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [10]);
+        });
+      });
+    });
+
+    it('raise error when the length of inputs(implicit padding) is 6 (not 7 or 10) for "ATROUS_CONV_2D" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 32, 32, 3]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [6, 5, 5, 3]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [6]});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(5, new Int32Array([nn.FUSED_NONE]));
+        // Assume no padding and rate=1
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 28, 28, 6]});
+        assert.throws(() => {
+          model.addOperation(nn.ATROUS_CONV_2D, [0, 1, 2, 3, 4, 5], [6]);
+        });
+      });
+    });
+
+    it('raise error when the length of inputs is 8 (not 7 or 10) for "ATROUS_CONV_2D" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 32, 32, 3]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [6, 5, 5, 3]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [6]});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(7, new Int32Array([nn.FUSED_NONE]));
+        // Assume no padding and rate=1
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 28, 28, 6]});
+        assert.throws(() => {
+          model.addOperation(nn.ATROUS_CONV_2D, [0, 1, 2, 3, 4, 5, 6, 7], [8]);
+        });
+      });
+    });
+
+    it('raise error when the length of inputs(explicit padding) is 11 (not 7 or 10) for "ATROUS_CONV_2D" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 32, 32, 3]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [6, 5, 5, 3]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [6]});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(10, new Int32Array([nn.FUSED_NONE]));
+        // Assume no padding and rate=1
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 28, 28, 6]});
+        assert.throws(() => {
+          model.addOperation(nn.ATROUS_CONV_2D, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], [11]);
+        });
+      });
+    });
+
+    it('raise error when the length of inputs(implicit padding) being 7, the type of input6 is not INT32 type for "ATROUS_CONV_2D" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 32, 32, 3]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [6, 5, 5, 3]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [6]});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.FLOAT32});
+        model.setOperandValue(6, new Float32Array([0.0]));
+        // Assume no padding and rate=1
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 28, 28, 6]});
+        assert.throws(() => {
+          model.addOperation(nn.ATROUS_CONV_2D, [0, 1, 2, 3, 4, 5, 6], [7]);
+        });
+      });
+    });
+
+    it('raise error when the length of inputs(explicit padding) being 10, the type of input9 is not INT32 type for "ATROUS_CONV_2D" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 32, 32, 3]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [6, 5, 5, 3]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [6]});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.FLOAT32});
+        model.setOperandValue(9, new Float32Array([0.0]));
+        // Assume no padding and rate=1
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 28, 28, 6]});
+        assert.throws(() => {
+          model.addOperation(nn.ATROUS_CONV_2D, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [10]);
+        });
+      });
+    });
+
+    it('raise error when the type of output is not identical with the type of input0 and input1 for "ATROUS_CONV_2D" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 32, 32, 3]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [6, 5, 5, 3]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [6]});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(6, new Int32Array([nn.FUSED_NONE]));
+        // Assume no padding and rate=1
+        model.addOperand({type: nn.TENSOR_INT32, dimensions: [100, 28, 28, 6]});
+        assert.throws(() => {
+          model.addOperation(nn.ATROUS_CONV_2D, [0, 1, 2, 3, 4, 5, 6], [7]);
+        });
+      });
+    });
+
+    it('raise error when the height of input0(its shape being [batches, height, width, depth_in]) is less than the filter_height of input1(its shape being [depth_out, filter_height, filter_width, depth_in]) for "ATROUS_CONV_2D" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 32, 32, 3]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [6, 33, 5, 3]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [6]});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(6, new Int32Array([nn.FUSED_NONE]));
+        // Assume no padding and rate=1
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 1, 28, 6]});
+        assert.throws(() => {
+          model.addOperation(nn.ATROUS_CONV_2D, [0, 1, 2, 3, 4, 5, 6], [7]);
+        });
+      });
+    });
+
+    it('raise error when the width of input0(its shape being [batches, height, width, depth_in]) is less than the filter_width of input1(its shape being [depth_out, filter_height, filter_width, depth_in]) for "ATROUS_CONV_2D" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 32, 32, 3]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [6, 5, 33, 3]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [6]});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(6, new Int32Array([nn.FUSED_NONE]));
+        // Assume no padding and rate=1
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 28, 1, 6]});
+        assert.throws(() => {
+          model.addOperation(nn.ATROUS_CONV_2D, [0, 1, 2, 3, 4, 5, 6], [7]);
+        });
+      });
+    });
+
+    it('raise error when the depth_in1 of input0(its shape being [batches, height, width, depth_in1]) is not equal to the depth_in2 of input1(its shape being [depth_out, filter_height, filter_width, depth_in2]) for "ATROUS_CONV_2D" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 32, 32, 3]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [6, 5, 5, 2]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [6]});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(6, new Int32Array([nn.FUSED_NONE]));
+        // Assume no padding and rate=1
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 28, 28, 6]});
+        assert.throws(() => {
+          model.addOperation(nn.ATROUS_CONV_2D, [0, 1, 2, 3, 4, 5, 6], [7]);
+        });
+      });
+    });
+
+    it('raise error when the batches1 of input0(its shape being [batches1, height, width, depth_in]) is not equal to the batches2 of output(its shape being [batches2, out_height, out_width, depth_out]) for "ATROUS_CONV_2D" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 32, 32, 3]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [6, 5, 5, 3]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [6]});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(6, new Int32Array([nn.FUSED_NONE]));
+        // Assume no padding and rate=1
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [101, 28, 28, 6]});
+        assert.throws(() => {
+          model.addOperation(nn.ATROUS_CONV_2D, [0, 1, 2, 3, 4, 5, 6], [7]);
+        });
+      });
+    });
+
+    it('raise error when 4-D tensor as input0 of TENSOR_QUANT8_ASYMM type having input_scale, 4-D tensor as input1 of TENSOR_QUANT8_ASYMM type having filter_scale, 1-D tensor as input2 of INT32 type having zeroPoint of 0 with bias_scale being not equal to the product of input_scale and filter_scale for "ATROUS_CONV_2D" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let input_scale = 0.5;
+        model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [100, 32, 32, 3], scale: input_scale, zeroPoint: 1});
+        let filter_scale = 0.2;
+        model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [6, 5, 5, 3], scale: filter_scale, zeroPoint: 2});
+        let bias_scale = input_scale * filter_scale + 0.1;
+        model.addOperand({type: nn.TENSOR_INT32, dimensions: [6], scale: bias_scale, zeroPoint: 0});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(6, new Int32Array([nn.FUSED_NONE]));
+        // Assume no padding and rate=1
+        let output_scale = input_scale * filter_scale + 1.0;
+        model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [100, 28, 28, 6], scale: output_scale, zeroPoint: 10});
+        assert.throws(() => {
+          model.addOperation(nn.ATROUS_CONV_2D, [0, 1, 2, 3, 4, 5, 6], [7]);
+        });
+      });
+    });
+
+    it('raise error when 4-D tensor as input0 of TENSOR_QUANT8_ASYMM type having input_scale, 4-D tensor as input1 of TENSOR_QUANT8_ASYMM type having filter_scale, 1-D tensor as input2 of INT32 type having bias_scale being equal to the product of input_scale and filter_scale with zeroPoint being greater than 0 for "ATROUS_CONV_2D" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let input_scale = 0.5;
+        model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [100, 32, 32, 3], scale: input_scale, zeroPoint: 1});
+        let filter_scale = 0.2;
+        model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [6, 5, 5, 3], scale: filter_scale, zeroPoint: 2});
+        let bias_scale = input_scale * filter_scale;
+        model.addOperand({type: nn.TENSOR_INT32, dimensions: [6], scale: bias_scale, zeroPoint: 1});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(6, new Int32Array([nn.FUSED_NONE]));
+        // Assume no padding and rate=1
+        let output_scale = input_scale * filter_scale + 1.0;
+        model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [100, 28, 28, 6], scale: output_scale, zeroPoint: 10});
+        assert.throws(() => {
+          model.addOperation(nn.ATROUS_CONV_2D, [0, 1, 2, 3, 4, 5, 6], [7]);
+        });
+      });
+    });
+
+    it('raise error when 4-D tensor as input0 of TENSOR_QUANT8_ASYMM type having input_scale, 4-D tensor as input1 of TENSOR_QUANT8_ASYMM type having filter_scale, output of same type as input0 with output_scale being equal to the product of input_scale and filter_scale with zeroPoint being greater than 0 for "ATROUS_CONV_2D" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let input_scale = 0.5;
+        model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [100, 32, 32, 3], scale: input_scale, zeroPoint: 1});
+        let filter_scale = 0.2;
+        model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [6, 5, 5, 3], scale: filter_scale, zeroPoint: 2});
+        let bias_scale = input_scale * filter_scale;
+        model.addOperand({type: nn.TENSOR_INT32, dimensions: [6], scale: bias_scale, zeroPoint: 0});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(6, new Int32Array([nn.FUSED_NONE]));
+        // Assume no padding and rate=1
+        let output_scale = input_scale * filter_scale;
+        model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [100, 28, 28, 6], scale: output_scale, zeroPoint: 10});
+        assert.throws(() => {
+          model.addOperation(nn.ATROUS_CONV_2D, [0, 1, 2, 3, 4, 5, 6], [7]);
+        });
+      });
+    });
+
+    it('raise error when 4-D tensor as input0 of TENSOR_QUANT8_ASYMM type having input_scale, 4-D tensor as input1 of TENSOR_QUANT8_ASYMM type having filter_scale, output of same type as input0 with output_scale being less than the product of input_scale and filter_scale for "ATROUS_CONV_2D" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let input_scale = 0.5;
+        model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [100, 32, 32, 3], scale: input_scale, zeroPoint: 1});
+        let filter_scale = 0.2;
+        model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [6, 5, 5, 3], scale: filter_scale, zeroPoint: 2});
+        let bias_scale = input_scale * filter_scale;
+        model.addOperand({type: nn.TENSOR_INT32, dimensions: [6], scale: bias_scale, zeroPoint: 0});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(6, new Int32Array([nn.FUSED_NONE]));
+        // Assume no padding and rate=1
+        let output_scale = input_scale * filter_scale - 0.1;
+        model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [100, 28, 28, 6], scale: output_scale, zeroPoint: 10});
+        assert.throws(() => {
+          model.addOperation(nn.ATROUS_CONV_2D, [0, 1, 2, 3, 4, 5, 6], [7]);
+        });
+      });
+    });
+
+    it('raise error when the value of fuse code is invalid(out of 0-3) as "4" for "ATROUS_CONV_2D" operation with explicit padding', function() {
+      return nn.createModel(options).then((model)=>{
+        let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [100, 32, 32, 3]};
+        let type0_length = product(type0.dimensions);
+        let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [6, 5, 5, 3]};
+        let type1_length = product(type1.dimensions);
+        let type2 = {type: nn.TENSOR_FLOAT32, dimensions: [6]};
+        let type2_length = product(type2.dimensions);
+        let type3 = {type: nn.INT32};
+        let type4 = {type: nn.TENSOR_FLOAT32, dimensions: [100, 28, 28, 6]};
+        let type4_length = product(type4.dimensions);
+        let operandIndex = 0;
+        let op0 = operandIndex++;
+        model.addOperand(type0);
+        let op1 = operandIndex++;
+        model.addOperand(type1);
+        let op2 = operandIndex++;
+        model.addOperand(type2);
+        let pad = operandIndex++;
+        model.addOperand(type3);
+        let rate = operandIndex++;
+        model.addOperand(type3);
+        let fusecode = operandIndex++;
+        model.addOperand(type3);
+        let op3 = operandIndex++;
+        model.addOperand(type4);
+        let op1_input = new Float32Array(type1_length);
+        model.setOperandValue(op1, op1_input);
+        let op2_input = new Float32Array(type2_length);
+        model.setOperandValue(op2, op2_input);
+        model.setOperandValue(pad, new Int32Array([0]));
+        model.setOperandValue(rate, new Int32Array([1]));
+        model.setOperandValue(fusecode, new Int32Array([4]));
+        assert.throws(() => {
+          model.addOperation(nn.ATROUS_CONV_2D, [op0, op1, op2, pad, pad, pad, pad, rate, rate, fusecode], [op3]);
+        });
+      });
+    });
+
+    it('raise error when the value of fuse code is invalid(out of 0-3) as "-1" for "ATROUS_CONV_2D" operation with explicit padding', function() {
+      return nn.createModel(options).then((model)=>{
+        let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [100, 32, 32, 3]};
+        let type0_length = product(type0.dimensions);
+        let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [6, 5, 5, 3]};
+        let type1_length = product(type1.dimensions);
+        let type2 = {type: nn.TENSOR_FLOAT32, dimensions: [6]};
+        let type2_length = product(type2.dimensions);
+        let type3 = {type: nn.INT32};
+        let type4 = {type: nn.TENSOR_FLOAT32, dimensions: [100, 28, 28, 6]};
+        let type4_length = product(type4.dimensions);
+        let operandIndex = 0;
+        let op0 = operandIndex++;
+        model.addOperand(type0);
+        let op1 = operandIndex++;
+        model.addOperand(type1);
+        let op2 = operandIndex++;
+        model.addOperand(type2);
+        let pad = operandIndex++;
+        model.addOperand(type3);
+        let rate = operandIndex++;
+        model.addOperand(type3);
+        let fusecode = operandIndex++;
+        model.addOperand(type3);
+        let op3 = operandIndex++;
+        model.addOperand(type4);
+        let op1_input = new Float32Array(type1_length);
+        model.setOperandValue(op1, op1_input);
+        let op2_input = new Float32Array(type2_length);
+        model.setOperandValue(op2, op2_input);
+        model.setOperandValue(pad, new Int32Array([0]));
+        model.setOperandValue(rate, new Int32Array([1]));
+        model.setOperandValue(fusecode, new Int32Array([-1]));
+        assert.throws(() => {
+          model.addOperation(nn.ATROUS_CONV_2D, [op0, op1, op2, pad, pad, pad, pad, rate, rate, fusecode], [op3]);
+        });
+      });
+    });
+
+    it('raise error when the value of fuse code is invalid(out of 0-3) as "4" for "ATROUS_CONV_2D" operation with implicit padding', function() {
+      return nn.createModel(options).then((model)=>{
+        let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [100, 32, 32, 3]};
+        let type0_length = product(type0.dimensions);
+        let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [6, 5, 5, 3]};
+        let type1_length = product(type1.dimensions);
+        let type2 = {type: nn.TENSOR_FLOAT32, dimensions: [6]};
+        let type2_length = product(type2.dimensions);
+        let type3 = {type: nn.INT32};
+        let type4 = {type: nn.TENSOR_FLOAT32, dimensions: [100, 28, 28, 6]};
+        let type4_length = product(type4.dimensions);
+        let operandIndex = 0;
+        let op0 = operandIndex++;
+        model.addOperand(type0);
+        let op1 = operandIndex++;
+        model.addOperand(type1);
+        let op2 = operandIndex++;
+        model.addOperand(type2);
+        let padingcode = operandIndex++;
+        model.addOperand(type3);
+        let rate = operandIndex++;
+        model.addOperand(type3);
+        let fusecode = operandIndex++;
+        model.addOperand(type3);
+        let op3 = operandIndex++;
+        model.addOperand(type4);
+        let op1_input = new Float32Array(type1_length);
+        model.setOperandValue(op1, op1_input);
+        let op2_input = new Float32Array(type2_length);
+        model.setOperandValue(op2, op2_input);
+        model.setOperandValue(padingcode, new Int32Array([nn.PADDING_SAME]));
+        model.setOperandValue(rate, new Int32Array([1]));
+        model.setOperandValue(fusecode, new Int32Array([4]));
+        assert.throws(() => {
+          model.addOperation(nn.ATROUS_CONV_2D, [op0, op1, op2, padingcode, rate, rate, fusecode], [op3]);
+        });
+      });
+    });
+
+    it('raise error when the value of fuse code is invalid(out of 0-3) as "-1" for "ATROUS_CONV_2D" operation with implicit padding', function() {
+      return nn.createModel(options).then((model)=>{
+        let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [100, 32, 32, 3]};
+        let type0_length = product(type0.dimensions);
+        let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [6, 5, 5, 3]};
+        let type1_length = product(type1.dimensions);
+        let type2 = {type: nn.TENSOR_FLOAT32, dimensions: [6]};
+        let type2_length = product(type2.dimensions);
+        let type3 = {type: nn.INT32};
+        let type4 = {type: nn.TENSOR_FLOAT32, dimensions: [100, 28, 28, 6]};
+        let type4_length = product(type4.dimensions);
+        let operandIndex = 0;
+        let op0 = operandIndex++;
+        model.addOperand(type0);
+        let op1 = operandIndex++;
+        model.addOperand(type1);
+        let op2 = operandIndex++;
+        model.addOperand(type2);
+        let padingcode = operandIndex++;
+        model.addOperand(type3);
+        let rate = operandIndex++;
+        model.addOperand(type3);
+        let fusecode = operandIndex++;
+        model.addOperand(type3);
+        let op3 = operandIndex++;
+        model.addOperand(type4);
+        let op1_input = new Float32Array(type1_length);
+        model.setOperandValue(op1, op1_input);
+        let op2_input = new Float32Array(type2_length);
+        model.setOperandValue(op2, op2_input);
+        model.setOperandValue(padingcode, new Int32Array([nn.PADDING_SAME]));
+        model.setOperandValue(rate, new Int32Array([1]));
+        model.setOperandValue(fusecode, new Int32Array([-1]));
+        assert.throws(() => {
+          model.addOperation(nn.ATROUS_CONV_2D, [op0, op1, op2, padingcode, rate, rate, fusecode], [op3]);
+        });
+      });
+    });
+
+    it('raise error when the length of outputs is greater than 1 for "ATROUS_CONV_2D" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 32, 32, 3]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [6, 5, 5, 3]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [6]});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(6, new Int32Array([nn.FUSED_NONE]));
+        // Assume no padding and rate=1
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 28, 28, 5]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 28, 28, 5]});
+        assert.throws(() => {
+          model.addOperation(nn.ATROUS_CONV_2D, [0, 1, 2, 3, 4, 5, 6], [7, 8]);
+        });
+      });
+    });
+
+    it('raise error when the length of outputs is 0 not 1 for "ATROUS_CONV_2D" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 32, 32, 3]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [6, 5, 5, 3]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [6]});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(6, new Int32Array([nn.FUSED_NONE]));
+        assert.throws(() => {
+          model.addOperation(nn.ATROUS_CONV_2D, [0, 1, 2, 3, 4, 5, 6], []);
+        });
+      });
+    });
+
+    it('"the length of inputs(explicit padding) being 11, 4-D tensor as input0 of TENSOR_FLOAT32 type, 4-D tensor as input1 of TENSOR_FLOAT32 type, 1-D tensor as input2 of TENSOR_FLOAT32 type, the type of input3 to input9 being INT32 type, input10 also having INT32 type with value of 0-3, 4-D tensor as output having same type as input0 and input1" are ok for "ATROUS_DEPTHWISE_CONV_2D" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let depth_in = 3;
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 32, 32, depth_in]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [1, 5, 5, 3]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [1]});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        let depth_multiplier = 2;
+        model.setOperandValue(10, new Int32Array([depth_multiplier]));
+        model.setOperandValue(10, new Int32Array([nn.FUSED_NONE]));
+        // Assume no padding and rate=1
+        let depth_out = depth_in * depth_multiplier;
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 28, 28, depth_out]});
+        assert.doesNotThrow(() => {
+          model.addOperation(nn.ATROUS_DEPTHWISE_CONV_2D, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], [11]);
+        });
+      });
+    });
+
+    it('"the length of inputs(implicit padding) being 8, 4-D tensor as input0 of TENSOR_FLOAT32 type, 4-D tensor as input1 of TENSOR_FLOAT32 type, 1-D tensor as input2 of TENSOR_FLOAT32 type, the type of input3 to input6 being INT32 type, input7 also having INT32 type with value of 0-3, 4-D tensor as output having same type as input0 and input1" are ok for "ATROUS_DEPTHWISE_CONV_2D" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 32, 32, 3]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [1, 5, 5, 3]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [1]});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(7, new Int32Array([nn.FUSED_NONE]));
+        // Assume no padding and rate=1
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 28, 28, 6]});
+        assert.doesNotThrow(() => {
+          model.addOperation(nn.ATROUS_DEPTHWISE_CONV_2D, [0, 1, 2, 3, 4, 5, 6, 7], [8]);
+        });
+      });
+    });
+
+    it('"the length of inputs(implicit padding) being 8, 4-D tensor as input0 of TENSOR_QUANT8_ASYMM type having input_scale, 4-D tensor as input1 of TENSOR_QUANT8_ASYMM type having filter_scale, 1-D tensor as input2 of TENSOR_INT32 type having zeroPoint of 0 with bias_scale being equal to the product of input_scale and filter_scale, the type of input3 to input6 being INT32 type, input7 also having INT32 type with value of 0-3, 4-D tensor as output of same type as input0 and input1 with output_scale being greater than the product of input_scale and filter_scale" are ok for "ATROUS_DEPTHWISE_CONV_2D" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let input_scale = 0.5;
+        model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [100, 32, 32, 3], scale: input_scale, zeroPoint: 1});
+        let filter_scale = 0.2;
+        model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [1, 5, 5, 3], scale: filter_scale, zeroPoint: 2});
+        let bias_scale = input_scale * filter_scale;
+        model.addOperand({type: nn.TENSOR_INT32, dimensions: [1], scale: bias_scale, zeroPoint: 0});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(7, new Int32Array([nn.FUSED_NONE]));
+        let output_scale = input_scale * filter_scale + 1.0;
+        // Assume no padding and rate=1
+        model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [100, 28, 28, 6], scale: output_scale, zeroPoint: 10});
+        assert.doesNotThrow(() => {
+          model.addOperation(nn.ATROUS_DEPTHWISE_CONV_2D, [0, 1, 2, 3, 4, 5, 6, 7], [8]);
+        });
+      });
+    });
+
+    it('raise when input0 and input1 are not 4-D tensors for "ATROUS_DEPTHWISE_CONV_2D" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [32, 32, 3]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [5, 5, 3]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [1]});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(7, new Int32Array([nn.FUSED_NONE]));
+        // Assume no padding and rate=1
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [1, 28, 28, 6]});
+        assert.throws(() => {
+          model.addOperation(nn.ATROUS_DEPTHWISE_CONV_2D, [0, 1, 2, 3, 4, 5, 6, 7], [8]);
+        });
+      });
+    });
+
+    it('raise error when input2 is not 1-D tensor for "ATROUS_DEPTHWISE_CONV_2D" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 32, 32, 3]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [1, 5, 5, 3]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [6, 1]});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(7, new Int32Array([nn.FUSED_NONE]));
+        // Assume no padding and rate=1
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 28, 28, 6]});
+        assert.throws(() => {
+          model.addOperation(nn.ATROUS_DEPTHWISE_CONV_2D, [0, 1, 2, 3, 4, 5, 6, 7], [8]);
+        });
+      });
+    });
+
+    it('raise error when the length of inputs(implicit padding) being 8, the types of input3 to input6 are not identical INT32 type for "ATROUS_DEPTHWISE_CONV_2D" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 32, 32, 3]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [1, 5, 5, 3]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [1]});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.FLOAT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(7, new Int32Array([nn.FUSED_NONE]));
+        // Assume no padding and rate=1
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 28, 28, 6]});
+        assert.throws(() => {
+          model.addOperation(nn.ATROUS_DEPTHWISE_CONV_2D, [0, 1, 2, 3, 4, 5, 6, 7], [8]);
+        });
+      });
+    });
+
+    it('raise error when the length of inputs(explicit padding) being 11, the types of input3 to input9 are not identical INT32 type for "ATROUS_DEPTHWISE_CONV_2D" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 32, 32, 3]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [1, 5, 5, 3]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [1]});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.FLOAT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(7, new Int32Array([nn.FUSED_NONE]));
+        // Assume no padding and rate=1
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 28, 28, 6]});
+        assert.throws(() => {
+          model.addOperation(nn.ATROUS_DEPTHWISE_CONV_2D, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [10]);
+        });
+      });
+    });
+
+    it('raise error when the length of inputs(implicit padding) is 7 (not 8 or 11) for "ATROUS_DEPTHWISE_CONV_2D" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 32, 32, 3]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [1, 5, 5, 3]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [1]});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(6, new Int32Array([nn.FUSED_NONE]));
+        // Assume no padding and rate=1
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 28, 28, 6]});
+        assert.throws(() => {
+          model.addOperation(nn.ATROUS_DEPTHWISE_CONV_2D, [0, 1, 2, 3, 4, 5, 6], [7]);
+        });
+      });
+    });
+
+    it('raise error when the length of inputs is 9 (not 8 or 11) for "ATROUS_DEPTHWISE_CONV_2D" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 32, 32, 3]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [1, 5, 5, 3]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [1]});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(8, new Int32Array([nn.FUSED_NONE]));
+        // Assume no padding and rate=1
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 28, 28, 6]});
+        assert.throws(() => {
+          model.addOperation(nn.ATROUS_DEPTHWISE_CONV_2D, [0, 1, 2, 3, 4, 5, 6, 7, 8], [9]);
+        });
+      });
+    });
+
+    it('raise error when the length of inputs(explicit padding) is 12 (not 8 or 11) for "ATROUS_DEPTHWISE_CONV_2D" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 32, 32, 3]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [1, 5, 5, 3]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [1]});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(11, new Int32Array([nn.FUSED_NONE]));
+        // Assume no padding and rate=1
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 28, 28, 6]});
+        assert.throws(() => {
+          model.addOperation(nn.ATROUS_DEPTHWISE_CONV_2D, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], [12]);
+        });
+      });
+    });
+
+    it('raise error when the length of inputs(implicit padding) being 8, the type of input7 is not INT32 type for "ATROUS_DEPTHWISE_CONV_2D" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 32, 32, 3]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [1, 5, 5, 3]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [1]});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.FLOAT32});
+        model.setOperandValue(7, new Float32Array([0.0]));
+        // Assume no padding and rate=1
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 28, 28, 6]});
+        assert.throws(() => {
+          model.addOperation(nn.ATROUS_DEPTHWISE_CONV_2D, [0, 1, 2, 3, 4, 5, 6, 7], [8]);
+        });
+      });
+    });
+
+    it('raise error when the length of inputs(explicit padding) being 11, the type of input10 is not INT32 type for "ATROUS_DEPTHWISE_CONV_2D" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 32, 32, 3]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [1, 5, 5, 3]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [1]});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.FLOAT32});
+        model.setOperandValue(10, new Float32Array([0.0]));
+        // Assume no padding and rate=1
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 28, 28, 6]});
+        assert.throws(() => {
+          model.addOperation(nn.ATROUS_DEPTHWISE_CONV_2D, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], [11]);
+        });
+      });
+    });
+
+    it('raise error when the type of output is not identical with the type of input0 and input1 for "ATROUS_DEPTHWISE_CONV_2D" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 32, 32, 3]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [1, 5, 5, 3]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [1]});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(7, new Int32Array([nn.FUSED_NONE]));
+        // Assume no padding and rate=1
+        model.addOperand({type: nn.TENSOR_INT32, dimensions: [100, 28, 28, 6]});
+        assert.throws(() => {
+          model.addOperation(nn.ATROUS_DEPTHWISE_CONV_2D, [0, 1, 2, 3, 4, 5, 6, 7], [8]);
+        });
+      });
+    });
+
+    it('raise error when the height of input0(its shape being [batches, height, width, depth_in]) is less than the filter_height of input1(its shape being [1, filter_height, filter_width, depth_out]) for "ATROUS_DEPTHWISE_CONV_2D" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 32, 32, 3]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [1, 33, 5, 3]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [1]});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(7, new Int32Array([nn.FUSED_NONE]));
+        // Assume no padding and rate=1
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 1, 28, 6]});
+        assert.throws(() => {
+          model.addOperation(nn.ATROUS_DEPTHWISE_CONV_2D, [0, 1, 2, 3, 4, 5, 6, 7], [8]);
+        });
+      });
+    });
+
+    it('raise error when the width of input0(its shape being [batches, height, width, depth_in]) is less than the filter_width of input1(its shape being [1, filter_height, filter_width, depth_out]) for "ATROUS_DEPTHWISE_CONV_2D" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 32, 32, 3]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [1, 5, 33, 3]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [1]});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(7, new Int32Array([nn.FUSED_NONE]));
+        // Assume no padding and rate=1
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 28, 1, 6]});
+        assert.throws(() => {
+          model.addOperation(nn.ATROUS_DEPTHWISE_CONV_2D, [0, 1, 2, 3, 4, 5, 6, 7], [8]);
+        });
+      });
+    });
+
+    it('raise error when the batches1 of input0(its shape being [batches1, height, width, depth_in]) is not equal to the batches2 of output(its shape being [batches2, out_height, out_width, depth_out]) for "ATROUS_DEPTHWISE_CONV_2D" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 32, 32, 3]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [1, 5, 5, 3]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [1]});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(7, new Int32Array([nn.FUSED_NONE]));
+        // Assume no padding and rate=1
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [101, 28, 28, 6]});
+        assert.throws(() => {
+          model.addOperation(nn.ATROUS_DEPTHWISE_CONV_2D, [0, 1, 2, 3, 4, 5, 6, 7], [8]);
+        });
+      });
+    });
+
+    it('raise error when the depth of filter input1(its shape being [depth, filter_height, filter_width, depth_out]) is not 1 for "ATROUS_DEPTHWISE_CONV_2D" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 32, 32, 3]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [2, 5, 5, 3]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [1]});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(7, new Int32Array([nn.FUSED_NONE]));
+        // Assume no padding and rate=1
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [101, 28, 28, 6]});
+        assert.throws(() => {
+          model.addOperation(nn.ATROUS_DEPTHWISE_CONV_2D, [0, 1, 2, 3, 4, 5, 6, 7], [8]);
+        });
+      });
+    });
+
+    it('raise error when 4-D tensor as input0 of TENSOR_QUANT8_ASYMM type having input_scale, 4-D tensor as input1 of TENSOR_QUANT8_ASYMM type having filter_scale, 1-D tensor as input2 of TENSOR_INT32 type having zeroPoint of 0 with bias_scale being not equal to the product of input_scale and filter_scale for "ATROUS_DEPTHWISE_CONV_2D" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let input_scale = 0.5;
+        model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [100, 32, 32, 3], scale: input_scale, zeroPoint: 1});
+        let filter_scale = 0.2;
+        model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [1, 5, 5, 3], scale: filter_scale, zeroPoint: 2});
+        let bias_scale = input_scale * filter_scale + 0.1;
+        model.addOperand({type: nn.TENSOR_INT32, dimensions: [1], scale: bias_scale, zeroPoint: 0});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(7, new Int32Array([nn.FUSED_NONE]));
+        // Assume no padding and rate=1
+        let output_scale = input_scale * filter_scale + 1.0;
+        model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [100, 28, 28, 6], scale: output_scale, zeroPoint: 10});
+        assert.throws(() => {
+          model.addOperation(nn.ATROUS_DEPTHWISE_CONV_2D, [0, 1, 2, 3, 4, 5, 6, 7], [8]);
+        });
+      });
+    });
+
+    it('raise error when 4-D tensor as input0 of TENSOR_QUANT8_ASYMM type having input_scale, 4-D tensor as input1 of TENSOR_QUANT8_ASYMM type having filter_scale, 1-D tensor as input2 of TENSOR_INT32 type having bias_scale being equal to the product of input_scale and filter_scale with zeroPoint being greater than 0 for "ATROUS_DEPTHWISE_CONV_2D" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let input_scale = 0.5;
+        model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [100, 32, 32, 3], scale: input_scale, zeroPoint: 1});
+        let filter_scale = 0.2;
+        model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [1, 5, 5, 3], scale: filter_scale, zeroPoint: 2});
+        let bias_scale = input_scale * filter_scale;
+        model.addOperand({type: nn.TENSOR_INT32, dimensions: [1], scale: bias_scale, zeroPoint: 1});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(7, new Int32Array([nn.FUSED_NONE]));
+        // Assume no padding and rate=1
+        let output_scale = input_scale * filter_scale + 1.0;
+        model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [100, 28, 28, 6], scale: output_scale, zeroPoint: 10});
+        assert.throws(() => {
+          model.addOperation(nn.ATROUS_DEPTHWISE_CONV_2D, [0, 1, 2, 3, 4, 5, 6, 7], [8]);
+        });
+      });
+    });
+
+    it('raise error when 4-D tensor as input0 of TENSOR_QUANT8_ASYMM type having input_scale, 4-D tensor as input1 of TENSOR_QUANT8_ASYMM type having filter_scale, output of same type as input0 with output_scale being equal to the product of input_scale and filter_scale with zeroPoint being greater than 0 for "ATROUS_DEPTHWISE_CONV_2D" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let input_scale = 0.5;
+        model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [100, 32, 32, 3], scale: input_scale, zeroPoint: 1});
+        let filter_scale = 0.2;
+        model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [1, 5, 5, 3], scale: filter_scale, zeroPoint: 2});
+        let bias_scale = input_scale * filter_scale;
+        model.addOperand({type: nn.TENSOR_INT32, dimensions: [1], scale: bias_scale, zeroPoint: 0});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(7, new Int32Array([nn.FUSED_NONE]));
+        // Assume no padding and rate=1
+        let output_scale = input_scale * filter_scale;
+        model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [100, 28, 28, 6], scale: output_scale, zeroPoint: 10});
+        assert.throws(() => {
+          model.addOperation(nn.ATROUS_DEPTHWISE_CONV_2D, [0, 1, 2, 3, 4, 5, 6, 7], [8]);
+        });
+      });
+    });
+
+    it('raise error when 4-D tensor as input0 of TENSOR_QUANT8_ASYMM type having input_scale, 4-D tensor as input1 of TENSOR_QUANT8_ASYMM type having filter_scale, output of same type as input0 with output_scale being less than the product of input_scale and filter_scale for "ATROUS_DEPTHWISE_CONV_2D" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let input_scale = 0.5;
+        model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [100, 32, 32, 3], scale: input_scale, zeroPoint: 1});
+        let filter_scale = 0.2;
+        model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [1, 5, 5, 3], scale: filter_scale, zeroPoint: 2});
+        let bias_scale = input_scale * filter_scale;
+        model.addOperand({type: nn.TENSOR_INT32, dimensions: [1], scale: bias_scale, zeroPoint: 0});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(7, new Int32Array([nn.FUSED_NONE]));
+        let output_scale = input_scale * filter_scale - 0.1;
+        // Assume no padding and rate=1
+        model.addOperand({type: nn.TENSOR_QUANT8_ASYMM, dimensions: [100, 28, 28, 6], scale: output_scale, zeroPoint: 10});
+        assert.throws(() => {
+          model.addOperation(nn.ATROUS_DEPTHWISE_CONV_2D, [0, 1, 2, 3, 4, 5, 6, 7], [8]);
+        });
+      });
+    });
+
+    it('raise error when the length of outputs is greater than 1 for "ATROUS_DEPTHWISE_CONV_2D" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 32, 32, 3]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [1, 5, 5, 3]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [1]});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(7, new Int32Array([nn.FUSED_NONE]));
+        // Assume no padding and rate=1
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 28, 28, 5]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 28, 28, 5]});
+        assert.throws(() => {
+          model.addOperation(nn.ATROUS_DEPTHWISE_CONV_2D, [0, 1, 2, 3, 4, 5, 6, 7], [8, 9]);
+        });
+      });
+    });
+
+    it('raise error when the length of outputs is 0 not 1 for "ATROUS_DEPTHWISE_CONV_2D" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 32, 32, 3]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [1, 5, 5, 3]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [1]});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(7, new Int32Array([nn.FUSED_NONE]));
+        assert.throws(() => {
+          model.addOperation(nn.ATROUS_DEPTHWISE_CONV_2D, [0, 1, 2, 3, 4, 5, 6, 7], []);
+        });
+      });
+    });
+
+    it('raise error when the length of inputs(explicit padding) being 11, input0 having depth_in of shape([batches, height, width, depth_in]), and input9 specifying multiplier, the depth_out of output(its shape being [batches, out_height, out_width, depth_out]) is not equal to the product of the depth_in and the multiplier for "ATROUS_DEPTHWISE_CONV_2D" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let depth_in = 3;
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 32, 32, depth_in]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [1, 5, 5, 3]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [1]});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        let depth_multiplier = 2;
+        model.setOperandValue(6, new Int32Array([depth_multiplier]));
+        model.setOperandValue(7, new Int32Array([nn.FUSED_NONE]));
+        let depth_out = depth_in * depth_multiplier + 1;
+        // Assume no padding and rate=1
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 28, 28, depth_out]});
+        assert.throws(() => {
+          model.addOperation(nn.ATROUS_DEPTHWISE_CONV_2D, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], [11]);
+        });
+      });
+    });
+
+    it('raise error when the length of inputs(implicit padding) being 8, input0 having depth_in of shape([batches, height, width, depth_in]), input6 specifying multiplier, the depth_out of output(its shape being [batches, out_height, out_width, depth_out]) is not equal to the product of the depth_in and multiplier for "ATROUS_DEPTHWISE_CONV_2D" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let depth_in = 3;
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 32, 32, depth_in]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [1, 5, 5, 3]});
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [1]});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        model.addOperand({type: nn.INT32});
+        let depth_multiplier = 2;
+        model.setOperandValue(9, new Int32Array([depth_multiplier]));
+        model.setOperandValue(10, new Int32Array([nn.FUSED_NONE]));
+        let depth_out = depth_in * depth_multiplier + 1;
+        // Assume no padding and rate=1
+        model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 28, 28, depth_out]});
+        assert.throws(() => {
+          model.addOperation(nn.ATROUS_DEPTHWISE_CONV_2D, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], [11]);
+        });
+      });
+    });
+
+    it('raise error when the value of fuse code is invalid(out of 0-3) as "4" for "ATROUS_DEPTHWISE_CONV_2D" operation with explicit padding', function() {
+      return nn.createModel(options).then((model)=>{
+        let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [100, 32, 32, 3]};
+        let type0_length = product(type0.dimensions);
+        let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 5, 5, 3]};
+        let type1_length = product(type1.dimensions);
+        let type2 = {type: nn.TENSOR_FLOAT32, dimensions: [1]};
+        let type2_length = product(type2.dimensions);
+        let type3 = {type: nn.INT32};
+        let type4 = {type: nn.TENSOR_FLOAT32, dimensions: [100, 28, 28, 6]};
+        let type4_length = product(type4.dimensions);
+        let operandIndex = 0;
+        let op0 = operandIndex++;
+        model.addOperand(type0);
+        let op1 = operandIndex++;
+        model.addOperand(type1);
+        let op2 = operandIndex++;
+        model.addOperand(type2);
+        let pad = operandIndex++;
+        model.addOperand(type3);
+        let rate = operandIndex++;
+        model.addOperand(type3);
+        let channelMultiplier = operandIndex++;
+        model.addOperand(type3);
+        let fusecode = operandIndex++;
+        model.addOperand(type3);
+        let op3 = operandIndex++;
+        model.addOperand(type4);
+        let op1_input = new Float32Array(type1_length);
+        model.setOperandValue(op1, op1_input);
+        let op2_input = new Float32Array(type2_length);
+        model.setOperandValue(op2, op2_input);
+        model.setOperandValue(pad, new Int32Array([0]));
+        model.setOperandValue(rate, new Int32Array([1]));
+        model.setOperandValue(channelMultiplier, new Int32Array([2]));
+        model.setOperandValue(fusecode, new Int32Array([4]));
+        assert.throws(() => {
+          model.addOperation(nn.ATROUS_DEPTHWISE_CONV_2D, [op0, op1, op2, pad, pad, pad, pad, rate, rate, channelMultiplier, fusecode], [op3]);
+        });
+      });
+    });
+
+    it('raise error when the value of fuse code is invalid(out of 0-3) as "-1" for "ATROUS_DEPTHWISE_CONV_2D" operation with explicit padding', function() {
+      return nn.createModel(options).then((model)=>{
+        let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [100, 32, 32, 3]};
+        let type0_length = product(type0.dimensions);
+        let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 5, 5, 3]};
+        let type1_length = product(type1.dimensions);
+        let type2 = {type: nn.TENSOR_FLOAT32, dimensions: [1]};
+        let type2_length = product(type2.dimensions);
+        let type3 = {type: nn.INT32};
+        let type4 = {type: nn.TENSOR_FLOAT32, dimensions: [100, 28, 28, 6]};
+        let type4_length = product(type4.dimensions);
+        let operandIndex = 0;
+        let op0 = operandIndex++;
+        model.addOperand(type0);
+        let op1 = operandIndex++;
+        model.addOperand(type1);
+        let op2 = operandIndex++;
+        model.addOperand(type2);
+        let pad = operandIndex++;
+        model.addOperand(type3);
+        let rate = operandIndex++;
+        model.addOperand(type3);
+        let channelMultiplier = operandIndex++;
+        model.addOperand(type3);
+        let fusecode = operandIndex++;
+        model.addOperand(type3);
+        let op3 = operandIndex++;
+        model.addOperand(type4);
+        let op1_input = new Float32Array(type1_length);
+        model.setOperandValue(op1, op1_input);
+        let op2_input = new Float32Array(type2_length);
+        model.setOperandValue(op2, op2_input);
+        model.setOperandValue(pad, new Int32Array([0]));
+        model.setOperandValue(rate, new Int32Array([1]));
+        model.setOperandValue(channelMultiplier, new Int32Array([2]));
+        model.setOperandValue(fusecode, new Int32Array([-1]));
+        assert.throws(() => {
+          model.addOperation(nn.ATROUS_DEPTHWISE_CONV_2D, [op0, op1, op2, pad, pad, pad, pad, rate, rate, channelMultiplier, fusecode], [op3]);
+        });
+      });
+    });
+
+    it('raise error when the value of fuse code is invalid(out of 0-3) as "4" for "ATROUS_DEPTHWISE_CONV_2D" operation with implicit padding', function() {
+      return nn.createModel(options).then((model)=>{
+        let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [100, 32, 32, 3]};
+        let type0_length = product(type0.dimensions);
+        let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 5, 5, 3]};
+        let type1_length = product(type1.dimensions);
+        let type2 = {type: nn.TENSOR_FLOAT32, dimensions: [1]};
+        let type2_length = product(type2.dimensions);
+        let type3 = {type: nn.INT32};
+        let type4 = {type: nn.TENSOR_FLOAT32, dimensions: [100, 28, 28, 6]};
+        let type4_length = product(type4.dimensions);
+        let operandIndex = 0;
+        let op0 = operandIndex++;
+        model.addOperand(type0);
+        let op1 = operandIndex++;
+        model.addOperand(type1);
+        let op2 = operandIndex++;
+        model.addOperand(type2);
+        let padingcode = operandIndex++;
+        model.addOperand(type3);
+        let rate = operandIndex++;
+        model.addOperand(type3);
+        let channelMultiplier = operandIndex++;
+        model.addOperand(type3);
+        let fusecode = operandIndex++;
+        model.addOperand(type3);
+        let op3 = operandIndex++;
+        model.addOperand(type4);
+        let op1_input = new Float32Array(type1_length);
+        model.setOperandValue(op1, op1_input);
+        let op2_input = new Float32Array(type2_length);
+        model.setOperandValue(op2, op2_input);
+        model.setOperandValue(padingcode, new Int32Array([nn.PADDING_SAME]));
+        model.setOperandValue(rate, new Int32Array([1]));
+        model.setOperandValue(channelMultiplier, new Int32Array([2]));
+        model.setOperandValue(fusecode, new Int32Array([4]));
+        assert.throws(() => {
+          model.addOperation(nn.ATROUS_DEPTHWISE_CONV_2D, [op0, op1, op2, padingcode, rate, rate, channelMultiplier, fusecode], [op3]);
+        });
+      });
+    });
+
+    it('raise error when the value of fuse code is invalid(out of 0-3) as "-1" for "ATROUS_DEPTHWISE_CONV_2D" operation with implicit padding', function() {
+      return nn.createModel(options).then((model)=>{
+        let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [100, 32, 32, 3]};
+        let type0_length = product(type0.dimensions);
+        let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 5, 5, 3]};
+        let type1_length = product(type1.dimensions);
+        let type2 = {type: nn.TENSOR_FLOAT32, dimensions: [1]};
+        let type2_length = product(type2.dimensions);
+        let type3 = {type: nn.INT32};
+        let type4 = {type: nn.TENSOR_FLOAT32, dimensions: [100, 28, 28, 6]};
+        let type4_length = product(type4.dimensions);
+        let operandIndex = 0;
+        let op0 = operandIndex++;
+        model.addOperand(type0);
+        let op1 = operandIndex++;
+        model.addOperand(type1);
+        let op2 = operandIndex++;
+        model.addOperand(type2);
+        let padingcode = operandIndex++;
+        model.addOperand(type3);
+        let rate = operandIndex++;
+        model.addOperand(type3);
+        let channelMultiplier = operandIndex++;
+        model.addOperand(type3);
+        let fusecode = operandIndex++;
+        model.addOperand(type3);
+        let op3 = operandIndex++;
+        model.addOperand(type4);
+        let op1_input = new Float32Array(type1_length);
+        model.setOperandValue(op1, op1_input);
+        let op2_input = new Float32Array(type2_length);
+        model.setOperandValue(op2, op2_input);
+        model.setOperandValue(padingcode, new Int32Array([nn.PADDING_SAME]));
+        model.setOperandValue(rate, new Int32Array([1]));
+        model.setOperandValue(channelMultiplier, new Int32Array([2]));
+        model.setOperandValue(fusecode, new Int32Array([-1]));
+        assert.throws(() => {
+          model.addOperation(nn.ATROUS_DEPTHWISE_CONV_2D, [op0, op1, op2, padingcode, rate, rate, channelMultiplier, fusecode], [op3]);
+        });
+      });
+    });
+
     it('"input0 TENSOR_FLOAT32 tensor(RANK <= 4) can be converted as 2-D TENSOR_FLOAT32 tensor of shape [batch_size, input_size], input1 as 2-D TENSOR_FLOAT32 tensor of shape [num_units, input_size], input2 as 1-D TENSOR_FLOAT32 tensor of shape [num_units], input3 as INT32 scalar with value of 0-3, output TENSOR_FLOAT32 tensor of shape [batch_size, num_units]" are ok for "FULLY_CONNECTED" operation', function() {
       return nn.createModel(options).then((model)=>{
         let batch_size = 3;
