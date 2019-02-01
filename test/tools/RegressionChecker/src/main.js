@@ -1271,7 +1271,7 @@ var matchFlag = null;
 
                 await driver.manage().logs().get("browser").then(function(Entrys) {
                     if (fs.existsSync(logPath)) {
-                        fs.unlink(logPath);
+                        fs.unlinkSync(logPath);
                     }
 
                     for (let entry of Entrys) {
