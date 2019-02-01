@@ -142,7 +142,7 @@ const mobilenet_v2_onnx = {
 };
 const resnet_v1_onnx = {
   modelName: 'resnet_v1_onnx',
-  modelSize: '46.8MB',
+  modelSize: '102.6MB',
   modelFile: '../image_classification/model/resnet50v1.onnx',
   labelsFile: '../image_classification/model/labels1000.txt',
   inputSize: [224, 224, 3],
@@ -161,7 +161,7 @@ const resnet_v1_onnx = {
 };
 const resnet_v2_onnx = {
   modelName: 'resnet_v2_onnx',
-  modelSize: '46.8MB',
+  modelSize: '102.4MB',
   modelFile: '../image_classification/model/resnet50v2.onnx',
   labelsFile: '../image_classification/model/labels1000.txt',
   inputSize: [224, 224, 3],
