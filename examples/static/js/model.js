@@ -11,8 +11,8 @@ function isONNX(modelname){
 }
 
 function showModel(div, modelcategory) {
-  let rowstring, row;
-  for (model of modelcategory) {
+  let rowstring, row;  
+  modelcategory.map(model => {
     row = '<tr>';
     let name = '<td scope=\'col\' class=\'name\'>' + getModelName(model.modelName) + '</td>';
     row += name;
@@ -48,7 +48,8 @@ function showModel(div, modelcategory) {
 
     row = row + '</tr>';
     rowstring += row;
-  }
+  });
+
   $(div).html(rowstring);
 }
 

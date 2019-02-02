@@ -1043,7 +1043,6 @@ footer {
 
 #ictitle {
   color: rgba(25, 190, 225, 1.0);
-  ;
   text-transform: capitalize;
   font-size: 1.4em;
   letter-spacing: 0.1em;
@@ -1097,8 +1096,8 @@ footer {
 }
 
 .webml-status-false {
-  background: rgba(213, 213, 213, 0.15);
-  border: 1px solid rgba(0, 0, 0, 0.15);
+  background: rgba(213, 213, 213, 0.0);
+  border: 1px solid rgba(0, 0, 0, 0.1);
   display: inline-block;
   padding: 0.2rem 0.4rem;
   margin-left: -6px;
@@ -1106,7 +1105,7 @@ footer {
 }
 
 .webml-status-false:hover {
-  background: rgba(213, 213, 213, 0.3);
+  background: rgba(213, 213, 213, 0.15);
 }
 
 .webml-status-true {
@@ -1226,6 +1225,7 @@ video {
 
 video.fullscreen, #canvasvideo.fullscreen {
   position: fixed;
+  margin: 0 !important;
   left: 0;
   bottom: 0;
   min-width: 100%;
@@ -1234,7 +1234,6 @@ video.fullscreen, #canvasvideo.fullscreen {
   height: auto;
   object-fit: fill;
   z-index: 2999;
-  margin-top: 0;
   border: 0px;
 }
 
@@ -1319,9 +1318,10 @@ video.fullscreen, #canvasvideo.fullscreen {
 
 #posenet #inference.fullscreen {
   background-color: transparent;
-  top: 4rem;
+  top: 4.1rem;
   right: 1rem;
   font-weight: 200;
+  width: 186px;
 }
 
 #my-gui-container.fullscreen {
@@ -1332,6 +1332,7 @@ video.fullscreen, #canvasvideo.fullscreen {
   text-transform: capitalize;
   z-index: 3006;
   color: rgba(255, 255, 255, 0.70);
+  padding: 10px;
 }
 
 @media (max-width: 768px) {
@@ -1624,7 +1625,7 @@ button.xclose {
 }
 
 #posenet #fullscreen i svg {
-  left: 66%;
+  left: 65%;
   top: 2.2rem;
 }
 
@@ -1914,8 +1915,20 @@ button.xclose {
   }
 }
 
+#semanticsegmentation #inference {
+  padding: 0 1rem;
+}
+
+#semanticsegmentation .tab-content {
+  margin: 0px auto;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 #semanticsegmentation .slidecontainer {
-  margin: 5px 11px;
+  margin: 0 0.5rem;
   height: 20px;
   width: 100%;
 }
@@ -1957,7 +1970,7 @@ button.xclose {
 }
 #semanticsegmentation .controls .label {
   width: 100%;
-  margin: 20px 0 8px 0;
+  margin: 20px 0 8px 0.5rem;
 }
 #semanticsegmentation .controls .btn-group {
   width: 100%;
@@ -1973,6 +1986,40 @@ button.xclose {
   letter-spacing: 0.2em;
   color: #333;
   font-weight: 200;
+}
+
+#semanticsegmentation #inference.fullscreen {
+  padding: 1rem 2rem;
+}
+
+#semanticsegmentation #inference.fullscreen .btn {
+  border: 1px rgba(255, 255, 255, 0.2) solid;
+  background: rgba(255, 255, 255, 0.0) !important;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+#semanticsegmentation #inference.fullscreen .btn:active {
+  color: rgba(25, 190, 225, 0.7);
+  border: 1px rgba(25, 190, 225, 0.4) solid;
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+#semanticsegmentation #inference.fullscreen .btn:hover {
+  border: 1px rgba(255, 255, 255, 0.4) solid;
+  background: rgba(255, 255, 255, 0.2) !important;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+#semanticsegmentation #inference.fullscreen .slider {
+  opacity: 0.3;
+}
+#semanticsegmentation #inference.fullscreen .slider:hover {
+  opacity: 0.6;
+}
+
+#semanticsegmentation #inference.fullscreen .seg-label.highlight {
+  color: rgba(255, 255, 255, 0.8);
+  background: rgba(25, 190, 225, 0.4);
 }
 
 #semanticsegmentation .controls .btn-group .btn.active {
@@ -2051,6 +2098,49 @@ button.xclose {
 #semanticsegmentation .select-bg-wrapper .btn {
   width: auto !important;
 }
+
+#semanticsegmentation video {
+  display: none;
+}
+
+#semanticsegmentation #canvasvideo {
+  margin: 0 1rem;
+  max-width: 1539px;
+  max-height: 1539px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.2), inset 0 0 1px 0 rgba(255, 255, 255, 1);
+}
+
+#semanticsegmentation #fullscreen {
+  height: 0px;
+}
+
+#semanticsegmentation #fullscreen i svg {
+  left: 87%;
+  top: 1.5rem;
+}
+
+#semanticsegmentation #fps {
+  margin-top: 0.5rem;
+}
+
+#semanticsegmentation #inference.fullscreen #fps {
+  margin-top: -0.5rem;
+}
+
+#semanticsegmentation #inferencetitle {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+@media (max-width: 768px) {
+  #semanticsegmentation #canvasvideo {
+    max-width: 1539px;
+    max-height: 1539px;
+  }
+}
+
 
 /* 
   color scheme:

@@ -5,7 +5,7 @@ class Utils {
     this.model;
     this.inputTensor;
     this.outputTensor;
-    this.progressCallback;
+    this.updateProgress;
     this.modelFile;
     this.labelsFile;
     this.inputSize;
@@ -69,23 +69,28 @@ class Utils {
 
   async loadUrl(url, binary, progress) {
     return new Promise((resolve, reject) => {
+      if (this.outstandingRequest) {
+        this.outstandingRequest.abort();
+      }
       let request = new XMLHttpRequest();
+      this.outstandingRequest = request;
       request.open('GET', url, true);
       if (binary) {
         request.responseType = 'arraybuffer';
       }
       request.onload = function(ev) {
+        this.outstandingRequest = null;
         if (request.readyState === 4) {
           if (request.status === 200) {
-              resolve(request.response);
+            resolve(request.response);
           } else {
-              reject(new Error('Failed to load ' + modelUrl + ' status: ' + request.status));
+            reject(new Error('Failed to load ' + url + ' status: ' + request.status));
           }
         }
       };
-      if (progress && typeof this.progressCallback !== 'undefined')
-        request.onprogress = this.progressCallback;
-
+      if (progress && typeof this.updateProgress !== 'undefined') {
+        request.onprogress = this.updateProgress;
+      }
       request.send();
     });
   }
