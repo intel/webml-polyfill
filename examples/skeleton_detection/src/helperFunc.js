@@ -31,7 +31,7 @@ function getInput(inputElement) {
 function getURL(version) {
   let address;
   const urlBase = 'https://storage.googleapis.com/tfjs-models/weights/posenet/';
-  // const urlBase = '../posenet/model/';
+  // const urlBase = '../skeleton_detection/model/';
   switch (version) {
     case 1.01:
       address = urlBase + 'mobilenet_v1_101/';

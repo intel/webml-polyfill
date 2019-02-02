@@ -368,10 +368,12 @@ class PoseNet {
     let progressBar = document.getElementById('progressBar');
     let progressContainer = document.getElementById('progressContainer');
     if (progressBar !== null && progressContainer !== null) {
+      let totalSize = length;
+      let loadedSize = current;
       let percentComplete = current / length *100;
       percentComplete = percentComplete.toFixed(0);
       progressBar.style = `width: ${percentComplete}%`;
-      updateLoading(percentComplete);
+      updateLoading(loadedSize.toFixed(0), totalSize.toFixed(0), percentComplete);
     }
   }
 }

@@ -258,8 +258,8 @@ const showError = (title, description) => {
   }
 }
 
-const updateLoading = (c) => {
-  $(".loading-page .counter h1").html(c + "%");
+const updateLoading = (loadedSize, totalSize, percentComplete) => {
+  $(".loading-page .counter h1").html(`${loadedSize}/${totalSize}MB ${percentComplete}%`);
 }
 
 $(window).load(() => {

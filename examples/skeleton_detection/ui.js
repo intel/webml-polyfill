@@ -81,7 +81,7 @@ $(document).ready(() => {
   const updateTitle = (backend, prefer) => {
     let currentprefertext;
     if (backend == 'WASM' || backend == 'WebGL') {
-      $('#ictitle').html(`Human Pose Estimation / ${backend}`);
+      $('#ictitle').html(`Skeleton Detection / ${backend}`);
     } else if (backend == 'WebML') {
       if (getUrlParam('p') == 'fast') {
         prefer = 'FAST_SINGLE_ANSWER';
@@ -90,7 +90,7 @@ $(document).ready(() => {
       } else if (getUrlParam('p') == 'low') {
         prefer = 'LOW_POWER';
       }
-      $('#ictitle').html(`Human Pose Estimation / ${backend} / ${prefer}`);
+      $('#ictitle').html(`Skeleton Detection / ${backend} / ${prefer}`);
     }
   }
   updateTitle(ub, up);
@@ -232,8 +232,8 @@ const showError = (title, description) => {
   }
 }
 
-const updateLoading = (c) => {
-  $(".loading-page .counter h1").html(c + "%");
+const updateLoading = (loadedSize, totalSize, percentComplete) => {
+  $(".loading-page .counter h1").html(`${loadedSize}/${totalSize} ${percentComplete}%`);
 }
 
 $(window).load(() => {
