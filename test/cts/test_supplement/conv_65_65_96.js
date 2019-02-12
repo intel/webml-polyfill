@@ -22,7 +22,6 @@ describe('CTS Supplement Test', function() {
         }
         op1_value = file_data;
       });
-      console.log(op1_value)
 
       await fetch('./cts/test_supplement/resource/conv_65_65_96/filter.txt').then((res) => {
         return res.text();
@@ -35,7 +34,6 @@ describe('CTS Supplement Test', function() {
         }
         op2_value = file_data;
       });
-      console.log(op2_value)
 
       await fetch('./cts/test_supplement/resource/conv_65_65_96/bias.txt').then((res) => {
         return res.text();
@@ -48,7 +46,6 @@ describe('CTS Supplement Test', function() {
         }
         bias_value = file_data;
       });
-      console.log(bias_value)
 
       await fetch('./cts/test_supplement/resource/conv_65_65_96/expect.txt').then((res) => {
         return res.text();
@@ -61,7 +58,6 @@ describe('CTS Supplement Test', function() {
         }
         op3_expect = file_data;
       });
-      console.log(op3_expect)
 
       let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 65, 65, 96]};
       let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [576, 1, 1, 96]};
