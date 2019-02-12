@@ -131,19 +131,28 @@ The exported is located in `datasets/pascal_voc_seg/exp/train_on_trainval_set_mo
 
 4. Enable model
 
-Add the following block to the `main.js` under the `deeplab` example directory.
+Update the following block (if needed) to the `base.js` under the `util` directory.
 
 ```js
-const availableModels = [
-  ...
-  {
-    modelName: 'DeepLab 321 Atrous',
-    modelFile: './model/deeplab_mobilenetv2_321_dilated.tflite',
-    labelsFile: './model/labels.txt',
-    inputSize: [321, 321, 3],
-    outputSize: [321, 321, 21],
-  }
-];
+const semanticSegmentationModels = [{
+  modelName: 'deeplab_mobilenet_v2_513_tflite',
+  modelSize: '9.5MB',
+  modelFile: '../semantic_segmentation/model/deeplab_mobilenetv2_513.tflite',
+  labelsFile: '../semantic_segmentation/model/labels.txt',
+  inputSize: [513, 513, 3],
+  outputSize: [513, 513, 21],
+  intro: 'DeepLab is a state-of-art deep learning model for semantic image segmentation, where the goal is to assign semantic labels (e.g., person, dog, cat and so on) to every pixel in the input image.',
+  paperUrl: 'https://arxiv.org/abs/1802.02611'
+}, {
+  modelName: 'deeplab_mobilenet_v2_513_dilated_tflite',
+  modelSize: '8.4MB',
+  modelFile: '../semantic_segmentation/model/deeplab_mobilenetv2_513_dilated.tflite',
+  labelsFile: '../semantic_segmentation/model/labels.txt',
+  inputSize: [513, 513, 3],
+  outputSize: [513, 513, 21],
+  intro: 'Equivalent to the model above (without dilated suffix) but only available on platforms that natively support atrous convolution.',
+  paperUrl: 'https://arxiv.org/abs/1802.02611'
+}];
 ```
 
 For your convenience, you can download the 321 model here
