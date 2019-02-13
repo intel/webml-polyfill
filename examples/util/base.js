@@ -253,7 +253,68 @@ const humanPoseEstimationModels = [{
   paperUrl: 'https://arxiv.org/abs/1803.08225'
 }];
 
-const semanticSegmentationModels = [{
+const semanticSegmentationModels = [
+  {
+    modelName: 'deeplab_mobilenet_v2_224_tflite',
+    modelSize: '9.5MB',
+    modelFile: '../semantic_segmentation/model/deeplab_mobilenetv2_224.tflite',
+    labelsFile: '../semantic_segmentation/model/labels.txt',
+    inputSize: [224, 224, 3],
+    outputSize: [224, 224, 21],
+    intro: 'DeepLab is a state-of-art deep learning model for semantic image segmentation, where the goal is to assign semantic labels (e.g., person, dog, cat and so on) to every pixel in the input image.',
+    paperUrl: 'https://arxiv.org/abs/1802.02611'
+  },
+  {
+    modelName: 'deeplab_mobilenet_v2_224_atrous_tflite',
+    modelSize: '8.4MB',
+    modelFile: '../semantic_segmentation/model/deeplab_mobilenetv2_224_dilated.tflite',
+    labelsFile: '../semantic_segmentation/model/labels.txt',
+    inputSize: [224, 224, 3],
+    outputSize: [224, 224, 21],
+    intro: 'Equivalent to the model above (without dilated suffix) but only available on platforms that natively support atrous convolution.',
+    paperUrl: 'https://arxiv.org/abs/1802.02611'
+  },
+  {
+    modelName: 'deeplab_mobilenet_v2_257_tflite',
+    modelSize: '9.5MB',
+    modelFile: '../semantic_segmentation/model/deeplab_mobilenetv2_257.tflite',
+    labelsFile: '../semantic_segmentation/model/labels.txt',
+    inputSize: [257, 257, 3],
+    outputSize: [257, 257, 21],
+    intro: 'DeepLab is a state-of-art deep learning model for semantic image segmentation, where the goal is to assign semantic labels (e.g., person, dog, cat and so on) to every pixel in the input image.',
+    paperUrl: 'https://arxiv.org/abs/1802.02611'
+  },
+  {
+    modelName: 'deeplab_mobilenet_v2_257_atrous_tflite',
+    modelSize: '8.4MB',
+    modelFile: '../semantic_segmentation/model/deeplab_mobilenetv2_257_dilated.tflite',
+    labelsFile: '../semantic_segmentation/model/labels.txt',
+    inputSize: [257, 257, 3],
+    outputSize: [257, 257, 21],
+    intro: 'Equivalent to the model above (without dilated suffix) but only available on platforms that natively support atrous convolution.',
+    paperUrl: 'https://arxiv.org/abs/1802.02611'
+  },
+  {
+    modelName: 'deeplab_mobilenet_v2_321_tflite',
+    modelSize: '9.5MB',
+    modelFile: '../semantic_segmentation/model/deeplab_mobilenetv2_321.tflite',
+    labelsFile: '../semantic_segmentation/model/labels.txt',
+    inputSize: [321, 321, 3],
+    outputSize: [321, 321, 21],
+    intro: 'DeepLab is a state-of-art deep learning model for semantic image segmentation, where the goal is to assign semantic labels (e.g., person, dog, cat and so on) to every pixel in the input image.',
+    paperUrl: 'https://arxiv.org/abs/1802.02611'
+  },
+  {
+    modelName: 'deeplab_mobilenet_v2_321_atrous_tflite',
+    modelSize: '8.4MB',
+    modelFile: '../semantic_segmentation/model/deeplab_mobilenetv2_321_dilated.tflite',
+    labelsFile: '../semantic_segmentation/model/labels.txt',
+    inputSize: [321, 321, 3],
+    outputSize: [321, 321, 21],
+    intro: 'Equivalent to the model above (without dilated suffix) but only available on platforms that natively support atrous convolution.',
+    paperUrl: 'https://arxiv.org/abs/1802.02611'
+  },
+  {
   modelName: 'deeplab_mobilenet_v2_513_tflite',
   modelSize: '9.5MB',
   modelFile: '../semantic_segmentation/model/deeplab_mobilenetv2_513.tflite',
@@ -263,7 +324,7 @@ const semanticSegmentationModels = [{
   intro: 'DeepLab is a state-of-art deep learning model for semantic image segmentation, where the goal is to assign semantic labels (e.g., person, dog, cat and so on) to every pixel in the input image.',
   paperUrl: 'https://arxiv.org/abs/1802.02611'
 }, {
-  modelName: 'deeplab_mobilenet_v2_513_dilated_tflite',
+  modelName: 'deeplab_mobilenet_v2_513_atrous_tflite',
   modelSize: '8.4MB',
   modelFile: '../semantic_segmentation/model/deeplab_mobilenetv2_513_dilated.tflite',
   labelsFile: '../semantic_segmentation/model/labels.txt',

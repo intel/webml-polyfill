@@ -2116,8 +2116,26 @@ button.xclose {
 }
 
 #semanticsegmentation #fullscreen i svg {
-  left: 87%;
+  left: 80%;
   top: 1.5rem;
+}
+
+#semanticsegmentation #fullscreen i svg.p224 {
+  left: 76%;
+  top: 0.9rem;
+}
+
+#semanticsegmentation #fullscreen i svg.p257 {
+  top: 1.0rem;
+  left: 78%;
+}
+
+#semanticsegmentation #fullscreen i svg.p321 {
+  left: 80%;
+}
+
+#semanticsegmentation #fullscreen i svg.p513 {
+  left: 87%;
 }
 
 #semanticsegmentation #fps {

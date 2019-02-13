@@ -53,6 +53,11 @@ const buttonUI = (camera = false) => {
   }
 }
 
+const setFullScreenIconPosition = (modelname) => {
+  let svgstyle = 'p' + modelname.replace('deeplab_mobilenet_v2_', '').replace('_tflite', '').replace(/_/g, '').replace('atrous','');
+  $('#semanticsegmentation #fullscreen i svg').removeClass('p224').removeClass('p257').removeClass('p321').removeClass('p513').addClass(svgstyle);
+}
+
 $(document).ready(() => {
 
   if (us == 'camera') {
@@ -79,6 +84,7 @@ $(document).ready(() => {
 
   if (hasUrlParam('m') && hasUrlParam('t')) {
     checkedModelStyle();
+    setFullScreenIconPosition(um);
   }
 
   if (hasUrlParam('prefer')) {
@@ -94,7 +100,7 @@ $(document).ready(() => {
   }
 
   const updateTitle = (backend, prefer, model, modeltype) => {
-    model = model.replace(/_/g, ' ');
+    model = model.replace('mobilenet', '').replace('v2', '').replace(/_/g, ' ');
     let currentprefertext;
     if (backend == 'WASM' || backend == 'WebGL') {
       $('#ictitle').html(`Semantic Segmentation / ${backend} / ${model} (${modeltype})`);
@@ -154,6 +160,14 @@ $(document).ready(() => {
       um = rid.replace('_tflite', '');
       ut = 'tflite';
     }
+
+    if (rid.indexOf('_tflite') > -1) {
+      um = rid.replace('_tflite', '');
+      ut = 'tflite';
+    }
+
+    setFullScreenIconPosition(rid);
+
     if (currentBackend && currentPrefer) {
       strsearch = `?prefer=${currentPrefer}&b=${currentBackend}&m=${um}&t=${ut}&s=${us}&d=${ud}`;
     } else {
