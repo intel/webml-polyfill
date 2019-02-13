@@ -103,6 +103,7 @@ const predictCamera = async () => {
     let stream = await navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: 'user' } });
     videoElement.srcObject = stream;
     track = stream.getTracks()[0];
+    showProgress('Inferencing ...');
     return new Promise((resolve) => {
       videoElement.onloadeddata = resolve;
       startPredict();
@@ -145,7 +146,6 @@ const predictAndDraw = async (source, camera = false) => {
     streaming = false;
     if (track) track.stop();
   }
-  showProgress('Inferencing ...');
   clippedSize = utils.prepareInput(source);
   renderer.uploadNewTexture(source, clippedSize);
   let result = await utils.predict();

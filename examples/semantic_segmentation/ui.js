@@ -65,14 +65,12 @@ $(document).ready(() => {
     $('.nav-pills #cam').addClass('active');
     $('#imagetab').removeClass('active');
     $('#cameratab').addClass('active');
-    currentTab = 'camera';
   } else {
     $('.nav-pills li').removeClass('active');
     $('.nav-pills #img').addClass('active');
     $('#cameratab').removeClass('active');
     $('#imagetab').addClass('active');
     $('#fps').html('');
-    currentTab = 'image';
   }
 
   if (hasUrlParam('b')) {
@@ -146,7 +144,7 @@ $(document).ready(() => {
       showError('No model selected', 'Please select a model to start prediction.');
       return;
     }
-    updateScenario(currentTab == 'camera');
+    updateScenario(us == 'camera');
   });
 
   $('input:radio[name=m]').click(() => {
@@ -180,7 +178,7 @@ $(document).ready(() => {
     disableModel();
     currentModel = `${um}_${ut}`;
     updateTitle(currentBackend, currentPrefer, `${um}`, `${ut}`);
-    main(currentTab == 'camera');
+    main(us == 'camera');
   });
 
   $('#extra').click(() => {
@@ -222,7 +220,7 @@ $(document).ready(() => {
     }
 
     updateScenario(false);
-    buttonUI(currentTab === 'camera');
+    buttonUI(us === 'camera');
   });
 
   $('#cam').click(() => {
@@ -241,7 +239,7 @@ $(document).ready(() => {
     }
 
     updateScenario(true);
-    buttonUI(currentTab === 'camera');
+    buttonUI(us === 'camera');
   });
 
   $('#fullscreen i svg').click(() => {
@@ -254,6 +252,7 @@ $(document).ready(() => {
     $('#ictitle').toggleClass('fullscreen');
     $('#inference').toggleClass('fullscreen');
     $('.zoom-wrapper').toggle();
+    $('#labelitem').toggle();
   });
 
 });
@@ -271,7 +270,7 @@ const showResults = () => {
   $('.icdisplay').show();
   $('.shoulddisplay').show();
   $('#resulterror').hide();
-  buttonUI(currentTab === 'camera');
+  buttonUI(us === 'camera');
 }
 
 const showError = (title, description) => {
