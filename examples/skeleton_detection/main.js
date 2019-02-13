@@ -32,7 +32,7 @@ const useAtrousConv = gui.add(guiState, 'useAtrousConv');
 gui.close();
 let customContainer = document.getElementById('my-gui-container');
 customContainer.appendChild(gui.domElement);
-guiState.scaleFactor = 0.75;
+guiState.scaleFactor = 0.5;
 guiState.scoreThreshold = 0.15;
 
 const getSearchParamsPrefer = () => {
