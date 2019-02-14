@@ -7,6 +7,11 @@ const tfliteModelArray = [
   "squeezenet.tflite",
   "inception_resnet_v2.tflite"];
 
+const ssdModelArray = [
+  "ssd_mobilenet_v1.tflite",
+  "ssd_mobilenet_v2.tflite",
+  "ssdlite_mobilenet_v2.tflite"];
+
 const onnxModelArray = [
   "squeezenet1.1.onnx",
   "mobilenetv2-1.0.onnx",
@@ -18,19 +23,19 @@ const onnxModelArray = [
 const modelDic = {
   "mobilenet_v1_1.0_224.tflite": {
     "model": mobilenet_v1_tflite,
-    "name": "Mobilenet V1(TFlite)",
+    "name": "Mobilenet v1(TFlite)",
   },
   "mobilenet_v2_1.0_224.tflite": {
     "model": mobilenet_v2_tflite,
-    "name": "Mobilenet V2(TFlite)",
+    "name": "Mobilenet v2(TFlite)",
   },
   "inception_v3.tflite": {
     "model": inception_v3_tflite,
-    "name": "Inception V3(TFlite)",
+    "name": "Inception v3(TFlite)",
   },
   "inception_v4.tflite": {
     "model": inception_v4_tflite,
-    "name": "Inception V4(TFlite)",
+    "name": "Inception v4(TFlite)",
   },
   "squeezenet.tflite": {
     "model": squeezenet_tflite,
@@ -38,11 +43,19 @@ const modelDic = {
   },
   "inception_resnet_v2.tflite": {
     "model": inception_resnet_v2_tflite,
-    "name": "Incep. Res. V2(TFlite)",
+    "name": "Inception Resnet v2(TFlite)",
   },
-  "ssd_mobilenet.tflite": {
-    "model": ssd_mobilenet_tflite,
-    "name": "SSD MobileNet(TFlite)",
+  "ssd_mobilenet_v1.tflite": {
+    "model": ssd_mobilenetv1_tflite,
+    "name": "SSD MobileNet v1(TFlite)",
+  },
+  "ssd_mobilenet_v2.tflite": {
+    "model": ssd_mobilenetv2_tflite,
+    "name": "SSD MobileNet v2(TFlite)",
+  },
+  "ssdlite_mobilenet_v2.tflite": {
+    "model": ssdlite_mobilenetv2_tflite,
+    "name": "SSDLite MobileNet v2(TFlite)",
   },
   "squeezenet1.1.onnx": {
     "model": squeezenet_onnx,
@@ -61,7 +74,7 @@ const modelDic = {
     "name": "ResNet50 v2(Onnx)",
   },
   "inceptionv2.onnx": {
-    "model": inceptionv2_onnx,
+    "model": inception_v2_onnx,
     "name": "Inception v2(Onnx)",
   },
   "densenet121.onnx": {
@@ -207,7 +220,7 @@ class Benchmark {
       });
       bkPoseImageSrc = imageElement.src;
       imageElement.src = poseCanvas.toDataURL();
-    } else if (modelName === 'ssd_mobilenet.tflite') {
+    } else if (ssdModelArray.indexOf(modelName) !== -1) {
       for (let i = 0; i < this.configuration.iteration; i++) {
         this.onExecuteSingle(i);
         await new Promise(resolve => requestAnimationFrame(resolve));
@@ -216,7 +229,7 @@ class Benchmark {
         let elapsedTime = performance.now() - tStart;
         computeResults.push(elapsedTime);
         let dstart = performance.now();
-        decodeOutputBoxTensor(this.outputBoxTensor, this.anchors);
+        decodeOutputBoxTensor({}, this.outputBoxTensor, this.anchors);
         let decodeTime = performance.now() - dstart;
         console.log("Decode time:" + decodeTime);
         decodeResults.push(decodeTime);
@@ -355,14 +368,16 @@ class WebMLJSBenchmark extends Benchmark {
       this.inputTensor = new Float32Array(currentModel.inputSize.reduce((a, b) => a * b));
       this.outputTensor = new Float32Array(currentModel.outputSize);
       drawContent = imageElement;
-    } else if (configModelName === 'ssd_mobilenet.tflite') {
+    } else if (ssdModelArray.indexOf(configModelName) !== -1) {
       if (bkPoseImageSrc !== null) {
         // reset for rerun with same image
         imageElement.src = bkPoseImageSrc;
       }
       this.inputTensor = new Float32Array(currentModel.inputSize.reduce((a, b) => a * b));
+      this.outputTensor = [];
       this.outputBoxTensor = new Float32Array(currentModel.num_boxes * currentModel.box_size);
       this.outputClassScoresTensor = new Float32Array(currentModel.num_boxes * currentModel.num_classes);
+      this.prepareoutputTensor(this.outputBoxTensor, this.outputClassScoresTensor);
       this.anchors = generateAnchors({});
       drawContent = imageElement;
     } else if (configModelName === 'posenet') {
@@ -439,6 +454,24 @@ class WebMLJSBenchmark extends Benchmark {
     }
   }
 
+  prepareoutputTensor(outputBoxTensor, outputClassScoresTensor) {
+    const outH = [1083, 600, 150, 54, 24, 6];
+    const boxLen = 4;
+    const classLen = 91;
+    let boxOffset = 0;
+    let classOffset = 0;
+    let boxTensor;
+    let classTensor;
+    for (let i = 0; i < 6; ++i) {
+      boxTensor = outputBoxTensor.subarray(boxOffset, boxOffset + boxLen * outH[i]);
+      classTensor = outputClassScoresTensor.subarray(classOffset, classOffset + classLen * outH[i]);
+      this.outputTensor[2 * i] = boxTensor;
+      this.outputTensor[2 * i + 1] = classTensor;
+      boxOffset += boxLen * outH[i];
+      classOffset += classLen * outH[i];
+    }
+  }
+
   async setupAsync() {
     await this.setInputOutput();
     let backend = this.configuration.backend.replace('native', 'WebML');
@@ -475,23 +508,24 @@ class WebMLJSBenchmark extends Benchmark {
         softmax: postOptions.softmax || false,
       };
       this.model = new OnnxModelImporter(kwargs);
-    } else if (modelName === 'ssd_mobilenet.tflite') {
+    } else if (ssdModelArray.indexOf(modelName) !== -1) {
       let model = modelDic[modelName].model;
-      let resultSSDMN = await this.loadModelAndLabels(model);
-      this.labels = resultSSDMN.text.split('\n');
-      let flatBuffer = new flatbuffers.ByteBuffer(resultSSDMN.bytes);
-      let tfModel = tflite.Model.getRootAsModel(flatBuffer);
+      let resultTflite = await this.loadModelAndLabels(model);
+      this.labels = resultTflite.text.split('\n');
+      let flatBuffer = new flatbuffers.ByteBuffer(resultTflite.bytes);
+      let rawModel = tflite.Model.getRootAsModel(flatBuffer);
       let kwargs = {
-        tfModel: tfModel,
+        rawModel: rawModel,
         backend: backend,
         prefer: getPreferString(backend),
       };
-      this.model = new SsdMobileNet(kwargs);
+      this.model = new TFliteModelImporter(kwargs);
     } else if (modelName === 'posenet') {
       let modelArch = ModelArch.get(this.modelVersion);
       let smType = 'Singleperson';
       let cacheMap = new Map();
-      this.model = new PoseNet(modelArch, this.modelVersion, this.outputStride,
+      let useAtrousConv = false; // Default false, NNAPI and BNNS don't support AtrousConv
+      this.model = new PoseNet(modelArch, this.modelVersion, useAtrousConv, this.outputStride,
                                this.scaleInputSize, smType, cacheMap, backend, getPreferString(backend));
     }
     await this.model.createCompiledModel();
@@ -515,12 +549,12 @@ class WebMLJSBenchmark extends Benchmark {
   }
   async executeSingleAsync() {
     let result;
-    result = await this.model.compute(this.inputTensor, this.outputTensor);
+    result = await this.model.compute([this.inputTensor], [this.outputTensor]);
     console.log(`compute result: ${result}`);
   }
   async executeSingleAsyncSSDMN() {
     let result;
-    result = await this.model.compute(this.inputTensor, this.outputBoxTensor, this.outputClassScoresTensor);
+    result = await this.model.compute([this.inputTensor], this.outputTensor);
     console.log(`compute result: ${result}`);
   }
   async executeSingleAsyncPN() {
@@ -622,7 +656,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
       if (modelName === 'posenet') {
         imageElement.src = document.getElementById('poseImage').src;
-      } else if (modelName === 'ssd_mobilenet.tflite') {
+      } else if (ssdModelArray.indexOf(modelName) !== -1) {
         imageElement.src = document.getElementById('ssdMobileImage').src;
       } else {
         imageElement.src = document.getElementById('imageClassificationImage').src;
@@ -640,7 +674,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
       if (modelName === 'posenet') {
         imageElement.src = document.getElementById('poseImage').src;
-      } else if (modelName === 'ssd_mobilenet.tflite') {
+      } else if (ssdModelArray.indexOf(modelName) !== -1) {
         imageElement.src = document.getElementById('ssdMobileImage').src;
       } else {
         imageElement.src = document.getElementById('imageClassificationImage').src;
@@ -661,8 +695,6 @@ document.addEventListener('DOMContentLoaded', () => {
           let preferOpt = preferSelectElement.options[i];
           if (preferOpt.value === 'sustained') {
             preferOpt.selected = true;
-          } else if (preferOpt.value === 'fast') {
-            preferOpt.disabled = true;
           } else if (preferOpt.value === 'low') {
             preferOpt.disabled = true;
           }
