@@ -200,7 +200,7 @@ const imageClassificationModels = [{
 }];
 
 const objectDetectionModels = [{
-  modelName: 'SSD MobileNetV1(TFlite)',
+  modelName: 'ssd_mobilenet_v1_tflite',
   modelSize: '27.3MB',
   modelFile: '../object_detection/model/ssd_mobilenet_v1.tflite',
   labelsFile: '../object_detection/model/coco_labels_list.txt',
@@ -211,10 +211,12 @@ const objectDetectionModels = [{
   preOptions: {
     mean: [127.5, 127.5, 127.5],
     std: [127.5, 127.5, 127.5],
-  }
+  },
+  intro: 'SSD (Single Shot MultiBox Detector) is an unified framework for object detection with a single network. Loading SSD MobileNet model (converted from Tensorflow SSD MobileNet model) trained by COCO in TensorFlow Lite format, constructs and inferences it by WebML API.',
+  paperUrl: 'https://arxiv.org/abs/1803.08225'
 }, {
-  modelName: 'SSD MobileNetV2(TFlite)',
-  modelSize: '17.9MB',
+  modelName: 'ssd_mobilenet_v2_tflite',
+  modelSize: '67.3MB',
   modelFile: '../object_detection/model/ssd_mobilenet_v2.tflite',
   labelsFile: '../object_detection/model/coco_labels_list.txt',
   box_size: 4,
@@ -224,10 +226,12 @@ const objectDetectionModels = [{
   preOptions: {
     mean: [127.5, 127.5, 127.5],
     std: [127.5, 127.5, 127.5],
-  }
+  },
+  intro: 'MobileNet V2 with SSD. This model is faster than Mobilenet V1 SSD at the same accuracy.',
+  paperUrl: 'https://arxiv.org/abs/1801.04381'
 }, {
-  modelName: 'SSDLite MobileNetV2(TFlite)',
-  modelSize: '67.3MB',
+  modelName: 'ssdlite_mobilenet_v2_tflite',
+  modelSize: '17.9MB',
   modelFile: '../object_detection/model/ssdlite_mobilenet_v2.tflite',
   labelsFile: '../object_detection/model/coco_labels_list.txt',
   box_size: 4,
@@ -237,7 +241,9 @@ const objectDetectionModels = [{
   preOptions: {
     mean: [127.5, 127.5, 127.5],
     std: [127.5, 127.5, 127.5],
-  }
+  },
+  intro: 'MobileNet V2 with SSDLite. This model is faster than Mobilenet V1 SSD at the same accuracy.',
+  paperUrl: 'https://arxiv.org/abs/1801.04381'
 }];
 
 const humanPoseEstimationModels = [{
@@ -253,8 +259,7 @@ const humanPoseEstimationModels = [{
   paperUrl: 'https://arxiv.org/abs/1803.08225'
 }];
 
-const semanticSegmentationModels = [
-  {
+const semanticSegmentationModels = [{
     modelName: 'deeplab_mobilenet_v2_224_tflite',
     modelSize: '9.5MB',
     modelFile: '../semantic_segmentation/model/deeplab_mobilenetv2_224.tflite',
@@ -263,8 +268,7 @@ const semanticSegmentationModels = [
     outputSize: [224, 224, 21],
     intro: 'DeepLab is a state-of-art deep learning model for semantic image segmentation, where the goal is to assign semantic labels (e.g., person, dog, cat and so on) to every pixel in the input image.',
     paperUrl: 'https://arxiv.org/abs/1802.02611'
-  },
-  {
+  }, {
     modelName: 'deeplab_mobilenet_v2_224_atrous_tflite',
     modelSize: '8.4MB',
     modelFile: '../semantic_segmentation/model/deeplab_mobilenetv2_224_dilated.tflite',
@@ -273,8 +277,7 @@ const semanticSegmentationModels = [
     outputSize: [224, 224, 21],
     intro: 'Equivalent to the model above (without dilated suffix) but only available on platforms that natively support atrous convolution.',
     paperUrl: 'https://arxiv.org/abs/1802.02611'
-  },
-  {
+  }, {
     modelName: 'deeplab_mobilenet_v2_257_tflite',
     modelSize: '9.5MB',
     modelFile: '../semantic_segmentation/model/deeplab_mobilenetv2_257.tflite',
@@ -283,8 +286,7 @@ const semanticSegmentationModels = [
     outputSize: [257, 257, 21],
     intro: 'DeepLab is a state-of-art deep learning model for semantic image segmentation, where the goal is to assign semantic labels (e.g., person, dog, cat and so on) to every pixel in the input image.',
     paperUrl: 'https://arxiv.org/abs/1802.02611'
-  },
-  {
+  }, {
     modelName: 'deeplab_mobilenet_v2_257_atrous_tflite',
     modelSize: '8.4MB',
     modelFile: '../semantic_segmentation/model/deeplab_mobilenetv2_257_dilated.tflite',
@@ -293,8 +295,7 @@ const semanticSegmentationModels = [
     outputSize: [257, 257, 21],
     intro: 'Equivalent to the model above (without dilated suffix) but only available on platforms that natively support atrous convolution.',
     paperUrl: 'https://arxiv.org/abs/1802.02611'
-  },
-  {
+  }, {
     modelName: 'deeplab_mobilenet_v2_321_tflite',
     modelSize: '9.5MB',
     modelFile: '../semantic_segmentation/model/deeplab_mobilenetv2_321.tflite',
@@ -303,8 +304,7 @@ const semanticSegmentationModels = [
     outputSize: [321, 321, 21],
     intro: 'DeepLab is a state-of-art deep learning model for semantic image segmentation, where the goal is to assign semantic labels (e.g., person, dog, cat and so on) to every pixel in the input image.',
     paperUrl: 'https://arxiv.org/abs/1802.02611'
-  },
-  {
+  }, {
     modelName: 'deeplab_mobilenet_v2_321_atrous_tflite',
     modelSize: '8.4MB',
     modelFile: '../semantic_segmentation/model/deeplab_mobilenetv2_321_dilated.tflite',
@@ -313,25 +313,24 @@ const semanticSegmentationModels = [
     outputSize: [321, 321, 21],
     intro: 'Equivalent to the model above (without dilated suffix) but only available on platforms that natively support atrous convolution.',
     paperUrl: 'https://arxiv.org/abs/1802.02611'
-  },
-  {
-  modelName: 'deeplab_mobilenet_v2_513_tflite',
-  modelSize: '9.5MB',
-  modelFile: '../semantic_segmentation/model/deeplab_mobilenetv2_513.tflite',
-  labelsFile: '../semantic_segmentation/model/labels.txt',
-  inputSize: [513, 513, 3],
-  outputSize: [513, 513, 21],
-  intro: 'DeepLab is a state-of-art deep learning model for semantic image segmentation, where the goal is to assign semantic labels (e.g., person, dog, cat and so on) to every pixel in the input image.',
-  paperUrl: 'https://arxiv.org/abs/1802.02611'
-}, {
-  modelName: 'deeplab_mobilenet_v2_513_atrous_tflite',
-  modelSize: '8.4MB',
-  modelFile: '../semantic_segmentation/model/deeplab_mobilenetv2_513_dilated.tflite',
-  labelsFile: '../semantic_segmentation/model/labels.txt',
-  inputSize: [513, 513, 3],
-  outputSize: [513, 513, 21],
-  intro: 'Equivalent to the model above (without dilated suffix) but only available on platforms that natively support atrous convolution.',
-  paperUrl: 'https://arxiv.org/abs/1802.02611'
+  }, {
+    modelName: 'deeplab_mobilenet_v2_513_tflite',
+    modelSize: '9.5MB',
+    modelFile: '../semantic_segmentation/model/deeplab_mobilenetv2_513.tflite',
+    labelsFile: '../semantic_segmentation/model/labels.txt',
+    inputSize: [513, 513, 3],
+    outputSize: [513, 513, 21],
+    intro: 'DeepLab is a state-of-art deep learning model for semantic image segmentation, where the goal is to assign semantic labels (e.g., person, dog, cat and so on) to every pixel in the input image.',
+    paperUrl: 'https://arxiv.org/abs/1802.02611'
+  }, {
+    modelName: 'deeplab_mobilenet_v2_513_atrous_tflite',
+    modelSize: '8.4MB',
+    modelFile: '../semantic_segmentation/model/deeplab_mobilenetv2_513_dilated.tflite',
+    labelsFile: '../semantic_segmentation/model/labels.txt',
+    inputSize: [513, 513, 3],
+    outputSize: [513, 513, 21],
+    intro: 'Equivalent to the model above (without dilated suffix) but only available on platforms that natively support atrous convolution.',
+    paperUrl: 'https://arxiv.org/abs/1802.02611'
 }];
 
 const getOS = () => {
