@@ -82,6 +82,7 @@ $(document).ready(() => {
   }
 
   const updateTitle = (backend, prefer, model, modeltype) => {
+    model = model.replace(/_/g, ' ');
     let currentprefertext;
     if (backend == 'WASM' || backend == 'WebGL') {
       $('#ictitle').html(`Image Classification / ${backend} / ${model} (${modeltype})`);
@@ -93,14 +94,14 @@ $(document).ready(() => {
       } else if (getUrlParam('p') == 'low') {
         prefer = 'LOW_POWER';
       }
-      $('#ictitle').html(`Image Classification / ${backend} / ${prefer} / ${model} (${modeltype})`);
+      $('#ictitle').html(`Image Classification / WebNN / ${prefer} / ${model} (${modeltype})`);
     }
   }
   updateTitle(ub, up, um, ut);
 
   $('input:radio[name=b]').click(() => {
     $('.alert').hide();
-    let rid = $("input:radio[name='b']:checked").attr('id');
+    let rid = $('input:radio[name="b"]:checked').attr('id');
     $('.backend input').removeAttr('checked');
     $('.backend label').removeClass('checked');
     $('#' + rid).attr('checked', 'checked');
@@ -133,7 +134,7 @@ $(document).ready(() => {
 
   $('input:radio[name=m]').click(() => {
     $('.alert').hide();
-    let rid = $("input:radio[name='m']:checked").attr('id');
+    let rid = $('input:radio[name="m"]:checked').attr('id');
     if (rid.indexOf('_onnx') > -1) {
       um = rid.replace('_onnx', '');
       ut = 'onnx';
@@ -154,7 +155,7 @@ $(document).ready(() => {
     disableModel();
     currentModel = `${um}_${ut}`;
     updateTitle(currentBackend, currentPrefer, `${um}`, `${ut}`);
-    (us == 'camera') ? main(true) : main();
+    main(us === 'camera');
   });
 
   $('#extra').click(() => {
@@ -195,7 +196,7 @@ $(document).ready(() => {
       return;
     }
 
-    updateScenario(false);
+    updateScenario();
   });
 
   $('#cam').click(() => {
@@ -259,7 +260,7 @@ const showError = (title, description) => {
 }
 
 const updateLoading = (loadedSize, totalSize, percentComplete) => {
-  $(".loading-page .counter h1").html(`${loadedSize}/${totalSize}MB ${percentComplete}%`);
+  $('.loading-page .counter h1').html(`${loadedSize}/${totalSize}MB ${percentComplete}%`);
 }
 
 $(window).load(() => {
@@ -271,5 +272,5 @@ $(window).load(() => {
     showError('No model selected', 'Please select a model to start prediction.');
     return;
   }
-  (us === 'camera') ? main(true) : main();
+  main(us === 'camera');
 })
