@@ -210,7 +210,7 @@ const densenet_onnx = {
 };
 
 const ssd_mobilenetv1_tflite = {
-  modelName: 'SSD MobileNetV1(TFlite)',
+  modelName: 'SSD MobileNet v1(TFlite)',
   modelSize: '27.3MB',
   modelFile: '../object_detection/model/ssd_mobilenet_v1.tflite',
   labelsFile: '../object_detection/model/coco_labels_list.txt',
@@ -225,7 +225,7 @@ const ssd_mobilenetv1_tflite = {
 };
 
 const ssd_mobilenetv2_tflite = {
-  modelName: 'SSD MobileNetV2(TFlite)',
+  modelName: 'SSD MobileNet v2(TFlite)',
   modelSize: '17.9MB',
   modelFile: '../object_detection/model/ssd_mobilenet_v2.tflite',
   labelsFile: '../object_detection/model/coco_labels_list.txt',
@@ -240,7 +240,7 @@ const ssd_mobilenetv2_tflite = {
 };
 
 const ssdlite_mobilenetv2_tflite = {
-  modelName: 'SSDLite MobileNetV2(TFlite)',
+  modelName: 'SSDLite MobileNet v2(TFlite)',
   modelSize: '67.3MB',
   modelFile: '../object_detection/model/ssdlite_mobilenet_v2.tflite',
   labelsFile: '../object_detection/model/coco_labels_list.txt',
