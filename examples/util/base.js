@@ -354,11 +354,11 @@ const getNativeAPI = (preferString) => {
     },
     'Windows': {
       'sustained': 'clDNN',
-      // 'fast': 'MKL-DNN', // implementing
+      'fast': 'mklDNN',
     },
     'Linux': {
       'sustained': 'clDNN',
-      // 'fast': 'MKL-DNN', // implementing
+      'fast': 'mklDNN',
     },
     'Mac OS': {
       'fast': 'BNNS',
