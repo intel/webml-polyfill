@@ -151,7 +151,8 @@ const main = async (camera = false) => {
   logConfig();
   await showProgress('Loading model ...');
   try {
-    let model = imageClassificationModels.filter(f => f.modelName == currentModel);
+    let model = imageClassificationModels.filter(f => f.modelFormatName == currentModel);
+    console.log(model)
     await utils.loadModel(model[0]);
   } catch (e) {
     errorHandler(e);

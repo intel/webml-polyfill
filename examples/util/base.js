@@ -17,7 +17,8 @@ const preferMap = {
 
 
 const imageClassificationModels = [{
-  modelName: 'mobilenet_v1_tflite',
+  modelName: 'Mobilenet v1 (TFLite)',
+  modelFormatName: 'mobilenet_v1_tflite',
   modelSize: '16.9MB',
   inputSize: [224, 224, 3],
   outputSize: 1001,
@@ -30,7 +31,8 @@ const imageClassificationModels = [{
   intro: 'An efficient Convolutional Neural Networks for Mobile Vision Applications.',
   paperUrl: 'https://arxiv.org/pdf/1704.04861.pdf'
 }, {
-  modelName: 'mobilenet_v2_tflite',
+  modelName: 'Mobilenet v2 (TFLite)',
+  modelFormatName: 'mobilenet_v2_tflite',
   modelSize: '14.0MB',
   inputSize: [224, 224, 3],
   outputSize: 1001,
@@ -43,7 +45,8 @@ const imageClassificationModels = [{
   intro: 'MobileNetV2 improves the state of the art performance of mobile models.',
   paperUrl: 'https://arxiv.org/abs/1801.04381'
 }, {
-  modelName: 'inception_v3_tflite',
+  modelName: 'Inception v2 (TFLite)',
+  modelFormatName: 'inception_v3_tflite',
   modelSize: '95.3MB',
   inputSize: [299, 299, 3],
   outputSize: 1001,
@@ -56,7 +59,8 @@ const imageClassificationModels = [{
   intro: 'Inception-v3 is trained for the ImageNet Large Visual Recognition Challenge.',
   paperUrl: 'http://arxiv.org/abs/1512.00567'
 }, {
-  modelName: 'inception_v4_tflite',
+  modelName: 'Inception v4 (TFLite)',
+  modelFormatName: 'inception_v4_tflite',
   modelSize: '170.7MB',
   inputSize: [299, 299, 3],
   outputSize: 1001,
@@ -69,7 +73,8 @@ const imageClassificationModels = [{
   intro: 'Inception architecture that has been shown to achieve very good performance at relatively low computational cost.',
   paperUrl: 'https://arxiv.org/abs/1602.07261'
 }, {
-  modelName: 'squeezenet_tflite',
+  modelName: 'Squeezenet (TFLite)',
+  modelFormatName: 'squeezenet_tflite',
   modelSize: '5.0MB',
   inputSize: [224, 224, 3],
   outputSize: 1001,
@@ -82,7 +87,8 @@ const imageClassificationModels = [{
   intro: 'A light-weight CNN providing Alexnet level accuracy with 50X fewer parameters.',
   paperUrl: 'https://arxiv.org/abs/1602.07360'
 }, {
-  modelName: 'inception_resnet_v2_tflite',
+  modelName: 'Inception Resnet v2 (TFLite)',
+  modelFormatName: 'inception_resnet_v2_tflite',
   modelSize: '121.0MB',
   inputSize: [299, 299, 3],
   outputSize: 1001,
@@ -98,7 +104,8 @@ const imageClassificationModels = [{
   intro: 'Inception architecture that has been shown to achieve very good performance at relatively low computational cost, and training with residual connections accelerates the training of Inception networks significantly. There is also some evidence of residual Inception networks outperforming similarly expensive Inception networks without residual connections.',
   paperUrl: 'https://arxiv.org/abs/1602.07261'
 }, {
-  modelName: 'squeezenet_onnx',
+  modelName: 'Squeezenet (ONNX)',
+  modelFormatName: 'squeezenet_onnx',
   modelSize: '5.0MB',
   modelFile: '../image_classification/model/squeezenet1.1.onnx',
   labelsFile: '../image_classification/model/labels1000.txt',
@@ -116,7 +123,8 @@ const imageClassificationModels = [{
   intro: 'A light-weight CNN providing Alexnet level accuracy with 50X fewer parameters.',
   paperUrl: 'https://arxiv.org/abs/1602.07360'
 }, {
-  modelName: 'mobilenet_v2_onnx',
+  modelName: 'Mobilenet v2 (ONNX)',
+  modelFormatName: 'mobilenet_v2_onnx',
   modelSize: '14.2MB',
   modelFile: '../image_classification/model/mobilenetv2-1.0.onnx',
   labelsFile: '../image_classification/model/labels1000.txt',
@@ -134,7 +142,8 @@ const imageClassificationModels = [{
   intro: 'MobileNetV2 improves the state of the art performance of mobile models.',
   paperUrl: 'https://arxiv.org/abs/1801.04381'
 }, {
-  modelName: 'resnet_v1_onnx',
+  modelName: 'Resnet v1 (ONNX)',
+  modelFormatName: 'resnet_v1_onnx',
   modelSize: '102.6MB',
   modelFile: '../image_classification/model/resnet50v1.onnx',
   labelsFile: '../image_classification/model/labels1000.txt',
@@ -152,7 +161,8 @@ const imageClassificationModels = [{
   intro: 'A residual learning framework to ease the training of networks that are substantially deeper than those used previously. This result won the 1st place on the ILSVRC 2015 classification task.',
   paperUrl: 'https://arxiv.org/abs/1512.03385'
 }, {
-  modelName: 'resnet_v2_onnx',
+  modelName: 'Resnet v2 (ONNX)',
+  modelFormatName: 'resnet_v2_onnx',
   modelSize: '102.4MB',
   modelFile: '../image_classification/model/resnet50v2.onnx',
   labelsFile: '../image_classification/model/labels1000.txt',
@@ -170,7 +180,8 @@ const imageClassificationModels = [{
   intro: 'Deep residual networks have emerged as a family of extremely deep architectures showing compelling accuracy and nice convergence behaviors. It reports improved results using a 1001-layer ResNet on CIFAR-10 (4.62% error) and CIFAR-100, and a 200-layer ResNet on ImageNet.',
   paperUrl: 'https://arxiv.org/abs/1603.05027'
 }, {
-  modelName: 'inception_v2_onnx',
+  modelName: 'Inception v2 (ONNX)',
+  modelFormatName: 'inception_v2_onnx',
   modelSize: '45.0MB',
   modelFile: '../image_classification/model/inceptionv2.onnx',
   labelsFile: '../image_classification/model/ilsvrc2012labels.txt',
@@ -179,7 +190,8 @@ const imageClassificationModels = [{
   intro: 'Inception-v2 is trained for the ImageNet Large Visual Recognition Challenge.',
   paperUrl: 'https://arxiv.org/abs/1512.00567'
 }, {
-  modelName: 'densenet_onnx',
+  modelName: 'Densenet (ONNX)',
+  modelFormatName: 'densenet_onnx',
   modelSize: '32.7MB',
   modelFile: '../image_classification/model/densenet121.onnx',
   labelsFile: '../image_classification/model/labels1000.txt',
@@ -200,7 +212,8 @@ const imageClassificationModels = [{
 }];
 
 const objectDetectionModels = [{
-  modelName: 'ssd_mobilenet_v1_tflite',
+  modelName: 'SSD MobileNet v1 (TFLite)',
+  modelFormatName: 'ssd_mobilenet_v1_tflite',
   modelSize: '27.3MB',
   modelFile: '../object_detection/model/ssd_mobilenet_v1.tflite',
   labelsFile: '../object_detection/model/coco_labels_list.txt',
@@ -215,7 +228,8 @@ const objectDetectionModels = [{
   intro: 'SSD (Single Shot MultiBox Detector) is an unified framework for object detection with a single network. Loading SSD MobileNet model (converted from Tensorflow SSD MobileNet model) trained by COCO in TensorFlow Lite format, constructs and inferences it by WebML API.',
   paperUrl: 'https://arxiv.org/abs/1803.08225'
 }, {
-  modelName: 'ssd_mobilenet_v2_tflite',
+  modelName: 'SSD MobileNet v2 (TFLite)',
+  modelFormatName: 'ssd_mobilenet_v2_tflite',
   modelSize: '67.3MB',
   modelFile: '../object_detection/model/ssd_mobilenet_v2.tflite',
   labelsFile: '../object_detection/model/coco_labels_list.txt',
@@ -230,7 +244,8 @@ const objectDetectionModels = [{
   intro: 'MobileNet V2 with SSD. This model is faster than Mobilenet V1 SSD at the same accuracy.',
   paperUrl: 'https://arxiv.org/abs/1801.04381'
 }, {
-  modelName: 'ssdlite_mobilenet_v2_tflite',
+  modelName: 'SSDLite MobileNet v2 (TFLite)',
+  modelFormatName: 'ssdlite_mobilenet_v2_tflite',
   modelSize: '17.9MB',
   modelFile: '../object_detection/model/ssdlite_mobilenet_v2.tflite',
   labelsFile: '../object_detection/model/coco_labels_list.txt',
@@ -248,6 +263,7 @@ const objectDetectionModels = [{
 
 const humanPoseEstimationModels = [{
   modelName: 'PoseNet',
+  modelFormatName: 'PoseNet',
   modelSize: '13.3MB',
   modelFile: '../skeleton_detection/model/mobilenet_v1_101',
   inputSize: [513, 513, 3],
@@ -260,7 +276,8 @@ const humanPoseEstimationModels = [{
 }];
 
 const semanticSegmentationModels = [{
-    modelName: 'deeplab_mobilenet_v2_224_tflite',
+    modelName: 'Deeplab 224 (TFLite)',
+    modelFormatName: 'deeplab_mobilenet_v2_224_tflite',
     modelSize: '9.5MB',
     modelFile: '../semantic_segmentation/model/deeplab_mobilenetv2_224.tflite',
     labelsFile: '../semantic_segmentation/model/labels.txt',
@@ -269,7 +286,8 @@ const semanticSegmentationModels = [{
     intro: 'DeepLab is a state-of-art deep learning model for semantic image segmentation, where the goal is to assign semantic labels (e.g., person, dog, cat and so on) to every pixel in the input image.',
     paperUrl: 'https://arxiv.org/abs/1802.02611'
   }, {
-    modelName: 'deeplab_mobilenet_v2_224_atrous_tflite',
+    modelName: 'Deeplab 224 Atrous (TFLite)',
+    modelFormatName: 'deeplab_mobilenet_v2_224_atrous_tflite',
     modelSize: '8.4MB',
     modelFile: '../semantic_segmentation/model/deeplab_mobilenetv2_224_dilated.tflite',
     labelsFile: '../semantic_segmentation/model/labels.txt',
@@ -278,7 +296,8 @@ const semanticSegmentationModels = [{
     intro: 'Equivalent to the model above (without dilated suffix) but only available on platforms that natively support atrous convolution.',
     paperUrl: 'https://arxiv.org/abs/1802.02611'
   }, {
-    modelName: 'deeplab_mobilenet_v2_257_tflite',
+    modelName: 'Deeplab 257 (TFLite)',
+    modelFormatName: 'deeplab_mobilenet_v2_257_tflite',
     modelSize: '9.5MB',
     modelFile: '../semantic_segmentation/model/deeplab_mobilenetv2_257.tflite',
     labelsFile: '../semantic_segmentation/model/labels.txt',
@@ -287,7 +306,8 @@ const semanticSegmentationModels = [{
     intro: 'DeepLab is a state-of-art deep learning model for semantic image segmentation, where the goal is to assign semantic labels (e.g., person, dog, cat and so on) to every pixel in the input image.',
     paperUrl: 'https://arxiv.org/abs/1802.02611'
   }, {
-    modelName: 'deeplab_mobilenet_v2_257_atrous_tflite',
+    modelName: 'Deeplab 257 Atrous (TFLite)',
+    modelFormatName: 'deeplab_mobilenet_v2_257_atrous_tflite',
     modelSize: '8.4MB',
     modelFile: '../semantic_segmentation/model/deeplab_mobilenetv2_257_dilated.tflite',
     labelsFile: '../semantic_segmentation/model/labels.txt',
@@ -296,7 +316,8 @@ const semanticSegmentationModels = [{
     intro: 'Equivalent to the model above (without dilated suffix) but only available on platforms that natively support atrous convolution.',
     paperUrl: 'https://arxiv.org/abs/1802.02611'
   }, {
-    modelName: 'deeplab_mobilenet_v2_321_tflite',
+    modelName: 'Deeplab 321 (TFLite)',
+    modelFormatName: 'deeplab_mobilenet_v2_321_tflite',
     modelSize: '9.5MB',
     modelFile: '../semantic_segmentation/model/deeplab_mobilenetv2_321.tflite',
     labelsFile: '../semantic_segmentation/model/labels.txt',
@@ -305,7 +326,8 @@ const semanticSegmentationModels = [{
     intro: 'DeepLab is a state-of-art deep learning model for semantic image segmentation, where the goal is to assign semantic labels (e.g., person, dog, cat and so on) to every pixel in the input image.',
     paperUrl: 'https://arxiv.org/abs/1802.02611'
   }, {
-    modelName: 'deeplab_mobilenet_v2_321_atrous_tflite',
+    modelName: 'Deeplab 321 Atrous (TFLite)',
+    modelFormatName: 'deeplab_mobilenet_v2_321_atrous_tflite',
     modelSize: '8.4MB',
     modelFile: '../semantic_segmentation/model/deeplab_mobilenetv2_321_dilated.tflite',
     labelsFile: '../semantic_segmentation/model/labels.txt',
@@ -314,7 +336,8 @@ const semanticSegmentationModels = [{
     intro: 'Equivalent to the model above (without dilated suffix) but only available on platforms that natively support atrous convolution.',
     paperUrl: 'https://arxiv.org/abs/1802.02611'
   }, {
-    modelName: 'deeplab_mobilenet_v2_513_tflite',
+    modelName: 'Deeplab 513 (TFLite)',
+    modelFormatName: 'deeplab_mobilenet_v2_513_tflite',
     modelSize: '9.5MB',
     modelFile: '../semantic_segmentation/model/deeplab_mobilenetv2_513.tflite',
     labelsFile: '../semantic_segmentation/model/labels.txt',
@@ -323,7 +346,8 @@ const semanticSegmentationModels = [{
     intro: 'DeepLab is a state-of-art deep learning model for semantic image segmentation, where the goal is to assign semantic labels (e.g., person, dog, cat and so on) to every pixel in the input image.',
     paperUrl: 'https://arxiv.org/abs/1802.02611'
   }, {
-    modelName: 'deeplab_mobilenet_v2_513_atrous_tflite',
+    modelName: 'Deeplab 513 Atrous (TFLite)',
+    modelFormatName: 'deeplab_mobilenet_v2_513_atrous_tflite',
     modelSize: '8.4MB',
     modelFile: '../semantic_segmentation/model/deeplab_mobilenetv2_513_dilated.tflite',
     labelsFile: '../semantic_segmentation/model/labels.txt',

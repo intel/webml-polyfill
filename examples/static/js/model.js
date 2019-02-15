@@ -14,13 +14,13 @@ function showModel(div, modelcategory) {
   let rowstring, row;  
   modelcategory.map(model => {
     row = '<tr>';
-    let name = '<td scope=\'col\' class=\'name\'>' + getModelName(model.modelName) + '</td>';
+    let name = '<td scope=\'col\' class=\'name\'>' + getModelName(model.modelFormatName) + '</td>';
     row += name;
 
     let modeltype;
-    if(isTFLite(model.modelName)) {
+    if(isTFLite(model.modelFormatName)) {
       modeltype = `<td scope='col' class='format'>TFLite</td>`;
-    } else if(isONNX(model.modelName)) {
+    } else if(isONNX(model.modelFormatName)) {
       modeltype = `<td scope='col' class='format'>ONNX</td>`;
     } else {
       modeltype = `<td scope='col' class='format'></td>`;
