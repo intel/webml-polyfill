@@ -1,10 +1,10 @@
-## WebNN API Image Classification Examples
+## WebNN API Image Classification Example
 This example loads Image classification models trained by ImageNet, constructs and inferences it by WebNN API.
 
 ### Download Model
 Before launch this example, you need to download the model. Please check out [README.md](model/README.md) in model folder for details.
 
-### Screenshots
+### Screenshot
 ![screenshot](screenshot.png)
 
 ### URL Parameters for Image Classification Example
