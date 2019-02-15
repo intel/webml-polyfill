@@ -197,7 +197,7 @@ const main = async (camera = false) => {
   logConfig();
   showProgress('Loading model and initializing...');
   try {
-    let model = semanticSegmentationModels.filter(f => f.modelName == currentModel);
+    let model = semanticSegmentationModels.filter(f => f.modelFormatName == currentModel);
     utils.changeModelParam(model[0]);
     await utils.init(currentBackend, currentPrefer);
   } catch (e) {
