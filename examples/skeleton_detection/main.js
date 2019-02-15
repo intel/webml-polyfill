@@ -32,18 +32,7 @@ const useAtrousConv = gui.add(guiState, 'useAtrousConv');
 gui.close();
 let customContainer = document.getElementById('my-gui-container');
 customContainer.appendChild(gui.domElement);
-guiState.scaleFactor = 0.5;
 guiState.scoreThreshold = 0.15;
-
-const getSearchParamsPrefer = () => {
-  let searchParams = new URLSearchParams(location.search);
-  return searchParams.has('prefer') ? searchParams.get('prefer') : '';
-}
-
-const getSearchParamsBackend = () => {
-  let searchParams = new URLSearchParams(location.search);
-  return searchParams.has('b') ? searchParams.get('b') : '';
-}
 
 let currentBackend = getSearchParamsBackend();
 let currentPrefer = getSearchParamsPrefer();
@@ -78,23 +67,9 @@ const showAlert = (error) => {
   div.setAttribute('class', 'backendAlert alert alert-warning alert-dismissible fade show');
   div.setAttribute('role', 'alert');
   div.innerHTML = `<strong>${error}</strong>`;
-  div.innerHTML += `<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>`;
+  div.innerHTML += `<button type='button' class='close' data-dismiss='alert' aria-label='Close'><span aria-hidden='true'>&times;</span></button>`;
   let container = document.getElementById('container');
   container.insertBefore(div, container.firstElementChild);
-}
-
-if (currentBackend === '') {
-  if (nnNative) {
-    currentBackend = 'WebML';
-  } else {
-    currentBackend = 'WASM';
-  }
-}
-
-if (getOS() === 'Mac OS' && currentBackend === 'WebML') {
-  if (!currentPrefer) {
-    currentPrefer = "sustained";
-  }
 }
 
 const logConfig = () => {
@@ -112,58 +87,58 @@ inputElement.addEventListener('change', () => {
 
 model.onFinishChange((model) => {
   guiState.model = model;
-  (currentTab == 'image') ? main(false) : main(true);
+  main(currentTab === 'camera');
 });
 
 outputStride.onFinishChange((outputStride) => {
   guiState.outputStride = parseInt(outputStride);
-  (currentTab == 'image') ? main(false) : main(true);
+  main(currentTab === 'camera');
 });
 
 scaleFactor.onFinishChange((scaleFactor) => {
   guiState.scaleFactor = parseFloat(scaleFactor);
-  (currentTab == 'image') ? main(false) : main(true);
+  main(currentTab === 'camera');
 });
 
 useAtrousConv.onFinishChange((useAtrousConv) => {
   guiState.useAtrousConv = useAtrousConv;
-  (currentTab == 'image') ? main(false) : main(true);
+  main(currentTab === 'camera');
 });
 
 scoreThreshold.onChange((scoreThreshold) => {
   guiState.scoreThreshold = parseFloat(scoreThreshold);
   util._minScore = guiState.scoreThreshold;
-  (currentTab == 'image') ? drawResult(false, false) : poseDetectionFrame();
+  (currentTab === 'camera') ? poseDetectionFrame() : drawResult(false, false);
 });
 
 nmsRadius.onChange((nmsRadius) => {
   guiState.multiPoseDetection.nmsRadius = parseInt(nmsRadius);
   util._nmsRadius = guiState.multiPoseDetection.nmsRadius;
-  (currentTab == 'image') ? drawResult(false, true) : poseDetectionFrame();
+  (currentTab === 'camera') ? poseDetectionFrame() : drawResult(false, true);
 });
 
 maxDetections.onChange((maxDetections) => {
   guiState.multiPoseDetection.maxDetections = parseInt(maxDetections);
   util._maxDetection = guiState.multiPoseDetection.maxDetections;
-  (currentTab == 'image') ? drawResult(false, true) : poseDetectionFrame();
+  (currentTab === 'camera') ? poseDetectionFrame() : drawResult(false, true);
 });
 
 showPose.onChange((showPose) => {
   guiState.showPose = showPose;
-  (currentTab == 'image') ? drawResult(false, false) : poseDetectionFrame();
+  (currentTab === 'camera') ? poseDetectionFrame() : drawResult(false, false);
 });
 
 showBoundingBox.onChange((showBoundingBox) => {
   guiState.showBoundingBox = showBoundingBox;
-  (currentTab == 'image') ? drawResult(false, false) : poseDetectionFrame();
+  (currentTab === 'camera') ? poseDetectionFrame() : drawResult(false, false);
 });
 
 const drawImage = (image, canvas, w, h) => {
   const ctx = canvas.getContext('2d');
   canvas.width = w;
   canvas.height = h;
-  canvas.setAttribute("width", w);
-  canvas.setAttribute("height", h);
+  canvas.setAttribute('width', w);
+  canvas.setAttribute('height', h);
   ctx.save();
   ctx.drawImage(image, 0, 0, w, h);
   ctx.restore();
@@ -177,8 +152,8 @@ const loadImage = (imagePath, canvas) => {
     image.onload = () => {
       canvas.width = inputWidth;
       canvas.height = inputHeight;
-      canvas.setAttribute("width", inputWidth);
-      canvas.setAttribute("height", inputHeight);
+      canvas.setAttribute('width', inputWidth);
+      canvas.setAttribute('height', inputHeight);
       ctx.drawImage(image, 0, 0, inputWidth, inputHeight);
       resolve(image);
     };
@@ -248,8 +223,8 @@ const setupCamera = async () => {
 const loadVideo = async () => {
   const videoElement = await setupCamera();
   videoElement.play();
-  canvas.setAttribute("width", videoElement.videoWidth);
-  canvas.setAttribute("height", videoElement.videoHeight);
+  canvas.setAttribute('width', videoElement.videoWidth);
+  canvas.setAttribute('height', videoElement.videoHeight);
   return videoElement;
 }
 
@@ -286,25 +261,23 @@ const poseDetectionFrame = async () => {
   showResults();
 }
 
-const main = async (camera) => {
+const main = async (camera = false) => {
   console.log(`Backend: ${currentBackend}, Prefer: ${currentPrefer}`);
   streaming = false;
+  try { utils.deleteAll(); } catch (e) {}
   try {
-    utils.deleteAll();
-  } catch (e) {}
-  try {
-    if(!camera){
-      showProgress('Loading model and initializing...');
-      await util.init(currentBackend, currentPrefer, inputSize);
-      showProgress('Inferencing ...');
-      drawResult();
-    }
-    else {
+    if(camera){
       await loadVideo();
       showProgress('Loading model and initializing ...');
       await util.init(currentBackend, currentPrefer, inputSize);
       showProgress('Inferencing ...');
       poseDetectionFrame();
+    }
+    else {
+      showProgress('Loading model and initializing...');
+      await util.init(currentBackend, currentPrefer, inputSize);
+      showProgress('Inferencing ...');
+      drawResult();
     }
   } catch (e) {
     errorHandler(e);

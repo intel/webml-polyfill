@@ -197,7 +197,7 @@ section {
   padding: 85px 0;
 }
 
-#imageclassification section, #posenet section, #semanticsegmentation section {
+#imageclassification section, #posenet section, #semanticsegmentation section, #objectdetection section {
   padding: 0px 0;
 }
 
@@ -1223,7 +1223,7 @@ video {
   box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.2), inset 0 0 1px 0 rgba(255, 255, 255, 1);
 }
 
-video.fullscreen, #canvasvideo.fullscreen {
+video.fullscreen, #canvasvideo.fullscreen, #canvasshow.fullscreen {
   position: fixed;
   margin: 0 !important;
   left: 0;
@@ -1989,7 +1989,7 @@ button.xclose {
 }
 #semanticsegmentation .controls .label {
   width: 100%;
-  margin: 20px 0 8px 0.5rem;
+  margin: 10px 0 8px 0.5rem;
 }
 #semanticsegmentation .controls .btn-group {
   width: 100%;
@@ -2157,8 +2157,28 @@ button.xclose {
   left: 87%;
 }
 
+#semanticsegmentation #inferencetitle {
+  height: 2rem;
+}
+
 #semanticsegmentation #fps {
   margin-top: 0.5rem;
+}
+
+#semanticsegmentation #fps {
+  position: relative;
+  top: -2.3rem;
+  left: 10rem;
+  border-radius: 3px;
+  padding: 4px 10px 2px 10px;
+}
+
+#semanticsegmentation #fps.fullscreen {
+  display: inline-block;
+  position: fixed;
+  left: auto !important;
+  right: 6rem;
+  top: 2rem;
 }
 
 #semanticsegmentation #inference.fullscreen #fps {
@@ -2175,6 +2195,82 @@ button.xclose {
   #semanticsegmentation #canvasvideo {
     max-width: 1539px;
     max-height: 1539px;
+  }
+}
+
+#objectdetection #image, #objectdetection #video {
+  display: none;
+}
+
+#objectdetection .inner {
+  width: 640px;
+  height: 400px;
+}
+
+#objectdetection #canvasshow {
+  padding: 0;
+  margin: 0;
+  width: 640px;
+  height: 400px;
+}
+
+#objectdetection #inference {
+  margin-bottom: -9px;
+}
+
+#objectdetection #inference {
+  height: 2rem;
+}
+
+#objectdetection #fps {
+  position: relative;
+  top: -1.7rem;
+  left: 8.8rem;
+  border-radius: 3px;
+  padding: 4px 10px 2px 10px;
+}
+
+#objectdetection #fps.fullscreen {
+  display: inline-block;
+  position: fixed;
+  left: auto !important;
+  right: 6rem;
+  top: 2rem;
+}
+
+#objectdetection #fullscreen i svg {
+  top: -4.5rem;
+  left: 75%;
+}
+
+#objectdetection #fullscreen i.fullscreen svg {
+  top: 2.2rem;
+}
+
+#objectdetection #cameratab {
+  height: 0px;
+}
+
+#objectdetection #inference.fullscreen {
+  width: auto !important;
+  background-color: transparent;
+  top: 6rem;
+}
+
+@media (max-width: 768px) {
+  #objectdetection .inner {
+    width: 260px;
+    height: 140px;
+  }
+  
+  #objectdetection #canvasshow {
+    width: 260px;
+    height: 140px;
+  }
+
+  #objectdetection #inference.fullscreen {
+    right: 2rem;
+    top: 6.3rem;
   }
 }
 
