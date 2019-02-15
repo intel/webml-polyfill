@@ -139,9 +139,8 @@ const main = async (camera = false) => {
   logConfig();
   await showProgress('Loading model ...');
   try {
-    let model = objectDetectionModels.filter(f => f.modelName == currentModel);
+    let model = objectDetectionModels.filter(f => f.modelFormatName == currentModel);
     utils.changeModelParam(model[0]);
-    currentModel = model[0];
   } catch (e) {
     errorHandler(e);
   }
