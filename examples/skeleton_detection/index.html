@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang='en'>
+
+<head>
+  <meta charset='utf-8'>
+  <title>Web Neural Network API - Examples - Skeleton Detection</title>
+  <meta content='width=device-width, initial-scale=1.0' name='viewport'>
+  <meta content='Human Pose Estimation, Skeleton Detection, PoseNet, WebML, Web Machine Learning, Machine Learning for Web, Neural Networks, WebNN, WebNN API, Web Neural Network API'
+    name='keywords'>
+  <meta content='Human Pose Estimation, Skeleton Detection, PoseNet, WebML, Web Machine Learning, Machine Learning for Web, Neural Networks, WebNN, WebNN API, Web Neural Network API'
+    name='description'>
+  <link rel='apple-touch-icon' sizes='57x57' href='../static/img/favicon/apple-icon-57x57.png'>
+  <link rel='apple-touch-icon' sizes='60x60' href='../static/img/favicon/apple-icon-60x60.png'>
+  <link rel='apple-touch-icon' sizes='72x72' href='../static/img/favicon/apple-icon-72x72.png'>
+  <link rel='apple-touch-icon' sizes='76x76' href='../static/img/favicon/apple-icon-76x76.png'>
+  <link rel='apple-touch-icon' sizes='114x114' href='../static/img/favicon/apple-icon-114x114.png'>
+  <link rel='apple-touch-icon' sizes='120x120' href='../static/img/favicon/apple-icon-120x120.png'>
+  <link rel='apple-touch-icon' sizes='144x144' href='../static/img/favicon/apple-icon-144x144.png'>
+  <link rel='apple-touch-icon' sizes='152x152' href='../static/img/favicon/apple-icon-152x152.png'>
+  <link rel='apple-touch-icon' sizes='180x180' href='../static/img/favicon/apple-icon-180x180.png'>
+  <link rel='icon' type='image/png' sizes='192x192' href='../static/img/favicon/android-icon-192x192.png'>
+  <link rel='icon' type='image/png' sizes='32x32' href='../static/img/favicon/favicon-32x32.png'>
+  <link rel='icon' type='image/png' sizes='96x96' href='../static/img/favicon/favicon-96x96.png'>
+  <link rel='icon' type='image/png' sizes='16x16' href='../static/img/favicon/favicon-16x16.png'>
+  <link rel='manifest' href='../static/img/favicon/manifest.json'>
+  <meta name='msapplication-TileColor' content='#ffffff'>
+  <meta name='msapplication-TileImage' content='../static/img/favicon/ms-icon-144x144.png'>
+  <meta name='theme-color' content='#ffffff'>
+  <link href='../static/lib/bootstrap/css/bootstrap.min.css' rel='stylesheet'>
+  <link href='../static/css/style.css' rel='stylesheet'>
+</head>
+
+<body id='posenet'>
+  <header id='header'>
+    <div class='container'>
+      <div id='logo' class='pull-left'>
+        <a href='../index.html'>
+          <svg preserveAspectRatio='xMidYMid meet' viewBox='-1.2596205660195778 -1.002390572390567 185.26504164633673 39.987210231814544'
+            width='181.27' height='35.99'>
+            <defs>
+              <text id='a1Hhj0hzGw' x='548' y='158.46' font-size='18' font-weight='200' font-style='normal'
+                letter-spacing='0' alignment-baseline='before-edge' transform='matrix(1 0 0 1 -286.8825161889153 -158.45741702741705)'
+                style='line-height:100%' xml:space='preserve' dominant-baseline='text-before-edge'>
+                <tspan x='548' dy='0em' alignment-baseline='before-edge' dominant-baseline='text-before-edge'
+                  text-anchor='end'>Neural Network</tspan>
+                <tspan x='538' dy='1em' alignment-baseline='before-edge' dominant-baseline='text-before-edge'
+                  text-anchor='end'>For Web</tspan>
+              </text>
+            </defs>
+            <g>
+              <g id='b1RcgdDiGU'>
+                <use xlink:href='#a1Hhj0hzGw' opacity='1' fill='#ffffff' fill-opacity='1'></use>
+              </g>
+            </g>
+          </svg>
+        </a>
+      </div>
+
+      <nav id='nav-container'>
+        <ul class='nav-menu'>
+          <li class='menu-has-children'><a href='../index.html'>Examples</a>
+            <ul>
+              <li><a href='../image_classification/index.html'>Image Classification</a></li>
+              <li><a href='../object_detection/index.html'>Object Detection</a></li>
+              <li><a href='../skeleton_detection/index.html'>Skeleton Detection</a></li>
+              <li><a href='../semantic_segmentation/index.html'>Semantic Segmentation</a></li>
+            </ul>
+          </li>
+          <li><a href='../model.html'>Models</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <form id='query' action='' method='get' class='container'>
+    <div class='filter mb-3'>
+      <table id='filter' class='t-filter table table-condensed'>
+        <tbody>
+          <tr class='backend'>
+            <th class='text-center'>Backend</th>
+            <td>
+              <div class='g'>
+                <span>Polyfill</span>
+                <input type='radio' name='b' class='d-none' id='WASM' value='WASM'>
+                <label id='l-WASM' for='WASM' title='Compiled Tensorflow Lite C++ kernels to WebAssembly format'>WASM</label>
+                <input type='radio' name='b' class='d-none' id='WebGL' value='WebGL'>
+                <label id='l-WebGL' for='WebGL' title='Tensorflow.js WebGL kernel'>WebGL</label>
+              </div>
+              <div class='g'>
+                <span>WebNN</span>
+                <input type='radio' name='b' class='d-none ml' id='fast' value='fast'>
+                <label id='l-fast' for='fast' class='lml' title='Returning a single answer as fast as possible, even if this causes more power consumption.'>FAST_SINGLE_ANSWER</label>
+                <input type='radio' name='b' class='d-none ml' id='sustained' value='sustained'>
+                <label id='l-sustained' for='sustained' class='lml' title='Maximizing the throughput of successive frames, for example when processing successive frames coming from the camera.'>SUSTAINED_SPEED</label>
+                <input type='radio' name='b' class='d-none ml' id='low' value='low'>
+                <label id='l-low' for='low' class='lml' title='Executing in a way that minimizes battery drain.'>LOW_POWER</label>
+              </div>
+            </td>
+          </tr>
+          <tr id='option' style='display: none;'>
+            <th class='text-center'>Option</th>
+            <td>
+                <div id='my-gui-container'></div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </form>
+
+  <section class='ic' id='ic'>
+    <div class='container' id='container'>
+      <a id='extra' href='#' class='mb-1 mt-3'>
+        <h3 class='text-center ex' id='ictitle'>
+          Skeleton Detection
+        </h3>
+        <span class='fa chevron-up'>
+          <svg aria-hidden='true' data-prefix='fas' data-icon='chevron-up' class='svg-inline--fa fa-chevron-up fa-w-14'
+            role='img' viewBox='0 0 448 512'>
+            <path fill='currentColor' d='M240.971 130.524l194.343 194.343c9.373 9.373 9.373 24.569 0 33.941l-22.667 22.667c-9.357 9.357-24.522 9.375-33.901.04L224 227.495 69.255 381.516c-9.379 9.335-24.544 9.317-33.901-.04l-22.667-22.667c-9.373-9.373-9.373-24.569 0-33.941L207.03 130.525c9.372-9.373 24.568-9.373 33.941-.001z'></path>
+          </svg>
+        </span>
+        <span class='fa chevron-down' style='display:none;'>
+          <svg aria-hidden='true' data-prefix='fas' data-icon='chevron-down' class='svg-inline--fa fa-chevron-down fa-w-14'
+            role='img' viewBox='0 0 448 512'>
+            <path fill='currentColor' d='M207.029 381.476L12.686 187.132c-9.373-9.373-9.373-24.569 0-33.941l22.667-22.667c9.357-9.357 24.522-9.375 33.901-.04L224 284.505l154.745-154.021c9.379-9.335 24.544-9.317 33.901.04l22.667 22.667c9.373 9.373 9.373 24.569 0 33.941L240.971 381.476c-9.373 9.372-24.569 9.372-33.942 0z'></path>
+          </svg>
+        </span>
+      </a>
+
+      <ul class='nav nav-pills'>
+        <li id='img' class='active'>
+          <a href='#image' data-toggle='tab'>Image</a>
+        </li>
+        <li id='cam'><a href='#camera' data-toggle='tab'>Live Camera</a>
+        </li>
+      </ul>
+
+      <div id='progressContainer'>
+        <div class='mb-2'>
+          <div class='progress'>
+            <div class='progress-bar' role='progressbar' style='width: 0%;' aria-valuenow='0' aria-valuemin='0'
+              aria-valuemax='100' id='progressBar'></div>
+          </div>
+        </div>
+      </div>
+
+      <div class='tab-content clearfix' style='display: none;' id='progressmodel'>
+        <div class='loading-page'>
+          <div class='counter'>
+            <div class='loading'>
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
+            </div>
+            <h1>0%</h1>
+            <p id='progressstep'>Loading model ...</p>
+          </div>
+        </div>
+      </div>
+      <div class='tab-content clearfix' style='display: none;' id='resulterror'>
+        <div class='c'>
+          <div class='errortitle'></div>
+          <div class='errordescription'></div>
+        </div>
+      </div>
+
+      <div id='inference' class='shoulddisplay mt-3' style='display: none;'>
+          <div class='row text-center tc' id='inferencetitle'>
+            <div id='inferenceTime'></div>
+          </div>
+      </div>
+
+      <div class='tab-content clearfix row'>
+        <div class='tab-pane text-center active col-sm' id='imagetab'>
+          <div class='icdisplay' style='display: none;'>
+            <div class='col-lg-12 col-xs-12 text-center'>
+              <div class='row'>
+                <div class='col bt-3 mb-3'>
+                  <canvas id='canvas'></canvas>
+                  <h4>Single Pose Estimation</h4>
+                </div>
+                <div class='multi col bt-3 mb-3'>
+                  <canvas id='canvasmulti'></canvas>
+                  <h4>Multiple Pose Estimation</h4>
+                </div>
+              </div>
+              <div class='mt-4'>
+                <div class='box'>
+                  <input type='file' name='f[]' id='input' accept='image/*' class='inputfile inputf' />
+                  <label for='input'><svg width='20' height='17' viewBox='0 0 20 17'>
+                      <path d='M10 0l-5.2 4.9h3.3v5.1h3.8v-5.1h3.3l-5.2-4.9zm9.3 11.5l-3.2-2.1h-2l3.4 2.6h-3.5c-.1 0-.2.1-.2.1l-.8 2.3h-6l-.8-2.2c-.1-.1-.1-.2-.2-.2h-3.6l3.4-2.6h-2l-3.2 2.1c-.4.3-.7 1-.6 1.5l.6 3.1c.1.5.7.9 1.2.9h16.3c.6 0 1.1-.4 1.3-.9l.6-3.1c.1-.5-.2-1.2-.7-1.5z' /></svg>
+                    <span>Pick Image</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class='tab-pane text-center col-sm' id='cameratab'>
+          <div class='icdisplay' style='display: none;'>
+            <div id='fps'></div>
+            <div id='fullscreen'>
+              <i class='fa expand'>
+                <svg aria-hidden='true' data-prefix='fas' data-icon='expand' class='svg-inline--fa fa-expand fa-w-14'
+                  role='img' viewBox='0 0 448 512'>
+                  <path fill='currentColor' d='M0 180V56c0-13.3 10.7-24 24-24h124c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12H64v84c0 6.6-5.4 12-12 12H12c-6.6 0-12-5.4-12-12zM288 44v40c0 6.6 5.4 12 12 12h84v84c0 6.6 5.4 12 12 12h40c6.6 0 12-5.4 12-12V56c0-13.3-10.7-24-24-24H300c-6.6 0-12 5.4-12 12zm148 276h-40c-6.6 0-12 5.4-12 12v84h-84c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12h124c13.3 0 24-10.7 24-24V332c0-6.6-5.4-12-12-12zM160 468v-40c0-6.6-5.4-12-12-12H64v-84c0-6.6-5.4-12-12-12H12c-6.6 0-12 5.4-12 12v124c0 13.3 10.7 24 24 24h124c6.6 0 12-5.4 12-12z'></path>
+                </svg>
+              </i>
+              <i class='fa compress' style='display:none;'>
+                <svg aria-hidden='true' data-prefix='fas' data-icon='compress' class='svg-inline--fa fa-compress fa-w-14'
+                  role='img' viewBox='0 0 448 512'>
+                  <path fill='currentColor' d='M436 192H312c-13.3 0-24-10.7-24-24V44c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v84h84c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12zm-276-24V44c0-6.6-5.4-12-12-12h-40c-6.6 0-12 5.4-12 12v84H12c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12h124c13.3 0 24-10.7 24-24zm0 300V344c0-13.3-10.7-24-24-24H12c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12h84v84c0 6.6 5.4 12 12 12h40c6.6 0 12-5.4 12-12zm192 0v-84h84c6.6 0 12-5.4 12-12v-40c0-6.6-5.4-12-12-12H312c-13.3 0-24 10.7-24 24v124c0 6.6 5.4 12 12 12h40c6.6 0 12-5.4 12-12z'></path>
+                </svg>
+              </i>
+            </div>
+            <div id='showcanvas' class='text-center'>
+              <canvas id ='canvasvideo'></canvas>
+            </div>
+            <video id='video' autoplay playsinline hidden></video>
+            <canvas hidden id='scalevideo' width ='640' height ='480'></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <canvas hidden id='scaleimage'></canvas>
+  <footer>
+    <div class='container'>
+      <div class='row'>
+        <div class='col-lg-12 col-xs-12 text-lg-center text-center'>
+          <div class='webmlbadge mb-4'>
+            <div class='webml-title'>WebNN API</div>
+            <div id='webmlstatus'></div>
+          </div>
+          <div class='webmlbadge mb-4'>
+            <div class='webml-title'>W3C Spec</div>
+            <div class='webml-status-true'><a href='https://webmachinelearning.github.io/webnn/#usecases' title='W3C Web Neural Network API Use Cases'>Use Cases</a></div>
+          </div>
+          <p>&copy;2019 <a href='../index.html'>WebNN API</a></p>
+        </div>
+      </div>
+  </footer>
+
+  <div id='overlay'></div>
+
+  <a href='https://github.com/intel/webml-polyfill/' class='github-corner' aria-label='View source on GitHub'>
+    <svg width='70' height='70' viewBox='0 0 250 250' style='fill:rgba(255, 255, 255, 0.1); color:rgba(255, 255, 255, 0.9); position: absolute; top: 0; border: 0; left: 0; transform: scale(-1, 1);'
+      aria-hidden='true'>
+      <path d='M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z'></path>
+      <path d='M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2'
+        fill='currentColor' style='transform-origin: 130px 106px;' class='octo-arm'></path>
+      <path d='M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z'
+        fill='currentColor' class='octo-body'></path>
+    </svg>
+  </a>
+
+  <a class='scrolltop' href='#'>
+    <svg aria-hidden='true' data-prefix='fas' data-icon='chevron-up' class='svg-inline--fa fa-chevron-up fa-w-14' role='img'
+      viewBox='0 0 448 512'>
+      <path fill='currentColor' d='M240.971 130.524l194.343 194.343c9.373 9.373 9.373 24.569 0 33.941l-22.667 22.667c-9.357 9.357-24.522 9.375-33.901.04L224 227.495 69.255 381.516c-9.379 9.335-24.544 9.317-33.901-.04l-22.667-22.667c-9.373-9.373-9.373-24.569 0-33.941L207.03 130.525c9.372-9.373 24.568-9.373 33.941-.001z'></path>
+    </svg>
+  </a>
+
+  <script src='../static/lib/jquery/jquery.min.js'></script>
+  <script src='../static/lib/jquery/jquery-migrate-3.0.1.min.js'></script>
+  <script src='../static/lib/superfish/superfish.min.js'></script>
+  <script src='../static/lib/bootstrap/js/bootstrap.bundle.min.js'></script>
+  <script src='../static/lib/easing/easing.js'></script>
+  <script src='../static/lib/stickyjs/sticky.js'></script>
+  <script src='../static/lib/greensock/tweenmax.js'></script>
+  <script src='../third_party/stats.customized.min.js'></script>
+  <script src='../third_party/dat.gui.js'></script>
+
+  <script src='../../dist/webml-polyfill.js'></script>
+  <script src='../util/base.js'></script>
+  <script src='src/helperFunc.js'></script>
+  <script src='src/PoseNet.js'></script>
+  <script src='src/MaxHeap.js'></script>
+  <script src='src/decodePose.js'></script>
+  <script src='src/DrawOutputs.js'></script>
+
+  <script src='utils.js'></script>
+  <script src='main.js'></script>
+  <script src='../util/uicommon.js'></script>
+  <script src='ui.js'></script>
+</body>
+
+</html>

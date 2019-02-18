@@ -28,14 +28,9 @@
   <meta name='theme-color' content='#ffffff'>
   <link href='../static/lib/bootstrap/css/bootstrap.min.css' rel='stylesheet'>
   <link href='../static/css/style.css' rel='stylesheet'>
-  <style>
-    section {
-      padding: 0px 0;
-    }
-  </style>
 </head>
 
-<body>
+<body id='imageclassification'>
   <header id='header'>
     <div class='container'>
       <div id='logo' class='pull-left'>
@@ -67,8 +62,8 @@
             <ul>
               <li><a href='../image_classification/index.html'>Image Classification</a></li>
               <li><a href='../object_detection/index.html'>Object Detection</a></li>
-              <li><a href='../posenet/index.html'>Human Pose Estimation</a></li>
-              <li><a href='../deeplab/index.html'>Semantic Segmentation</a></li>
+              <li><a href='../skeleton_detection/index.html'>Skeleton Detection</a></li>
+              <li><a href='../semantic_segmentation/index.html'>Semantic Segmentation</a></li>
             </ul>
           </li>
           <li><a href='../model.html'>Models</a></li>
@@ -129,18 +124,18 @@
               <div class='g'>
                 <span>Polyfill</span>
                 <input type='radio' name='b' class='d-none' id='WASM' value='WASM'>
-                <label id='l-WASM' for='WASM'>WASM</label>
+                <label id='l-WASM' for='WASM' title='Compiled Tensorflow Lite C++ kernels to WebAssembly format'>WASM</label>
                 <input type='radio' name='b' class='d-none' id='WebGL' value='WebGL'>
-                <label id='l-WebGL' for='WebGL'>WebGL</label>
+                <label id='l-WebGL' for='WebGL' title='Tensorflow.js WebGL kernel'>WebGL</label>
               </div>
               <div class='g'>
                 <span>WebNN</span>
                 <input type='radio' name='b' class='d-none ml' id='fast' value='fast'>
-                <label id='l-fast' for='fast' class='lml'>FAST_SINGLE_ANSWER</label>
+                <label id='l-fast' for='fast' class='lml' title='Returning a single answer as fast as possible, even if this causes more power consumption.'>FAST_SINGLE_ANSWER</label>
                 <input type='radio' name='b' class='d-none ml' id='sustained' value='sustained'>
-                <label id='l-sustained' for='sustained' class='lml'>SUSTAINED_SPEED</label>
+                <label id='l-sustained' for='sustained' class='lml' title='Maximizing the throughput of successive frames, for example when processing successive frames coming from the camera.'>SUSTAINED_SPEED</label>
                 <input type='radio' name='b' class='d-none ml' id='low' value='low'>
-                <label id='l-low' for='low' class='lml'>LOW_POWER</label>
+                <label id='l-low' for='low' class='lml' title='Executing in a way that minimizes battery drain.'>LOW_POWER</label>
               </div>
             </td>
           </tr>
@@ -299,10 +294,14 @@
       <div class='row'>
         <div class='col-lg-12 col-xs-12 text-lg-center text-center'>
           <div class='webmlbadge mb-4'>
-            <div class='webml-title'>WebML</div>
+            <div class='webml-title'>WebNN API</div>
             <div id='webmlstatus'></div>
           </div>
-          <p>&copy;2019 <a href='../index.html'>WebML</a></p>
+          <div class='webmlbadge mb-4'>
+            <div class='webml-title'>W3C Spec</div>
+            <div class='webml-status-true'><a href='https://webmachinelearning.github.io/webnn/#usecases' title='W3C Web Neural Network API Use Cases'>Use Cases</a></div>
+          </div>
+          <p>&copy;2019 <a href='../index.html'>WebNN API</a></p>
         </div>
       </div>
   </footer>
