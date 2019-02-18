@@ -5,7 +5,7 @@ class Utils {
     this.model;
     this.inputTensor;
     this.outputTensor;
-    this.progressCallback;
+    this.updateProgress;
     this.modelFile;
     this.labelsFile;
     this.inputSize;
@@ -69,23 +69,28 @@ class Utils {
 
   async loadUrl(url, binary, progress) {
     return new Promise((resolve, reject) => {
+      if (this.outstandingRequest) {
+        this.outstandingRequest.abort();
+      }
       let request = new XMLHttpRequest();
+      this.outstandingRequest = request;
       request.open('GET', url, true);
       if (binary) {
         request.responseType = 'arraybuffer';
       }
       request.onload = function(ev) {
+        this.outstandingRequest = null;
         if (request.readyState === 4) {
           if (request.status === 200) {
-              resolve(request.response);
+            resolve(request.response);
           } else {
-              reject(new Error('Failed to load ' + modelUrl + ' status: ' + request.status));
+            reject(new Error('Failed to load ' + url + ' status: ' + request.status));
           }
         }
       };
-      if (progress && typeof this.progressCallback !== 'undefined')
-        request.onprogress = this.progressCallback;
-
+      if (progress && typeof this.updateProgress !== 'undefined') {
+        request.onprogress = this.updateProgress;
+      }
       request.send();
     });
   }
@@ -155,49 +160,5 @@ class Utils {
     this.inputTensor = new Float32Array(newModel.inputSize.reduce((x,y) => x*y));
     this.outputTensor = new Float32Array(newModel.outputSize.reduce((x,y) => x*y));
     this.tfModel = null;
-  }
-
-  // for debugging
-  async iterateLayers(configs, layerList) {
-    if (!this.initialized) return;
-
-    let iterators = [];
-    for (let config of configs) {
-      let model = await new TFliteModelImporter({
-        rawModel: this.tfModel,
-        backend: config.backend,
-        prefer: config.prefer || null,
-      });
-      iterators.push(model.layerIterator([this.inputTensor], layerList));
-    }
-
-    while (true) {
-
-      let layerOutputs = [];
-      for (let it of iterators) {
-        layerOutputs.push(await it.next());
-      }
-
-      let refOutput = layerOutputs[0];
-      if (refOutput.done) {
-        break;
-      }
-
-      console.debug(`\n\n\nLayer(${refOutput.value.layerId}) ${refOutput.value.outputName}`);
-
-      for (let i = 0; i < configs.length; ++i) {
-        console.debug(`\n${configs[i].backend}:`);
-        console.debug(`\n${layerOutputs[i].value.tensor}`);
-
-        if (i > 0) {
-          let sum = 0;
-          for (let j = 0; j < refOutput.value.tensor.length; j++) {
-            sum += Math.pow(layerOutputs[i].value.tensor[j] - refOutput.value.tensor[j], 2);
-          }
-          let variance = sum / refOutput.value.tensor.length;
-          console.debug(`var with ${configs[0].backend}: ${variance}`);
-        }
-      }
-    }
   }
 }
