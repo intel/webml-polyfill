@@ -104,42 +104,11 @@ const predictCamera = async () => {
     videoElement.srcObject = stream;
     track = stream.getTracks()[0];
     showProgress('Inferencing ...');
-    return new Promise((resolve) => {
-      videoElement.onloadeddata = resolve;
-      startPredict();
-    });
+    videoElement.onloadeddata = startPredict;
   } catch (e) {
     errorHandler(e);
   }
 }
-
-// const setCamResolution = async (resolution) => {
-//   try {
-//     let stream = await navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: 'user' } });
-//     videoElement.srcObject = stream;
-//     track = stream.getTracks()[0];
-//     startPredict();
-//   } catch (e) {
-//     errorHandler(e);
-//   }
-// }
-
-// const setCamResolution = (resolution) => {
-//   return navigator.mediaDevices.getUserMedia({
-//     audio: false,
-//     video: { facingMode: 'user' }
-//   }).then((stream) => {
-//     videoElement.srcObject = stream;
-//     return new Promise((resolve) => {
-//       // video cannot be uploaded to texture until being loaded
-//       track = stream.getTracks()[0];
-//       videoElement.onloadeddata = resolve;
-//     });
-//   }).catch((error) => {
-//     errorHandler(e);
-//   });
-//   
-// }
 
 const predictAndDraw = async (source, camera = false) => {
   if (!camera) {
