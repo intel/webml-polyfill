@@ -45,7 +45,7 @@ const imageClassificationModels = [{
   intro: 'MobileNetV2 improves the state of the art performance of mobile models.',
   paperUrl: 'https://arxiv.org/abs/1801.04381'
 }, {
-  modelName: 'Inception v2 (TFLite)',
+  modelName: 'Inception v3 (TFLite)',
   modelFormatName: 'inception_v3_tflite',
   modelSize: '95.3MB',
   inputSize: [299, 299, 3],
@@ -263,7 +263,7 @@ const objectDetectionModels = [{
 
 const humanPoseEstimationModels = [{
   modelName: 'PoseNet',
-  modelFormatName: 'PoseNet',
+  modelFormatName: 'posenet',
   modelSize: '13.3MB',
   modelFile: '../skeleton_detection/model/mobilenet_v1_101',
   inputSize: [513, 513, 3],
