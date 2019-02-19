@@ -212,7 +212,7 @@ function printOnnxModel(model) {
       case 'Sum': {} break;
       case 'Unsqueeze': {} break;
       default: {
-        console.warn(`    ${node.opType} is not supported.}`);
+        throw new Error(`    ${node.opType} is not supported.`);
       }
     }
   }
