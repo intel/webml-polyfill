@@ -207,6 +207,7 @@ function printOnnxModel(model) {
       case 'Mul': {} break;
       case 'Constant': {} break;
       case 'Reshape': {} break;
+      case 'Flatten': {} break;
       case 'Gemm': {} break;
       case 'Sum': {} break;
       case 'Unsqueeze': {} break;
