@@ -37,3 +37,32 @@ export function validateEnum(enumValue, enumType) {
   }
   return false;
 }
+
+export function removeDuplicates(array) {
+  return Array.from(new Set(array));
+}
+
+export class Mutex {
+  constructor() {
+    this.locked = false;
+    this.pendingRequests = [];
+  }
+  lock() {
+    if (!this.locked) {
+      this.locked = true;
+    } else {
+      return new Promise(resolve => this.pendingRequests.push(resolve));
+    }
+  }
+  release() {
+    if (this.pendingRequests.length) {
+      this.pendingRequests.shift()();
+    } else {
+      this.locked = false;
+    }
+  }
+  reset() {
+    this.locked = false;
+    this.pendingRequests = [];
+  }
+}

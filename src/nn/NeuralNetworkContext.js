@@ -12,7 +12,7 @@ export default class NeuralNetworkContext {
     this._initImplicitPaddingTypes();
     this._initExecutionPreferenceTypes();
     this.supportWebGL = WebGLModel._supportWebGL();
-    this.supportWasm = !!window.WebAssembly;
+    this.supportWasm = typeof WebAssembly === 'object';
   }
 
   /**

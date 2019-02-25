@@ -7,6 +7,9 @@ const config = {
     filename: 'webml-polyfill.js',
     path: path.resolve(__dirname, 'dist')
   },
+  node: {
+    fs: 'empty'
+  },
 	module: {
 		rules: [{ test: /\.js$/, loader: 'babel-loader', exclude: /node_modules/ }]
   },
