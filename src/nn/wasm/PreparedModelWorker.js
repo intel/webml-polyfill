@@ -7,25 +7,28 @@ import { product, removeDuplicates, isTensor, sizeOfTensorData } from '../utils'
 //  - { retVal: val }
 //  - { retVal: val, transferList: [...] }
 
-onmessage = async function (e) {
-  const [id, fn, args] = e.data;
-  try {
-    const ret = await export_functions[fn](...args);
-    if (typeof ret !== 'undefined') {
-      postMessage([id, fn, ret.retVal, false], ret.transferList);
-    } else {
-      postMessage([id, fn, null, false]);
-    }
-  } catch (err) {
-    // console.log(err)
-    postMessage([id, fn, [err.message, err.stack], true]);
-  }
-}
-
-var export_functions = {
+export var export_functions = {
   getNNOpsInstance: getNNOpsInstance,
   prepare: prepare,
   execute: execute,
+  deleteAll: deleteAll
+}
+
+var ENV_WORKER = typeof importScripts === 'function';
+if (ENV_WORKER) {
+  onmessage = async function (e) {
+    const [id, fn, args] = e.data;
+    try {
+      const ret = await export_functions[fn](...args);
+      if (typeof ret !== 'undefined') {
+        postMessage([id, fn, ret.retVal, false], ret.transferList);
+      } else {
+        postMessage([id, fn, null, false]);
+      }
+    } catch (err) {
+      postMessage([id, fn, [err.message, err.stack], true]);
+    }
+  }
 }
 
 var _nn_ops = null;

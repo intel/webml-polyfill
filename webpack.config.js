@@ -8,6 +8,8 @@ const config = {
     path: path.resolve(__dirname, 'dist')
   },
   node: {
+    // workaround for worker-loader issue
+    // https://github.com/webpack-contrib/css-loader/issues/447#issuecomment-285598881
     fs: 'empty'
   },
 	module: {

@@ -1,5 +1,5 @@
 import { Mutex } from '../utils';
-import { getPreparedModelWorker } from './WorkerIPC';
+import { getPreparedModelWorker, getPreparedModelMain } from './WorkerIPC';
 
 let worker = getPreparedModelWorker();
 
@@ -15,8 +15,8 @@ export default class PreparedModel {
    * @param {Object} model - A model object built by user.
    */
   async prepare(model) {
-    await worker.dispatch('getNNOpsInstance');
-    await worker.dispatch('prepare', { args: [model] });
+    await worker.getNNOpsInstance();
+    await worker.prepare(model);
     this._prepared = true;
   }
 
@@ -36,9 +36,7 @@ export default class PreparedModel {
     const _outputs = Array.from(outputs.values());
 
     await this._mutex.lock();
-    const retOutputs = await worker.dispatch('execute', {
-      args: [_inputs, _outputs],
-    });
+    const retOutputs = await worker.execute(_inputs, _outputs);
     this._mutex.release();
 
     outputs.forEach((output, index) => { 
@@ -48,7 +46,7 @@ export default class PreparedModel {
 
   async _deleteAll() {
     await this._mutex.lock();
-    await worker.dispatch('deleteAll');
+    await worker.deleteAll();
     this._mutex.release();
   }
 }
