@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang='en'>
+
+<head>
+  <meta charset='utf-8'>
+  <title>Web Neural Network API - Examples</title>
+  <meta content='width=device-width, initial-scale=1.0' name='viewport'>
+  <meta content='WebML, Web Machine Learning, Machine Learning for Web, Neural Networks, WebNN, WebNN API, Web Neural Network API'
+    name='keywords'>
+  <meta content='WebML, Web Machine Learning, Machine Learning for Web, Neural Networks, WebNN, WebNN API, Web Neural Network API'
+    name='description'>
+  <link rel='apple-touch-icon' sizes='57x57' href='static/img/favicon/apple-icon-57x57.png'>
+  <link rel='apple-touch-icon' sizes='60x60' href='static/img/favicon/apple-icon-60x60.png'>
+  <link rel='apple-touch-icon' sizes='72x72' href='static/img/favicon/apple-icon-72x72.png'>
+  <link rel='apple-touch-icon' sizes='76x76' href='static/img/favicon/apple-icon-76x76.png'>
+  <link rel='apple-touch-icon' sizes='114x114' href='static/img/favicon/apple-icon-114x114.png'>
+  <link rel='apple-touch-icon' sizes='120x120' href='static/img/favicon/apple-icon-120x120.png'>
+  <link rel='apple-touch-icon' sizes='144x144' href='static/img/favicon/apple-icon-144x144.png'>
+  <link rel='apple-touch-icon' sizes='152x152' href='static/img/favicon/apple-icon-152x152.png'>
+  <link rel='apple-touch-icon' sizes='180x180' href='static/img/favicon/apple-icon-180x180.png'>
+  <link rel='icon' type='image/png' sizes='192x192' href='static/img/favicon/android-icon-192x192.png'>
+  <link rel='icon' type='image/png' sizes='32x32' href='static/img/favicon/favicon-32x32.png'>
+  <link rel='icon' type='image/png' sizes='96x96' href='static/img/favicon/favicon-96x96.png'>
+  <link rel='icon' type='image/png' sizes='16x16' href='static/img/favicon/favicon-16x16.png'>
+  <link rel='manifest' href='static/img/favicon/manifest.json'>
+  <meta name='msapplication-TileColor' content='#ffffff'>
+  <meta name='msapplication-TileImage' content='static/img/favicon/ms-icon-144x144.png'>
+  <meta name='theme-color' content='#ffffff'>
+  <link href='static/lib/bootstrap/css/bootstrap.min.css' rel='stylesheet'>
+  <link href='static/css/style.css' rel='stylesheet'>
+</head>
+
+<body id='index'>
+  <header id='header'>
+    <div class='container'>
+      <div id='logo' class='pull-left'>
+        <a href='index.html'>
+          <svg preserveAspectRatio='xMidYMid meet' viewBox='-1.2596205660195778 -1.002390572390567 185.26504164633673 39.987210231814544'
+            width='181.27' height='35.99'>
+            <defs>
+              <text id='a1Hhj0hzGw' x='548' y='158.46' font-size='18' font-weight='200'
+                font-style='normal' letter-spacing='0' alignment-baseline='before-edge' transform='matrix(1 0 0 1 -286.8825161889153 -158.45741702741705)'
+                style='line-height:100%' xml:space='preserve' dominant-baseline='text-before-edge'>
+                <tspan x='548' dy='0em' alignment-baseline='before-edge' dominant-baseline='text-before-edge'
+                text-anchor='end'>Neural Network</tspan>
+                <tspan x='538' dy='1em' alignment-baseline='before-edge' dominant-baseline='text-before-edge'
+                  text-anchor='end'>For Web</tspan>
+              </text>
+            </defs>
+            <g>
+              <g id='b1RcgdDiGU'>
+                <use xlink:href='#a1Hhj0hzGw' opacity='1' fill='#ffffff' fill-opacity='1'></use>
+              </g>
+            </g>
+          </svg>
+        </a>
+      </div>
+
+      <nav id='nav-container'>
+        <ul class='nav-menu'>
+          <li class='menu-has-children'><a href='index.html'>Examples</a>
+            <ul>
+              <li><a href='image_classification/index.html'>Image Classification</a></li>
+              <li><a href='object_detection/index.html'>Object Detection</a></li>
+              <li><a href='skeleton_detection/index.html'>Skeleton Detection</a></li>
+              <li><a href='semantic_segmentation/index.html'>Semantic Segmentation</a></li>
+            </ul>
+          </li>
+          <li><a href='model.html'>Models</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <section class='examples' id='examples'>
+    <div class='container'>
+      <h2 class='text-center'>
+        Web Neural Network (WebNN) API Examples
+      </h2>
+
+      <div class='row'>
+        <div class='examples-col col-lg-4 col-xs-12'>
+          <div class='card card-block text-center'>
+            <div>
+              <div class='feature-icon'>
+                <a href='image_classification/index.html'>
+                  <svg class='fa fa-image' aria-hidden='true' data-prefix='far' data-icon='image' class='svg-inline--fa fa-image fa-w-16'
+                    role='img' viewBox='0 0 512 512'>
+                    <path fill='currentColor' d='M464 64H48C21.49 64 0 85.49 0 112v288c0 26.51 21.49 48 48 48h416c26.51 0 48-21.49 48-48V112c0-26.51-21.49-48-48-48zm-6 336H54a6 6 0 0 1-6-6V118a6 6 0 0 1 6-6h404a6 6 0 0 1 6 6v276a6 6 0 0 1-6 6zM128 152c-22.091 0-40 17.909-40 40s17.909 40 40 40 40-17.909 40-40-17.909-40-40-40zM96 352h320v-80l-87.515-87.515c-4.686-4.686-12.284-4.686-16.971 0L192 304l-39.515-39.515c-4.686-4.686-12.284-4.686-16.971 0L96 304v48z'></path>
+                  </svg>
+                </a>
+              </div>
+            </div>
+            <div>
+              <h3>
+                <a href='image_classification/index.html'>Image Classification</a>
+              </h3>
+              <p>
+                Predicting a single label (or a distribution over labels as shown here to indicate our confidence) for
+                a given image.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class='examples-col col-lg-4 col-xs-12'>
+          <div class='card card-block text-center'>
+            <div>
+              <div class='feature-icon'>
+                <a href='object_detection/index.html'>
+                  <svg aria-hidden='true' data-prefix='far' data-icon='object-group' class='svg-inline--fa fa-object-group fa-w-16'
+                    role='img' viewBox='0 0 512 512'>
+                    <path fill='currentColor' d='M500 128c6.627 0 12-5.373 12-12V44c0-6.627-5.373-12-12-12h-72c-6.627 0-12 5.373-12 12v12H96V44c0-6.627-5.373-12-12-12H12C5.373 32 0 37.373 0 44v72c0 6.627 5.373 12 12 12h12v256H12c-6.627 0-12 5.373-12 12v72c0 6.627 5.373 12 12 12h72c6.627 0 12-5.373 12-12v-12h320v12c0 6.627 5.373 12 12 12h72c6.627 0 12-5.373 12-12v-72c0-6.627-5.373-12-12-12h-12V128h12zm-52-64h32v32h-32V64zM32 64h32v32H32V64zm32 384H32v-32h32v32zm416 0h-32v-32h32v32zm-40-64h-12c-6.627 0-12 5.373-12 12v12H96v-12c0-6.627-5.373-12-12-12H72V128h12c6.627 0 12-5.373 12-12v-12h320v12c0 6.627 5.373 12 12 12h12v256zm-36-192h-84v-52c0-6.628-5.373-12-12-12H108c-6.627 0-12 5.372-12 12v168c0 6.628 5.373 12 12 12h84v52c0 6.628 5.373 12 12 12h200c6.627 0 12-5.372 12-12V204c0-6.628-5.373-12-12-12zm-268-24h144v112H136V168zm240 176H232v-24h76c6.627 0 12-5.372 12-12v-76h56v112z'></path>
+                  </svg>
+                </a>
+              </div>
+            </div>
+            <div>
+              <h3>
+                <a href='object_detection/index.html'>Object Detection</a>
+              </h3>
+
+              <p>
+                Detecting instances of semantic objects of a certain class (such as humans, buildings, or cars) in
+                digital images and videos.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class='examples-col col-lg-4 col-xs-12'>
+          <div class='card card-block text-center'>
+            <div>
+              <div class='feature-icon'>
+                <a href='skeleton_detection/index.html'>
+                  <svg aria-hidden='true' data-prefix='fas' data-icon='child' class='svg-inline--fa fa-child fa-w-12'
+                    role='img' viewBox='0 0 384 512'>
+                    <path fill='currentColor' d='M120 72c0-39.765 32.235-72 72-72s72 32.235 72 72c0 39.764-32.235 72-72 72s-72-32.236-72-72zm254.627 1.373c-12.496-12.497-32.758-12.497-45.254 0L242.745 160H141.254L54.627 73.373c-12.496-12.497-32.758-12.497-45.254 0-12.497 12.497-12.497 32.758 0 45.255L104 213.254V480c0 17.673 14.327 32 32 32h16c17.673 0 32-14.327 32-32V368h16v112c0 17.673 14.327 32 32 32h16c17.673 0 32-14.327 32-32V213.254l94.627-94.627c12.497-12.497 12.497-32.757 0-45.254z'></path>
+                  </svg>
+                </a>
+              </div>
+            </div>
+            <div>
+              <h3>
+                <a href='skeleton_detection/index.html'>Skeleton Detection</a>
+              </h3>
+
+              <p>
+                A.k.a Human Pose Estimation, detecting human figures in images and video to determine, for example, where someone’s elbow shows up
+                in an image.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class='row'>
+        <div class='examples-col col-lg-4 col-xs-12'>
+          <div class='card card-block text-center'>
+            <div>
+              <div class='feature-icon'>
+                <svg aria-hidden='true' data-prefix='fas' data-icon='dog' class='svg-inline--fa fa-dog fa-w-16' role='img'
+                  viewBox='0 0 512 512'>
+                  <path fill='currentColor' d='M496 96h-64l-7.16-14.31A32 32 0 0 0 396.22 64H342.6l-27.28-27.28C305.23 26.64 288 33.78 288 48.03v149.84l128 45.71V208h32c35.35 0 64-28.65 64-64v-32c0-8.84-7.16-16-16-16zm-112 48c-8.84 0-16-7.16-16-16s7.16-16 16-16 16 7.16 16 16-7.16 16-16 16zM96 224c-17.64 0-32-14.36-32-32 0-17.67-14.33-32-32-32S0 174.33 0 192c0 41.66 26.83 76.85 64 90.1V496c0 8.84 7.16 16 16 16h64c8.84 0 16-7.16 16-16V384h160v112c0 8.84 7.16 16 16 16h64c8.84 0 16-7.16 16-16V277.55L266.05 224H96z'></path>
+                </svg>
+              </div>
+            </div>
+            <div>
+              <h3>
+                <a href='semantic_segmentation/index.html'>Semantic Segmentation</a>
+              </h3>
+
+              <p>
+                Partitioning image into semantically meaningful parts to classify each part into one of the
+                pre-determined classes.
+              </p>
+            </div>
+          </div>
+        </div>
+
+
+        <div class='examples-col col-lg-4 col-xs-12'>
+          <div class='card card-block text-center'>
+            <div>
+              <div class='feature-icon disabled'>
+                <svg aria-hidden='true' data-prefix='fas' data-icon='car' class='svg-inline--fa fa-car fa-w-16' role='img'
+                  viewBox='0 0 512 512'>
+                  <path fill='currentColor' d='M499.99 176h-59.87l-16.64-41.6C406.38 91.63 365.57 64 319.5 64h-127c-46.06 0-86.88 27.63-103.99 70.4L71.87 176H12.01C4.2 176-1.53 183.34.37 190.91l6 24C7.7 220.25 12.5 224 18.01 224h20.07C24.65 235.73 16 252.78 16 272v48c0 16.12 6.16 30.67 16 41.93V416c0 17.67 14.33 32 32 32h32c17.67 0 32-14.33 32-32v-32h256v32c0 17.67 14.33 32 32 32h32c17.67 0 32-14.33 32-32v-54.07c9.84-11.25 16-25.8 16-41.93v-48c0-19.22-8.65-36.27-22.07-48H494c5.51 0 10.31-3.75 11.64-9.09l6-24c1.89-7.57-3.84-14.91-11.65-14.91zm-352.06-17.83c7.29-18.22 24.94-30.17 44.57-30.17h127c19.63 0 37.28 11.95 44.57 30.17L384 208H128l19.93-49.83zM96 319.8c-19.2 0-32-12.76-32-31.9S76.8 256 96 256s48 28.71 48 47.85-28.8 15.95-48 15.95zm320 0c-19.2 0-48 3.19-48-15.95S396.8 256 416 256s32 12.76 32 31.9-12.8 31.9-32 31.9z'></path>
+                </svg>
+              </div>
+            </div>
+            <div>
+              <h3 class='disabled'>
+                Object Recognition
+              </h3>
+              <p>
+                Using for classification, regression, and character recognition.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class='examples-col col-lg-4 col-xs-12'>
+          <div class='card card-block text-center'>
+            <div>
+              <div class='feature-icon disabled'>
+                <svg aria-hidden='true' data-prefix='fas' data-icon='palette' class='svg-inline--fa fa-palette fa-w-16'
+                  role='img' viewBox='0 0 512 512'>
+                  <path fill='currentColor' d='M204.3 5C104.9 24.4 24.8 104.3 5.2 203.4c-37 187 131.7 326.4 258.8 306.7 41.2-6.4 61.4-54.6 42.5-91.7-23.1-45.4 9.9-98.4 60.9-98.4h79.7c35.8 0 64.8-29.6 64.9-65.3C511.5 97.1 368.1-26.9 204.3 5zM96 320c-17.7 0-32-14.3-32-32s14.3-32 32-32 32 14.3 32 32-14.3 32-32 32zm32-128c-17.7 0-32-14.3-32-32s14.3-32 32-32 32 14.3 32 32-14.3 32-32 32zm128-64c-17.7 0-32-14.3-32-32s14.3-32 32-32 32 14.3 32 32-14.3 32-32 32zm128 64c-17.7 0-32-14.3-32-32s14.3-32 32-32 32 14.3 32 32-14.3 32-32 32z'></path>
+                </svg>
+              </div>
+            </div>
+            <div class='disabled'>
+              <h3>
+                Image Processing
+              </h3>
+
+              <p>
+                Finding application in various image processing tasks to increase the quality of the output.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+  </section>
+
+  <footer>
+    <div class='container'>
+      <div class='row'>
+        <div class='col-lg-12 col-xs-12 text-lg-center text-center'>
+          <div class='webmlbadge mb-4'>
+            <div class='webml-title'>WebNN API</div>
+            <div id='webmlstatus'></div>
+          </div>
+          <div class='webmlbadge mb-4'>
+            <div class='webml-title'>W3C Spec</div>
+            <div class='webml-status-true'><a href='https://webmachinelearning.github.io/webnn/#usecases' title='W3C Web Neural Network API Use Cases'>Use Cases</a></div>
+          </div>
+          <p>&copy;2019 <a href='index.html'>WebNN API</a></p>
+        </div>
+      </div>
+  </footer>
+
+  <a href='https://github.com/intel/webml-polyfill/' class='github-corner' aria-label='View source on GitHub'>
+    <svg width='70' height='70' viewBox='0 0 250 250' style='fill:rgba(255, 255, 255, 0.1); color:rgba(255, 255, 255, 0.9); position: absolute; top: 0; border: 0; left: 0; transform: scale(-1, 1);'
+      aria-hidden='true'>
+      <path d='M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z'></path>
+      <path d='M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2'
+        fill='currentColor' style='transform-origin: 130px 106px;' class='octo-arm'></path>
+      <path d='M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z'
+        fill='currentColor' class='octo-body'></path>
+    </svg>
+  </a>
+
+  <script src='static/lib/jquery/jquery.min.js'></script>
+  <script src='static/lib/superfish/superfish.min.js'></script>
+  <script src='static/lib/stickyjs/sticky.js'></script>
+  <script src='util/uicommon.js'></script>
+  
+</body>
+</html>

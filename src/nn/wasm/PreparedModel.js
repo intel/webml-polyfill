@@ -623,10 +623,23 @@ export default class PreparedModel {
                                      output.runtimeshape, output.value);
       } break;
       case OperationCode.RESIZE_BILINEAR: {
-        allParametersPresent(3, 1);
+        let inCount = inputs.length;
+        if (inCount !== 3 && inCount !== 4) {
+          throw new Error(`Invalid parameters number of resize bilinear ${op}`);
+        }
+        allParametersPresent(inCount, 1);
         let input = operands[inputs[0]];
         let newHeight = operands[inputs[1]].value[0]; // Dont use newHeight and newWidth
         let newWidth = operands[inputs[2]].value[0];  // since outputShape has been set at first
+        // init resizeBilinearParams
+        // default set align_corners to false
+        let resizeBilinearParams = {
+          align_corners: false
+        };
+        if (inCount === 4) {
+          resizeBilinearParams.align_corners =
+              operands[inputs[3]].value[0] !== 0;
+        }
         let output = operands[outputs[0]];
         let outSizeHeight = output.runtimeshape.Dims(1);
         let outSizeWidth = output.runtimeshape.Dims(2);
@@ -646,12 +659,6 @@ export default class PreparedModel {
         // Error check
         OPS_CHECK(input.runtimeshape.DimensionsCount() <= 4);
         OPS_CHECK(output.runtimeshape.DimensionsCount() <= 4);
-
-        // init resizeBilinearParams
-        // default set align_corners to true
-        let resizeBilinearParams = {
-          align_corners: true
-        }
         
         nn_ops.resizeBilinearFloat32(resizeBilinearParams, 
                                      input.runtimeshape, input.value, 

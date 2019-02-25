@@ -1,78 +1,27 @@
 'use strict';
 const tfliteModelArray = [
-  "mobilenet_v1_1.0_224.tflite",
-  "mobilenet_v2_1.0_224.tflite",
-  "inception_v3.tflite",
-  "inception_v4.tflite",
-  "squeezenet.tflite",
-  "inception_resnet_v2.tflite"];
+  "mobilenet_v1_tflite",
+  "mobilenet_v2_tflite",
+  "inception_v3_tflite",
+  "inception_v4_tflite",
+  "squeezenet_tflite",
+  "inception_resnet_v2_tflite"];
+
+const ssdModelArray = [
+  "ssd_mobilenet_v1_tflite",
+  "ssd_mobilenet_v2_tflite",
+  "ssdlite_mobilenet_v2_tflite"];
 
 const onnxModelArray = [
-  "squeezenet1.1.onnx",
-  "mobilenetv2-1.0.onnx",
-  "resnet50v1.onnx",
-  "resnet50v2.onnx",
-  "inceptionv2.onnx",
-  "densenet121.onnx"];
+  "squeezenet_onnx",
+  "mobilenet_v2_onnx",
+  "resnet_v1_onnx",
+  "resnet_v2_onnx",
+  "inception_v2_onnx",
+  "densenet_onnx"];
 
-const modelDic = {
-  "mobilenet_v1_1.0_224.tflite": {
-    "model": mobilenet_v1_tflite,
-    "name": "Mobilenet V1(TFlite)",
-  },
-  "mobilenet_v2_1.0_224.tflite": {
-    "model": mobilenet_v2_tflite,
-    "name": "Mobilenet V2(TFlite)",
-  },
-  "inception_v3.tflite": {
-    "model": inception_v3_tflite,
-    "name": "Inception V3(TFlite)",
-  },
-  "inception_v4.tflite": {
-    "model": inception_v4_tflite,
-    "name": "Inception V4(TFlite)",
-  },
-  "squeezenet.tflite": {
-    "model": squeezenet_tflite,
-    "name": "Squeezenet(TFlite)",
-  },
-  "inception_resnet_v2.tflite": {
-    "model": inception_resnet_v2_tflite,
-    "name": "Incep. Res. V2(TFlite)",
-  },
-  "ssd_mobilenet.tflite": {
-    "model": ssd_mobilenet_tflite,
-    "name": "SSD MobileNet(TFlite)",
-  },
-  "squeezenet1.1.onnx": {
-    "model": squeezenet_onnx,
-    "name": "SqueezeNet(Onnx)",
-  },
-  "mobilenetv2-1.0.onnx": {
-    "model": mobilenet_v2_onnx,
-    "name": "Mobilenet v2(Onnx)",
-  },
-  "resnet50v1.onnx": {
-    "model": resnet_v1_onnx,
-    "name": "ResNet50 v1(Onnx)",
-  },
-  "resnet50v2.onnx": {
-    "model": resnet_v2_onnx,
-    "name": "ResNet50 v2(Onnx)",
-  },
-  "inceptionv2.onnx": {
-    "model": inceptionv2_onnx,
-    "name": "Inception v2(Onnx)",
-  },
-  "densenet121.onnx": {
-    "model":densenet_onnx,
-    "name": "DenseNet(Onnx)",
-  },
-  "posenet": {
-    "model": posenet,
-    "name": "PoseNet",
-  },
-};
+let supportedModels = [];
+supportedModels = supportedModels.concat(imageClassificationModels, objectDetectionModels, humanPoseEstimationModels);
 
 let imageElement = null;
 let inputElement = null;
@@ -84,6 +33,14 @@ let pnConfigDic = null;
 
 let preferDivElement = document.getElementById('preferDiv');
 let preferSelectElement = document.getElementById('preferSelect');
+
+function getModelDicItem(modelFormatName) {
+  for (let model of supportedModels) {
+    if (model.modelFormatName === modelFormatName) {
+      return model;
+    }
+  }
+}
 
 function getPreferString(backend) {
   let prefer;
@@ -207,7 +164,7 @@ class Benchmark {
       });
       bkPoseImageSrc = imageElement.src;
       imageElement.src = poseCanvas.toDataURL();
-    } else if (modelName === 'ssd_mobilenet.tflite') {
+    } else if (ssdModelArray.indexOf(modelName) !== -1) {
       for (let i = 0; i < this.configuration.iteration; i++) {
         this.onExecuteSingle(i);
         await new Promise(resolve => requestAnimationFrame(resolve));
@@ -216,7 +173,7 @@ class Benchmark {
         let elapsedTime = performance.now() - tStart;
         computeResults.push(elapsedTime);
         let dstart = performance.now();
-        decodeOutputBoxTensor(this.outputBoxTensor, this.anchors);
+        decodeOutputBoxTensor({}, this.outputBoxTensor, this.anchors);
         let decodeTime = performance.now() - dstart;
         console.log("Decode time:" + decodeTime);
         decodeResults.push(decodeTime);
@@ -339,7 +296,7 @@ class WebMLJSBenchmark extends Benchmark {
   }
   async setInputOutput() {
     const configModelName = this.configuration.modelName;
-    const currentModel = modelDic[configModelName].model;
+    const currentModel = getModelDicItem(configModelName);
     let width = currentModel.inputSize[1];
     let height = currentModel.inputSize[0];
     const channels = currentModel.inputSize[2];
@@ -355,14 +312,16 @@ class WebMLJSBenchmark extends Benchmark {
       this.inputTensor = new Float32Array(currentModel.inputSize.reduce((a, b) => a * b));
       this.outputTensor = new Float32Array(currentModel.outputSize);
       drawContent = imageElement;
-    } else if (configModelName === 'ssd_mobilenet.tflite') {
+    } else if (ssdModelArray.indexOf(configModelName) !== -1) {
       if (bkPoseImageSrc !== null) {
         // reset for rerun with same image
         imageElement.src = bkPoseImageSrc;
       }
       this.inputTensor = new Float32Array(currentModel.inputSize.reduce((a, b) => a * b));
+      this.outputTensor = [];
       this.outputBoxTensor = new Float32Array(currentModel.num_boxes * currentModel.box_size);
       this.outputClassScoresTensor = new Float32Array(currentModel.num_boxes * currentModel.num_classes);
+      this.prepareoutputTensor(this.outputBoxTensor, this.outputClassScoresTensor);
       this.anchors = generateAnchors({});
       drawContent = imageElement;
     } else if (configModelName === 'posenet') {
@@ -439,12 +398,30 @@ class WebMLJSBenchmark extends Benchmark {
     }
   }
 
+  prepareoutputTensor(outputBoxTensor, outputClassScoresTensor) {
+    const outH = [1083, 600, 150, 54, 24, 6];
+    const boxLen = 4;
+    const classLen = 91;
+    let boxOffset = 0;
+    let classOffset = 0;
+    let boxTensor;
+    let classTensor;
+    for (let i = 0; i < 6; ++i) {
+      boxTensor = outputBoxTensor.subarray(boxOffset, boxOffset + boxLen * outH[i]);
+      classTensor = outputClassScoresTensor.subarray(classOffset, classOffset + classLen * outH[i]);
+      this.outputTensor[2 * i] = boxTensor;
+      this.outputTensor[2 * i + 1] = classTensor;
+      boxOffset += boxLen * outH[i];
+      classOffset += classLen * outH[i];
+    }
+  }
+
   async setupAsync() {
     await this.setInputOutput();
     let backend = this.configuration.backend.replace('native', 'WebML');
     let modelName = this.configuration.modelName;
     if (tfliteModelArray.indexOf(modelName) !== -1) {
-      let model = modelDic[modelName].model;
+      let model = getModelDicItem(modelName);
       let resultTflite = await this.loadModelAndLabels(model);
       this.labels = resultTflite.text.split('\n');
       let flatBuffer = new flatbuffers.ByteBuffer(resultTflite.bytes);
@@ -458,7 +435,7 @@ class WebMLJSBenchmark extends Benchmark {
       };
       this.model = new TFliteModelImporter(kwargs);
     } else if (onnxModelArray.indexOf(modelName) !== -1) {
-      let model = modelDic[modelName].model;
+      let model = getModelDicItem(modelName);
       let resultONNX = await this.loadModelAndLabels(model);
       this.labels = resultONNX.text.split('\n');
       console.log(`labels: ${this.labels}`);
@@ -475,23 +452,24 @@ class WebMLJSBenchmark extends Benchmark {
         softmax: postOptions.softmax || false,
       };
       this.model = new OnnxModelImporter(kwargs);
-    } else if (modelName === 'ssd_mobilenet.tflite') {
-      let model = modelDic[modelName].model;
-      let resultSSDMN = await this.loadModelAndLabels(model);
-      this.labels = resultSSDMN.text.split('\n');
-      let flatBuffer = new flatbuffers.ByteBuffer(resultSSDMN.bytes);
-      let tfModel = tflite.Model.getRootAsModel(flatBuffer);
+    } else if (ssdModelArray.indexOf(modelName) !== -1) {
+      let model = getModelDicItem(modelName);
+      let resultTflite = await this.loadModelAndLabels(model);
+      this.labels = resultTflite.text.split('\n');
+      let flatBuffer = new flatbuffers.ByteBuffer(resultTflite.bytes);
+      let rawModel = tflite.Model.getRootAsModel(flatBuffer);
       let kwargs = {
-        tfModel: tfModel,
+        rawModel: rawModel,
         backend: backend,
         prefer: getPreferString(backend),
       };
-      this.model = new SsdMobileNet(kwargs);
+      this.model = new TFliteModelImporter(kwargs);
     } else if (modelName === 'posenet') {
       let modelArch = ModelArch.get(this.modelVersion);
       let smType = 'Singleperson';
       let cacheMap = new Map();
-      this.model = new PoseNet(modelArch, this.modelVersion, this.outputStride,
+      let useAtrousConv = false; // Default false, NNAPI and BNNS don't support AtrousConv
+      this.model = new PoseNet(modelArch, this.modelVersion, useAtrousConv, this.outputStride,
                                this.scaleInputSize, smType, cacheMap, backend, getPreferString(backend));
     }
     await this.model.createCompiledModel();
@@ -515,12 +493,12 @@ class WebMLJSBenchmark extends Benchmark {
   }
   async executeSingleAsync() {
     let result;
-    result = await this.model.compute(this.inputTensor, this.outputTensor);
+    result = await this.model.compute([this.inputTensor], [this.outputTensor]);
     console.log(`compute result: ${result}`);
   }
   async executeSingleAsyncSSDMN() {
     let result;
-    result = await this.model.compute(this.inputTensor, this.outputBoxTensor, this.outputClassScoresTensor);
+    result = await this.model.compute([this.inputTensor], this.outputTensor);
     console.log(`compute result: ${result}`);
   }
   async executeSingleAsyncPN() {
@@ -576,7 +554,8 @@ async function run() {
         let selectedOpt = preferSelectElement.options[preferSelectElement.selectedIndex];
         logger.log(`${key.padStart(12)}: ${getNativeAPI(selectedOpt.value)}(${selectedOpt.text})`);
       } else if (key === 'modelName') {
-        logger.log(`${key.padStart(12)}: ${modelDic[configuration[key]].name}`);
+        let model = getModelDicItem(configuration[key]);
+        logger.log(`${key.padStart(12)}: ${model.modelName}`);
       } else {
         logger.log(`${key.padStart(12)}: ${configuration[key]}`);
       }
@@ -622,7 +601,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
       if (modelName === 'posenet') {
         imageElement.src = document.getElementById('poseImage').src;
-      } else if (modelName === 'ssd_mobilenet.tflite') {
+      } else if (ssdModelArray.indexOf(modelName) !== -1) {
         imageElement.src = document.getElementById('ssdMobileImage').src;
       } else {
         imageElement.src = document.getElementById('imageClassificationImage').src;
@@ -640,7 +619,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
       if (modelName === 'posenet') {
         imageElement.src = document.getElementById('poseImage').src;
-      } else if (modelName === 'ssd_mobilenet.tflite') {
+      } else if (ssdModelArray.indexOf(modelName) !== -1) {
         imageElement.src = document.getElementById('ssdMobileImage').src;
       } else {
         imageElement.src = document.getElementById('imageClassificationImage').src;
@@ -661,8 +640,6 @@ document.addEventListener('DOMContentLoaded', () => {
           let preferOpt = preferSelectElement.options[i];
           if (preferOpt.value === 'sustained') {
             preferOpt.selected = true;
-          } else if (preferOpt.value === 'fast') {
-            preferOpt.disabled = true;
           } else if (preferOpt.value === 'low') {
             preferOpt.disabled = true;
           }

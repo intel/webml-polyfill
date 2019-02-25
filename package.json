@@ -8,7 +8,7 @@
   },
   "scripts": {
     "watch": "webpack --watch",
-    "start": "npm run build && http-server .",
+    "start": "webpack-dev-server --open",
     "build": "webpack",
     "build-wasm": "node build.js --build-wasm",
     "test": "node test-ci.js"
@@ -19,7 +19,7 @@
   },
   "keywords": [],
   "author": "ningxin.hu@intel.com",
-  "license": "Apache 2.0",
+  "license": "Apache-2.0",
   "bugs": {
     "url": "https://github.com/intel/webml-polyfill/issues"
   },
@@ -29,14 +29,17 @@
     "babel-loader": "^7.1.1",
     "babel-polyfill": "^6.26.0",
     "babel-preset-env": "^1.6.1",
-    "chromedriver": "^2.43.1",
+    "chromedriver": "2.45.0",
     "fast-csv": "^2.4.1",
     "http-server": "^0.10.0",
     "ndarray": "^1.0.18",
     "ndarray-ops": "^1.2.2",
     "ndarray-squeeze": "^1.0.2",
+    "portfinder": "^1.0.20",
     "selenium-webdriver": "^3.1.0",
-    "webpack": "^3.5.5",
+    "webpack": "^4.26.0",
+    "webpack-cli": "^3.1.2",
+    "webpack-dev-server": "^3.1.10",
     "npmlog": "^4.1.2",
     "globby": "^8.0.1",
     "rimraf": "^2.6.2",

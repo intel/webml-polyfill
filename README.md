@@ -14,6 +14,17 @@ MacOS | Linux | Windows
 $ npm install
 ```
 
+### Start
+
+```sh
+$ npm start
+```
+
+Start an HTTPS server:
+```sh
+$ HTTPS=true npm start
+```
+
 ### Build
 
 ```sh

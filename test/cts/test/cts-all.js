@@ -7259,7 +7259,7 @@ describe('CTS', function() {
     }
   });
 
-  it('check result for Resize bilinear example', async function() {
+  it('check result for Resize bilinear with inputs (without align_corners) example', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -7307,7 +7307,7 @@ describe('CTS', function() {
     }
   });
 
-  it('check result for Resize bilinear example/2', async function() {
+  it('check result for Resize bilinear with inputs (without align_corners) example/2', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
