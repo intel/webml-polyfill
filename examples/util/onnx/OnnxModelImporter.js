@@ -710,6 +710,36 @@ class OnnxModelImporter {
           console.log(`  output ${output}: [${outputDims}]`);
           opCode = this._nn.RESHAPE;
         } break;
+        case 'Flatten': {
+          console.log(`  inputs: [${node.input}]`);
+          const input = node.input[0];
+          const axis = getAttributeValue(node, 'axis', 1);
+          const inputId = this._getTensorIdByName(input);
+          inputs.push(inputId);
+
+          const inputDims = this._getTensorTypeByName(input).dimensions;
+          const rank = inputDims.length;
+          if (axis > rank || axis < 0) {
+            throw new Error(`Axis ${axis} is not in the range [0, ${rank}]`);
+          }
+          let outputDim1 = inputDims.slice(0, axis);
+          outputDim1 = outputDim1.length ? product(outputDim1) : 1;
+          let outputDim2 = inputDims.slice(axis);
+          outputDim2 = outputDim2.length ? product(outputDim2) : 1;
+          const outputDims =  [outputDim1, outputDim2];
+
+          const shapeType = {type: this._nn.TENSOR_INT32, dimensions: [2]};
+          const shapeId = this._addNewTensorOperand(`shape_${name}`, shapeType, new Int32Array(outputDims)); 
+          inputs.push(shapeId);
+
+          // Add outputs
+          const output = node.output[0];
+          const outputType = {type: this._nn.TENSOR_FLOAT32, dimensions: Array.from(outputDims)};
+          const outputId = this._addNewTensorOperand(output, outputType);
+          outputs.push(outputId);
+          console.log(`  output ${output}: [${outputDims}]`);
+          opCode = this._nn.RESHAPE;
+        } break;
         case 'Unsqueeze': {
           const input = node.input[0];
           const inputDims = this._getTensorTypeByName(input).dimensions;
