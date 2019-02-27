@@ -9,7 +9,7 @@ include_directories(
   external/tensorflow/tensorflow/contrib/makefile/downloads/absl/
   external/tensorflow/tensorflow/contrib/makefile/downloads/eigen/
   external/tensorflow/tensorflow/contrib/makefile/downloads/gemmlowp/
-  external/tensorflow/tensorflow/contrib/lite/kernels/
+  external/tensorflow/tensorflow/lite/kernels/
   external/tensorflow/third_party/
   )
 
