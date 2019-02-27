@@ -667,6 +667,14 @@ export default class PreparedModel {
         outSizeShape.delete();
         nn_ops._free(outSizeData);
       } break;
+      case OperationCode.TANH: {
+        allParametersPresent(1, 1);
+        let input = operands[inputs[0]];
+        let output = operands[outputs[0]];
+
+        nn_ops.tanhFloat32(input.runtimeshape, input.value, 
+                           output.runtimeshape, output.value);
+      } break;
       default: {
         throw new Error(`Operation ${op} is not supported`);
       }
