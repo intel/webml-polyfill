@@ -372,6 +372,11 @@ export default class WebGLModel {
         output.assign(
             input.resizeBilinear([newHeight, newWidth], alignCorner));
       } break;
+      case OperationCode.TANH: {
+        const input = operands[inputs[0]];
+        const output = operands[outputs[0]];
+        output.assign(input.tanh());
+      } break;
       default: {
         throw new Error(`Operation ${op} is not supported`);
       }
