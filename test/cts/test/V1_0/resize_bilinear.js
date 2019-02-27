@@ -2,7 +2,7 @@ describe('CTS', function() {
   const assert = chai.assert;
   const nn = navigator.ml.getNeuralNetworkContext();
 
-  it('check result for Resize bilinear example', async function() {
+  it('check result for Resize bilinear with inputs (without align_corners) example', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 

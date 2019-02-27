@@ -2,7 +2,6 @@ node_modules/
 dist/
 examples/**/*.tflite
 examples/**/*.onnx
-examples/ssd_mobilenet/model/
-!examples/ssd_mobilenet/model/README.md
 src/nn/wasm/src/build
 .DS_Store
+

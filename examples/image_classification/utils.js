@@ -14,51 +14,88 @@ class Utils {
     this.canvasElement = canvas;
     this.canvasContext = this.canvasElement.getContext('2d');
     this.updateProgress;
+    this.backend = '';
+    this.prefer = '';
     this.initialized = false;
+    this.loaded = false;
+    this.outstandingRequest = null;
+  }
+
+  async loadModel(model) {
+    if (this.loaded && this.modelFile === model.modelFile) {
+      return 'LOADED';
+    }
+    // reset all states
+    this.loaded = this.initialized = false;
+    this.backend = this.prefer = '';
+
+    // set new model params
+    this.inputSize = model.inputSize;
+    this.outputSize = model.outputSize;
+    this.modelFile = model.modelFile;
+    this.labelsFile = model.labelsFile;
+    this.preOptions = model.preOptions || {};
+    this.postOptions = model.postOptions || {};
+    this.inputTensor = new Float32Array(this.inputSize.reduce((a, b) => a * b));
+    this.outputTensor = new Float32Array(this.outputSize);
+
+    this.canvasElement.width = model.inputSize[1];
+    this.canvasElement.height = model.inputSize[0];
+
+    let result = await this.loadModelAndLabels(this.modelFile, this.labelsFile);
+    this.labels = result.text.split('\n');
+    console.log(`labels: ${this.labels}`);
+
+    if (this.modelFile.split('.').pop() === 'tflite') {
+      let flatBuffer = new flatbuffers.ByteBuffer(result.bytes);
+      this.rawModel = tflite.Model.getRootAsModel(flatBuffer);
+      this.rawModel._rawFormat = 'TFLITE';
+      printTfLiteModel(this.rawModel);
+    } else if (this.modelFile.split('.').pop() === 'onnx') {
+      let err = onnx.ModelProto.verify(result.bytes);
+      if (err) {
+        throw new Error(`Invalid model ${err}`);
+      }
+      this.rawModel = onnx.ModelProto.decode(result.bytes);
+      this.rawModel._rawFormat = 'ONNX';
+      printOnnxModel(this.rawModel);
+    }
+    this.loaded = true;
+    return 'SUCCESS';
   }
 
   async init(backend, prefer) {
+    if (!this.loaded) {
+      return 'NOT_LOADED';
+    }
+    if (this.initialized && backend === this.backend && prefer === this.prefer) {
+      return 'INITIALIZED';
+    }
     this.initialized = false;
-    let result;
-    let kwargs = {
-      rawModel: null,
+    this.backend = backend;
+    this.prefer = prefer;
+    let configs = {
+      rawModel: this.rawModel,
       backend: backend,
       prefer: prefer,
       softmax: this.postOptions.softmax || false,
     };
-    if (this.modelFile.split('.').pop() === 'tflite') {
-      if (!this.rawModel) {
-        result = await this.loadModelAndLabels(this.modelFile, this.labelsFile);
-        this.labels = result.text.split('\n');
-        console.log(`labels: ${this.labels}`);
-        let flatBuffer = new flatbuffers.ByteBuffer(result.bytes);
-        this.rawModel = tflite.Model.getRootAsModel(flatBuffer);
-        printTfLiteModel(this.rawModel);
-      }
-      kwargs.rawModel = this.rawModel;
-      this.model = new TFliteModelImporter(kwargs);
-    } else if (this.modelFile.split('.').pop() === 'onnx') {
-      if (!this.rawModel) {
-        result = await this.loadModelAndLabels(this.modelFile, this.labelsFile);
-        this.labels = result.text.split('\n');
-        console.log(`labels: ${this.labels}`);
-        let err = onnx.ModelProto.verify(result.bytes);
-        if (err) {
-          throw new Error(`Invalid model ${err}`);
-        }
-        this.rawModel = onnx.ModelProto.decode(result.bytes);
-        printOnnxModel(this.rawModel);
-      }
-      kwargs.rawModel = this.rawModel;
-      this.model = new OnnxModelImporter(kwargs);
+    switch (this.rawModel._rawFormat) {
+      case 'TFLITE':
+        this.model = new TFliteModelImporter(configs);
+        break;
+      case 'ONNX':
+        this.model = new OnnxModelImporter(configs);
+        break;
     }
-    result = await this.model.createCompiledModel();
+    let result = await this.model.createCompiledModel();
     console.log(`compilation result: ${result}`);
     let start = performance.now();
     result = await this.model.compute([this.inputTensor], [this.outputTensor]);
     let elapsed = performance.now() - start;
     console.log(`warmup time: ${elapsed.toFixed(2)} ms`);
     this.initialized = true;
+    return 'SUCCESS';
   }
 
   async predict(imageSource) {
@@ -85,17 +122,22 @@ class Utils {
 
   async loadUrl(url, binary, progress) {
     return new Promise((resolve, reject) => {
+      if (this.outstandingRequest) {
+        this.outstandingRequest.abort();
+      }
       let request = new XMLHttpRequest();
+      this.outstandingRequest = request;
       request.open('GET', url, true);
       if (binary) {
         request.responseType = 'arraybuffer';
       }
       request.onload = function(ev) {
+        this.outstandingRequest = null;
         if (request.readyState === 4) {
           if (request.status === 200) {
-              resolve(request.response);
+            resolve(request.response);
           } else {
-              reject(new Error('Failed to load ' + url + ' status: ' + request.status));
+            reject(new Error('Failed to load ' + url + ' status: ' + request.status));
           }
         }
       };
@@ -123,7 +165,7 @@ class Utils {
     if (norm) {
       pixels = new Float32Array(pixels).map(p => p / 255);
     }
-
+    
     if (channelScheme === 'RGB') {
       // NHWC layout
       for (let y = 0; y < height; ++y) {
@@ -177,18 +219,49 @@ class Utils {
     }
   }
 
-  changeModelParam(newModel) {
-    this.inputSize = newModel.inputSize;
-    this.outputSize = newModel.outputSize;
-    this.modelFile = newModel.modelFile;
-    this.labelsFile = newModel.labelsFile;
-    this.preOptions = newModel.preOptions || {};
-    this.postOptions = newModel.postOptions || {};
-    this.inputTensor = new Float32Array(this.inputSize.reduce((a, b) => a * b));
-    this.outputTensor = new Float32Array(this.outputSize);
-    this.rawModel = null;
 
-    this.canvasElement.width = newModel.inputSize[1];
-    this.canvasElement.height = newModel.inputSize[0];
+  // for debugging
+  async iterateLayers(configs, layerList) {
+    if (!this.initialized) return;
+
+    let iterators = [];
+    for (let config of configs) {
+      let importer = this.modelFile.split('.').pop() === 'tflite' ? TFliteModelImporter : OnnxModelImporter;
+      let model = await new importer({
+        rawModel: this.rawModel,
+        backend: config.backend,
+        prefer: config.prefer || null,
+      });
+      iterators.push(model.layerIterator([this.inputTensor], layerList));
+    }
+
+    while (true) {
+
+      let layerOutputs = [];
+      for (let it of iterators) {
+        layerOutputs.push(await it.next());
+      }
+
+      let refOutput = layerOutputs[0];
+      if (refOutput.done) {
+        break;
+      }
+
+      console.debug(`\n\n\nLayer(${refOutput.value.layerId}) ${refOutput.value.outputName}`);
+
+      for (let i = 0; i < configs.length; ++i) {
+        console.debug(`\n${configs[i].backend}:`);
+        console.debug(`\n${layerOutputs[i].value.tensor}`);
+
+        if (i > 0) {
+          let sum = 0;
+          for (let j = 0; j < refOutput.value.tensor.length; j++) {
+            sum += Math.pow(layerOutputs[i].value.tensor[j] - refOutput.value.tensor[j], 2);
+          }
+          let variance = sum / refOutput.value.tensor.length;
+          console.debug(`var with ${configs[0].backend}: ${variance}`);
+        }
+      }
+    }
   }
 }
