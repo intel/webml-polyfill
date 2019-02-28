@@ -241,7 +241,7 @@ const objectDetectionModels = [{
     mean: [127.5, 127.5, 127.5],
     std: [127.5, 127.5, 127.5],
   },
-  intro: 'MobileNet V2 with SSD. This model is faster than Mobilenet V1 SSD at the same accuracy.',
+  intro: 'SSD MobileNet V2 is slower than SSD Mobilenet V1, but has higher accuracy.',
   paperUrl: 'https://arxiv.org/abs/1801.04381'
 }, {
   modelName: 'SSDLite MobileNet v2 (TFLite)',
@@ -257,7 +257,7 @@ const objectDetectionModels = [{
     mean: [127.5, 127.5, 127.5],
     std: [127.5, 127.5, 127.5],
   },
-  intro: 'MobileNet V2 with SSDLite. This model is faster than Mobilenet V1 SSD at the same accuracy.',
+  intro: 'SSDLite MobileNet V2 is an upgraded version of SSD MobileNet V2. Compared with SSD Mobilenet V2, SSDLite Mobilenet V2 is much faster, and almost has no loss of the accuracy.',
   paperUrl: 'https://arxiv.org/abs/1801.04381'
 }];
 
