@@ -3,11 +3,11 @@
 
 <head>
   <meta charset='utf-8'>
-  <title>Web Neural Network API - Examples - Skeleton Detection</title>
+  <title>Web Neural Network API - Examples - Semantic Segmentation</title>
   <meta content='width=device-width, initial-scale=1.0' name='viewport'>
-  <meta content='Human Pose Estimation, Skeleton Detection, PoseNet, WebML, Web Machine Learning, Machine Learning for Web, Neural Networks, WebNN, WebNN API, Web Neural Network API'
+  <meta content='Semantic Segmentation, DeepLab, WebML, Web Machine Learning, Machine Learning for Web, Neural Networks, WebNN, WebNN API, Web Neural Network API'
     name='keywords'>
-  <meta content='Human Pose Estimation, Skeleton Detection, PoseNet, WebML, Web Machine Learning, Machine Learning for Web, Neural Networks, WebNN, WebNN API, Web Neural Network API'
+  <meta content='Semantic Segmentation, DeepLab, WebML, Web Machine Learning, Machine Learning for Web, Neural Networks, WebNN, WebNN API, Web Neural Network API'
     name='description'>
   <link rel='apple-touch-icon' sizes='57x57' href='../static/img/favicon/apple-icon-57x57.png'>
   <link rel='apple-touch-icon' sizes='60x60' href='../static/img/favicon/apple-icon-60x60.png'>
@@ -30,7 +30,7 @@
   <link href='../static/css/style.css' rel='stylesheet'>
 </head>
 
-<body id='posenet'>
+<body id='semanticsegmentation'>
   <header id='header'>
     <div class='container'>
       <div id='logo' class='pull-left'>
@@ -73,9 +73,46 @@
   </header>
 
   <form id='query' action='' method='get' class='container'>
-    <div class='filter mb-3'>
+    <div class='filter mb-3 mt-2'>
       <table id='filter' class='t-filter table table-condensed'>
         <tbody>
+          <tr class='model'>
+            <th class='text-center'><a href='../model.html' title='View model details'>Model</a></th>
+            <td>
+              <img src='../static/img/l-tflite.png' alt='TensorFlow Lite Format' title='TensorFlow Lite Format'>
+              <div class='g'>
+              <span>Deeplab</span>
+              <input type='radio' class='d-none' name='m' id='deeplab_mobilenet_v2_224_tflite' value='deeplab_mobilenet_v2_224_tflite'
+                checked>
+              <label id='l-deeplab_mobilenet_v2_224_tflite' class='themodel' for='deeplab_mobilenet_v2_224_tflite'
+                title='Deeplab 224'>224</label>
+              <input type='radio' class='d-none' name='m' id='deeplab_mobilenet_v2_224_atrous_tflite' value='deeplab_mobilenet_v2_224_atrous_tflite'>
+              <label id='l-deeplab_mobilenet_v2_224_atrous_tflite' class='themodel' for='deeplab_mobilenet_v2_224_atrous_tflite'
+                title='Deeplab 224 Atrous'>224 Atrous</label>
+              <input type='radio' class='d-none' name='m' id='deeplab_mobilenet_v2_257_tflite' value='deeplab_mobilenet_v2_257_tflite'
+                checked>
+              <label id='l-deeplab_mobilenet_v2_257_tflite' class='themodel' for='deeplab_mobilenet_v2_257_tflite'
+                title='Deeplab 257'>257</label>
+              <input type='radio' class='d-none' name='m' id='deeplab_mobilenet_v2_257_atrous_tflite' value='deeplab_mobilenet_v2_257_atrous_tflite'>
+              <label id='l-deeplab_mobilenet_v2_257_atrous_tflite' class='themodel' for='deeplab_mobilenet_v2_257_atrous_tflite'
+                title='Deeplab 257 Atrous'>257 Atrous</label>
+              <input type='radio' class='d-none' name='m' id='deeplab_mobilenet_v2_321_tflite' value='deeplab_mobilenet_v2_321_tflite'
+                checked>
+              <label id='l-deeplab_mobilenet_v2_321_tflite' class='themodel' for='deeplab_mobilenet_v2_321_tflite'
+                title='Deeplab 321'>321</label>
+              <input type='radio' class='d-none' name='m' id='deeplab_mobilenet_v2_321_atrous_tflite' value='deeplab_mobilenet_v2_321_atrous_tflite'>
+              <label id='l-deeplab_mobilenet_v2_321_atrous_tflite' class='themodel' for='deeplab_mobilenet_v2_321_atrous_tflite'
+                title='Deeplab 321 Atrous'>321 Atrous</label>
+              <input type='radio' class='d-none' name='m' id='deeplab_mobilenet_v2_513_tflite' value='deeplab_mobilenet_v2_513_tflite'
+                checked>
+              <label id='l-deeplab_mobilenet_v2_513_tflite' class='themodel' for='deeplab_mobilenet_v2_513_tflite'
+                title='Deeplab 513'>513</label>
+              <input type='radio' class='d-none' name='m' id='deeplab_mobilenet_v2_513_atrous_tflite' value='deeplab_mobilenet_v2_513_atrous_tflite'>
+              <label id='l-deeplab_mobilenet_v2_513_atrous_tflite' class='themodel' for='deeplab_mobilenet_v2_513_atrous_tflite'
+                title='Deeplab 513 Atrous'>513 Atrous</label>
+              </div>
+            </td>
+          </tr>
           <tr class='backend'>
             <th class='text-center'>Backend</th>
             <td>
@@ -97,12 +134,6 @@
               </div>
             </td>
           </tr>
-          <tr id='option' style='display: none;'>
-            <th class='text-center'>Option</th>
-            <td>
-                <div id='my-gui-container'></div>
-            </td>
-          </tr>
         </tbody>
       </table>
     </div>
@@ -112,7 +143,7 @@
     <div class='container' id='container'>
       <a id='extra' href='#' class='mb-1 mt-3'>
         <h3 class='text-center ex' id='ictitle'>
-          Skeleton Detection
+          Semantic Segmentation
         </h3>
         <span class='fa chevron-up'>
           <svg aria-hidden='true' data-prefix='fas' data-icon='chevron-up' class='svg-inline--fa fa-chevron-up fa-w-14'
@@ -171,66 +202,112 @@
         </div>
       </div>
 
-      <div id='inference' class='shoulddisplay mt-3' style='display: none;'>
+      <div class='tab-content clearfix row'>
+        <div class='icdisplay' style='display: none;'>
+          <div id='fullscreen'>
+            <i class='fa expand'>
+              <svg aria-hidden='true' data-prefix='fas' data-icon='expand' class='svg-inline--fa fa-expand fa-w-14'
+                role='img' viewBox='0 0 448 512'>
+                <path fill='currentColor' d='M0 180V56c0-13.3 10.7-24 24-24h124c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12H64v84c0 6.6-5.4 12-12 12H12c-6.6 0-12-5.4-12-12zM288 44v40c0 6.6 5.4 12 12 12h84v84c0 6.6 5.4 12 12 12h40c6.6 0 12-5.4 12-12V56c0-13.3-10.7-24-24-24H300c-6.6 0-12 5.4-12 12zm148 276h-40c-6.6 0-12 5.4-12 12v84h-84c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12h124c13.3 0 24-10.7 24-24V332c0-6.6-5.4-12-12-12zM160 468v-40c0-6.6-5.4-12-12-12H64v-84c0-6.6-5.4-12-12-12H12c-6.6 0-12 5.4-12 12v124c0 13.3 10.7 24 24 24h124c6.6 0 12-5.4 12-12z'></path>
+              </svg>
+            </i>
+            <i class='fa compress' style='display:none;'>
+              <svg aria-hidden='true' data-prefix='fas' data-icon='compress' class='svg-inline--fa fa-compress fa-w-14'
+                role='img' viewBox='0 0 448 512'>
+                <path fill='currentColor' d='M436 192H312c-13.3 0-24-10.7-24-24V44c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v84h84c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12zm-276-24V44c0-6.6-5.4-12-12-12h-40c-6.6 0-12 5.4-12 12v84H12c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12h124c13.3 0 24-10.7 24-24zm0 300V344c0-13.3-10.7-24-24-24H12c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12h84v84c0 6.6 5.4 12 12 12h40c6.6 0 12-5.4 12-12zm192 0v-84h84c6.6 0 12-5.4 12-12v-40c0-6.6-5.4-12-12-12H312c-13.3 0-24 10.7-24 24v124c0 6.6 5.4 12 12 12h40c6.6 0 12-5.4 12-12z'></path>
+              </svg>
+            </i>
+          </div>
+          <canvas id='canvasvideo'></canvas>
+        </div>
+        <div id='inference' class='shoulddisplay col-sm' style='display: none;'>
           <div class='row text-center tc' id='inferencetitle'>
             <div id='inferenceTime'></div>
+            <div id='fps' style='display: none;'></div>
           </div>
-      </div>
+          <div class='controls text-left' data-select='blur'>
+            <div class='row'>
+              <div class='label'>
+                EFFECT:</span>
+              </div>
+              <div class='btn-group btn-group-toggle btn-group-sm effects-select' data-toggle='buttons'>
+                <label class='btn btn-secondary'>
+                  <input type='radio' value='label' autocomplete='off' checked> MAP
+                </label>
+                <label class='btn btn-secondary'>
+                  <input type='radio' value='fill' autocomplete='off'> FILL
+                </label>
+                <label class='btn btn-secondary'>
+                  <input type='radio' value='image' autocomplete='off'> IMG
+                </label>
+                <label class='btn btn-secondary'>
+                  <input type='radio' value='blur' autocomplete='off'> BLUR
+                </label>
+              </div>
+            </div>
 
-      <div class='tab-content clearfix row'>
-        <div class='tab-pane text-center active col-sm' id='imagetab'>
-          <div class='icdisplay' style='display: none;'>
-            <div class='col-lg-12 col-xs-12 text-center'>
-              <div class='row'>
-                <div class='col bt-3 mb-3'>
-                  <canvas id='canvas'></canvas>
-                  <h4>Single Pose Estimation</h4>
-                </div>
-                <div class='multi col bt-3 mb-3'>
-                  <canvas id='canvasmulti'></canvas>
-                  <h4>Multiple Pose Estimation</h4>
-                </div>
+
+            <div class='row zoom-wrapper'>
+              <div class='label'>
+                ZOOM: <span class='zoom-value'></span>
               </div>
-              <div class='mt-4'>
-                <div class='box'>
-                  <input type='file' name='f[]' id='input' accept='image/*' class='inputfile inputf' />
-                  <label for='input'><svg width='20' height='17' viewBox='0 0 20 17'>
-                      <path d='M10 0l-5.2 4.9h3.3v5.1h3.8v-5.1h3.3l-5.2-4.9zm9.3 11.5l-3.2-2.1h-2l3.4 2.6h-3.5c-.1 0-.2.1-.2.1l-.8 2.3h-6l-.8-2.2c-.1-.1-.1-.2-.2-.2h-3.6l3.4-2.6h-2l-3.2 2.1c-.4.3-.7 1-.6 1.5l.6 3.1c.1.5.7.9 1.2.9h16.3c.6 0 1.1-.4 1.3-.9l.6-3.1c.1-.5-.2-1.2-.7-1.5z' /></svg>
-                    <span>Pick Image</span>
-                  </label>
-                </div>
+              <div class='slidecontainer'><input type='range' min='30' max='200' value='100' class='slider' id='zoomSlider'></div>
+            </div>
+
+            <div class='row refine-edge-wrapper'>
+              <div class='label'>
+                REFINE EDGE: <span class='refine-edge-value'></span>
               </div>
+              <div class='slidecontainer'><input type='range' min='0' max='60' value='0' class='slider' id='refineEdgeSlider'></div>
+            </div>
+
+            <div class='row blur-wrapper'>
+              <div class='label'>
+                BLUR RADIUS: <span class='blur-radius-value'></span>
+              </div>
+              <div class='slidecontainer'><input type='range' min='0' max='50' value='0' class='slider' id='blurSlider'></div>
+            </div>
+
+            <div class='row color-picker-wrapper justify-content-center'>
+              <div class='label'>
+                BACKGROUND: <span class='bg-value'></span>
+              </div>
+              <div id='color-picker-container'></div>
+            </div>
+
+            <div class='row select-bg-wrapper justify-content-center text-center'>
+              <div class='label'>
+                <label class='btn btn-outline-primary btn-sm'>
+                  Select Background <input type='file' id='chooseBackground' accept='image/*' hidden>
+                </label>
+                <button id='clearBackground' class='btn btn-outline-secondary btn-sm'>
+                  Clear Background
+                </button>
+              </div>
+            </div>
+
+            <div class='row color-map-alpha-wrapper'>
+              <div class='label'>
+                OPACITY: <span class='color-map-alpha-value'></span>
+              </div>
+              <div class='slidecontainer'><input type='range' min='0' max='100' value='0' class='slider' id='colorMapAlphaSlider'></div>
+            </div>
+
+            <div class='row labels-wrapper' id='labelitem'>
             </div>
           </div>
         </div>
-        <div class='tab-pane text-center col-sm' id='cameratab'>
-          <div class='icdisplay' style='display: none;'>
-            <div id='fps'></div>
-            <div id='fullscreen'>
-              <i class='fa expand'>
-                <svg aria-hidden='true' data-prefix='fas' data-icon='expand' class='svg-inline--fa fa-expand fa-w-14'
-                  role='img' viewBox='0 0 448 512'>
-                  <path fill='currentColor' d='M0 180V56c0-13.3 10.7-24 24-24h124c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12H64v84c0 6.6-5.4 12-12 12H12c-6.6 0-12-5.4-12-12zM288 44v40c0 6.6 5.4 12 12 12h84v84c0 6.6 5.4 12 12 12h40c6.6 0 12-5.4 12-12V56c0-13.3-10.7-24-24-24H300c-6.6 0-12 5.4-12 12zm148 276h-40c-6.6 0-12 5.4-12 12v84h-84c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12h124c13.3 0 24-10.7 24-24V332c0-6.6-5.4-12-12-12zM160 468v-40c0-6.6-5.4-12-12-12H64v-84c0-6.6-5.4-12-12-12H12c-6.6 0-12 5.4-12 12v124c0 13.3 10.7 24 24 24h124c6.6 0 12-5.4 12-12z'></path>
-                </svg>
-              </i>
-              <i class='fa compress' style='display:none;'>
-                <svg aria-hidden='true' data-prefix='fas' data-icon='compress' class='svg-inline--fa fa-compress fa-w-14'
-                  role='img' viewBox='0 0 448 512'>
-                  <path fill='currentColor' d='M436 192H312c-13.3 0-24-10.7-24-24V44c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v84h84c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12zm-276-24V44c0-6.6-5.4-12-12-12h-40c-6.6 0-12 5.4-12 12v84H12c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12h124c13.3 0 24-10.7 24-24zm0 300V344c0-13.3-10.7-24-24-24H12c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12h84v84c0 6.6 5.4 12 12 12h40c6.6 0 12-5.4 12-12zm192 0v-84h84c6.6 0 12-5.4 12-12v-40c0-6.6-5.4-12-12-12H312c-13.3 0-24 10.7-24 24v124c0 6.6 5.4 12 12 12h40c6.6 0 12-5.4 12-12z'></path>
-                </svg>
-              </i>
-            </div>
-            <div id='showcanvas' class='text-center'>
-              <canvas id ='canvasvideo'></canvas>
-            </div>
-            <video id='video' autoplay playsinline hidden></video>
-            <canvas hidden id='scalevideo' width ='640' height ='480'></canvas>
-          </div>
-        </div>
+      </div>
+      <div id='pickimage' class='mt-2 box text-center' style='display: none;'>
+        <input type='file' name='f[]' id='input' accept='image/*' class='inputfile inputf' />
+        <label for='input'><svg width='20' height='17' viewBox='0 0 20 17'>
+            <path d='M10 0l-5.2 4.9h3.3v5.1h3.8v-5.1h3.3l-5.2-4.9zm9.3 11.5l-3.2-2.1h-2l3.4 2.6h-3.5c-.1 0-.2.1-.2.1l-.8 2.3h-6l-.8-2.2c-.1-.1-.1-.2-.2-.2h-3.6l3.4-2.6h-2l-3.2 2.1c-.4.3-.7 1-.6 1.5l.6 3.1c.1.5.7.9 1.2.9h16.3c.6 0 1.1-.4 1.3-.9l.6-3.1c.1-.5-.2-1.2-.7-1.5z' /></svg>
+          <span>Pick Image</span>
+        </label>
       </div>
     </div>
   </section>
-  <canvas hidden id='scaleimage'></canvas>
+
   <footer>
     <div class='container'>
       <div class='row'>
@@ -241,7 +318,8 @@
           </div>
           <div class='webmlbadge mb-4'>
             <div class='webml-title'>W3C Spec</div>
-            <div class='webml-status-true'><a href='https://webmachinelearning.github.io/webnn/#usecases' title='W3C Web Neural Network API Use Cases'>Use Cases</a></div>
+            <div class='webml-status-true'><a href='https://webmachinelearning.github.io/webnn/#usecases' title='W3C Web Neural Network API Use Cases'>Use
+                Cases</a></div>
           </div>
           <p>&copy;2019 <a href='../index.html'>WebNN API</a></p>
         </div>
@@ -249,6 +327,9 @@
   </footer>
 
   <div id='overlay'></div>
+
+  <video id='video' autoplay playsinline></video>
+  <img id='image' crossorigin='anonymous' class='img-fluid' alt='Responsive image' src='./img/woman.jpg'>
 
   <a href='https://github.com/intel/webml-polyfill/' class='github-corner' aria-label='View source on GitHub'>
     <svg width='70' height='70' viewBox='0 0 250 250' style='fill:rgba(255, 255, 255, 0.1); color:rgba(255, 255, 255, 0.9); position: absolute; top: 0; border: 0; left: 0; transform: scale(-1, 1);'
@@ -276,16 +357,17 @@
   <script src='../static/lib/stickyjs/sticky.js'></script>
   <script src='../static/lib/greensock/tweenmax.js'></script>
   <script src='../third_party/stats.customized.min.js'></script>
-  <script src='../third_party/dat.gui.js'></script>
-
   <script src='../../dist/webml-polyfill.js'></script>
+  <script src='../third_party/iro.min.js'></script>
   <script src='../util/base.js'></script>
-  <script src='src/helperFunc.js'></script>
-  <script src='src/PoseNet.js'></script>
-  <script src='src/MaxHeap.js'></script>
-  <script src='src/decodePose.js'></script>
+  <script src='../util/tflite/flatbuffers/js/flatbuffers.js'></script>
+  <script src='../util/tflite/schema/schema_generated.js'></script>
+  <script src='../util/tflite/TfLiteModelUtils.js'></script>
+  <script src='../util/tflite/TFliteModelImporter.js'></script>
+  <script src='src/WebGLUtils.js'></script>
+  <script src='src/Shader.js'></script>
+  <script src='src/GuidedFilter.js'></script>
   <script src='src/DrawOutputs.js'></script>
-
   <script src='utils.js'></script>
   <script src='main.js'></script>
   <script src='../util/uicommon.js'></script>
