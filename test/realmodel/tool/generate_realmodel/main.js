@@ -14,7 +14,7 @@ stream.on('end', () => {
 async function saveToLocalFile(input, output) {
   var saveStream = fs.createWriteStream(output, { flags: 'w', encoding: 'utf-8' });
   saveStream.on('error', (err) => {
-    console.log(err);
+    console.error(err);
   });
   if (typeof (input) === 'object') {
     saveStream.write(JSON.stringify(input));
@@ -24,13 +24,11 @@ async function saveToLocalFile(input, output) {
   saveStream.end();
 }
 async function downloadSource(input) {
-  let dataArray = [];
   let Source = input['Source'];
   for (let sourceName in Source){
+    let dataArray = [];
     for (let key in Source[sourceName]){
-      if (Source[sourceName].hasOwnProperty(key)) {
-        dataArray.push(Source[sourceName][key]);
-      }
+      dataArray.push(Source[sourceName][key]);
     }
     await saveToLocalFile(dataArray, `../../testcase/res/${sourceName}`);
   }
