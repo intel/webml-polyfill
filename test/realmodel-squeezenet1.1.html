@@ -1,0 +1,64 @@
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>WebML Polyfill | Mocha Tests</title>
+  <link href='./static/mocha/3.0.2/mocha.css' rel='stylesheet'>
+</head>
+<body>
+  <div id="mocha"></div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mocha/4.0.1/mocha.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chai/4.1.2/chai.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/fetch/2.0.3/fetch.min.js"></script>
+  <script src="../dist/webml-polyfill.js"></script>
+  <script src="./utils.js"></script>
+  <script>
+    window.onload = setOptions;
+  </script>
+  <script>
+    mocha.setup('bdd');
+  </script>
+  <script src="./realmodel/testcase/squeezenet0_concat0.js"></script>
+  <script src="./realmodel/testcase/squeezenet0_concat1.js"></script>
+  <script src="./realmodel/testcase/squeezenet0_concat2.js"></script>
+  <script src="./realmodel/testcase/squeezenet0_concat3.js"></script>
+  <script src="./realmodel/testcase/squeezenet0_concat4.js"></script>
+  <script src="./realmodel/testcase/squeezenet0_concat5.js"></script>
+  <script src="./realmodel/testcase/squeezenet0_concat6.js"></script>
+  <script src="./realmodel/testcase/squeezenet0_concat7.js"></script>
+  <script src="./realmodel/testcase/squeezenet0_conv0_fwd.js"></script>
+  <script src="./realmodel/testcase/squeezenet0_conv1_fwd.js"></script>
+  <script src="./realmodel/testcase/squeezenet0_conv2_fwd.js"></script>
+  <script src="./realmodel/testcase/squeezenet0_conv3_fwd.js"></script>
+  <script src="./realmodel/testcase/squeezenet0_conv4_fwd.js"></script>
+  <script src="./realmodel/testcase/squeezenet0_conv5_fwd.js"></script>
+  <script src="./realmodel/testcase/squeezenet0_conv6_fwd.js"></script>
+  <script src="./realmodel/testcase/squeezenet0_conv7_fwd.js"></script>
+  <script src="./realmodel/testcase/squeezenet0_conv8_fwd.js"></script>
+  <script src="./realmodel/testcase/squeezenet0_conv9_fwd.js"></script>
+  <script src="./realmodel/testcase/squeezenet0_conv10_fwd.js"></script>
+  <script src="./realmodel/testcase/squeezenet0_conv11_fwd.js"></script>
+  <script src="./realmodel/testcase/squeezenet0_conv12_fwd.js"></script>
+  <script src="./realmodel/testcase/squeezenet0_conv13_fwd.js"></script>
+  <script src="./realmodel/testcase/squeezenet0_conv14_fwd.js"></script>
+  <script src="./realmodel/testcase/squeezenet0_conv15_fwd.js"></script>
+  <script src="./realmodel/testcase/squeezenet0_conv16_fwd.js"></script>
+  <script src="./realmodel/testcase/squeezenet0_conv17_fwd.js"></script>
+  <script src="./realmodel/testcase/squeezenet0_conv18_fwd.js"></script>
+  <script src="./realmodel/testcase/squeezenet0_conv19_fwd.js"></script>
+  <script src="./realmodel/testcase/squeezenet0_conv20_fwd.js"></script>
+  <script src="./realmodel/testcase/squeezenet0_conv21_fwd.js"></script>
+  <script src="./realmodel/testcase/squeezenet0_conv22_fwd.js"></script>
+  <script src="./realmodel/testcase/squeezenet0_conv23_fwd.js"></script>
+  <script src="./realmodel/testcase/squeezenet0_conv24_fwd.js"></script>
+  <script src="./realmodel/testcase/squeezenet0_conv25_fwd.js"></script>
+  <script src="./realmodel/testcase/squeezenet0_pool0_fwd.js"></script>
+  <script src="./realmodel/testcase/squeezenet0_pool1_fwd.js"></script>
+  <script src="./realmodel/testcase/squeezenet0_pool2_fwd.js"></script>
+  <script src="./realmodel/testcase/squeezenet0_pool3_fwd.js"></script>
+  <script>
+    mocha.globals(['jQuery']);
+    mocha.run();
+  </script>
+</body>
+</html>
