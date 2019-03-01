@@ -38,11 +38,11 @@
           <svg preserveAspectRatio='xMidYMid meet' viewBox='-1.2596205660195778 -1.002390572390567 185.26504164633673 39.987210231814544'
             width='181.27' height='35.99'>
             <defs>
-              <text id='a1Hhj0hzGw' x='548' y='158.46' font-size='18' font-weight='200'
-                font-style='normal' letter-spacing='0' alignment-baseline='before-edge' transform='matrix(1 0 0 1 -286.8825161889153 -158.45741702741705)'
+              <text id='a1Hhj0hzGw' x='548' y='158.46' font-size='18' font-weight='200' font-style='normal'
+                letter-spacing='0' alignment-baseline='before-edge' transform='matrix(1 0 0 1 -286.8825161889153 -158.45741702741705)'
                 style='line-height:100%' xml:space='preserve' dominant-baseline='text-before-edge'>
                 <tspan x='548' dy='0em' alignment-baseline='before-edge' dominant-baseline='text-before-edge'
-                text-anchor='end'>Neural Network</tspan>
+                  text-anchor='end'>Neural Network</tspan>
                 <tspan x='538' dy='1em' alignment-baseline='before-edge' dominant-baseline='text-before-edge'
                   text-anchor='end'>For Web</tspan>
               </text>
@@ -74,15 +74,15 @@
   <section class='models' id='models'>
     <div class='container'>
       <h2 class='text-center mb-4 mt-1'>
-          Supported Models
+        Supported Models
       </h2>
 
       <h4 class='text-center'>
-          Semantic Segmentation
+        <a href='image_classification/index.html'>Image Classification</a>
       </h4>
       <div class="table-responsive">
-        <table id='modelcv-ss' class='modelcv table table-borderless table-hover'>
-          <caption>Semantic Segmentation - Computer Vision based models</caption>
+        <table id='modelcv-ic' class='modelcv table table-borderless table-hover'>
+          <caption>Image Classification - Computer Vision based models</caption>
           <thead>
             <tr>
               <th scope='col'>Model</th>
@@ -99,7 +99,28 @@
       </div>
 
       <h4 class='text-center'>
-          Skeleton Detection
+        <a href='object_detection/index.html'>Object Detection</a>
+      </h4>
+      <div class="table-responsive">
+        <table id='modelcv-od' class='modelcv table table-borderless table-hover'>
+          <caption>Object Detection - Computer Vision based models</caption>
+          <thead>
+            <tr>
+              <th scope='col'>Model</th>
+              <th scope='col'>Format</th>
+              <th scope='col'>Size</th>
+              <th scope='col'>Paper</th>
+              <th scope='col' title='Netron Model Visualizer'>Netron</th>
+              <th scope='col'>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+          </tbody>
+        </table>
+      </div>
+
+      <h4 class='text-center'>
+        <a href='skeleton_detection/index.html'>Skeleton Detection</a>
       </h4>
       <div class="table-responsive">
         <table id='modelcv-hpe' class='modelcv table table-borderless table-hover'>
@@ -120,11 +141,11 @@
       </div>
 
       <h4 class='text-center'>
-          Image Classification
+        <a href='semantic_segmentation/index.html'>Semantic Segmentation</a>
       </h4>
       <div class="table-responsive">
-        <table id='modelcv-ic' class='modelcv table table-borderless table-hover'>
-          <caption>Image Classification - Computer Vision based models</caption>
+        <table id='modelcv-ss' class='modelcv table table-borderless table-hover'>
+          <caption>Semantic Segmentation - Computer Vision based models</caption>
           <thead>
             <tr>
               <th scope='col'>Model</th>
@@ -151,7 +172,8 @@
           </div>
           <div class='webmlbadge mb-4'>
             <div class='webml-title'>W3C Spec</div>
-            <div class='webml-status-true'><a href='https://webmachinelearning.github.io/webnn/#usecases' title='W3C Web Neural Network API Use Cases'>Use Cases</a></div>
+            <div class='webml-status-true'><a href='https://webmachinelearning.github.io/webnn/#usecases' title='W3C Web Neural Network API Use Cases'>Use
+                Cases</a></div>
           </div>
           <p>&copy;2019 <a href='index.html'>WebNN API</a></p>
         </div>
@@ -177,4 +199,5 @@
   <script src='util/uicommon.js'></script>
   <script src='static/js/model.js'></script>
 </body>
+
 </html>

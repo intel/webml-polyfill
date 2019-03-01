@@ -29,7 +29,7 @@
     "babel-loader": "^7.1.1",
     "babel-polyfill": "^6.26.0",
     "babel-preset-env": "^1.6.1",
-    "chromedriver": "^2.43.1",
+    "chromedriver": "2.45.0",
     "fast-csv": "^2.4.1",
     "http-server": "^0.10.0",
     "ndarray": "^1.0.18",
@@ -43,7 +43,7 @@
     "npmlog": "^4.1.2",
     "globby": "^8.0.1",
     "rimraf": "^2.6.2",
-    "@tensorflow/tfjs-core": "0.14.4"
+    "@tensorflow/tfjs-core": "0.15.4"
   },
   "dependencies": {}
 }

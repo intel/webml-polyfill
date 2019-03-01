@@ -1,7 +1,7 @@
-WebML Segmentation Sample
+WebNN API Segmentation Example
 ======
-This sample loads DeepLab v3+ (trained on PASCAL VOC 2012) in TFLite format, constructs and inferences it by WebML API.
+This example loads DeepLab v3+ (trained on PASCAL VOC 2012) in TFLite format, constructs and inferences it by WebML API.
 
 Download Model
 -----------
-Before launch this sample, you need to download the model. Please check out [README.md](model/README.md) in model folder for details.
+Before launch this example, you need to download the model. Please check out [README.md](model/README.md) in model folder for details.

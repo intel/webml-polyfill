@@ -11,16 +11,16 @@ function isONNX(modelname){
 }
 
 function showModel(div, modelcategory) {
-  let rowstring, row;
-  for (model of modelcategory) {
+  let rowstring, row;  
+  modelcategory.map(model => {
     row = '<tr>';
-    let name = '<td scope=\'col\' class=\'name\'>' + getModelName(model.modelName) + '</td>';
+    let name = '<td scope=\'col\' class=\'name\'>' + getModelName(model.modelFormatName) + '</td>';
     row += name;
 
     let modeltype;
-    if(isTFLite(model.modelName)) {
+    if(isTFLite(model.modelFormatName)) {
       modeltype = `<td scope='col' class='format'>TFLite</td>`;
-    } else if(isONNX(model.modelName)) {
+    } else if(isONNX(model.modelFormatName)) {
       modeltype = `<td scope='col' class='format'>ONNX</td>`;
     } else {
       modeltype = `<td scope='col' class='format'></td>`;
@@ -48,12 +48,14 @@ function showModel(div, modelcategory) {
 
     row = row + '</tr>';
     rowstring += row;
-  }
+  });
+
   $(div).html(rowstring);
 }
 
 $(document).ready(function () {
   showModel('#modelcv-ic tbody', imageClassificationModels)
+  showModel('#modelcv-od tbody', objectDetectionModels)
   showModel('#modelcv-hpe tbody', humanPoseEstimationModels)
   showModel('#modelcv-ss tbody', semanticSegmentationModels)
 });

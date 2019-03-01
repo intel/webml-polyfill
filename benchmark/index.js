@@ -1,91 +1,27 @@
 'use strict';
 const tfliteModelArray = [
-  "mobilenet_v1_1.0_224.tflite",
-  "mobilenet_v2_1.0_224.tflite",
-  "inception_v3.tflite",
-  "inception_v4.tflite",
-  "squeezenet.tflite",
-  "inception_resnet_v2.tflite"];
+  "mobilenet_v1_tflite",
+  "mobilenet_v2_tflite",
+  "inception_v3_tflite",
+  "inception_v4_tflite",
+  "squeezenet_tflite",
+  "inception_resnet_v2_tflite"];
 
 const ssdModelArray = [
-  "ssd_mobilenet_v1.tflite",
-  "ssd_mobilenet_v2.tflite",
-  "ssdlite_mobilenet_v2.tflite"];
+  "ssd_mobilenet_v1_tflite",
+  "ssd_mobilenet_v2_tflite",
+  "ssdlite_mobilenet_v2_tflite"];
 
 const onnxModelArray = [
-  "squeezenet1.1.onnx",
-  "mobilenetv2-1.0.onnx",
-  "resnet50v1.onnx",
-  "resnet50v2.onnx",
-  "inceptionv2.onnx",
-  "densenet121.onnx"];
+  "squeezenet_onnx",
+  "mobilenet_v2_onnx",
+  "resnet_v1_onnx",
+  "resnet_v2_onnx",
+  "inception_v2_onnx",
+  "densenet_onnx"];
 
-const modelDic = {
-  "mobilenet_v1_1.0_224.tflite": {
-    "model": mobilenet_v1_tflite,
-    "name": "Mobilenet v1(TFlite)",
-  },
-  "mobilenet_v2_1.0_224.tflite": {
-    "model": mobilenet_v2_tflite,
-    "name": "Mobilenet v2(TFlite)",
-  },
-  "inception_v3.tflite": {
-    "model": inception_v3_tflite,
-    "name": "Inception v3(TFlite)",
-  },
-  "inception_v4.tflite": {
-    "model": inception_v4_tflite,
-    "name": "Inception v4(TFlite)",
-  },
-  "squeezenet.tflite": {
-    "model": squeezenet_tflite,
-    "name": "Squeezenet(TFlite)",
-  },
-  "inception_resnet_v2.tflite": {
-    "model": inception_resnet_v2_tflite,
-    "name": "Inception Resnet v2(TFlite)",
-  },
-  "ssd_mobilenet_v1.tflite": {
-    "model": ssd_mobilenetv1_tflite,
-    "name": "SSD MobileNet v1(TFlite)",
-  },
-  "ssd_mobilenet_v2.tflite": {
-    "model": ssd_mobilenetv2_tflite,
-    "name": "SSD MobileNet v2(TFlite)",
-  },
-  "ssdlite_mobilenet_v2.tflite": {
-    "model": ssdlite_mobilenetv2_tflite,
-    "name": "SSDLite MobileNet v2(TFlite)",
-  },
-  "squeezenet1.1.onnx": {
-    "model": squeezenet_onnx,
-    "name": "SqueezeNet(Onnx)",
-  },
-  "mobilenetv2-1.0.onnx": {
-    "model": mobilenet_v2_onnx,
-    "name": "Mobilenet v2(Onnx)",
-  },
-  "resnet50v1.onnx": {
-    "model": resnet_v1_onnx,
-    "name": "ResNet50 v1(Onnx)",
-  },
-  "resnet50v2.onnx": {
-    "model": resnet_v2_onnx,
-    "name": "ResNet50 v2(Onnx)",
-  },
-  "inceptionv2.onnx": {
-    "model": inception_v2_onnx,
-    "name": "Inception v2(Onnx)",
-  },
-  "densenet121.onnx": {
-    "model":densenet_onnx,
-    "name": "DenseNet(Onnx)",
-  },
-  "posenet": {
-    "model": posenet,
-    "name": "PoseNet",
-  },
-};
+let supportedModels = [];
+supportedModels = supportedModels.concat(imageClassificationModels, objectDetectionModels, humanPoseEstimationModels);
 
 let imageElement = null;
 let inputElement = null;
@@ -97,6 +33,14 @@ let pnConfigDic = null;
 
 let preferDivElement = document.getElementById('preferDiv');
 let preferSelectElement = document.getElementById('preferSelect');
+
+function getModelDicItem(modelFormatName) {
+  for (let model of supportedModels) {
+    if (model.modelFormatName === modelFormatName) {
+      return model;
+    }
+  }
+}
 
 function getPreferString(backend) {
   let prefer;
@@ -352,7 +296,7 @@ class WebMLJSBenchmark extends Benchmark {
   }
   async setInputOutput() {
     const configModelName = this.configuration.modelName;
-    const currentModel = modelDic[configModelName].model;
+    const currentModel = getModelDicItem(configModelName);
     let width = currentModel.inputSize[1];
     let height = currentModel.inputSize[0];
     const channels = currentModel.inputSize[2];
@@ -477,7 +421,7 @@ class WebMLJSBenchmark extends Benchmark {
     let backend = this.configuration.backend.replace('native', 'WebML');
     let modelName = this.configuration.modelName;
     if (tfliteModelArray.indexOf(modelName) !== -1) {
-      let model = modelDic[modelName].model;
+      let model = getModelDicItem(modelName);
       let resultTflite = await this.loadModelAndLabels(model);
       this.labels = resultTflite.text.split('\n');
       let flatBuffer = new flatbuffers.ByteBuffer(resultTflite.bytes);
@@ -491,7 +435,7 @@ class WebMLJSBenchmark extends Benchmark {
       };
       this.model = new TFliteModelImporter(kwargs);
     } else if (onnxModelArray.indexOf(modelName) !== -1) {
-      let model = modelDic[modelName].model;
+      let model = getModelDicItem(modelName);
       let resultONNX = await this.loadModelAndLabels(model);
       this.labels = resultONNX.text.split('\n');
       console.log(`labels: ${this.labels}`);
@@ -509,7 +453,7 @@ class WebMLJSBenchmark extends Benchmark {
       };
       this.model = new OnnxModelImporter(kwargs);
     } else if (ssdModelArray.indexOf(modelName) !== -1) {
-      let model = modelDic[modelName].model;
+      let model = getModelDicItem(modelName);
       let resultTflite = await this.loadModelAndLabels(model);
       this.labels = resultTflite.text.split('\n');
       let flatBuffer = new flatbuffers.ByteBuffer(resultTflite.bytes);
@@ -610,7 +554,8 @@ async function run() {
         let selectedOpt = preferSelectElement.options[preferSelectElement.selectedIndex];
         logger.log(`${key.padStart(12)}: ${getNativeAPI(selectedOpt.value)}(${selectedOpt.text})`);
       } else if (key === 'modelName') {
-        logger.log(`${key.padStart(12)}: ${modelDic[configuration[key]].name}`);
+        let model = getModelDicItem(configuration[key]);
+        logger.log(`${key.padStart(12)}: ${model.modelName}`);
       } else {
         logger.log(`${key.padStart(12)}: ${configuration[key]}`);
       }

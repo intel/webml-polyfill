@@ -1,21 +1,3 @@
-const getSearchParamsPrefer = () => {
-  let searchParams = new URLSearchParams(location.search);
-  return searchParams.has('prefer') ? searchParams.get('prefer') : '';
-}
-
-const getSearchParamsBackend = () => {
-  let searchParams = new URLSearchParams(location.search);
-  return searchParams.has('b') ? searchParams.get('b') : '';
-}
-const getSearchParamsModel = () => {
-  let searchParams = new URLSearchParams(location.search);
-  if (searchParams.has('m') && searchParams.has('t')) {
-    return searchParams.get('m') + '_' + searchParams.get('t');
-  } else {
-    return '';
-  }
-}
-
 const videoElement = document.getElementById('video');
 const imageElement = document.getElementById('image');
 const inputElement = document.getElementById('input');
@@ -36,7 +18,7 @@ const showAlert = (error) => {
   div.setAttribute('class', 'backendAlert alert alert-warning alert-dismissible fade show');
   div.setAttribute('role', 'alert');
   div.innerHTML = `<strong>${error}</strong>`;
-  div.innerHTML += `<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>`;
+  div.innerHTML += `<button type='button' class='close' data-dismiss='alert' aria-label='Close'><span aria-hidden='true'>&times;</span></button>`;
   let container = document.getElementById('container');
   container.insertBefore(div, container.firstElementChild);
 }
@@ -75,21 +57,6 @@ const updateResult = (result) => {
   }
   catch(e) {
     console.log(e);
-  }
-}
-
-if (currentBackend === '') {
-  if (nnNative) {
-    currentBackend = 'WebML';
-  } else {
-    currentBackend = 'WASM';
-  }
-}
-
-// register prefers
-if (getOS() === 'Mac OS' && currentBackend === 'WebML') {
-  if (!currentPrefer) {
-    currentPrefer = "sustained";
   }
 }
 
@@ -146,7 +113,7 @@ const utilsPredictCamera = async (backend, prefer) => {
     if (init == 'NOT_LOADED') {
       return;
     }
-    let stream = await navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: "environment" } });
+    let stream = await navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: 'environment' } });
     video.srcObject = stream;
     track = stream.getTracks()[0];
     startPredictCamera();
@@ -161,7 +128,7 @@ const predictPath = (camera) => {
   (!camera) ? utilsPredict(imageElement, currentBackend, currentPrefer) : utilsPredictCamera(currentBackend, currentPrefer);
 }
 
-const updateScenario = async (camera) => {
+const updateScenario = async (camera = false) => {
   streaming = false;
   logConfig();
   predictPath(camera);
@@ -178,24 +145,17 @@ imageElement.addEventListener('load', () => {
   utilsPredict(imageElement, currentBackend, currentPrefer);
 }, false);
 
-const main = async (camera) => {
+const main = async (camera = false) => {
   streaming = false;
-  try {
-    utils.deleteAll();
-  } catch (e) {
-    // console.log('utils.deleteAll(): ' + e);
-  }
+  try { utils.deleteAll(); } catch (e) {}
   logConfig();
   await showProgress('Loading model ...');
-  for (let model of imageClassificationModels) {
-    if (currentModel == model.modelName) {
-      try {
-        await utils.loadModel(model);
-      }
-      catch (e) {
-        errorHandler(e);
-      }
-    }
+  try {
+    let model = imageClassificationModels.filter(f => f.modelFormatName == currentModel);
+    console.log(model)
+    await utils.loadModel(model[0]);
+  } catch (e) {
+    errorHandler(e);
   }
   predictPath(camera);
 }

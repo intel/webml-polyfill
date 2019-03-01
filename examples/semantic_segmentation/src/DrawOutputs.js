@@ -18,7 +18,7 @@ class Renderer {
 
     // UI state
     this._effect = 'label';
-    this._zoom = 2;
+    this._zoom = 1;
     this._bgColor = [57, 135, 189];
     this._colorMapAlpha = 0.7;
     this._blurRadius = 30;

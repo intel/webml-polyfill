@@ -1,25 +1,17 @@
-WebNN API Image Classification Examples
-==
-This sample loads Image classification models trained by ImageNet, constructs and inferences it by WebNN API.
+## WebNN API Image Classification Example
+This example loads Image classification models trained by ImageNet, constructs and inferences it by WebNN API.
 
-Download Model
------------
-Before launch this sample, you need to download the model. Please check out [README.md](model/README.md) in model folder for details.
+### Download Model
+Before launch this example, you need to download the model. Please check out [README.md](model/README.md) in model folder for details.
 
-URL Parameters for Image Classification Example
-====
-
-Example
------------
-https://127.0.0.1/examples/image_classification/index.html?prefer=none&b=WASM&m=mobilenet_v1&t=tflite&s=image&d=0
-
-Screenshots
------------
+### Screenshot
 ![screenshot](screenshot.png)
 
+### URL Parameters for Image Classification Example
+E.g. 
+https://127.0.0.1/examples/image_classification/index.html?prefer=none&b=WASM&m=mobilenet_v1&t=tflite&s=image&d=0
 
-Description
------------
+#### Description
 | Parameter | Value | Description | Note |
 |----|------|------|-----------|
 | prefer | sustained, fast, low | Preferred backend for WebNN API backend<br>sustained == GPU<br>fast == CPU<br>low == Low Power |Only work for WebNN API backend, useless when backend is WASM or WebGL |
@@ -30,6 +22,5 @@ Description
 | d | 0, 1  | Display model<br>// full view <br>0<br>// compact view<br>1  | |
 
 
-Netron URLs
-====
+### Netron URLs
 It supports to use Netron Visualizer for deep learning and machine learning models in [model.html](../model.html), please upload [these models](model/README.md) to your website (or CDN/OSS services).

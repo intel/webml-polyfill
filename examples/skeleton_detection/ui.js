@@ -90,14 +90,14 @@ $(document).ready(() => {
       } else if (getUrlParam('p') == 'low') {
         prefer = 'LOW_POWER';
       }
-      $('#ictitle').html(`Skeleton Detection / ${backend} / ${prefer}`);
+      $('#ictitle').html(`Skeleton Detection / WebNN / ${prefer}`);
     }
   }
   updateTitle(ub, up);
 
   $('input:radio[name=b]').click(() => {
     $('.alert').hide();
-    let rid = $("input:radio[name='b']:checked").attr('id');
+    let rid = $('input:radio[name="b"]:checked').attr('id');
     $('.backend input').removeAttr('checked');
     $('.backend label').removeClass('checked');
     $('#' + rid).attr('checked', 'checked');
@@ -127,7 +127,7 @@ $(document).ready(() => {
     strsearch = `?prefer=${currentPrefer}&b=${currentBackend}&s=${us}&d=${ud}`;
     window.history.pushState(null, null, strsearch);
 
-    (us === 'image') ? main(false) : main(true);
+    main(us === 'camera');
   });
 
   $('#extra').click(() => {
@@ -233,7 +233,7 @@ const showError = (title, description) => {
 }
 
 const updateLoading = (loadedSize, totalSize, percentComplete) => {
-  $(".loading-page .counter h1").html(`${loadedSize}/${totalSize} ${percentComplete}%`);
+  $('.loading-page .counter h1').html(`${loadedSize}/${totalSize} ${percentComplete}%`);
 }
 
 $(window).load(() => {
@@ -247,5 +247,5 @@ $(window).load(() => {
   } else {
     $('#option').show();
   }
-  (us === 'camera') ? main(true) : main(false);
+  main(us === 'camera');
 })
