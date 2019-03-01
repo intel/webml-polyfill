@@ -75,7 +75,7 @@ class Utils {
     let elapsed = performance.now() - start;
     console.log(`Inference time: ${elapsed.toFixed(2)} ms`);
     let inferenceTimeElement = document.getElementById('inferenceTime');
-    inferenceTimeElement.innerHTML = `inference time: <em style="color:green;font-weight:bloder;">${elapsed.toFixed(2)} </em>ms`;
+    inferenceTimeElement.innerHTML = `inference time: <span class='ir'>${elapsed.toFixed(2)} ms</span>`;
   }
 
   async loadModelAndLabels(modelUrl, labelsUrl) {
