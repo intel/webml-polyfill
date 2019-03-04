@@ -1229,6 +1229,25 @@ export const OperationCode = {
    */
   TRANSPOSE: 37,
 
+  /**
+   * Returns the element-wise maximum of two tensors.
+   *
+   * Supported tensor {@link OperandCode}:
+   * * {@link TENSOR_FLOAT32}
+   * * {@link TENSOR_INT32}
+   * * {@link TENSOR_QUANT8_ASYMM}
+   *
+   * Inputs:
+   * * 0: A tensor.
+   * * 1: A tensor of the same {@link OperandCode} and compatible dimensions
+   *      with input0.
+   *
+   * Outputs:
+   * * 0: The sum, a tensor of the same {@link OperandCode} as input0.
+   *
+   */
+  MAXIMUM: 65,
+
   /** Performs a atrous 2-D convolution operation.
    *
    * The ATROUS_CONV_2D op sweeps a 2-D filter that can mix channels together over a batch of

@@ -1,6 +1,6 @@
-WebML SSD MobileNet Sample
+WebNN API SSD MobileNet Example
 ======
-This sample loads SSD MobileNet model trained by COCO in TensorFlow Lite format, constructs and inferences it by WebML API.
+This example loads SSD MobileNet model trained by COCO in TensorFlow Lite format, constructs and inferences it by WebML API.
 
 Download Model
 -----------

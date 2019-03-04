@@ -637,7 +637,7 @@ body.mobile-nav-active #mobile-nav-toggle {
 
 .examples-col {
   display: table;
-  padding-bottom: 45px;
+  padding-bottom: 25px;
 }
 
 .examples-col>div>div {
@@ -668,6 +668,18 @@ body.mobile-nav-active #mobile-nav-toggle {
 
 .examples-col h3 {
   color: rgba(255, 111, 97, 1.0);
+}
+
+.wip {
+  margin-left: 0;
+  color: #fff;
+  background-color: rgba(255, 111, 97, 1.0);
+  padding: 2px 5px 2px 6px;
+  font-size: 0.7rem;
+}
+
+.card p {
+  text-align: left;
 }
 
 .disabled,
@@ -2204,14 +2216,14 @@ button.xclose {
 
 #objectdetection .inner {
   width: 640px;
-  height: 400px;
+  height: 480px;
 }
 
 #objectdetection #canvasshow {
   padding: 0;
   margin: 0;
   width: 640px;
-  height: 400px;
+  height: 480px;
 }
 
 #objectdetection #inference {

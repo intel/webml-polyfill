@@ -1,10 +1,10 @@
 #include <emscripten/bind.h>
 #include <emscripten/val.h>
 
-#include "external/tensorflow/tensorflow/contrib/lite/kernels/internal/types.h"
-#include "external/tensorflow/tensorflow/contrib/lite/kernels/internal/optimized/optimized_ops.h"
-#include "external/tensorflow/tensorflow/contrib/lite/kernels/internal/reference/reference_ops.h"
-#include "external/tensorflow/tensorflow/contrib/lite/kernels/internal/optimized/depthwiseconv_float.h"
+#include "external/tensorflow/tensorflow/lite/kernels/internal/types.h"
+#include "external/tensorflow/tensorflow/lite/kernels/internal/optimized/optimized_ops.h"
+#include "external/tensorflow/tensorflow/lite/kernels/internal/reference/reference_ops.h"
+#include "external/tensorflow/tensorflow/lite/kernels/internal/optimized/depthwiseconv_float.h"
 
 #include <vector>
 #include <cmath>
@@ -188,6 +188,13 @@ namespace binding_utils {
                                   outputShape, (float*)outputData);
   }
 
+  bool tanhFloat32Wrapper(const RuntimeShape& inputShape, 
+                          const intptr_t inputData, 
+                          const RuntimeShape& outputShape, 
+                          intptr_t outputData) {
+    optimized_ops::Tanh(inputShape, (const float*)inputData, 
+                        outputShape, (float*)outputData);
+  }
 }
 
 EMSCRIPTEN_BINDINGS(nn)
@@ -284,6 +291,7 @@ EMSCRIPTEN_BINDINGS(nn)
   function("concatenationFloat32", &binding_utils::concatenationFloat32Wrapper, allow_raw_pointers());
   function("fullyConnectedFloat32", &binding_utils::fullyConnectedFloat32Wrapper, allow_raw_pointers());
   function("resizeBilinearFloat32", &binding_utils::resizeBilinearFloat32Wrapper, allow_raw_pointers());
+  function("tanhFloat32", &binding_utils::tanhFloat32Wrapper, allow_raw_pointers());
 
   // TODO: operation wrappers
   /*
@@ -292,7 +300,6 @@ EMSCRIPTEN_BINDINGS(nn)
   function("reluFloat32", &binding_utils::reluFloat32Wrapper, allow_raw_pointers());
   function("relu1Float32", &binding_utils::relu1Float32Wrapper, allow_raw_pointers());
   function("relu6Float32", &binding_utils::relu6Float32Wrapper, allow_raw_pointers());
-  function("tanhFloat32", &binding_utils::tanhFloat32Wrapper, allow_raw_pointers());
   function("logisticFloat32", &binding_utils::logisticFloat32Wrapper, allow_raw_pointers());
   function("reluQuant8", &binding_utils::reluQuant8Wrapper, allow_raw_pointers());
   function("relu1Quant8", &binding_utils::relu1Quant8Wrapper, allow_raw_pointers());
