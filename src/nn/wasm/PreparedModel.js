@@ -675,6 +675,19 @@ export default class PreparedModel {
         nn_ops.tanhFloat32(input.runtimeshape, input.value, 
                            output.runtimeshape, output.value);
       } break;
+      case OperationCode.MAXIMUM: {
+        allParametersPresent(2, 1);
+        let input1 = operands[inputs[0]];
+        let input2 = operands[inputs[1]];
+        let output = operands[outputs[0]];
+
+         // Error check
+        OPS_CHECK(input1.type === input2.type);
+
+        nn_ops.maximumFloat32(input1.runtimeshape, input1.value,
+                              input2.runtimeshape, input2.value,
+                              output.runtimeshape, output.value);
+      } break;
       default: {
         throw new Error(`Operation ${op} is not supported`);
       }
