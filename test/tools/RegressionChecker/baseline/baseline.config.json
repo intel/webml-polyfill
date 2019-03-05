@@ -1,7 +1,7 @@
 {
     "Version": {
-        "chromium": "73f3526",
-        "polyfill": "9b002bf"
+        "chromium": "b3ad1c0",
+        "polyfill": "1506cb1"
     },
     "Android-NNAPI": {
         "total": 714,
@@ -23,14 +23,14 @@
     },
     "Linux-clDNN": {
         "total": 714,
-        "pass": 394,
-        "fail": 320,
+        "pass": 398,
+        "fail": 316,
         "block": 0
     },
     "Linux-MKLDNN": {
         "total": 714,
-        "pass": 293,
-        "fail": 421,
+        "pass": 323,
+        "fail": 391,
         "block": 0
     },
     "Linux-WASM": {
@@ -71,14 +71,14 @@
     },
     "Windows-clDNN": {
         "total": 714,
-        "pass": 394,
-        "fail": 320,
+        "pass": 398,
+        "fail": 316,
         "block": 0
     },
     "Windows-MKLDNN": {
         "total": 714,
-        "pass": 293,
-        "fail": 421,
+        "pass": 323,
+        "fail": 391,
         "block": 0
     },
     "Windows-WASM": {
