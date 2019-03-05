@@ -1179,6 +1179,57 @@ export const OperationCode = {
   TANH: 28,
 
   /**
+   * BatchToSpace for N-dimensional tensors.
+   *
+   * This operation reshapes the batch dimension (dimension 0) into M + 1
+   * dimensions of shape block_shape + [batch], interleaves these blocks back
+   * into the grid defined by the spatial dimensions [1, ..., M], to obtain a
+   * result with the same rank as the input.
+   *
+   * This is the reverse of SpaceToBatch.
+   *
+   * Supported tensor {@link OperandCode}:
+   * * {@link TENSOR_FLOAT32}
+   * * {@link TENSOR_QUANT8_ASYMM}
+   *
+   * Supported tensor rank: 4
+   *
+   * Inputs:
+   * * 0: An n-D tensor, specifying the tensor to be reshaped.
+   * * 1: A 1-D Tensor of {@link TENSOR_INT32}, the block sizes for each 
+   *      spatial dimension of the input tensor. All values must be >= 1.
+   *
+   * Outputs:
+   * * 0: A tensor of the same {@link OperandCode} as input0.
+   */
+  BATCH_TO_SPACE_ND: 29,
+
+  /**
+   * Transposes the input tensor, permuting the dimensions according to the
+   * perm tensor.
+   *
+   * The returned tensor's dimension i corresponds to the input dimension
+   * perm[i]. If perm is not given, it is set to (n-1...0), where n is the
+   * rank of the input tensor. Hence by default, this operation performs a
+   * regular matrix transpose on 2-D input Tensors.
+   *
+   * Supported tensor {@link OperandCode}:
+   * * {@link TENSOR_FLOAT32}
+   * * {@link TENSOR_QUANT8_ASYMM}
+   *
+   * Supported tensor rank: up to 4
+   *
+   * Inputs:
+   * * 0: An n-D tensor, specifying the tensor to be transposed.
+   * * 1: An optional 1-D Tensor of {@link TENSOR_INT32}, the permutation of 
+   *      the dimensions of the input tensor.
+   *
+   * Outputs:
+   * * 0: A tensor of the same {@link OperandCode} as input0.
+   */
+  TRANSPOSE: 37,
+
+  /**
    * Returns the element-wise maximum of two tensors.
    *
    * Supported tensor {@link OperandCode}:
