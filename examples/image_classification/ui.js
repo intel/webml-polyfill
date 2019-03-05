@@ -129,7 +129,7 @@ $(document).ready(() => {
       return;
     }
 
-    updateScenario(us === 'camera');
+    updateBackend(us === 'camera');
   });
 
   $('input:radio[name=m]').click(() => {
