@@ -14,8 +14,18 @@ using namespace emscripten;
 using namespace tflite;
 
 namespace binding_utils {
+  template<typename T>
+  void Maximum(const RuntimeShape& input1_shape, const T* input1_data,
+               const T* input2_data, const RuntimeShape& output_shape,
+               T* output_data) {
+    auto input1_map = optimized_ops::MapAsVector(input1_data, input1_shape);
+    auto input2_map = optimized_ops::MapAsVector(input2_data, output_shape);
+    auto output_map = optimized_ops::MapAsVector(output_data, output_shape);
+    output_map.array() = input1_map.array().max(input2_map.array());
+  }
+  
   // Operation wrappers.
-  bool addFloat32Wrapper(const ArithmeticParams& op_params,
+  void addFloat32Wrapper(const ArithmeticParams& op_params,
                          const RuntimeShape& input1_shape, 
                          const intptr_t input1_data, 
                          const RuntimeShape& input2_shape, 
@@ -28,7 +38,7 @@ namespace binding_utils {
                        output_shape, (float*) output_data);
   }
 
-  bool broadCastAddFloat32Wrapper(const ArithmeticParams& op_params,
+  void broadCastAddFloat32Wrapper(const ArithmeticParams& op_params,
                                   const RuntimeShape& input1_shape, 
                                   const intptr_t input1_data, 
                                   const RuntimeShape& input2_shape, 
@@ -41,7 +51,7 @@ namespace binding_utils {
                                       output_shape, (float*) output_data);
   }
 
-  bool mulFloat32Wrapper(const ArithmeticParams& op_params,
+  void mulFloat32Wrapper(const ArithmeticParams& op_params,
                          const RuntimeShape& input1_shape, 
                          const intptr_t input1_data, 
                          const RuntimeShape& input2_shape, 
@@ -54,7 +64,7 @@ namespace binding_utils {
                        output_shape, (float*) output_data);
   }
 
-  bool broadCastMulFloat32Wrapper(const ArithmeticParams& op_params,
+  void broadCastMulFloat32Wrapper(const ArithmeticParams& op_params,
                                   const RuntimeShape& input1_shape, 
                                   const intptr_t input1_data, 
                                   const RuntimeShape& input2_shape, 
@@ -67,7 +77,7 @@ namespace binding_utils {
                                       output_shape, (float*) output_data);
   }
 
-  bool floorFloat32Wrapper(const RuntimeShape& input_shape, 
+  void floorFloat32Wrapper(const RuntimeShape& input_shape, 
                            const intptr_t inputData, 
                            const RuntimeShape& output_shape, 
                            intptr_t outputData) {
@@ -75,7 +85,7 @@ namespace binding_utils {
                          output_shape, (float*)outputData);
   }
 
-  bool depthwiseConvFloat32Wrapper(const DepthwiseParams& op_params,
+  void depthwiseConvFloat32Wrapper(const DepthwiseParams& op_params,
                                    const RuntimeShape& inputShape, 
                                    const intptr_t inputData, 
                                    const RuntimeShape& filterShape, 
@@ -91,7 +101,7 @@ namespace binding_utils {
                                  outputShape, (float*)outputData);
   }
 
-  bool convFloat32Wrapper(const ConvParams& op_params, 
+  void convFloat32Wrapper(const ConvParams& op_params, 
                           const RuntimeShape& inputShape, 
                           const intptr_t inputData, 
                           const RuntimeShape& filterShape, 
@@ -110,7 +120,7 @@ namespace binding_utils {
                         im2colShape, (float*)im2colData);
   }
 
-  bool averagePoolFloat32Wrapper(const PoolParams op_params,
+  void averagePoolFloat32Wrapper(const PoolParams op_params,
                                  const RuntimeShape& inputShape, 
                                  const intptr_t inputData, 
                                  const RuntimeShape& outputShape, 
@@ -120,7 +130,7 @@ namespace binding_utils {
                                outputShape, (float*)outputData);
   }
 
-  bool maxPoolFloat32Wrapper(const PoolParams op_params,
+  void maxPoolFloat32Wrapper(const PoolParams op_params,
                              const RuntimeShape& inputShape, 
                              const intptr_t inputData, 
                              const RuntimeShape& outputShape, 
@@ -130,7 +140,7 @@ namespace binding_utils {
                            outputShape, (float*)outputData);
   }
 
-  bool softmaxFloat32Wrapper(const SoftmaxParams op_params,
+  void softmaxFloat32Wrapper(const SoftmaxParams op_params,
                              const RuntimeShape& inputShape, 
                              const intptr_t inputData, 
                              const RuntimeShape& outputShape, 
@@ -139,7 +149,7 @@ namespace binding_utils {
                            outputShape, (float*)outputData);
   }
 
-  bool reshapeFloat32Wrapper(const RuntimeShape& inputShape, 
+  void reshapeFloat32Wrapper(const RuntimeShape& inputShape, 
                              const intptr_t inputData, 
                              const RuntimeShape& outputShape, 
                              intptr_t outputData) {
@@ -148,7 +158,7 @@ namespace binding_utils {
     memcpy((float*)outputData, (const float*)inputData, size_count);
   }
 
-  bool concatenationFloat32Wrapper(const ConcatenationParams op_params,  
+  void concatenationFloat32Wrapper(const ConcatenationParams op_params,  
                                    const std::vector<RuntimeShape*> inputShapes, 
                                    const std::vector<intptr_t>& inputDataPtrs,
                                    const RuntimeShape& outputShape, 
@@ -159,7 +169,7 @@ namespace binding_utils {
                                         outputShape, (float*)outputData);
   }
 
-  bool fullyConnectedFloat32Wrapper(const FullyConnectedParams op_params,
+  void fullyConnectedFloat32Wrapper(const FullyConnectedParams op_params,
                                     const RuntimeShape& inputShape, 
                                     const intptr_t inputData, 
                                     const RuntimeShape& weightsShape, 
@@ -175,7 +185,7 @@ namespace binding_utils {
                                   outputShape, (float*)outputData);
   }
 
-  bool resizeBilinearFloat32Wrapper(const ResizeBilinearParams op_params,
+  void resizeBilinearFloat32Wrapper(const ResizeBilinearParams op_params,
                                     const RuntimeShape& inputShape, 
                                     const intptr_t inputData, 
                                     const RuntimeShape& outSizeShape, 
@@ -188,12 +198,23 @@ namespace binding_utils {
                                   outputShape, (float*)outputData);
   }
 
-  bool tanhFloat32Wrapper(const RuntimeShape& inputShape, 
+  void tanhFloat32Wrapper(const RuntimeShape& inputShape, 
                           const intptr_t inputData, 
                           const RuntimeShape& outputShape, 
                           intptr_t outputData) {
     optimized_ops::Tanh(inputShape, (const float*)inputData, 
                         outputShape, (float*)outputData);
+  }
+
+  void maximumFloat32Wrapper(const RuntimeShape& input1_shape, 
+                             const intptr_t input1_data,
+                             const RuntimeShape& input2_shape,
+                             const intptr_t input2_data, 
+                             const RuntimeShape& output_shape,
+                             intptr_t output_data) {
+    binding_utils::Maximum(input1_shape, (const float*)input1_data,
+                           (const float*)input2_data,
+                           output_shape, (float*) output_data);
   }
 }
 
@@ -292,6 +313,7 @@ EMSCRIPTEN_BINDINGS(nn)
   function("fullyConnectedFloat32", &binding_utils::fullyConnectedFloat32Wrapper, allow_raw_pointers());
   function("resizeBilinearFloat32", &binding_utils::resizeBilinearFloat32Wrapper, allow_raw_pointers());
   function("tanhFloat32", &binding_utils::tanhFloat32Wrapper, allow_raw_pointers());
+  function("maximumFloat32", &binding_utils::maximumFloat32Wrapper, allow_raw_pointers());
 
   // TODO: operation wrappers
   /*
