@@ -17,6 +17,24 @@ using namespace emscripten;
 using namespace tflite;
 
 namespace binding_utils {
+  // help functions
+  val getPerm(const TransposeParams& op_params) {
+    emscripten::val js_dims = emscripten::val::array();
+    for (int i = 0; i < 4; i++) {
+      js_dims.call<void>("push", op_params.perm[i]);
+    }
+    return js_dims;
+  };
+
+   void setPerm(TransposeParams& op_params, val js_dims) {
+    std::vector<int32_t> tmp = vecFromJSArray<int32_t>(js_dims);
+    for (int i = 0; i < tmp.size(); ++i) {
+      op_params.perm[i] = tmp.at(i);
+    }
+  };
+
+
+  // Operation Implements.	
   template<typename T>
   void Maximum(const RuntimeShape& input1_shape, const T* input1_data,
                const T* input2_data, const RuntimeShape& output_shape,
@@ -27,6 +45,7 @@ namespace binding_utils {
     output_map.array() = input1_map.array().max(input2_map.array());
   }
   
+
   // Operation wrappers.
   void addFloat32Wrapper(const ArithmeticParams& op_params,
                          const RuntimeShape& input1_shape, 
@@ -297,6 +316,30 @@ namespace binding_utils {
                            (const float*)input2_data,
                            output_shape, (float*) output_data);
   }
+
+  void batchToSpaceNDFloat32Wrapper(const RuntimeShape& unextended_input1_shape, 
+                                    const intptr_t input1_data,
+                                    const RuntimeShape& unextended_input2_shape, 
+                                    const intptr_t block_shape_data,
+                                    const RuntimeShape& unextended_input3_shape, 
+                                    const intptr_t crops_data,
+                                    const RuntimeShape& unextended_output_shape, 
+                                    intptr_t output_data) {
+    optimized_ops::BatchToSpaceND(unextended_input1_shape, (const float*) input1_data,
+                                  unextended_input2_shape, (const int32_t*) block_shape_data,
+                                  unextended_input3_shape, (const int32_t*) crops_data,
+                                  unextended_output_shape, (float*) output_data);
+  }
+
+  void transposeFloat32Wrapper(const TransposeParams& op_params,
+                               const RuntimeShape& unextended_input_shape, 
+                               const intptr_t input_data,
+                               const RuntimeShape& unextended_output_shape, 
+                               intptr_t output_data) {
+    optimized_ops::Transpose(op_params,
+                             unextended_input_shape, (const float*) input_data,
+                             unextended_output_shape, (float*) output_data);
+  }
 }
 
 EMSCRIPTEN_BINDINGS(nn)
@@ -422,6 +465,12 @@ EMSCRIPTEN_BINDINGS(nn)
     .field("quantized_activation_max", &ArithmeticParams::quantized_activation_max)
     ;
 
+  class_<TransposeParams>("TransposeParams")
+    .constructor<>()
+    .property("perm", &binding_utils::getPerm, &binding_utils::setPerm)
+    .property("perm_count", &TransposeParams::perm_count)
+    ;
+
   register_vector<RuntimeShape*>("VectorShape");
   register_vector<intptr_t>("VectorPtr");
 
@@ -449,6 +498,8 @@ EMSCRIPTEN_BINDINGS(nn)
   function("resizeBilinearFloat32", &binding_utils::resizeBilinearFloat32Wrapper, allow_raw_pointers());
   function("tanhFloat32", &binding_utils::tanhFloat32Wrapper, allow_raw_pointers());
   function("maximumFloat32", &binding_utils::maximumFloat32Wrapper, allow_raw_pointers());
+  function("batchToSpaceNDFloat32", &binding_utils::batchToSpaceNDFloat32Wrapper, allow_raw_pointers());
+  function("transposeFloat32", &binding_utils::transposeFloat32Wrapper, allow_raw_pointers());
 
   // TODO: operation wrappers
   /*

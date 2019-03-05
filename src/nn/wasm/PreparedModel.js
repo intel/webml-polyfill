@@ -235,6 +235,7 @@ export default class PreparedModel {
     let inputs = operation.inputs;
     let outputs = operation.outputs;
     let operands = this._operands;
+    let modelOperands = this._model._operands;
 
     function allParametersPresent(requiredIns, requiredOuts) {
       function verify(requiredCount, indexes, type) {
@@ -1114,15 +1115,77 @@ export default class PreparedModel {
         let input2 = operands[inputs[1]];
         let output = operands[outputs[0]];
 
-         // Error check
+        // Error check
         OPS_CHECK(input1.type === input2.type);
 
         nn_ops.maximumFloat32(input1.runtimeshape, input1.value,
                               input2.runtimeshape, input2.value,
                               output.runtimeshape, output.value);
       } break;
-      default: {	
-        throw new Error(`Operation ${op} is not supported`);	
+      case OperationCode.BATCH_TO_SPACE_ND: {
+        allParametersPresent(2, 1);
+        let input = operands[inputs[0]];
+        let blockShape = operands[inputs[1]];
+        let output = operands[outputs[0]];
+
+        // set a default crops
+        let operand = {
+          type: OperandCode.TENSOR_INT32,
+          dimensions: [2, 2],
+          numberOfConsumers: 0,
+          lifetime: OperandLifetime.CONSTANT_REFERENCE,
+          value: [[0, 0], [0, 0]]
+        };
+        let cropsShape = this._allocateRuntimeShape(operand);
+        let cropsData = this._allocateTensor(operand);
+
+        // Error check
+        OPS_CHECK(input.runtimeshape.DimensionsCount() <= 4);
+        OPS_CHECK(output.runtimeshape.DimensionsCount() <= 4);
+
+        nn_ops.batchToSpaceNDFloat32(input.runtimeshape, input.value, 
+                                     blockShape.runtimeshape, blockShape.value,
+                                     cropsShape, cropsData,
+                                     output.runtimeshape, output.value);
+        cropsShape.delete();
+        nn_ops._free(cropsData);
+      } break;
+      case OperationCode.TRANSPOSE: {
+        let inCount = inputs.length;
+        if (inCount !== 1 && inCount !== 2) {
+          throw new Error('Invalid parameters number of TRANSPOSE');
+        }
+        allParametersPresent(inCount, 1);
+        let input = operands[inputs[0]];
+        let perm = [];
+        if (inCount === 1) {
+          // set a default perm
+          let n = input.runtimeshape.DimensionsCount();
+          for (let i = 0; i < n; ++i) {
+            perm[i] = n - i;
+          }
+        } else {
+          perm = modelOperands[inputs[1]].value;
+        }
+        let output = operands[outputs[0]];
+
+        // Error check
+        OPS_CHECK(input.runtimeshape.DimensionsCount() <= 4);
+        OPS_CHECK(output.runtimeshape.DimensionsCount() <= 4);
+        OPS_CHECK(output.runtimeshape.DimensionsCount() === perm.length);
+
+        // init transposeParams
+        let transposeParams = new nn_ops.TransposeParams;
+        transposeParams.perm_count = perm.length;
+        transposeParams.perm = perm;
+
+        nn_ops.transposeFloat32(transposeParams, 
+                                input.runtimeshape, input.value, 
+                                output.runtimeshape, output.value);
+        transposeParams.delete();
+      } break;
+      default: {
+        throw new Error(`Operation ${op} is not supported`);
       }
     }
   }
