@@ -15,34 +15,65 @@ class Utils {
     // this.preprocessCanvas = new OffscreenCanvas(224, 224);
     this.preprocessCanvas = document.createElement('canvas');
     this.preprocessCtx = this.preprocessCanvas.getContext('2d');    
-
+    this.loaded = false;
     this.initialized = false;
   }
 
-  async init(backend, prefer) {
-    this.initialized = false;
-    let result;
-    if (!this.tfModel) {
-      result = await this.loadModelAndLabels(this.modelFile, this.labelsFile);
-      this.labels = result.text.split('\n');
-      console.log(`labels: ${this.labels}`);
-      let flatBuffer = new flatbuffers.ByteBuffer(result.bytes);
-      this.tfModel = tflite.Model.getRootAsModel(flatBuffer);
-      printTfLiteModel(this.tfModel);
+  async loadModel(newModel) {
+    if (this.loaded && this.modelFile === newModel.modelFile) {
+      return 'LOADED';
     }
+    // reset all states
+    this.loaded = this.initialized = false;
+    this.backend = this.prefer = '';
+
+    // set new model params
+    this.inputSize = newModel.inputSize;
+    this.outputSize = newModel.outputSize;
+    this.modelFile = newModel.modelFile;
+    this.labelsFile = newModel.labelsFile;
+    this.preOptions = newModel.preOptions || {};
+    this.postOptions = newModel.postOptions || {};
+    this.numClasses = newModel.numClasses;
+    this.inputTensor = new Float32Array(newModel.inputSize.reduce((x,y) => x*y));
+    this.outputTensor = new Float32Array(newModel.outputSize.reduce((x,y) => x*y));
+
+    let result = await this.loadModelAndLabels(this.modelFile, this.labelsFile);
+    this.labels = result.text.split('\n');
+    console.log(`labels: ${this.labels}`);
+    let flatBuffer = new flatbuffers.ByteBuffer(result.bytes);
+    this.tfModel = tflite.Model.getRootAsModel(flatBuffer);
+    printTfLiteModel(this.tfModel);
+
+    this.loaded = true;
+    return 'SUCCESS';
+  }
+
+
+  async init(backend, prefer) {
+    if (!this.loaded) {
+      return 'NOT_LOADED';
+    }
+    if (this.initialized && backend === this.backend && prefer === this.prefer) {
+      return 'INITIALIZED';
+    }
+    this.initialized = false;
+    this.backend = backend;
+    this.prefer = prefer;
     let kwargs = {
       rawModel: this.tfModel,
       backend: backend,
       prefer: prefer,
     };
     this.model = new TFliteModelImporter(kwargs);
-    result = await this.model.createCompiledModel();
+    let result = await this.model.createCompiledModel();
     console.log(`compilation result: ${result}`);
     let start = performance.now();
     result = await this.model.compute([this.inputTensor], [this.outputTensor]);
     let elapsed = performance.now() - start;
     console.log(`warmup time: ${elapsed.toFixed(2)} ms`);
     this.initialized = true;
+    return 'SUCCESS';
   }
 
   async predict() {
@@ -147,19 +178,6 @@ class Utils {
     if (this.model._backend != 'WebML') {
       this.model._compilation._preparedModel._deleteAll();
     }
-  }
-
-  changeModelParam(newModel) {
-    this.inputSize = newModel.inputSize;
-    this.outputSize = newModel.outputSize;
-    this.modelFile = newModel.modelFile;
-    this.labelsFile = newModel.labelsFile;
-    this.preOptions = newModel.preOptions || {};
-    this.postOptions = newModel.postOptions || {};
-    this.numClasses = newModel.numClasses;
-    this.inputTensor = new Float32Array(newModel.inputSize.reduce((x,y) => x*y));
-    this.outputTensor = new Float32Array(newModel.outputSize.reduce((x,y) => x*y));
-    this.tfModel = null;
   }
 
   // for debugging

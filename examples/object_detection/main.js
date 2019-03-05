@@ -96,6 +96,7 @@ const utilsPredict = async (imageElement, backend, prefer) => {
 const utilsPredictCamera = async (backend, prefer) => {
   streaming = true;
   try {
+    // return immediately if model, backend, prefer are all unchanged
     let init = await utils.init(backend, prefer);    
     if (init == 'NOT_LOADED') {
       return;
@@ -140,7 +141,7 @@ const main = async (camera = false) => {
   await showProgress('Loading model ...');
   try {
     let model = objectDetectionModels.filter(f => f.modelFormatName == currentModel);
-    utils.changeModelParam(model[0]);
+    await utils.loadModel(model[0]);
   } catch (e) {
     errorHandler(e);
   }
