@@ -19,22 +19,58 @@ class Utils {
     this.canvasContext = this.canvasElement.getContext('2d');
     this.canvasShowElement = canvasShow;
     this.updateProgress;
-
+    this.loaded = false;
     this.initialized = false;
   }
 
-  async init(backend, prefer) {
-    this.initialized = false;
-    let result;
-    this.anchors = generateAnchors({});
-    if (!this.rawModel) {
-      result = await this.loadModelAndLabels(this.modelFile, this.labelsFile);
-      this.labels = result.text.split('\n');
-      console.log(`labels: ${this.labels}`);
-      let flatBuffer = new flatbuffers.ByteBuffer(result.bytes);
-      this.rawModel = tflite.Model.getRootAsModel(flatBuffer);
-      // printTfLiteModel(this.rawModel);
+  async loadModel(newModel) {
+    if (this.loaded && this.modelFile === newModel.modelFile) {
+      return 'LOADED';
     }
+    // reset all states
+    this.loaded = this.initialized = false;
+    this.backend = this.prefer = '';
+
+    // set new model params
+    this.inputSize = newModel.inputSize;
+    this.outputSize = newModel.outputSize;
+    this.modelFile = newModel.modelFile;
+    this.labelsFile = newModel.labelsFile;
+    this.boxSize = newModel.box_size;
+    this.numClasses = newModel.num_classes;
+    this.numBoxes = newModel.num_boxes;
+    this.preOptions = newModel.preOptions || {};
+    this.postOptions = newModel.postOptions || {};
+    this.inputTensor[0] = new Float32Array(this.inputSize.reduce((a, b) => a * b));
+    this.outputBoxTensor = new Float32Array(this.numBoxes * this.boxSize);
+    this.outputClassScoresTensor = new Float32Array(this.numBoxes * this.numClasses);
+    this.rawModel = null;
+
+    this.canvasElement.width = newModel.inputSize[1];
+    this.canvasElement.height = newModel.inputSize[0];
+
+    let result = await this.loadModelAndLabels(this.modelFile, this.labelsFile);
+    this.labels = result.text.split('\n');
+    console.log(`labels: ${this.labels}`);
+    let flatBuffer = new flatbuffers.ByteBuffer(result.bytes);
+    this.rawModel = tflite.Model.getRootAsModel(flatBuffer);
+    printTfLiteModel(this.rawModel);
+
+    this.loaded = true;
+    return 'SUCCESS';
+  }
+
+  async init(backend, prefer) {
+    if (!this.loaded) {
+      return 'NOT_LOADED';
+    }
+    if (this.initialized && backend === this.backend && prefer === this.prefer) {
+      return 'INITIALIZED';
+    }
+    this.backend = backend;
+    this.prefer = prefer;
+    this.initialized = false;
+    this.anchors = generateAnchors({});
     let kwargs = {
       rawModel: this.rawModel,
       backend: backend,
@@ -42,13 +78,14 @@ class Utils {
     };
     this.model = new TFliteModelImporter(kwargs);
     this.prepareoutputTensor(this.outputBoxTensor, this.outputClassScoresTensor);
-    result = await this.model.createCompiledModel();
+    let result = await this.model.createCompiledModel();
     console.log(`compilation result: ${result}`);
     let start = performance.now();
     result = await this.model.compute(this.inputTensor, this.outputTensor);
     let elapsed = performance.now() - start;
     console.log(`warmup time: ${elapsed.toFixed(2)} ms`);
     this.initialized = true;
+    return 'SUCCESS';
   }
 
   async predict(imageSource) {
@@ -155,24 +192,5 @@ class Utils {
     if (this.model._backend != 'WebML') {
       this.model._compilation._preparedModel._deleteAll();
     }
-  }
-
-  changeModelParam(newModel) {
-    this.inputSize = newModel.inputSize;
-    this.outputSize = newModel.outputSize;
-    this.modelFile = newModel.modelFile;
-    this.labelsFile = newModel.labelsFile;
-    this.boxSize = newModel.box_size;
-    this.numClasses = newModel.num_classes;
-    this.numBoxes = newModel.num_boxes;
-    this.preOptions = newModel.preOptions || {};
-    this.postOptions = newModel.postOptions || {};
-    this.inputTensor[0] = new Float32Array(this.inputSize.reduce((a, b) => a * b));
-    this.outputBoxTensor = new Float32Array(this.numBoxes * this.boxSize);
-    this.outputClassScoresTensor = new Float32Array(this.numBoxes * this.numClasses);
-    this.rawModel = null;
-
-    this.canvasElement.width = newModel.inputSize[1];
-    this.canvasElement.height = newModel.inputSize[0];
   }
 }
