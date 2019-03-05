@@ -78,11 +78,6 @@ const utilsPredict = async (imageElement, backend, prefer) => {
     track.stop();
   }
   try {
-    // return immediately if model, backend, prefer are all unchanged
-    let init = await utils.init(backend, prefer);    
-    if (init == 'NOT_LOADED') {
-      return;
-    }
     await showProgress('Image inferencing ...');
     let ret = await utils.predict(imageElement);
     showResults();
@@ -96,11 +91,6 @@ const utilsPredict = async (imageElement, backend, prefer) => {
 const utilsPredictCamera = async (backend, prefer) => {
   streaming = true;
   try {
-    // return immediately if model, backend, prefer are all unchanged
-    let init = await utils.init(backend, prefer);    
-    if (init == 'NOT_LOADED') {
-      return;
-    }
     let stream = await navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: 'environment' } });
     video.srcObject = stream;
     track = stream.getTracks()[0];
@@ -117,10 +107,30 @@ const predictPath = (camera) => {
   (!camera) ? utilsPredict(imageElement, currentBackend, currentPrefer) : utilsPredictCamera(currentBackend, currentPrefer);
 }
 
+const utilsInit = async (backend, prefer) => {
+  // return immediately if model, backend, prefer are all unchanged
+  let init = await utils.init(backend, prefer);    
+  if (init == 'NOT_LOADED') {
+    return;
+  }
+}
+
 const updateScenario = async (camera = false) => {
   streaming = false;
   logConfig();
   predictPath(camera);
+}
+
+ const updateBackend = async (camera = false) => {
+  streaming = false;
+  logConfig();
+  try {
+    await utilsInit(currentBackend, currentPrefer);
+    predictPath(camera);
+  }
+  catch (e) {
+    errorHandler(e);
+  }
 }
 
 inputElement.addEventListener('change', (e) => {
@@ -142,6 +152,7 @@ const main = async (camera = false) => {
   try {
     let model = objectDetectionModels.filter(f => f.modelFormatName == currentModel);
     await utils.loadModel(model[0]);
+    await utilsInit(currentBackend, currentPrefer);
   } catch (e) {
     errorHandler(e);
   }
