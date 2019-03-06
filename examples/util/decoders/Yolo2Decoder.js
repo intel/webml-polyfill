@@ -155,8 +155,10 @@ function getBoxes(results, margin) {
 
 function drawBoxes(image, canvas, object_boxes, labels) {
   ctx = canvas.getContext('2d');
+  let imWidth = image.naturalWidth || image.videoWidth;
+  let imHeight = image.naturalHeight || image.videoHeight;
   // drawImage
-  canvas.width = image.width / image.height * canvas.height;
+  canvas.width = imWidth / imHeight * canvas.height;
   ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
 
   // drawBox

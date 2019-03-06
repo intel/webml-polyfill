@@ -60,8 +60,6 @@ const errorHandler = (e) => {
 const startPredictCamera = async () => {
   if (streaming) {
     try {
-      videoElement.width = videoElement.videoWidth;
-      videoElement.height = videoElement.videoHeight;
       stats.begin();
       let ret = await utils.predict(videoElement);
       updateResult(ret);
@@ -90,15 +88,18 @@ const utilsPredict = async (imageElement, backend, prefer) => {
   }
 }
 
+videoElement.addEventListener('loadeddata', () => {
+  startPredictCamera();
+  showResults();
+}, false);
+
 const utilsPredictCamera = async (backend, prefer) => {
   streaming = true;
   try {
     let stream = await navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: 'environment' } });
     video.srcObject = stream;
     track = stream.getTracks()[0];
-    await showProgress('Camera inferencing ...');
-    videoElement.onloadeddata = startPredictCamera;
-    showResults();
+    showProgress('Camera inferencing ...');
   }
   catch (e) {
     errorHandler(e);
