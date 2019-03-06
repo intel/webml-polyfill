@@ -100,8 +100,10 @@ class Utils {
   }
 
   async predict(imageSource) {
-    if (this.modelType === 'SSD') this.predictSSD(imageSource);
-    else this.predictYolo(imageSource);
+    if (this.modelType === 'SSD') 
+      return this.predictSSD(imageSource);
+    else 
+      return this.predictYolo(imageSource);
   }
 
   async predictSSD(imageSource) {
@@ -128,8 +130,9 @@ class Utils {
     // let startVisual = performance.now();
     visualize(this.canvasShowElement, totalDetections, imageSource, boxesList, scoresList, classesList, this.labels);
     // console.log(`visual time: ${(performance.now() - startVisual).toFixed(2)} ms`);
-    let inferenceTimeElement = document.getElementById('inferenceTime');
-    inferenceTimeElement.innerHTML = `inference time: <em style="color:green;font-weight:bloder;">${elapsed.toFixed(2)} </em>ms`;
+    return {
+      time: elapsed.toFixed(2)
+    };
   }
 
   async predictYolo(imageSource) {
@@ -149,8 +152,9 @@ class Utils {
     // let drawStart = performance.now();
     drawBoxes(imageSource, this.canvasShowElement, boxes, this.labels);
     // console.log(`Draw time: ${(performance.now() - drawStart).toFixed(2)} ms`);
-    let inferenceTimeElement = document.getElementById('inferenceTime');
-    inferenceTimeElement.innerHTML = `inference time: <span class='ir'>${elapsed.toFixed(2)} ms</span>`;
+    return {
+      time: elapsed.toFixed(2)
+    };
   }
 
   async loadModelAndLabels(modelUrl, labelsUrl) {
