@@ -131,13 +131,25 @@ const predictAndDraw = async (source, camera = false) => {
 }
 
 const predictPath = (camera) => {
-  camera ? predictCamera() : predictAndDraw(imageElement, currentBackend, currentPrefer, false);
+  camera ? predictCamera() : predictAndDraw(imageElement, false);
 }
 
 const updateScenario = async (camera = false) => {
   streaming = false;
   logConfig();
   predictPath(camera);
+}
+
+const updateBackend = async (camera = false) => {
+  streaming = false;
+  logConfig();
+  try {
+    await utils.init(currentBackend, currentPrefer);
+    predictPath(camera);
+  }
+  catch (e) {
+    errorHandler(e);
+  }
 }
 
 inputElement.addEventListener('change', (e) => {
