@@ -1,6 +1,6 @@
-WebNN API SSD MobileNet Example
+WebML Object Detection Sample
 ======
-This example loads SSD MobileNet model trained by COCO in TensorFlow Lite format, constructs and inferences it by WebML API.
+This sample loads Object Detection models trained by COCO and VOC in TensorFlow Lite format, constructs and inferences it by WebML API.
 
 Download Model
 -----------
