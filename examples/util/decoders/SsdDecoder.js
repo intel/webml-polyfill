@@ -272,6 +272,26 @@ function NMS(options, outputBoxTensor, outputClassScoresTensor) {
   return [totalDetections, boxesList, scoresList, classesList];
 }
 
+
+/**
+* Crop box
+*
+* @param {object} imageSource - Input image element
+*/
+function cropSSDBox(imageSource, totalDetections, boxesList, margin) {
+  let imWidth = imageSource.naturalWidth || imageSource.videoWidth;
+  let imHeight = imageSource.naturalHeight || imageSource.videoHeight;
+  for (let i = 0; i < totalDetections; ++i) {
+    let [ymin, xmin, ymax, xmax] = boxesList[i];
+
+    boxesList[i][0] = Math.max(0, (ymax + ymin)/2 - (ymax - ymin)/2 * margin[2]);
+    boxesList[i][2] = Math.min(imHeight, (ymax + ymin)/2 + (ymax - ymin)/2 * margin[3]);
+    boxesList[i][1] = Math.max(0, (xmax + xmin)/2 - (xmax - xmin)/2 * margin[0]);
+    boxesList[i][3] = Math.min(imWidth, (xmax + xmin)/2 + (xmax - xmin)/2 * margin[1]);
+  }
+  return boxesList;
+}
+
 /**
 * Draw img and box
 *
@@ -279,11 +299,9 @@ function NMS(options, outputBoxTensor, outputClassScoresTensor) {
 */
 function visualize(canvasShowElement, totalDetections, imageSource, boxesList, scoresList, classesList, labels) {
   let ctx = canvasShowElement.getContext('2d');
-  if (imageSource.width) {
-    canvasShowElement.width = imageSource.width / imageSource.height * canvasShowElement.height;
-  } else {
-    canvasShowElement.width = imageSource.videoWidth / imageSource.videoHeight * canvasShowElement.height;
-  }
+  let imWidth = imageSource.naturalWidth || imageSource.videoWidth;
+  let imHeight = imageSource.naturalHeight || imageSource.videoHeight;
+  canvasShowElement.width = imWidth / imHeight * canvasShowElement.height;
 
   let colors = ['red', 'blue', 'green', 'yellowgreen', 'purple', 'orange'];
   ctx.drawImage(imageSource, 0, 0,
