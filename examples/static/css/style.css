@@ -2276,7 +2276,7 @@ button.xclose {
 @media (max-width: 768px) {
   
   #objectdetection #canvasshow {
-    max-width: 80vw;
+    max-width: 100%;
   }
 
   #objectdetection #fullscreen i svg {
