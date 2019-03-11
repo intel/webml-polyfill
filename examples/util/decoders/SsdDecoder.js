@@ -303,7 +303,7 @@ function visualize(canvasShowElement, totalDetections, imageSource, boxesList, s
   let imHeight = imageSource.naturalHeight || imageSource.videoHeight;
   canvasShowElement.width = imWidth / imHeight * canvasShowElement.height;
 
-  let colors = ['red', 'blue', 'green', 'yellowgreen', 'purple', 'orange'];
+  let colors = ['#ff3860', '#009bea', '#00b067', '#704e99', '#17a2b8', '#ffc107'];
   ctx.drawImage(imageSource, 0, 0,
                 canvasShowElement.width,
                 canvasShowElement.height);
