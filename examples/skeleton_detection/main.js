@@ -261,6 +261,24 @@ const poseDetectionFrame = async () => {
   showResults();
 }
 
+const updateScenario = async (camera = false) => {
+  console.log(`Backend: ${currentBackend}, Prefer: ${currentPrefer}`);
+  streaming = false;
+  try {
+    if(camera){
+      await loadVideo();
+      showProgress('Inferencing ...');
+      poseDetectionFrame();
+    }
+    else {
+      showProgress('Inferencing ...');
+      drawResult();
+    }
+  } catch (e) {
+    errorHandler(e);
+  }
+}
+
 const main = async (camera = false) => {
   console.log(`Backend: ${currentBackend}, Prefer: ${currentPrefer}`);
   streaming = false;
