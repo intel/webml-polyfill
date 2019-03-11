@@ -168,7 +168,7 @@ $(document).ready(() => {
       return;
     }
     currentTab = 'image';
-    main(false);
+    updateScenario(false);
   });
 
   $('#cam').click(() => {
@@ -186,7 +186,7 @@ $(document).ready(() => {
       return;
     }
     currentTab = 'camera';
-    main(true);
+    updateScenario(true);
   });
 
   $('#fullscreen i svg').click(() => {
