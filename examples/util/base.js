@@ -266,7 +266,7 @@ const objectDetectionModels = [{
   intro: 'SSDLite MobileNet V2 is an upgraded version of SSD MobileNet V2. Compared with SSD Mobilenet V2, SSDLite Mobilenet V2 is much faster, and almost has no loss of the accuracy.',
   paperUrl: 'https://arxiv.org/abs/1801.04381'
 }, {
-  modelName: 'Tiny Yolo v2 COCO(TFlite)',
+  modelName: 'Tiny Yolo v2 COCO (TFLite)',
   modelFormatName: 'tiny_yolov2_coco_tflite',
   modelSize: '44.9MB',
   modelFile: '../object_detection/model/tiny_yolov2_coco.tflite',
@@ -283,7 +283,7 @@ const objectDetectionModels = [{
   intro: 'Tiny YOLO is based off of the Darknet reference network and is much faster but less accurate than the normal YOLO model. And this model is trained by COCO dataset.',
   paperUrl: 'https://arxiv.org/abs/1612.08242'
 }, {
-  modelName: 'Tiny Yolo v2 VOC(TFlite)',
+  modelName: 'Tiny Yolo v2 VOC (TFLite)',
   modelFormatName: 'tiny_yolov2_voc_tflite',
   modelSize: '63.4MB',
   modelFile: '../object_detection/model/tiny_yolov2_voc.tflite',
@@ -323,6 +323,10 @@ const semanticSegmentationModels = [{
     labelsFile: '../semantic_segmentation/model/labels.txt',
     inputSize: [224, 224, 3],
     outputSize: [224, 224, 21],
+    preOptions: {
+      mean: [127.5, 127.5, 127.5],
+      std: [127.5, 127.5, 127.5],
+    },
     intro: 'DeepLab is a state-of-art deep learning model for semantic image segmentation, where the goal is to assign semantic labels (e.g., person, dog, cat and so on) to every pixel in the input image.',
     paperUrl: 'https://arxiv.org/abs/1802.02611'
   }, {
@@ -333,6 +337,10 @@ const semanticSegmentationModels = [{
     labelsFile: '../semantic_segmentation/model/labels.txt',
     inputSize: [224, 224, 3],
     outputSize: [224, 224, 21],
+    preOptions: {
+      mean: [127.5, 127.5, 127.5],
+      std: [127.5, 127.5, 127.5],
+    },
     intro: 'Equivalent to the model above (without dilated suffix) but only available on platforms that natively support atrous convolution.',
     paperUrl: 'https://arxiv.org/abs/1802.02611'
   }, {
@@ -343,6 +351,10 @@ const semanticSegmentationModels = [{
     labelsFile: '../semantic_segmentation/model/labels.txt',
     inputSize: [257, 257, 3],
     outputSize: [257, 257, 21],
+    preOptions: {
+      mean: [127.5, 127.5, 127.5],
+      std: [127.5, 127.5, 127.5],
+    },
     intro: 'DeepLab is a state-of-art deep learning model for semantic image segmentation, where the goal is to assign semantic labels (e.g., person, dog, cat and so on) to every pixel in the input image.',
     paperUrl: 'https://arxiv.org/abs/1802.02611'
   }, {
@@ -353,6 +365,10 @@ const semanticSegmentationModels = [{
     labelsFile: '../semantic_segmentation/model/labels.txt',
     inputSize: [257, 257, 3],
     outputSize: [257, 257, 21],
+    preOptions: {
+      mean: [127.5, 127.5, 127.5],
+      std: [127.5, 127.5, 127.5],
+    },
     intro: 'Equivalent to the model above (without dilated suffix) but only available on platforms that natively support atrous convolution.',
     paperUrl: 'https://arxiv.org/abs/1802.02611'
   }, {
@@ -363,6 +379,10 @@ const semanticSegmentationModels = [{
     labelsFile: '../semantic_segmentation/model/labels.txt',
     inputSize: [321, 321, 3],
     outputSize: [321, 321, 21],
+    preOptions: {
+      mean: [127.5, 127.5, 127.5],
+      std: [127.5, 127.5, 127.5],
+    },
     intro: 'DeepLab is a state-of-art deep learning model for semantic image segmentation, where the goal is to assign semantic labels (e.g., person, dog, cat and so on) to every pixel in the input image.',
     paperUrl: 'https://arxiv.org/abs/1802.02611'
   }, {
@@ -373,6 +393,10 @@ const semanticSegmentationModels = [{
     labelsFile: '../semantic_segmentation/model/labels.txt',
     inputSize: [321, 321, 3],
     outputSize: [321, 321, 21],
+    preOptions: {
+      mean: [127.5, 127.5, 127.5],
+      std: [127.5, 127.5, 127.5],
+    },
     intro: 'Equivalent to the model above (without dilated suffix) but only available on platforms that natively support atrous convolution.',
     paperUrl: 'https://arxiv.org/abs/1802.02611'
   }, {
@@ -383,6 +407,10 @@ const semanticSegmentationModels = [{
     labelsFile: '../semantic_segmentation/model/labels.txt',
     inputSize: [513, 513, 3],
     outputSize: [513, 513, 21],
+    preOptions: {
+      mean: [127.5, 127.5, 127.5],
+      std: [127.5, 127.5, 127.5],
+    },
     intro: 'DeepLab is a state-of-art deep learning model for semantic image segmentation, where the goal is to assign semantic labels (e.g., person, dog, cat and so on) to every pixel in the input image.',
     paperUrl: 'https://arxiv.org/abs/1802.02611'
   }, {
@@ -393,6 +421,10 @@ const semanticSegmentationModels = [{
     labelsFile: '../semantic_segmentation/model/labels.txt',
     inputSize: [513, 513, 3],
     outputSize: [513, 513, 21],
+    preOptions: {
+      mean: [127.5, 127.5, 127.5],
+      std: [127.5, 127.5, 127.5],
+    },
     intro: 'Equivalent to the model above (without dilated suffix) but only available on platforms that natively support atrous convolution.',
     paperUrl: 'https://arxiv.org/abs/1802.02611'
 }];
