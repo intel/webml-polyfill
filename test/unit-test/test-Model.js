@@ -6566,7 +6566,7 @@ describe('Unit Test/Model Test', function() {
       });
     });
 
-    it('raise error when the type of output as TENSOR_INT32 is different to the type of input as TENSOR_QUANT8_ASYMM for "TANH" operation', function() {
+    it('raise error when the type of output as TENSOR_INT32 is different to the type of input as TENSOR_FLOAT32 for "TANH" operation', function() {
       return nn.createModel(options).then((model)=>{
         let input = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2, 1]};
         let output = {type: nn.TENSOR_INT32, dimensions: [1, 2, 2, 1]};
@@ -6604,7 +6604,7 @@ describe('Unit Test/Model Test', function() {
 
     it('raise error when setting 0 input for "TANH" operation', function() {
       return nn.createModel(options).then((model)=>{
-        let output = {type: nn.FLOAT32};
+        let output = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2, 1]};
         model.addOperand(output);
         assert.throws(() => {
           model.addOperation(nn.TANH, [], [0]);
@@ -6614,7 +6614,7 @@ describe('Unit Test/Model Test', function() {
 
     it('raise error when setting 0 output for "TANH" operation', function() {
       return nn.createModel(options).then((model)=>{
-        let input = {type: nn.FLOAT32};
+        let input = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2, 1]};
         model.addOperand(input);
         assert.throws(() => {
           model.addOperation(nn.TANH, [0], []);
