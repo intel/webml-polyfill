@@ -6575,6 +6575,32 @@ describe('Unit Test/Model Test', function() {
       });
     });
 
+    it('"4-D tensor as two inputs and one output, the type of input and output being TENSOR_INT32 type" are ok for "MAXIMUM" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let input = {type: nn.TENSOR_INT32, dimensions: [1, 2, 2, 1]};
+        let output = {type: nn.TENSOR_INT32, dimensions: [1, 2, 2, 1]};
+        model.addOperand(input);
+        model.addOperand(input);
+        model.addOperand(output);
+        assert.doesNotThrow(() => {
+          model.addOperation(nn.MAXIMUM, [0, 1], [2]);
+        });
+      });
+    });
+
+    it('"4-D tensor as two inputs and one output, the type of input and output being TENSOR_QUANT8_ASYMM type" are ok for "MAXIMUM" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let input = {type: nn.TENSOR_QUANT8_ASYMM, dimensions: [100, 32, 32, 3], scale: 0.5, zeroPoint: 1};
+        let output = {type: nn.TENSOR_QUANT8_ASYMM, dimensions: [100, 32, 32, 3], scale: 0.5, zeroPoint: 1};
+        model.addOperand(input);
+        model.addOperand(input);
+        model.addOperand(output);
+        assert.doesNotThrow(() => {
+          model.addOperation(nn.MAXIMUM, [0, 1], [2]);
+        });
+      });
+    });
+
     it('raise error when the type of input and output are INT32 (not TENSOR_FLOAT32 or TENSOR_INT32 or TENSOR_QUANT8_ASYMM) for "MAXIMUM" operation', function() {
       return nn.createModel(options).then((model)=>{
         let input = {type: nn.INT32};
