@@ -377,6 +377,31 @@ export default class WebGLModel {
         const output = operands[outputs[0]];
         output.assign(input.tanh());
       } break;
+      case OperationCode.BATCH_TO_SPACE_ND: {
+        const input = operands[inputs[0]];
+        const blockShape = operands[inputs[1]];
+        const output = operands[outputs[0]];
+        const crops = [[0, 0], [0, 0]];
+        if (blockShape.value === undefined) {
+          // blockShape.dataSync() return Int32Array,
+          // which should be converted to Array here.
+          blockShape.value = Array.apply([], blockShape.dataSync());
+        }
+        output.assign(input.batchToSpaceND(blockShape.value, crops));
+      } break;
+      case OperationCode.TRANSPOSE: {
+        const input = operands[inputs[0]];
+        const perm = operands[inputs[1]];
+        const output = operands[outputs[0]];
+        if (perm !== undefined) {
+          if (perm.value === undefined) {
+            perm.value = perm.dataSync();
+          }
+          output.assign(input.transpose(perm.value));
+        } else {
+          output.assign(input.transpose());
+        }
+      } break;
       case OperationCode.MAXIMUM: {
         const input1 = operands[inputs[0]];
         const input2 = operands[inputs[1]];
