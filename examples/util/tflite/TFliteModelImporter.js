@@ -12,6 +12,7 @@ class TFliteModelImporter {
     };
     this._backend = kwargs.backend;
     this._prefer = kwargs.prefer;
+    this._hybridPrefer = kwargs.hybridPrefer || 'fast';
     if (this._backend === 'WebML') {
       if (nnNative === null) {
         throw Error('Fails to initialize neural network context');
@@ -35,7 +36,7 @@ class TFliteModelImporter {
     this._compilation = await this._model.createCompilation();
 
     let start = performance.now();
-    this._compilation.setPreference(getPreferCode(this._backend, this._prefer));
+    this._compilation.setPreference(getPreferCode(this._backend, this._prefer), this._hybridPrefer, supportedOpsList, eagerMode);
     await this._compilation.finish();
     this._execution = await this._compilation.createExecution();
     let elapsed = performance.now() - start;
@@ -155,7 +156,7 @@ class TFliteModelImporter {
 
       await this._model.finish();
       this._compilation = await this._model.createCompilation();
-      this._compilation.setPreference(getPreferCode(this._backend, this._prefer));
+      this._compilation.setPreference(getPreferCode(this._backend, this._prefer), supportedOpsList);
       await this._compilation.finish();
       this._execution = await this._compilation.createExecution();
 

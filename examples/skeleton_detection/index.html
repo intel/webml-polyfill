@@ -82,7 +82,7 @@
               <div class='g'>
                 <span>Polyfill</span>
                 <input type='radio' name='b' class='d-none' id='WASM' value='WASM'>
-                <label id='l-WASM' for='WASM' title='Compiled Tensorflow Lite C++ kernels to WebAssembly format'>WASM</label>
+                <label id='l-WASM' for='WASM' title='Compiled Tensorflow Lite C++ kernels to WebAssembly format'>Hybrid</label>
                 <input type='radio' name='b' class='d-none' id='WebGL' value='WebGL'>
                 <label id='l-WebGL' for='WebGL' title='Tensorflow.js WebGL kernel'>WebGL</label>
               </div>
@@ -107,7 +107,26 @@
       </table>
     </div>
   </form>
-
+  <div class="container">
+    <div class="row small">
+      <button class="col-4" onclick="document.querySelectorAll('input[name=supportedOp]').forEach(x => x.checked = true)">Select All</button>
+      <button class="col-4" onclick="document.querySelectorAll('input[name=supportedOp]').forEach(x => x.checked = false)">Uncheck All</button>
+      <button class="col-4" onclick="utils.backend='';main(us === 'camera')">Update Backend</button>
+      <label class="col-4"><input type="checkbox" name="supportedOp" value="0"> ADD</label>
+      <label class="col-4"><input type="checkbox" name="supportedOp" value="10003"> ATROUS_CONV_2D</label>
+      <label class="col-4"><input type="checkbox" name="supportedOp" value="10004"> ATROUS_DEPTHWISE_CONV_2D</label>
+      <label class="col-4"><input type="checkbox" name="supportedOp" value="1"> AVERAGE_POOL_2D</label>
+      <label class="col-4"><input type="checkbox" name="supportedOp" value="2"> CONCATENATION</label>
+      <label class="col-4"><input type="checkbox" name="supportedOp" value="3"> CONV_2D</label>
+      <label class="col-4"><input type="checkbox" name="supportedOp" value="4"> DEPTHWISE_CONV_2D</label>
+      <label class="col-4"><input type="checkbox" name="supportedOp" value="9"> FULLY_CONNECTED</label>
+      <label class="col-4"><input type="checkbox" name="supportedOp" value="17"> MAX_POOL_2D</label>
+      <label class="col-4"><input type="checkbox" name="supportedOp" value="18"> MUL</label>
+      <label class="col-4"><input type="checkbox" name="supportedOp" value="22"> RESHAPE</label>
+      <label class="col-4"><input type="checkbox" name="supportedOp" value="23"> RESIZE_BILINEAR</label>
+      <label class="col-4"><input type="checkbox" name="supportedOp" value="25"> SOFTMAX</label>
+    </div>
+  </div>
   <section class='ic' id='ic'>
     <div class='container' id='container'>
       <a id='extra' href='#' class='mb-1 mt-3'>

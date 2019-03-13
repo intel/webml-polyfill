@@ -37,7 +37,10 @@ export default class Compilation {
    * 
    * @param {number} preference - The execution preference, e.g. PreferenceCode.LOW_POWER.
    */
-  setPreference(preference) {
+  setPreference(preference, hybridPrefer, supportedOpsList, eagerMode=false) {
+    this._model.supportedOpsList = supportedOpsList;
+    this._model.eagerMode = eagerMode;
+    this._model.hybridPrefer = hybridPrefer;
     if (this._finished) {
       throw new Error('setPreference cant modify after compilation finished');
     }

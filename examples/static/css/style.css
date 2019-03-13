@@ -2,7 +2,23 @@ body {
   color: #333 !important;
   font-family: Helvetica, Arial, sans-serif;
 }
-
+.row.small {
+  justify-content: space-between;
+}
+.row button.col-4 {
+  background: rgba(255, 111, 97, .7);
+  color: #fff;
+  padding: 5px 45px;
+  border-radius: 50px;
+  border: none;
+  margin-bottom: 12px;
+}
+.row button.col-4:hover {
+  background: rgba(255, 111, 97, 1);
+}
+.row .col-4 {
+  flex: 0 0 30%;
+}
 .b_bg,
 .b {
   -webkit-font-smoothing: antialiased;

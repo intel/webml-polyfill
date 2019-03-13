@@ -1,3 +1,6 @@
+let supportedOpsList = [];
+let eagerMode = false;
+
 /**
  * @license
  * Copyright 2018 Google Inc. All Rights Reserved.
@@ -95,6 +98,7 @@ class Utils{
   }
   
   async init(backend, prefer, inputSize) {
+    supportedOpsList = Array.from(document.querySelectorAll('input[name=supportedOp]:checked')).map(x => parseInt(x.value));
     this.initialized = false;
     // single input
     this._version = guiState.model;

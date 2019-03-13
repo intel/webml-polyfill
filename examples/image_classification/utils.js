@@ -1,3 +1,6 @@
+let supportedOpsList = [];
+let eagerMode = false;
+
 class Utils {
   constructor(canvas) {
     this.rawModel;
@@ -65,6 +68,7 @@ class Utils {
   }
 
   async init(backend, prefer) {
+    supportedOpsList = Array.from(document.querySelectorAll('input[name=supportedOp]:checked')).map(x => parseInt(x.value));
     if (!this.loaded) {
       return 'NOT_LOADED';
     }
@@ -225,6 +229,7 @@ class Utils {
     if (!this.initialized) return;
 
     let iterators = [];
+    let models = [];
     for (let config of configs) {
       let importer = this.modelFile.split('.').pop() === 'tflite' ? TFliteModelImporter : OnnxModelImporter;
       let model = await new importer({
@@ -233,6 +238,7 @@ class Utils {
         prefer: config.prefer || null,
       });
       iterators.push(model.layerIterator([this.inputTensor], layerList));
+      models.push(model);
     }
 
     while (true) {
@@ -261,6 +267,12 @@ class Utils {
           let variance = sum / refOutput.value.tensor.length;
           console.debug(`var with ${configs[0].backend}: ${variance}`);
         }
+      }
+    }
+
+    for (let model of models) {
+      if (model._backend !== 'WebML') {
+        model._compilation._preparedModel._deleteAll();
       }
     }
   }

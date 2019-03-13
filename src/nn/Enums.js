@@ -103,6 +103,7 @@ export const PreferenceCode = {
 };
 
 export const OperationCode = {
+  NATIVE_OP: -1,
   /** Adds two tensors, element-wise.
    *
    * Takes two input tensors of identical type and compatible dimensions. The output

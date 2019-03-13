@@ -2,9 +2,16 @@ import getNNOpsInstance from './NNOps'
 import { OperationCode, OperandCode, PaddingCode, PreferenceCode, FuseCode, OperandLifetime } from '../Enums'
 import * as utils from '../utils'
 import { product } from '../utils';
+import Graph from '../GraphUtils';
+
+var supportedOpCode = new Set([]);
+var executeTimes = 0;
+var skipWarmUpRuns = 1;
+var profiling = [];
 
 export default class PreparedModel {
   constructor() {
+    this._nnNative = navigator.ml.getNeuralNetworkContext();
     this._operations = [];
     this._operands = [];
     this._prepared = false;
@@ -24,11 +31,35 @@ export default class PreparedModel {
   async prepare(model) {
     this._model = model;
     this._nn_ops = await getNNOpsInstance();
-    this._operations = model._operations;
+
+    this._hybridPreferCode = {
+      low: this._nnNative.PREFER_LOW_POWER,
+      fast: this._nnNative.PREFER_FAST_SINGLE_ANSWER,
+      sustained: this._nnNative.PREFER_SUSTAINED_SPEED,
+    }[model.hybridPrefer];
+    supportedOpCode = new Set(model.supportedOpsList);
+    console.debug(`Supported Ops: ${Array.from(supportedOpCode).map(op => Object.keys(OperationCode).find(k => OperationCode[k] === op)).join(', ')}`)
+
+    const graph = new Graph(model._operations.length);
+    model._operations.forEach((op, i) => {
+      graph.addNode(i, op.inputs, op.outputs);
+      if (!supportedOpCode.has(op.type)) {
+        graph.setBlack(i);
+      }
+    })
+    graph.identifyInputOutputTensors(model._inputs, model._outputs);
+
+    let isEagerMode = model.eagerMode;
+    console.debug(`Mode: ${isEagerMode ? 'Eager' : 'Graph'}`);
+
+    const partitions = graph.partition(isEagerMode);
+
+    // allocate runtime operands
     for (let i = 0; i < model._operands.length; ++i) {
-      let operand = model._operands[i];
-      let runtimeOperand = {};
+      const operand = model._operands[i];
+      const runtimeOperand = {};
       runtimeOperand.type = operand.type;
+      runtimeOperand.dimensions = operand.dimensions;
       if (utils.isTensor(operand.type)) {
         runtimeOperand.value = this._allocateTensor(operand);
         runtimeOperand.runtimeshape = this._allocateRuntimeShape(operand);
@@ -39,6 +70,93 @@ export default class PreparedModel {
       }
       this._operands.push(runtimeOperand);
     }
+
+    for (const {nodes, inTensors, outTensors} of partitions) {
+      const subgraphName = `Subgraph ${typeof this.subgraphcounter === 'undefined' ? this.subgraphcounter = 0 : ++this.subgraphcounter}\t (${supportedOpCode.has(model._operations[nodes[0]].type) ? 'WebNN' : 'WASM'}):\t{${Object.entries(nodes.map(opId => Object.keys(OperationCode).find(k => OperationCode[k] === model._operations[opId].type)).reduce((counts, v) => {counts[v]?counts[v]++:counts[v]=1; return counts}, {})).map(n => `${n[0]} x ${n[1]}`).join(', ')}}`;
+      console.debug(subgraphName);
+
+      if (!supportedOpCode.has(model._operations[nodes[0]].type)) {
+
+        // run in polyfil
+
+        // break a group of WASM operations to singletons
+        for (const operationId of nodes) {
+          const operation = model._operations[operationId];
+          operation.subgraphName = `Subgraph ${this.subgraphcounter}\t (WASM):\t{${Object.keys(OperationCode).find(k => OperationCode[k] === operation.type)}}`;
+          this._operations.push(operation);
+        }
+
+      } else {
+
+        // run in WebNN
+
+        // build subgraph
+        const submodel = await this._nnNative.createModel();
+        const globalIdToLocalId = {};
+        let operandIndex = 0;
+
+        for (const operationId of nodes) {
+          const operation = model._operations[operationId];
+          for (const tensorId of [...operation.inputs, ...operation.outputs]) {
+            const globalTensorId = parseInt(tensorId);
+            if (!globalIdToLocalId.hasOwnProperty(globalTensorId)) {
+              const localTensorId = operandIndex++;
+              globalIdToLocalId[globalTensorId] = localTensorId;
+              const operand = model._operands[globalTensorId];
+              const operandType = {
+                type: operand.type,
+                dimensions: operand.dimensions,
+                scale: operand.scale,
+                zeroPoint: operand.zeroPoint,
+              };
+              submodel.addOperand(operandType);
+              if (operand.value) {
+                submodel.setOperandValue(localTensorId, operand.value);
+              }
+            }
+          }
+
+          const operationInputs = operation.inputs.map(i => globalIdToLocalId[i]);
+          const operationOutputs = operation.outputs.map(i => globalIdToLocalId[i]);
+          submodel.addOperation(operation.type, operationInputs, operationOutputs);
+        }
+
+        const submodelInputs = inTensors.map(i => globalIdToLocalId[i]);
+        const submodelOutputs = outTensors.map(i => globalIdToLocalId[i]);
+        submodel.identifyInputsAndOutputs(submodelInputs, submodelOutputs);
+        await submodel.finish();
+
+        const compilation = await submodel.createCompilation();
+        compilation.setPreference(this._hybridPreferCode);
+        await compilation.finish();
+
+        const execution = await compilation.createExecution();
+        inTensors.forEach((tensorId, i) => {
+          const operand = this._operands[tensorId];
+          const length = product(operand.dimensions);
+          const view = this._getTensorDataView(operand.type, operand.value, length);
+          execution.setInput(i, view);
+        });
+        outTensors.forEach((tensorId, i) => {
+          const operand = this._operands[tensorId];
+          const length = product(operand.dimensions);
+          const view = this._getTensorDataView(operand.type, operand.value, length);
+          execution.setOutput(i, view);
+        });
+
+        this._operations.push({
+          type: OperationCode.NATIVE_OP,
+          inputs: inTensors,
+          outputs: outTensors,
+          execution: execution,
+          subgraphName: subgraphName,
+        });
+      }
+
+    }
+
+    profiling = new Array(this._operations.length).fill(0);
+
     this._prepared = true;
   }
 
@@ -53,24 +171,31 @@ export default class PreparedModel {
       throw new Error('Model is not prepared');
     }
 
+    executeTimes++;
+    if (executeTimes === skipWarmUpRuns) {
+      profiling.fill(0);
+    }
+
     inputs.forEach(input => {
-      let operand = this._operands[input.index];
-      let buffer = input.buffer;
-      this._setTensorData(operand.type, operand.value, buffer);
+      const operand = this._operands[input.index];
+      this._setTensorData(operand.type, operand.value, input.buffer);
     });
 
-    this._operations.forEach(operation => {
-      this._executeOperation(operation);
-    });
+    for (const [i, operation] of this._operations.entries()) {
+      const start = performance.now();
+      await this._executeOperation(operation);
+      const end = performance.now();
+      profiling[i] += end - start;
+    }
 
-    outputs.forEach(output => {
-      let operand = this._operands[output.index];
-      let buffer = output.buffer;
+    outputs.forEach((output) => {
+      const operand = this._operands[output.index];
+      const buffer = output.buffer;
       this._getTensorData(operand.type, operand.value, buffer);
     });
   }
 
-  _executeOperation(operation) {
+  async _executeOperation(operation) {
     const nn_ops = this._nn_ops;
     let op = operation.type;
     let inputs = operation.inputs;
@@ -152,6 +277,19 @@ export default class PreparedModel {
     }
 
     switch(op) {
+      case OperationCode.NATIVE_OP: {
+        const execution = operation.execution;
+
+        inputs.forEach((tensorId, i) => {
+          const operand = this._operands[tensorId];
+          const length = product(operand.dimensions);
+          const view = this._getTensorDataView(operand.type, operand.value, length);
+          execution.setInput(i, view);
+        });
+
+        // execute subgraph
+        await operation.execution.startCompute();
+      } break;
       case OperationCode.ADD: {
         allParametersPresent(3, 1);
         let in1 = operands[inputs[0]];
@@ -722,6 +860,22 @@ export default class PreparedModel {
     buffer.set(view);
   }
 
+  _getTensorDataView(type, ptr, length) {
+    const nn_ops = this._nn_ops;
+    let view;
+    if (type === OperandCode.TENSOR_FLOAT32) {
+      view = new Float32Array(nn_ops.HEAPF32.buffer, ptr, length);
+    } else if (type === OperandCode.TENSOR_INT32) {
+      view = new Int32Array(nn_ops.HEAP32.buffer, ptr, length);
+    } else if (type === OperandCode.TENSOR_QUANT8_ASYMM) {
+      view = new Uint8Array(nn_ops.HEAPU8.buffer, ptr, length);
+    } else {
+      throw new Error(`Operand type ${type} is not supproted`);
+    }
+    return view;
+  }
+
+
   _allocateTensor(operand) {
     const nn_ops = this._nn_ops;
     let byteLength = utils.sizeOfTensorData(operand.type, operand.dimensions);
@@ -749,5 +903,25 @@ export default class PreparedModel {
       tensorShape.delete();
     });
     this._model._operands = [];
+  }
+
+  getReport() {
+    executeTimes -= skipWarmUpRuns;
+    let wasmTime = 0;
+    let webnnTime = 0;
+    console.debug(`\n\nExecution calls: ${executeTimes} (omitted ${skipWarmUpRuns} warm-up runs)`);
+    for (const [i, op] of this._operations.entries()) {
+      const avgTime = profiling[i] / executeTimes;
+      console.debug(`${avgTime.toFixed(5)} ms\t- ${op.subgraphName}`);
+      if (op.subgraphName.indexOf('WASM') > 0) {
+        wasmTime += avgTime;
+      } else {
+        webnnTime += avgTime;
+      }
+    }
+    console.debug(`WASM time: ${wasmTime.toFixed(5)} ms`);
+    console.debug(`WebNN time: ${webnnTime.toFixed(5)} ms`);
+    console.debug(`Sum: ${(profiling.reduce((a,b)=>a+b) / executeTimes).toFixed(5)} ms`);
+    executeTimes = 0;
   }
 }

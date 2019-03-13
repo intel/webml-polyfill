@@ -247,6 +247,8 @@ class Benchmark {
       bkPoseImageSrc = imageElement.src;
       imageElement.src = segCanvas.toDataURL();
     }
+    if (this.model._backend === 'WASM')
+      this.model._compilation._preparedModel.getReport();
     return {"computeResults": computeResults, "decodeResults": decodeResults};
   }
   /**
@@ -531,6 +533,7 @@ class WebMLJSBenchmark extends Benchmark {
         backend: backend,
         prefer: getPreferString(backend),
         softmax: postOptions.softmax || false,
+        hybridPrefer: preferSelectElement.options[preferSelectElement.selectedIndex].value
       };
       this.model = new TFliteModelImporter(kwargs);
     } else if (onnxModelArray.indexOf(modelName) !== -1) {
@@ -549,6 +552,7 @@ class WebMLJSBenchmark extends Benchmark {
         backend: backend,
         prefer: getPreferString(backend),
         softmax: postOptions.softmax || false,
+        hybridPrefer: preferSelectElement.options[preferSelectElement.selectedIndex].value
       };
       this.model = new OnnxModelImporter(kwargs);
     } else if (ssdModelArray.indexOf(modelName) !== -1) {
@@ -561,6 +565,7 @@ class WebMLJSBenchmark extends Benchmark {
         rawModel: rawModel,
         backend: backend,
         prefer: getPreferString(backend),
+        hybridPrefer: preferSelectElement.options[preferSelectElement.selectedIndex].value
       };
       this.model = new TFliteModelImporter(kwargs);
     } else if (modelName === 'posenet') {
@@ -580,9 +585,11 @@ class WebMLJSBenchmark extends Benchmark {
         rawModel: rawModel,
         backend: backend,
         prefer: getPreferString(backend),
+        hybridPrefer: preferSelectElement.options[preferSelectElement.selectedIndex].value
       };
       this.model = new TFliteModelImporter(kwargs);
     }
+    supportedOpsList = Array.from(document.querySelectorAll('input[name=supportedOp]:checked')).map(x => parseInt(x.value));
     await this.model.createCompiledModel();
   }
   printPredictResult() {
@@ -650,6 +657,7 @@ async function run() {
   inputElement.setAttribute('class', 'disabled');
   pickBtnEelement.setAttribute('class', 'btn btn-primary disabled');
   let logger = new Logger(document.querySelector('#log'));
+  window.console.debug = (msg) => logger.log(msg);
   logger.group('Benchmark');
   try {
     let configuration = JSON.parse(document.querySelector('#configurations').selectedOptions[0].value);
@@ -661,7 +669,7 @@ async function run() {
     logger.groupEnd();
     logger.group('Configuration');
     Object.keys(configuration).forEach(key => {
-      if (key === 'backend' && configuration[key] === 'native') {
+      if (key === 'backend') {
         let selectedOpt = preferSelectElement.options[preferSelectElement.selectedIndex];
         logger.log(`${key.padStart(12)}: ${getNativeAPI(selectedOpt.value)}(${selectedOpt.text})`);
       } else if (key === 'modelName') {
@@ -689,6 +697,7 @@ async function run() {
   logger.groupEnd();
 }
 document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('input[name=supportedOp]').forEach(x => x.checked = true)
   inputElement = document.getElementById('input');
   pickBtnEelement = document.getElementById('pickButton');
   imageElement = document.getElementById('image');
@@ -745,7 +754,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
     let currentConfig = configurationsElement.options[configurationsElement.selectedIndex].text;
-    if (currentConfig.indexOf('WebML API') !== -1) {
+    if (currentConfig.indexOf('WebML API') !== -1 || currentConfig.indexOf('Hybrid') !== -1) {
       preferDivElement.setAttribute('class', "prefer-show");
       if (currentOS === 'Mac OS') {
         for (var i=0; i<preferSelectElement.options.length; i++) {
@@ -792,7 +801,7 @@ document.addEventListener('DOMContentLoaded', () => {
   for (let configuration of configurations) {
     let option = document.createElement('option');
     option.value = JSON.stringify(configuration);
-    option.textContent = configuration.framework + ' (' + configuration.backend + ' backend)';
+    option.textContent = configuration.framework + ' (' + (configuration.backend === 'WASM' ? 'Hybrid' : configuration.backend) + ' backend)';
     if (configuration.framework === 'WebML API') {
       if (navigator.ml.isPolyfill) {
         option.disabled = true;
