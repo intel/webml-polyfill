@@ -6506,6 +6506,18 @@ describe('Unit Test/Model Test', function() {
       });
     });
 
+    it('"2-D tensor as input and output, the type of input and output being TENSOR_FLOAT32 type" are ok for "TANH" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let input = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2]};
+        let output = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2]};
+        model.addOperand(input);
+        model.addOperand(output);
+        assert.doesNotThrow(() => {
+          model.addOperation(nn.TANH, [0], [1]);
+        });
+      });
+    });
+
     it('raise error when the type of input and output are FLOAT32 (not TENSOR_FLOAT32) for "TANH" operation', function() {
       return nn.createModel(options).then((model)=>{
         let input = {type: nn.FLOAT32};
@@ -6695,6 +6707,34 @@ describe('Unit Test/Model Test', function() {
         model.addOperand(input);
         model.addOperand(output);
         assert.throws(() => {
+          model.addOperation(nn.MAXIMUM, [0, 1], [2]);
+        });
+      });
+    });
+
+    it('"the input1 tensors (rank = 4) and the input2 tensors (rank < 4) have compatible dimensions" are ok for "MAXIMUM" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let input1 = {type: nn.TENSOR_INT32, dimensions: [1, 2, 2, 1]};
+        let input2 = {type: nn.TENSOR_INT32, dimensions: [2, 2, 1]};
+        let output = {type: nn.TENSOR_INT32, dimensions: [1, 2, 2, 1]};
+        model.addOperand(input1);
+        model.addOperand(input2);
+        model.addOperand(output);
+        assert.doesNotThrow(() => {
+          model.addOperation(nn.MAXIMUM, [0, 1], [2]);
+        });
+      });
+    });
+
+    it('raise error when the input1 tensors (rank < 4) and the input2 tensors (rank = 4) don\'t have compatible dimensions for "MAXIMUM" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let input1 = {type: nn.TENSOR_INT32, dimensions: [2, 2, 1]};
+        let input2 = {type: nn.TENSOR_INT32, dimensions: [1, 2, 2, 1]};
+        let output = {type: nn.TENSOR_INT32, dimensions: [2, 2, 1]};
+        model.addOperand(input1);
+        model.addOperand(input2);
+        model.addOperand(output);
+        assert.doesNotThrow(() => {
           model.addOperation(nn.MAXIMUM, [0, 1], [2]);
         });
       });
