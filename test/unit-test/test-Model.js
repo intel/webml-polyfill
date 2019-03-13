@@ -3,6 +3,28 @@ describe('Unit Test/Model Test', function() {
   const TENSOR_DIMENSIONS = [2, 2, 2, 2];
   let nn;
 
+  async function assertThrowsAsync(fn, regExp) {
+    let f = () => {};
+    try {
+      await fn();
+    } catch(e) {
+      f = () => {throw e};
+    } finally {
+      assert.throws(f, regExp);
+    }
+  }
+
+  async function assertDoesNotThrowAsync(fn, regExp) {
+    let f = () => {};
+    try {
+      await fn();
+    } catch(e) {
+      f = () => {throw e};
+    } finally {
+      assert.doesNotThrow(f, regExp);
+    }
+  }
+
   beforeEach(function(){
     nn = navigator.ml.getNeuralNetworkContext();
   });
@@ -780,11 +802,11 @@ describe('Unit Test/Model Test', function() {
       });
     });
 
-    it('raise error when setting an Int8Array data for a TENSOR_QUANT8_ASYMM tensor', function() {
+    it('raise error when setting an Uint8Array data for a TENSOR_QUANT8_ASYMM tensor', function() {
       return nn.createModel(options).then((model)=>{
         let op = {type: nn.TENSOR_QUANT8_ASYMM, dimensions: TENSOR_DIMENSIONS, scale: 0.8, zeroPoint: 1};
         model.addOperand(op);
-        let data = new Int8Array(product(op.dimensions));
+        let data = new Uint8Array(product(op.dimensions));
         data.fill(0);
         assert.throws(() => {
           model.setOperandValue(0, data);
@@ -792,11 +814,11 @@ describe('Unit Test/Model Test', function() {
       });
     });
 
-    it('setting an Uint8Array data for a TENSOR_QUANT8_ASYMM tensor is ok', function() {
+    it('setting an Int8Array data for a TENSOR_QUANT8_ASYMM tensor is ok', function() {
       return nn.createModel(options).then((model)=>{
         let op = {type: nn.TENSOR_QUANT8_ASYMM, dimensions: TENSOR_DIMENSIONS, scale: 0.8, zeroPoint: 1};
         model.addOperand(op);
-        let data = new Uint8Array(product(op.dimensions));
+        let data = new Int8Array(product(op.dimensions));
         data.fill(0);
         assert.doesNotThrow(() => {
           model.setOperandValue(0, data);
@@ -1028,7 +1050,7 @@ describe('Unit Test/Model Test', function() {
         model.addOperand(input0Opertions);
         let input1Opertions = {type: nn.TENSOR_QUANT8_ASYMM, dimensions: [5, 4, 3, 1], scale: 0.5, zeroPoint: 1};
         model.addOperand(input1Opertions);
-        let data = new Uint8Array(product(input1Opertions.dimensions));
+        let data = new Int8Array(product(input1Opertions.dimensions));
         data.fill(0);
         model.setOperandValue(1, data);
         model.addOperand({type: nn.INT32});
@@ -1064,7 +1086,7 @@ describe('Unit Test/Model Test', function() {
         model.addOperand(input0Options);
         let op = {type: nn.TENSOR_QUANT8_ASYMM, dimensions: TENSOR_DIMENSIONS, scale: 0.8, zeroPoint: 0};
         model.addOperand(op);
-        let data = new Uint8Array(product(op.dimensions));
+        let data = new Int8Array(product(op.dimensions));
         data.fill(0);
         model.setOperandValue(1, data);
         model.addOperand({type: nn.INT32});
@@ -1083,7 +1105,7 @@ describe('Unit Test/Model Test', function() {
         model.addOperand(optionsRank5);
         let optionsRank4 = {type: nn.TENSOR_QUANT8_ASYMM, dimensions: TENSOR_DIMENSIONS, scale: 0.8, zeroPoint: 0};
         model.addOperand(optionsRank4);
-        let data = new Uint8Array(product(optionsRank4.dimensions));
+        let data = new Int8Array(product(optionsRank4.dimensions));
         data.fill(0);
         model.setOperandValue(1, data);
         model.addOperand({type: nn.INT32});
@@ -1101,7 +1123,7 @@ describe('Unit Test/Model Test', function() {
         model.addOperand(options0);
         let options1 = {type: nn.TENSOR_QUANT8_ASYMM, dimensions: [5, 4, 3, 1], scale: 0.8, zeroPoint: 0};
         model.addOperand(options1);
-        let data = new Uint8Array(product(options1.dimensions));
+        let data = new int8Array(product(options1.dimensions));
         data.fill(0);
         model.setOperandValue(1, data);
         model.addOperand({type: nn.INT32});
@@ -6710,6 +6732,963 @@ describe('Unit Test/Model Test', function() {
         assert.throws(() => {
           model.createCompilation();
         });
+      });
+    });
+
+    it('"the length of inputs being 7, 4-D tensor as input0, the type of intput1 to input8 being INT32 type, input9 also having INT32 type with value of 0-3, 4-D tensor as output" are ok for "MAX_POOL_2D" operation', async function() {
+      let model = await nn.createModel(options);
+      let operandIndex = 0;
+
+      let type1 = {type: nn.INT32};
+      let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2, 1]};
+
+      let op1 = operandIndex++;
+      model.addOperand(type0);
+      let cons1 = operandIndex++;
+      model.addOperand(type1);
+      let pad = operandIndex++;
+      model.addOperand(type1);
+      let act = operandIndex++;
+      model.addOperand(type1);
+      let op3 = operandIndex++;
+      model.addOperand(type0);
+
+      model.setOperandValue(cons1, new Int32Array([1]));
+      model.setOperandValue(pad, new Int32Array([2]));
+      model.setOperandValue(act, new Int32Array([0]));
+      model.addOperation(nn.MAX_POOL_2D, [op1, pad, cons1, cons1, cons1, cons1, act], [op3]);
+
+      model.identifyInputsAndOutputs([op1], [op3]);
+      await model.finish();
+
+      let compilation = await model.createCompilation();
+      compilation.setPreference(getPreferenceCode(options.prefer));
+      await compilation.finish();
+
+      let execution = await compilation.createExecution();
+
+      await assertDoesNotThrowAsync(async() => {
+        await execution.startCompute();
+      });
+    });
+
+    it('raise error when the length of inputs is 9 (not 7 or 10) for "MAX_POOL_2D" operation', async function() {
+      let model = await nn.createModel(options);
+      let operandIndex = 0;
+
+      let type1 = {type: nn.INT32};
+      let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2, 1]};
+
+      let op1 = operandIndex++;
+      model.addOperand(type0);
+      let cons1 = operandIndex++;
+      model.addOperand(type1);
+      let pad0 = operandIndex++;
+      model.addOperand(type1);
+      let act = operandIndex++;
+      model.addOperand(type1);
+      let op3 = operandIndex++;
+      model.addOperand(type0);
+
+      model.setOperandValue(cons1, new Int32Array([1]));
+      model.setOperandValue(pad0, new Int32Array([0]));
+      model.setOperandValue(act, new Int32Array([0]));
+      model.addOperation(nn.MAX_POOL_2D, [op1, pad0, pad0, pad0, cons1, cons1, cons1, cons1, act], [op3]);
+
+      model.identifyInputsAndOutputs([op1], [op3]);
+      await model.finish();
+
+      let compilation = await model.createCompilation();
+      compilation.setPreference(getPreferenceCode(options.prefer));
+      await compilation.finish();
+
+      let execution = await compilation.createExecution();
+
+      await assertThrowsAsync(async() => {
+        await execution.startCompute();
+      });
+    });
+
+    it('raise error when the index is invalid for setOperandValue function', async function() {
+      let model = await nn.createModel(options);
+      let operandIndex = 0;
+
+      let type1 = {type: nn.INT32};
+      let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2, 1]};
+
+      let op1 = operandIndex++;
+      model.addOperand(type0);
+      let cons1 = operandIndex++;
+      model.addOperand(type1);
+      let pad = operandIndex++;
+      model.addOperand(type1);
+      let act = operandIndex++;
+      model.addOperand(type1);
+      let op3 = operandIndex++;
+      model.addOperand(type0);
+
+      assert.throws(() =>{
+        model.setOperandValue(10, new Int32Array([1]));
+      });
+    });
+
+    it('raise error when the length of inputs is 6 (not 7 or 10) for "CONV_2D" operation', async () => {
+      let model = await nn.createModel(options);
+      let operandIndex = 0;
+
+      let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 8, 8, 3]};
+      let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 3, 2, 3]};
+      let type2 = {type: nn.TENSOR_FLOAT32, dimensions: [1]};
+      let type3 = {type: nn.INT32};
+      let type4 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 8, 8, 1]};
+
+      let op1 = operandIndex++;
+      model.addOperand(type0);
+      let op2 = operandIndex++;
+      model.addOperand(type1);
+      let bias = operandIndex++;
+      model.addOperand(type2);
+      let pad = operandIndex++;
+      model.addOperand(type3);
+      let rate_w = operandIndex++;
+      model.addOperand(type3);
+      let rate_h = operandIndex++;
+      model.addOperand(type3);
+      let act = operandIndex++;
+      model.addOperand(type3);
+
+      let op3 = operandIndex++;
+      model.addOperand(type4);
+
+      model.setOperandValue(bias, new Float32Array([0]));
+      model.setOperandValue(pad, new Int32Array([1]));
+      model.setOperandValue(rate_w, new Int32Array([1]));
+      model.setOperandValue(rate_h, new Int32Array([1]));
+      model.setOperandValue(act, new Int32Array([0]));
+
+      model.addOperation(nn.CONV_2D, [op1, bias, pad, rate_w, rate_h, act], [op3]);
+      model.identifyInputsAndOutputs([op1], [op3]);
+      await model.finish();
+
+      let compilation = await model.createCompilation();
+      compilation.setPreference(getPreferenceCode(options.prefer));
+      await compilation.finish();
+
+      let execution = await compilation.createExecution();
+
+      await assertThrowsAsync(async() => {
+        await execution.startCompute();
+      });
+    });
+
+    it('raise error when the length of inputs is 6 (not 7 or 10) for "ATROUS_CONV_2D" operation', async () => {
+      let model = await nn.createModel(options);
+      let operandIndex = 0;
+
+      let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 8, 8, 3]};
+      let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 3, 2, 3]};
+      let type2 = {type: nn.TENSOR_FLOAT32, dimensions: [1]};
+      let type3 = {type: nn.INT32};
+      let type4 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 8, 8, 1]};
+
+      let op1 = operandIndex++;
+      model.addOperand(type0);
+      let op2 = operandIndex++;
+      model.addOperand(type1);
+      let bias = operandIndex++;
+      model.addOperand(type2);
+      let pad = operandIndex++;
+      model.addOperand(type3);
+      let rate_w = operandIndex++;
+      model.addOperand(type3);
+      let rate_h = operandIndex++;
+      model.addOperand(type3);
+      let act = operandIndex++;
+      model.addOperand(type3);
+
+      let op3 = operandIndex++;
+      model.addOperand(type4);
+
+      model.setOperandValue(bias, new Float32Array([0]));
+      model.setOperandValue(pad, new Int32Array([1]));
+      model.setOperandValue(rate_w, new Int32Array([1]));
+      model.setOperandValue(rate_h, new Int32Array([1]));
+      model.setOperandValue(act, new Int32Array([0]));
+
+      model.addOperation(nn.ATROUS_CONV_2D, [op1, bias, pad, rate_w, rate_h, act], [op3]);
+      model.identifyInputsAndOutputs([op1], [op3]);
+      await model.finish();
+
+      let compilation = await model.createCompilation();
+      compilation.setPreference(getPreferenceCode(options.prefer));
+      await compilation.finish();
+
+      let execution = await compilation.createExecution();
+
+      await assertThrowsAsync(async() => {
+        await execution.startCompute();
+      });
+    });
+
+    it('raise error when the length of inputs is 6 (not 8 or 11) for "DEPTHWISE_CONV_2D" operation', async function() {
+      let model = await nn.createModel(options);
+      let operandIndex = 0;
+
+      let type0 = {type: nn.INT32};
+      let type2 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 1, 1, 3]};
+      let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 8, 8, 3]};
+      let type3 = {type: nn.TENSOR_FLOAT32, dimensions: [3]};
+
+      let b4 = operandIndex++;
+      model.addOperand(type0);
+      let b5 = operandIndex++;
+      model.addOperand(type0);
+      let b6 = operandIndex++;
+      model.addOperand(type0);
+      let b7 = operandIndex++;
+      model.addOperand(type0);
+      let b8 = operandIndex++;
+      model.addOperand(type0);
+      let op2 = operandIndex++;
+      model.addOperand(type1);
+      let op3 = operandIndex++;
+      model.addOperand(type1);
+      let op0 = operandIndex++;
+      model.addOperand(type2);
+      let op1 = operandIndex++;
+      model.addOperand(type3);
+
+      model.setOperandValue(b4, new Int32Array([1]));
+      model.setOperandValue(b5, new Int32Array([1]));
+      model.setOperandValue(b6, new Int32Array([1]));
+      model.setOperandValue(b7, new Int32Array([1]));
+      model.setOperandValue(b8, new Int32Array([1]));
+      model.setOperandValue(op0, new Float32Array([-0.966213, -0.467474, -0.82203]));
+      model.setOperandValue(op1, new Float32Array([0, 0, 0]));
+      model.addOperation(nn.DEPTHWISE_CONV_2D, [op2, op0, op1, b4, b5, b6], [op3]);
+
+      model.identifyInputsAndOutputs([op2], [op3]);
+      await model.finish();
+
+      let compilation = await model.createCompilation();
+      compilation.setPreference(getPreferenceCode(options.prefer));
+      await compilation.finish();
+
+      let execution = await compilation.createExecution();
+
+      await assertThrowsAsync(async() => {
+        await execution.startCompute();
+      });
+    });
+
+    it('raise error when the length of inputs is 6 (not 8 or 11) for "ATROUS_DEPTHWISE_CONV_2D" operation', async function() {
+      let model = await nn.createModel(options);
+      let operandIndex = 0;
+
+      let type0 = {type: nn.INT32};
+      let type2 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 1, 1, 3]};
+      let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 8, 8, 3]};
+      let type3 = {type: nn.TENSOR_FLOAT32, dimensions: [3]};
+
+      let b4 = operandIndex++;
+      model.addOperand(type0);
+      let b5 = operandIndex++;
+      model.addOperand(type0);
+      let b6 = operandIndex++;
+      model.addOperand(type0);
+      let b7 = operandIndex++;
+      model.addOperand(type0);
+      let b8 = operandIndex++;
+      model.addOperand(type0);
+      let op2 = operandIndex++;
+      model.addOperand(type1);
+      let op3 = operandIndex++;
+      model.addOperand(type1);
+      let op0 = operandIndex++;
+      model.addOperand(type2);
+      let op1 = operandIndex++;
+      model.addOperand(type3);
+
+      model.setOperandValue(b4, new Int32Array([1]));
+      model.setOperandValue(b5, new Int32Array([1]));
+      model.setOperandValue(b6, new Int32Array([1]));
+      model.setOperandValue(b7, new Int32Array([1]));
+      model.setOperandValue(b8, new Int32Array([1]));
+      model.setOperandValue(op0, new Float32Array([-0.966213, -0.467474, -0.82203]));
+      model.setOperandValue(op1, new Float32Array([0, 0, 0]));
+      model.addOperation(nn.ATROUS_DEPTHWISE_CONV_2D, [op2, op0, op1, b4, b5, b6], [op3]);
+
+      model.identifyInputsAndOutputs([op2], [op3]);
+      await model.finish();
+
+      let compilation = await model.createCompilation();
+      compilation.setPreference(getPreferenceCode(options.prefer));
+      await compilation.finish();
+
+      let execution = await compilation.createExecution();
+
+      await assertThrowsAsync(async() => {
+        await execution.startCompute();
+      });
+    });
+
+    it('raise error when the length of inputs is 1 for "CONCATENATION" operation', async function() {
+      let model = await nn.createModel(options);
+      let operandIndex = 0;
+
+      let op1_value = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0];
+      let op2_value = [7.0, 8.0, 9.0, 10.0, 11.0, 12.0];
+
+      let type1 = {type: nn.INT32};
+      let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 3]};
+      let type2 = {type: nn.TENSOR_FLOAT32, dimensions: [4, 3]};
+
+      let op1 = operandIndex++;
+      model.addOperand(type0);
+      let op2 = operandIndex++;
+      model.addOperand(type0);
+      let axis0 = operandIndex++;
+      model.addOperand(type1);
+      let result = operandIndex++;
+      model.addOperand(type2);
+
+      let op2_input = new Float32Array(op2_value);
+      model.setOperandValue(op2, op2_input);
+
+      model.setOperandValue(axis0, new Int32Array([0]));
+      model.addOperation(nn.CONCATENATION, [op1], [result]);
+
+      model.identifyInputsAndOutputs([op1], [result]);
+      await model.finish();
+
+      let compilation = await model.createCompilation();
+      compilation.setPreference(getPreferenceCode(options.prefer));
+      await compilation.finish();
+
+      let execution = await compilation.createExecution();
+
+      await assertThrowsAsync(async() => {
+        await execution.startCompute();
+      });
+    });
+
+    it('raise error when the length of output is 0 for "CONCATENATION" operation', async function() {
+      let model = await nn.createModel(options);
+      let operandIndex = 0;
+
+      let op1_value = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0];
+      let op2_value = [7.0, 8.0, 9.0, 10.0, 11.0, 12.0];
+
+      let type1 = {type: nn.INT32};
+      let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 3]};
+      let type2 = {type: nn.TENSOR_FLOAT32, dimensions: [4, 3]};
+
+      let op1 = operandIndex++;
+      model.addOperand(type0);
+      let op2 = operandIndex++;
+      model.addOperand(type0);
+      let axis0 = operandIndex++;
+      model.addOperand(type1);
+      let result = operandIndex++;
+      model.addOperand(type2);
+
+      let op2_input = new Float32Array(op2_value);
+      model.setOperandValue(op2, op2_input);
+
+      model.setOperandValue(axis0, new Int32Array([0]));
+      model.addOperation(nn.CONCATENATION, [op1], [result]);
+
+      model.identifyInputsAndOutputs([op1, op2, axis0], []);
+      await model.finish();
+
+      let compilation = await model.createCompilation();
+      compilation.setPreference(getPreferenceCode(options.prefer));
+      await compilation.finish();
+
+      let execution = await compilation.createExecution();
+
+      await assertThrowsAsync(async() => {
+        await execution.startCompute();
+      });
+    });
+
+    it('raise error when the length of inputs is 6 (not 3 or 4) for "RESIZE_BILINEAR" operation', async function() {
+      let model = await nn.createModel(options);
+      let operandIndex = 0;
+
+      let type2 = {type: nn.INT32};
+      let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2, 1]};
+      let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 3, 3, 1]};
+
+      let op1 = operandIndex++;
+      model.addOperand(type0);
+      let op2 = operandIndex++;
+      model.addOperand(type1);
+      let height = operandIndex++;
+      model.addOperand(type2);
+      let width = operandIndex++;
+      model.addOperand(type2);
+
+      model.setOperandValue(height, new Int32Array([3]));
+      model.setOperandValue(width, new Int32Array([3]));
+      model.addOperation(nn.RESIZE_BILINEAR, [op1, height, width, op1, height, width], [op2]);
+
+      model.identifyInputsAndOutputs([op1], [op2]);
+      await model.finish();
+
+      let compilation = await model.createCompilation();
+      compilation.setPreference(getPreferenceCode(options.prefer));
+      await compilation.finish();
+
+      let execution = await compilation.createExecution();
+
+      await assertThrowsAsync(async() => {
+        await execution.startCompute();
+      });
+    });
+
+    it('raise error when the length of inputs is 0 (not 3 or 4) for "RESIZE_BILINEAR" operation', async function() {
+      let model = await nn.createModel(options);
+      let operandIndex = 0;
+
+      let type2 = {type: nn.INT32};
+      let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2, 1]};
+      let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 3, 3, 1]};
+
+      let op1 = operandIndex++;
+      model.addOperand(type0);
+      let op2 = operandIndex++;
+      model.addOperand(type1);
+      let height = operandIndex++;
+      model.addOperand(type2);
+      let width = operandIndex++;
+      model.addOperand(type2);
+
+      model.setOperandValue(height, new Int32Array([3]));
+      model.setOperandValue(width, new Int32Array([3]));
+      model.addOperation(nn.RESIZE_BILINEAR, [], [op2]);
+
+      model.identifyInputsAndOutputs([op1], [op2]);
+      await model.finish();
+
+      let compilation = await model.createCompilation();
+      compilation.setPreference(getPreferenceCode(options.prefer));
+      await compilation.finish();
+
+      let execution = await compilation.createExecution();
+
+      await assertThrowsAsync(async() => {
+        await execution.startCompute();
+      });
+    });
+
+    it('raise error when the length of inputs is 9(not 7 or 10) for "ATROUS_CONV_2D"', async function() {
+      let model = await nn.createModel(options);
+      let operandIndex = 0;
+
+      let type3 = {type: nn.INT32};
+      let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2, 1]};
+      let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 3, 3, 1]};
+      let type2 = {type: nn.TENSOR_FLOAT32, dimensions: [1]};
+
+      let op1 = operandIndex++;
+      model.addOperand(type0);
+      let op2 = operandIndex++;
+      model.addOperand(type1);
+      let op3 = operandIndex++;
+      model.addOperand(type2);
+      let pad0 = operandIndex++;
+      model.addOperand(type3);
+      let stride = operandIndex++;
+      model.addOperand(type3);
+      let op4 = operandIndex++;
+      model.addOperand(type1);
+
+      model.setOperandValue(op2, new Float32Array([0.25, 0.25, 0.25, 0.25]));
+      model.setOperandValue(op3, new Float32Array([0]));
+      model.setOperandValue(pad0, new Int32Array([0]));
+      model.setOperandValue(stride, new Int32Array([1]));
+      model.addOperation(nn.ATROUS_CONV_2D, [op1, op2, op3, pad0, pad0, pad0, pad0, stride, stride], [op4]);
+
+      model.identifyInputsAndOutputs([op1], [op4]);
+      await model.finish();
+
+      let compilation = await model.createCompilation();
+      compilation.setPreference(getPreferenceCode(options.prefer));
+      await compilation.finish();
+
+      let execution = await compilation.createExecution();
+
+      await assertThrowsAsync(async() => {
+        await execution.startCompute();
+      });
+    });
+
+    it('the length of inputs being 10 is ok for "ATROUS_CONV_2D"', async function() {
+      let model = await nn.createModel(options);
+      let operandIndex = 0;
+
+      let type3 = {type: nn.INT32};
+      let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2, 1]};
+      let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 3, 3, 1]};
+      let type2 = {type: nn.TENSOR_FLOAT32, dimensions: [1]};
+
+      let op1 = operandIndex++;
+      model.addOperand(type0);
+      let op2 = operandIndex++;
+      model.addOperand(type1);
+      let op3 = operandIndex++;
+      model.addOperand(type2);
+      let pad0 = operandIndex++;
+      model.addOperand(type3);
+      let act = operandIndex++;
+      model.addOperand(type3);
+      let stride = operandIndex++;
+      model.addOperand(type3);
+      let op4 = operandIndex++;
+      model.addOperand(type1);
+
+      model.setOperandValue(op2, new Float32Array([0.25, 0.25, 0.25, 0.25]));
+      model.setOperandValue(op3, new Float32Array([0]));
+      model.setOperandValue(pad0, new Int32Array([0]));
+      model.setOperandValue(act, new Int32Array([0]));
+      model.setOperandValue(stride, new Int32Array([1]));
+      model.addOperation(nn.ATROUS_CONV_2D, [op1, op2, op3, pad0, pad0, pad0, pad0, stride, stride, act], [op4]);
+
+      model.identifyInputsAndOutputs([op1], [op4]);
+      await model.finish();
+
+      let compilation = await model.createCompilation();
+      compilation.setPreference(getPreferenceCode(options.prefer));
+      await compilation.finish();
+
+      let execution = await compilation.createExecution();
+
+      await assertDoesNotThrowAsync(async() => {
+        await execution.startCompute();
+      });
+    });
+
+    it('the length of inputs being 10 with different padding is ok for "ATROUS_CONV_2D" ', async function() {
+      let model = await nn.createModel(options);
+      let operandIndex = 0;
+
+      let type3 = {type: nn.INT32};
+      let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2, 1]};
+      let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 3, 3, 1]};
+      let type2 = {type: nn.TENSOR_FLOAT32, dimensions: [1]};
+
+      let op1 = operandIndex++;
+      model.addOperand(type0);
+      let op2 = operandIndex++;
+      model.addOperand(type1);
+      let op3 = operandIndex++;
+      model.addOperand(type2);
+      let padl = operandIndex++;
+      model.addOperand(type3);
+      let padr = operandIndex++;
+      model.addOperand(type3);
+      let padt = operandIndex++;
+      model.addOperand(type3);
+      let padb = operandIndex++;
+      model.addOperand(type3);
+      let act = operandIndex++;
+      model.addOperand(type3);
+      let stride = operandIndex++;
+      model.addOperand(type3);
+      let op4 = operandIndex++;
+      model.addOperand(type1);
+
+      model.setOperandValue(op2, new Float32Array([0.25, 0.25, 0.25, 0.25]));
+      model.setOperandValue(op3, new Float32Array([0]));
+      model.setOperandValue(padl, new Int32Array([0]));
+      model.setOperandValue(padr, new Int32Array([1]));
+      model.setOperandValue(padt, new Int32Array([2]));
+      model.setOperandValue(padb, new Int32Array([3]));
+      model.setOperandValue(act, new Int32Array([0]));
+      model.setOperandValue(stride, new Int32Array([1]));
+      model.addOperation(nn.ATROUS_CONV_2D, [op1, op2, op3, padl, padr, padt, padb, stride, stride, act], [op4]);
+
+      model.identifyInputsAndOutputs([op1], [op4]);
+      await model.finish();
+
+      let compilation = await model.createCompilation();
+      compilation.setPreference(getPreferenceCode(options.prefer));
+      await compilation.finish();
+
+      let execution = await compilation.createExecution();
+
+      await assertDoesNotThrowAsync(async() => {
+        await execution.startCompute();
+      });
+    });
+
+    it('the length of inputs being 10 is ok for "ATROUS_DEPTHWISE_CONV_2D"', async function() {
+      let model = await nn.createModel(options);
+      let operandIndex = 0;
+
+      let type3 = {type: nn.INT32};
+      let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2, 4]};
+      let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 3, 3, 2]};
+      let type2 = {type: nn.TENSOR_FLOAT32, dimensions: [4]};
+
+      let op1 = operandIndex++;
+      model.addOperand(type0);
+      let op2 = operandIndex++;
+      model.addOperand(type1);
+      let op3 = operandIndex++;
+      model.addOperand(type2);
+      let pad0 = operandIndex++;
+      model.addOperand(type3);
+      let act = operandIndex++;
+      model.addOperand(type3);
+      let stride = operandIndex++;
+      model.addOperand(type3);
+      let channelMultiplier = operandIndex++;
+      model.addOperand(type3);
+      let op4 = operandIndex++;
+      model.addOperand(type1);
+
+      model.setOperandValue(op2, new Float32Array([0.25, 0, 0.2, 0, 0.25, 0, 0, 0.3, 0.25, 0, 0, 0, 0.25, 0.1, 0, 0]));
+      model.setOperandValue(op3, new Float32Array([1, 2, 3, 4]));
+      model.setOperandValue(pad0, new Int32Array([0]));
+      model.setOperandValue(act, new Int32Array([0]));
+      model.setOperandValue(stride, new Int32Array([1]));
+      model.setOperandValue(channelMultiplier, new Int32Array([2]));
+      model.addOperation(nn.ATROUS_DEPTHWISE_CONV_2D, [op1, op2, op3, pad0, pad0, pad0, pad0, stride, stride, channelMultiplier, act], [op4]);
+
+      model.identifyInputsAndOutputs([op1], [op4]);
+      await model.finish();
+
+      let compilation = await model.createCompilation();
+      compilation.setPreference(getPreferenceCode(options.prefer));
+      await compilation.finish();
+
+      let execution = await compilation.createExecution();
+
+      await assertDoesNotThrowAsync(async() => {
+        await execution.startCompute();
+      });
+    });
+
+    it('raise error "inputs 1(beta)" must be positive for "SOFTMAX"', async function() {
+      let model = await nn.createModel(options);
+      let operandIndex = 0;
+
+      let type1 = {type: nn.FLOAT32};
+      let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 4]};
+
+      let input = operandIndex++;
+      model.addOperand(type0);
+      let beta = operandIndex++;
+      model.addOperand(type1);
+      let output = operandIndex++;
+      model.addOperand(type0);
+
+      model.setOperandValue(beta, new Float32Array([-1]));
+      model.addOperation(nn.SOFTMAX, [input, beta], [output]);
+
+      model.identifyInputsAndOutputs([input], [output]);
+      await model.finish();
+
+      let compilation = await model.createCompilation();
+      compilation.setPreference(getPreferenceCode(options.prefer));
+      await compilation.finish();
+
+      let execution = await compilation.createExecution();
+
+      await assertThrowsAsync(async() => {
+        await execution.startCompute();
+      });
+    });
+
+    it('raise error when set invalid act for "ADD" operation', async function() {
+      let model = await nn.createModel(options);
+        let op = {type: nn.TENSOR_FLOAT32, dimensions: [4, 1, 2]};
+        model.addOperand(op);
+        model.addOperand(op);
+        let data = new Float32Array(product(op.dimensions));
+        data.fill(0);
+        model.setOperandValue(1, data);
+        model.addOperand({type: nn.INT32});
+        model.setOperandValue(2, new Int32Array([99]));
+        model.addOperand(op);
+        model.addOperation(nn.ADD, [0, 1, 2], [3]);
+        model.identifyInputsAndOutputs([0], [3]);
+        await model.finish();
+
+        let compilation = await model.createCompilation();
+        compilation.setPreference(getPreferenceCode(options.prefer));
+        await compilation.finish();
+
+        let execution = await compilation.createExecution();
+
+        await assertThrowsAsync(async() => {
+          await execution.startCompute();
+        });
+    });
+
+
+    it('raise error bais being not of TENSOR_FLOAT32 type when input0 as TENSOR_QUANT8_ASYMM tensor for "CONV_2D" operation', async function() {
+      let model = await nn.createModel(options);
+        let input_scale = 0.5;
+        let filter_scale = 0.2;
+        let bias_scale = input_scale * filter_scale;
+        let operandIndex = 0;
+
+        let type3 = {type: nn.INT32};
+        let type0 = {type: nn.TENSOR_QUANT8_ASYMM, dimensions: [1, 1, 1, 3], scale: input_scale, zeroPoint: 1};
+        let type1 = {type: nn.TENSOR_QUANT8_ASYMM, dimensions: [3, 1, 1, 3], scale: filter_scale, zeroPoint: 2};
+        let type2 = {type: nn.TENSOR_FLOAT32, dimensions: [3], scale: bias_scale, zeroPoint: 0};
+
+        let op1 = operandIndex++;
+        model.addOperand(type0);
+        let op2 = operandIndex++;
+        model.addOperand(type1);
+        let op3 = operandIndex++;
+        model.addOperand(type2);
+        let pad0 = operandIndex++;
+        model.addOperand(type3);
+        let act = operandIndex++;
+        model.addOperand(type3);
+        let stride = operandIndex++;
+        model.addOperand(type3);
+        let op4 = operandIndex++;
+        model.addOperand(type0);
+
+        model.setOperandValue(op2, new Int8Array([1, 1, 1, 2, 2, 2, 3, 3, 3]));
+        model.setOperandValue(op3, new Float32Array([0, 0, 0]));
+        model.setOperandValue(pad0, new Int32Array([0]));
+        model.setOperandValue(act, new Int32Array([1]));
+        model.setOperandValue(stride, new Int32Array([1]));
+        model.addOperation(nn.CONV_2D, [op1, op2, op3, pad0, pad0, pad0, pad0, stride, stride, act], [op4]);
+
+        model.identifyInputsAndOutputs([op1], [op4]);
+        await model.finish();
+
+        let compilation = await model.createCompilation();
+        compilation.setPreference(getPreferenceCode(options.prefer));
+        await compilation.finish();
+
+        let execution = await compilation.createExecution();
+
+        await assertThrowsAsync(async() => {
+          await execution.startCompute();
+        });
+    });
+
+    it('raise error bais being not of TENSOR_FLOAT32 type when input0 as TENSOR_QUANT8_ASYMM tensor for "DEPTHWISE_CONV_2D" operation', async function() {
+      let model = await nn.createModel(options);
+        let input_scale = 0.5;
+        let filter_scale = 0.2;
+        let bias_scale = input_scale * filter_scale;
+        let operandIndex = 0;
+        let type0 = {type: nn.INT32};
+        let type2 = {type: nn.TENSOR_QUANT8_ASYMM, dimensions: [1, 1, 1, 3], scale: input_scale, zeroPoint: 1};
+        let type1 = {type: nn.TENSOR_QUANT8_ASYMM, dimensions: [1, 8, 8, 3], scale: filter_scale, zeroPoint: 2};
+        let type3 = {type: nn.TENSOR_FLOAT32, dimensions: [3], scale: bias_scale, zeroPoint: 0};
+
+        let b4 = operandIndex++;
+        model.addOperand(type0);
+        let b5 = operandIndex++;
+        model.addOperand(type0);
+        let b6 = operandIndex++;
+        model.addOperand(type0);
+        let b7 = operandIndex++;
+        model.addOperand(type0);
+        let b8 = operandIndex++;
+        model.addOperand(type0);
+        let op2 = operandIndex++;
+        model.addOperand(type1);
+        let op3 = operandIndex++;
+        model.addOperand(type1);
+        let op0 = operandIndex++;
+        model.addOperand(type2);
+        let op1 = operandIndex++;
+        model.addOperand(type3);
+
+        model.setOperandValue(b4, new Int32Array([1]));
+        model.setOperandValue(b5, new Int32Array([1]));
+        model.setOperandValue(b6, new Int32Array([1]));
+        model.setOperandValue(b7, new Int32Array([1]));
+        model.setOperandValue(b8, new Int32Array([1]));
+        model.setOperandValue(op0, new Int8Array([1, 2, 3]));
+        model.setOperandValue(op1, new Float32Array([0, 0, 0]));
+        model.addOperation(nn.DEPTHWISE_CONV_2D, [op2, op0, op1, b4, b5, b6, b7, b8], [op3]);
+        model.identifyInputsAndOutputs([op2], [op3]);
+        await model.finish();
+
+        let compilation = await model.createCompilation();
+        compilation.setPreference(getPreferenceCode(options.prefer));
+        await compilation.finish();
+
+        let execution = await compilation.createExecution();
+
+        await assertThrowsAsync(async() => {
+          await execution.startCompute();
+        });
+    });
+
+    it('check result having 11 inputs and padding of right left top bottom being not equal "DEPTHWISE_CONV_2D" operation', async function() {
+      let model = await nn.createModel(options);
+      let operandIndex = 0;
+      let type0 = {type: nn.INT32};
+      let type2 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 1, 1, 3]};
+      let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 8, 8, 3]};
+      let type3 = {type: nn.TENSOR_FLOAT32, dimensions: [3]};
+
+      let padl = operandIndex++;
+      model.addOperand(type0);
+      let b5 = operandIndex++;
+      model.addOperand(type0);
+      let b6 = operandIndex++;
+      model.addOperand(type0);
+      let b7 = operandIndex++;
+      model.addOperand(type0);
+      let b8 = operandIndex++;
+      model.addOperand(type0);
+      let op2 = operandIndex++;
+      model.addOperand(type1);
+      let op3 = operandIndex++;
+      model.addOperand(type1);
+      let op0 = operandIndex++;
+      model.addOperand(type2);
+      let op1 = operandIndex++;
+      model.addOperand(type3);
+      let padr = operandIndex++;
+      model.addOperand(type0);
+      let padt = operandIndex++;
+      model.addOperand(type0);
+      let padb = operandIndex++;
+      model.addOperand(type0);
+
+      model.setOperandValue(padl, new Int32Array([1]));
+      model.setOperandValue(padr, new Int32Array([2]));
+      model.setOperandValue(padt, new Int32Array([3]));
+      model.setOperandValue(padb, new Int32Array([4]));
+      model.setOperandValue(b5, new Int32Array([1]));
+      model.setOperandValue(b6, new Int32Array([1]));
+      model.setOperandValue(b7, new Int32Array([1]));
+      model.setOperandValue(b8, new Int32Array([1]));
+      model.setOperandValue(op0, new Float32Array([1, 2, 3]));
+      model.setOperandValue(op1, new Float32Array([0, 0, 0]));
+      model.addOperation(nn.DEPTHWISE_CONV_2D, [op2, op0, op1, padl, padr, padt, padb, b5, b6, b7, b8], [op3]);
+      model.identifyInputsAndOutputs([op2], [op3]);
+      await model.finish();
+
+      let compilation = await model.createCompilation();
+      compilation.setPreference(getPreferenceCode(options.prefer));
+      await compilation.finish();
+
+      let execution = await compilation.createExecution();
+
+      await assertDoesNotThrowAsync(async() => {
+        await execution.startCompute();
+      });
+    });
+
+    it('the length of inputs being 7 is ok for "AVERAGE_POOL_2D" operation', async function() {
+      let model = await nn.createModel(options);
+      model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 7, 7, 3]});
+      model.addOperand({type: nn.INT32});
+      model.addOperand({type: nn.INT32});
+      model.addOperand({type: nn.INT32});
+      model.addOperand({type: nn.INT32});
+      model.addOperand({type: nn.INT32});
+      model.addOperand({type: nn.INT32});
+      model.setOperandValue(1, new Int32Array([1]));
+      model.setOperandValue(2, new Int32Array([1]));
+      model.setOperandValue(3, new Int32Array([1]));
+      model.setOperandValue(4, new Int32Array([1]));
+      model.setOperandValue(5, new Int32Array([1]));
+      model.setOperandValue(6, new Int32Array([nn.FUSED_NONE]));
+      model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 7, 7, 3]});
+      model.addOperation(nn.AVERAGE_POOL_2D, [0, 1, 2, 3, 4, 5, 6], [7]);
+      model.identifyInputsAndOutputs([0], [7]);
+      await model.finish();
+
+      let compilation = await model.createCompilation();
+      compilation.setPreference(getPreferenceCode(options.prefer));
+      await compilation.finish();
+
+      let execution = await compilation.createExecution();
+
+      await assertDoesNotThrowAsync(async() => {
+        await execution.startCompute();
+      });
+    });
+
+    it('the length of inputs being 10 with different padding is ok for "AVERAGE_POOL_2D" operation', async function() {
+      let model = await nn.createModel(options);
+      model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 7, 7, 3]});
+      model.addOperand({type: nn.INT32});
+      model.addOperand({type: nn.INT32});
+      model.addOperand({type: nn.INT32});
+      model.addOperand({type: nn.INT32})
+      model.addOperand({type: nn.INT32});
+      model.addOperand({type: nn.INT32});
+      model.addOperand({type: nn.INT32});
+      model.addOperand({type: nn.INT32});
+      model.addOperand({type: nn.INT32});
+      model.setOperandValue(1, new Int32Array([1]));
+      model.setOperandValue(2, new Int32Array([2]));
+      model.setOperandValue(3, new Int32Array([3]));
+      model.setOperandValue(4, new Int32Array([4]));
+      model.setOperandValue(5, new Int32Array([1]));
+      model.setOperandValue(6, new Int32Array([1]));
+      model.setOperandValue(7, new Int32Array([1]));
+      model.setOperandValue(8, new Int32Array([1]));
+      model.setOperandValue(9, new Int32Array([nn.FUSED_NONE]));
+      model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 14, 10, 3]});
+      model.addOperation(nn.AVERAGE_POOL_2D, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [10]);
+      model.identifyInputsAndOutputs([0], [10]);
+      await model.finish();
+
+      let compilation = await model.createCompilation();
+      compilation.setPreference(getPreferenceCode(options.prefer));
+      await compilation.finish();
+
+      let execution = await compilation.createExecution();
+
+      await assertDoesNotThrowAsync(async() => {
+        await execution.startCompute();
+      });
+    });
+
+    it('the length of inputs being 10 with different padding is ok for "MAX_POOL_2D" operation', async function() {
+      let model = await nn.createModel(options);
+      model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 7, 7, 3]});
+      model.addOperand({type: nn.INT32});
+      model.addOperand({type: nn.INT32});
+      model.addOperand({type: nn.INT32});
+      model.addOperand({type: nn.INT32})
+      model.addOperand({type: nn.INT32});
+      model.addOperand({type: nn.INT32});
+      model.addOperand({type: nn.INT32});
+      model.addOperand({type: nn.INT32});
+      model.addOperand({type: nn.INT32});
+      model.setOperandValue(1, new Int32Array([1]));
+      model.setOperandValue(2, new Int32Array([2]));
+      model.setOperandValue(3, new Int32Array([3]));
+      model.setOperandValue(4, new Int32Array([4]));
+      model.setOperandValue(5, new Int32Array([1]));
+      model.setOperandValue(6, new Int32Array([1]));
+      model.setOperandValue(7, new Int32Array([1]));
+      model.setOperandValue(8, new Int32Array([1]));
+      model.setOperandValue(9, new Int32Array([nn.FUSED_NONE]));
+      model.addOperand({type: nn.TENSOR_FLOAT32, dimensions: [100, 14, 10, 3]});
+      model.addOperation(nn.MAX_POOL_2D, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [10]);
+      model.identifyInputsAndOutputs([0], [10]);
+      await model.finish();
+
+      let compilation = await model.createCompilation();
+      compilation.setPreference(getPreferenceCode(options.prefer));
+      await compilation.finish();
+
+      let execution = await compilation.createExecution();
+
+      await assertDoesNotThrowAsync(async() => {
+        await execution.startCompute();
       });
     });
   });
