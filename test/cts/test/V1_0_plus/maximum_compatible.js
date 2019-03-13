@@ -6,13 +6,13 @@ describe('CTS', function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
-    let op1_value = [5.0, 5.0, 5.0, 5.0, 5.0];
+    let op1_value = [5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0];
     let op2_value = [3.0, 3.0, 3.0, 3.0, 3.0];
-    let op3_expect = [5.0, 5.0, 5.0, 5.0, 5.0];
+    let op3_expect = [5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0];
 
-    let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 5, 1, 1]};
+    let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 5, 2, 1]};
     let type0_length = product(type0.dimensions);
-    let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 1, 5, 1]};
+    let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 5, 1, 1]};
     let type1_length = product(type0.dimensions);
 
     let op1 = operandIndex++;
