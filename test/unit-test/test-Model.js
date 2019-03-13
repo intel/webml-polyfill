@@ -6729,7 +6729,7 @@ describe('Unit Test/Model Test', function() {
     it('raise error when the input1 tensors (rank < 4) and the input2 tensors (rank = 4) don\'t have compatible dimensions for "MAXIMUM" operation', function() {
       return nn.createModel(options).then((model)=>{
         let input1 = {type: nn.TENSOR_INT32, dimensions: [2, 2, 1]};
-        let input2 = {type: nn.TENSOR_INT32, dimensions: [1, 2, 2, 1]};
+        let input2 = {type: nn.TENSOR_INT32, dimensions: [1, 3, 3, 1]};
         let output = {type: nn.TENSOR_INT32, dimensions: [2, 2, 1]};
         model.addOperand(input1);
         model.addOperand(input2);
