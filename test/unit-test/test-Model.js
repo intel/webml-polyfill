@@ -6493,6 +6493,327 @@ describe('Unit Test/Model Test', function() {
         });
       });
     });
+
+    it('"4-D tensor as input and output, the type of input and output being TENSOR_FLOAT32 type" are ok for "TANH" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let input = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2, 1]};
+        let output = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2, 1]};
+        model.addOperand(input);
+        model.addOperand(output);
+        assert.doesNotThrow(() => {
+          model.addOperation(nn.TANH, [0], [1]);
+        });
+      });
+    });
+
+    it('"2-D tensor as input and output, the type of input and output being TENSOR_FLOAT32 type" are ok for "TANH" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let input = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2]};
+        let output = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2]};
+        model.addOperand(input);
+        model.addOperand(output);
+        assert.doesNotThrow(() => {
+          model.addOperation(nn.TANH, [0], [1]);
+        });
+      });
+    });
+
+    it('raise error when the type of input and output are FLOAT32 (not TENSOR_FLOAT32) for "TANH" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let input = {type: nn.FLOAT32};
+        let output = {type: nn.FLOAT32};
+        model.addOperand(input);
+        model.addOperand(output);
+        assert.throws(() => {
+          model.addOperation(nn.TANH, [0], [1]);
+        });
+      });
+    });
+
+    it('raise error when the type of input and output are INT32 (not TENSOR_FLOAT32) for "TANH" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let input = {type: nn.INT32};
+        let output = {type: nn.INT32};
+        model.addOperand(input);
+        model.addOperand(output);
+        assert.throws(() => {
+          model.addOperation(nn.TANH, [0], [1]);
+        });
+      });
+    });
+
+    it('raise error when the type of input and output are UINT32 (not TENSOR_FLOAT32) for "TANH" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let input = {type: nn.UINT32};
+        let output = {type: nn.UINT32};
+        model.addOperand(input);
+        model.addOperand(output);
+        assert.throws(() => {
+          model.addOperation(nn.TANH, [0], [1]);
+        });
+      });
+    });
+
+    it('raise error when the type of input and output are TENSOR_INT32 (not TENSOR_FLOAT32) for "TANH" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let input = {type: nn.TENSOR_INT32, dimensions: [1, 2, 2, 1]};
+        let output = {type: nn.TENSOR_INT32, dimensions: [1, 2, 2, 1]};
+        model.addOperand(input);
+        model.addOperand(output);
+        assert.throws(() => {
+          model.addOperation(nn.TANH, [0], [1]);
+        });
+      });
+    });
+
+    it('raise error when the type of input and output are TENSOR_QUANT8_ASYMM (not TENSOR_FLOAT32) for "TANH" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let input = {type: nn.TENSOR_QUANT8_ASYMM, dimensions: [100, 32, 32, 3], scale: 0.5, zeroPoint: 1};
+        let output = {type: nn.TENSOR_QUANT8_ASYMM, dimensions: [100, 32, 32, 3], scale: 0.5, zeroPoint: 1};
+        model.addOperand(input);
+        model.addOperand(output);
+        assert.throws(() => {
+          model.addOperation(nn.TANH, [0], [1]);
+        });
+      });
+    });
+
+    it('raise error when the type of output as TENSOR_INT32 is different to the type of input as TENSOR_FLOAT32 for "TANH" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let input = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2, 1]};
+        let output = {type: nn.TENSOR_INT32, dimensions: [1, 2, 2, 1]};
+        model.addOperand(input);
+        model.addOperand(output);
+        assert.throws(() => {
+          model.addOperation(nn.TANH, [0], [1]);
+        });
+      });
+    });
+
+    it('raise error when the rank of input and output are greater than 4 for "TANH" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let input = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2, 1, 2]};
+        let output = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2, 1, 2]};
+        model.addOperand(input);
+        model.addOperand(output);
+        assert.throws(() => {
+          model.addOperation(nn.TANH, [0], [1]);
+        });
+      });
+    });
+
+    it('raise error when the shape of input and output are different for "TANH" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let input = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2]};
+        let output = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2]};
+        model.addOperand(input);
+        model.addOperand(output);
+        assert.throws(() => {
+          model.addOperation(nn.TANH, [0], [1]);
+        });
+      });
+    });
+
+    it('raise error when setting 0 input for "TANH" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let output = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2, 1]};
+        model.addOperand(output);
+        assert.throws(() => {
+          model.addOperation(nn.TANH, [], [0]);
+        });
+      });
+    });
+
+    it('raise error when setting 0 output for "TANH" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let input = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2, 1]};
+        model.addOperand(input);
+        assert.throws(() => {
+          model.addOperation(nn.TANH, [0], []);
+        });
+      });
+    });
+
+    it('"4-D tensor as two inputs and one output, the type of input and output being TENSOR_FLOAT32 type" are ok for "MAXIMUM" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let input = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2, 1]};
+        let output = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2, 1]};
+        model.addOperand(input);
+        model.addOperand(input);
+        model.addOperand(output);
+        assert.doesNotThrow(() => {
+          model.addOperation(nn.MAXIMUM, [0, 1], [2]);
+        });
+      });
+    });
+
+    it('"4-D tensor as two inputs and one output, the type of input and output being TENSOR_INT32 type" are ok for "MAXIMUM" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let input = {type: nn.TENSOR_INT32, dimensions: [1, 2, 2, 1]};
+        let output = {type: nn.TENSOR_INT32, dimensions: [1, 2, 2, 1]};
+        model.addOperand(input);
+        model.addOperand(input);
+        model.addOperand(output);
+        assert.doesNotThrow(() => {
+          model.addOperation(nn.MAXIMUM, [0, 1], [2]);
+        });
+      });
+    });
+
+    it('"4-D tensor as two inputs and one output, the type of input and output being TENSOR_QUANT8_ASYMM type" are ok for "MAXIMUM" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let input = {type: nn.TENSOR_QUANT8_ASYMM, dimensions: [100, 32, 32, 3], scale: 0.5, zeroPoint: 1};
+        let output = {type: nn.TENSOR_QUANT8_ASYMM, dimensions: [100, 32, 32, 3], scale: 0.5, zeroPoint: 1};
+        model.addOperand(input);
+        model.addOperand(input);
+        model.addOperand(output);
+        assert.doesNotThrow(() => {
+          model.addOperation(nn.MAXIMUM, [0, 1], [2]);
+        });
+      });
+    });
+
+    it('raise error when the type of input and output are FLOAT32 (not TENSOR_FLOAT32 or TENSOR_INT32 or TENSOR_QUANT8_ASYMM) for "MAXIMUM" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let input = {type: nn.FLOAT32};
+        let output = {type: nn.FLOAT32};
+        model.addOperand(input);
+        model.addOperand(input);
+        model.addOperand(output);
+        assert.throws(() => {
+          model.addOperation(nn.MAXIMUM, [0, 1], [2]);
+        });
+      });
+    });
+
+    it('raise error when the type of input and output are INT32 (not TENSOR_FLOAT32 or TENSOR_INT32 or TENSOR_QUANT8_ASYMM) for "MAXIMUM" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let input = {type: nn.INT32};
+        let output = {type: nn.INT32};
+        model.addOperand(input);
+        model.addOperand(input);
+        model.addOperand(output);
+        assert.throws(() => {
+          model.addOperation(nn.MAXIMUM, [0, 1], [2]);
+        });
+      });
+    });
+
+    it('raise error when the type of input and output are UINT32 (not TENSOR_FLOAT32 or TENSOR_INT32 or TENSOR_QUANT8_ASYMM) for "MAXIMUM" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let input = {type: nn.UINT32};
+        let output = {type: nn.UINT32};
+        model.addOperand(input);
+        model.addOperand(input);
+        model.addOperand(output);
+        assert.throws(() => {
+          model.addOperation(nn.MAXIMUM, [0, 1], [2]);
+        });
+      });
+    });
+
+    it('"the input1 tensors (rank = 4) and the input2 tensors (rank < 4) have compatible dimensions" are ok for "MAXIMUM" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let input1 = {type: nn.TENSOR_INT32, dimensions: [1, 2, 2, 1]};
+        let input2 = {type: nn.TENSOR_INT32, dimensions: [2, 2, 1]};
+        let output = {type: nn.TENSOR_INT32, dimensions: [1, 2, 2, 1]};
+        model.addOperand(input1);
+        model.addOperand(input2);
+        model.addOperand(output);
+        assert.doesNotThrow(() => {
+          model.addOperation(nn.MAXIMUM, [0, 1], [2]);
+        });
+      });
+    });
+
+    it('raise error when the input1 tensors (rank < 4) and the input2 tensors (rank = 4) don\'t have compatible dimensions for "MAXIMUM" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let input1 = {type: nn.TENSOR_INT32, dimensions: [2, 2, 1]};
+        let input2 = {type: nn.TENSOR_INT32, dimensions: [1, 3, 3, 1]};
+        let output = {type: nn.TENSOR_INT32, dimensions: [2, 2, 1]};
+        model.addOperand(input1);
+        model.addOperand(input2);
+        model.addOperand(output);
+        assert.doesNotThrow(() => {
+          model.addOperation(nn.MAXIMUM, [0, 1], [2]);
+        });
+      });
+    });
+
+    it('raise error when the type of output as TENSOR_FLOAT32 is different to the type of input as TENSOR_QUANT8_ASYMM for "MAXIMUM" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let input = {type: nn.TENSOR_QUANT8_ASYMM, dimensions: [100, 32, 32, 3], scale: 0.5, zeroPoint: 1};
+        let output = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2, 1]};
+        model.addOperand(input);
+        model.addOperand(input);
+        model.addOperand(output);
+        assert.throws(() => {
+          model.addOperation(nn.MAXIMUM, [0, 1], [2]);
+        });
+      });
+    });
+
+    it('raise error when the type of input2 as TENSOR_FLOAT32 is different to the type of input1 as TENSOR_QUANT8_ASYMM for "MAXIMUM" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let input1 = {type: nn.TENSOR_QUANT8_ASYMM, dimensions: [100, 32, 32, 3], scale: 0.5, zeroPoint: 1};
+        let input2 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2, 1]};
+        let output = {type: nn.TENSOR_QUANT8_ASYMM, dimensions: [100, 32, 32, 3], scale: 0.5, zeroPoint: 1};
+        model.addOperand(input1);
+        model.addOperand(input2);
+        model.addOperand(output);
+        assert.throws(() => {
+          model.addOperation(nn.MAXIMUM, [0, 1], [2]);
+        });
+      });
+    });
+
+    it('raise error when the number of inputs are greater than 2 for "MAXIMUM" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let input1 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2, 1]};
+        let input2 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2, 1]};
+        let input3 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2, 1]};
+        let output = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2, 1]};
+        model.addOperand(input1);
+        model.addOperand(input2);
+        model.addOperand(input3);
+        model.addOperand(output);
+        assert.throws(() => {
+          model.addOperation(nn.MAXIMUM, [0, 1, 2], [3]);
+        });
+      });
+    });
+
+    it('raise error when setting one input for "MAXIMUM" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let input = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2, 1]};
+        let output = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2, 1]};
+        model.addOperand(input);
+        model.addOperand(output);
+        assert.throws(() => {
+          model.addOperation(nn.MAXIMUM, [0], [1]);
+        });
+      });
+    });
+
+    it('raise error when setting 0 input for "MAXIMUM" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let output = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2, 1]};
+        model.addOperand(output);
+        assert.throws(() => {
+          model.addOperation(nn.MAXIMUM, [], [0]);
+        });
+      });
+    });
+
+    it('raise error when setting 0 output for "MAXIMUM" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let input = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2, 1]};
+        model.addOperand(input);
+        assert.throws(() => {
+          model.addOperation(nn.MAXIMUM, [0], []);
+        });
+      });
+    });
   });
 
   describe('#identifyInputsAndOutputs API', function() {
