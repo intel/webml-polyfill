@@ -81,7 +81,7 @@ export default class Model {
    * @param {TypedArray} value - The typed array containing data.
    */
   setOperandValue(index, value) {
-    if (index > this._operands.length) {
+    if (index >= this._operands.length) {
       throw new Error(`Invalid index ${index}`);
     }
     let operand = this._operands[index];
@@ -206,7 +206,7 @@ export default class Model {
 
   _validateOperandList(list) {
     let ret = true;
-    list.forEach(index => {if (index >= this._operands) ret = false;})
+    list.forEach(index => {if (index >= this._operands.length) ret = false;})
     return ret;
   }
 
