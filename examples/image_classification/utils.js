@@ -82,6 +82,7 @@ class Utils {
       rawModel: this.rawModel,
       backend: backend,
       prefer: prefer,
+      hybridPrefer: prefer,
       softmax: this.postOptions.softmax || false,
     };
     switch (this.rawModel._rawFormat) {

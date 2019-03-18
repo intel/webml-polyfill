@@ -93,22 +93,22 @@
             </td>
           </tr>
           <tr class='backend'>
-            <th class='text-center'>Backend</th>
+            <th class='text-center'>Hybrid Backend</th>
             <td>
-              <div class='g'>
+              <div class='g b-polyfill'>
                 <span>Polyfill</span>
-                <input type='radio' name='b' class='d-none' id='WASM' value='WASM'>
-                <label id='l-WASM' for='WASM' title='Compiled Tensorflow Lite C++ kernels to WebAssembly format'>Hybrid</label>
-                <input type='radio' name='b' class='d-none' id='WebGL' value='WebGL'>
+                <input type='radio' name='bp' class='d-none' id='WASM' value='WASM'>
+                <label id='l-WASM' for='WASM' title='Compiled Tensorflow Lite C++ kernels to WebAssembly format'>WASM</label>
+                <input type='radio' name='bp' class='d-none' id='WebGL' value='WebGL'>
                 <label id='l-WebGL' for='WebGL' title='Tensorflow.js WebGL kernel'>WebGL</label>
               </div>
-              <div class='g'>
+              <div class='g b-webnn'>
                 <span>WebNN</span>
-                <input type='radio' name='b' class='d-none ml' id='fast' value='fast'>
+                <input type='radio' name='bw' class='d-none' id='fast' value='fast'>
                 <label id='l-fast' for='fast' class='lml' title='Returning a single answer as fast as possible, even if this causes more power consumption.'>FAST_SINGLE_ANSWER</label>
-                <input type='radio' name='b' class='d-none ml' id='sustained' value='sustained'>
+                <input type='radio' name='bw' class='d-none' id='sustained' value='sustained'>
                 <label id='l-sustained' for='sustained' class='lml' title='Maximizing the throughput of successive frames, for example when processing successive frames coming from the camera.'>SUSTAINED_SPEED</label>
-                <input type='radio' name='b' class='d-none ml' id='low' value='low'>
+                <input type='radio' name='bw' class='d-none' id='low' value='low'>
                 <label id='l-low' for='low' class='lml' title='Executing in a way that minimizes battery drain.'>LOW_POWER</label>
               </div>
             </td>
@@ -122,19 +122,19 @@
       <button class="col-4" onclick="document.querySelectorAll('input[name=supportedOp]').forEach(x => x.checked = true)">Select All</button>
       <button class="col-4" onclick="document.querySelectorAll('input[name=supportedOp]').forEach(x => x.checked = false)">Uncheck All</button>
       <button class="col-4" onclick="utils.backend='';main(us === 'camera')">Update Backend</button>
-      <label class="col-4"><input type="checkbox" name="supportedOp" value="0"> ADD</label>
-      <label class="col-4"><input type="checkbox" name="supportedOp" value="10003"> ATROUS_CONV_2D</label>
-      <label class="col-4"><input type="checkbox" name="supportedOp" value="10004"> ATROUS_DEPTHWISE_CONV_2D</label>
-      <label class="col-4"><input type="checkbox" name="supportedOp" value="1"> AVERAGE_POOL_2D</label>
-      <label class="col-4"><input type="checkbox" name="supportedOp" value="2"> CONCATENATION</label>
-      <label class="col-4"><input type="checkbox" name="supportedOp" value="3"> CONV_2D</label>
-      <label class="col-4"><input type="checkbox" name="supportedOp" value="4"> DEPTHWISE_CONV_2D</label>
-      <label class="col-4"><input type="checkbox" name="supportedOp" value="9"> FULLY_CONNECTED</label>
-      <label class="col-4"><input type="checkbox" name="supportedOp" value="17"> MAX_POOL_2D</label>
-      <label class="col-4"><input type="checkbox" name="supportedOp" value="18"> MUL</label>
-      <label class="col-4"><input type="checkbox" name="supportedOp" value="22"> RESHAPE</label>
-      <label class="col-4"><input type="checkbox" name="supportedOp" value="23"> RESIZE_BILINEAR</label>
-      <label class="col-4"><input type="checkbox" name="supportedOp" value="25"> SOFTMAX</label>
+      <label class="col-4"><input type="checkbox" name="supportedOp" value="0"><span>ADD</span></label>
+      <label class="col-4"><input type="checkbox" name="supportedOp" value="10003"><span>ATROUS_CONV_2D</span></label>
+      <label class="col-4"><input type="checkbox" name="supportedOp" value="10004"><span>ATROUS_DEPTHWISE_CONV_2D</span></label>
+      <label class="col-4"><input type="checkbox" name="supportedOp" value="1"><span>AVERAGE_POOL_2D</span></label>
+      <label class="col-4"><input type="checkbox" name="supportedOp" value="2"><span>CONCATENATION</span></label>
+      <label class="col-4"><input type="checkbox" name="supportedOp" value="3"><span>CONV_2D</span></label>
+      <label class="col-4"><input type="checkbox" name="supportedOp" value="4"><span>DEPTHWISE_CONV_2D</span></label>
+      <label class="col-4"><input type="checkbox" name="supportedOp" value="9"><span>FULLY_CONNECTED</span></label>
+      <label class="col-4"><input type="checkbox" name="supportedOp" value="17"><span>MAX_POOL_2D</span></label>
+      <label class="col-4"><input type="checkbox" name="supportedOp" value="18"><span>MUL</span></label>
+      <label class="col-4"><input type="checkbox" name="supportedOp" value="22"><span>RESHAPE</span></label>
+      <label class="col-4"><input type="checkbox" name="supportedOp" value="23"><span>RESIZE_BILINEAR</span></label>
+      <label class="col-4"><input type="checkbox" name="supportedOp" value="25"><span>SOFTMAX</span></label>
     </div>
   </div>
   <section class='ic' id='ic'>

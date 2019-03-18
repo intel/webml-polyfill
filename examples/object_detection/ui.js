@@ -7,7 +7,7 @@ let ud = getUrlParam('d');
 let strsearch;
 
 if (!location.search) {
-  strsearch = `?prefer=none&b=WASM&m=none&t=none&s=image&d=0`;
+  strsearch = `?prefer=fast&b=WASM&m=none&t=none&s=image&d=0`;
   let path = location.href;
   location.href = path + strsearch;
 }
@@ -80,51 +80,38 @@ $(document).ready(() => {
     $('.prefer label').removeClass('checked');
     $('#' + getUrlParam('prefer')).attr('checked', 'checked');
     $('#l-' + getUrlParam('prefer')).addClass('checked');
-
-    if (ub == 'WASM' || ub == 'WebGL') {
-      $('.ml').removeAttr('checked');
-      $('.lml').removeClass('checked');
-    }
   }
 
   const updateTitle = (backend, prefer, model, modeltype) => {
     model = model.replace(/_/g, ' ');
     let currentprefertext;
-    if (backend == 'WASM' || backend == 'WebGL') {
-      $('#ictitle').html(`Object Detection / ${backend} / ${model} (${modeltype})`);
-    } else if (backend == 'WebML') {
-      if (getUrlParam('p') == 'fast') {
-        prefer = 'FAST_SINGLE_ANSWER';
-      } else if (getUrlParam('p') == 'sustained') {
-        prefer = 'SUSTAINED_SPEED';
-      } else if (getUrlParam('p') == 'low') {
-        prefer = 'LOW_POWER';
-      }
-      $('#ictitle').html(`Object Detection / WebNN / ${prefer} / ${model} (${modeltype})`);
+    if (prefer == 'fast') {
+      currentprefertext = 'FAST_SINGLE_ANSWER';
+    } else if (prefer == 'sustained') {
+      currentprefertext = 'SUSTAINED_SPEED';
+    } else if (prefer == 'low') {
+      currentprefertext = 'LOW_POWER';
     }
+    $('#ictitle').html(`Image Classification / ${backend} / ${currentprefertext} / ${model} (${modeltype})`);
   }
   updateTitle(ub, up, um, ut);
 
-  $('input:radio[name=b]').click(() => {
+  $('input:radio[name=bp], input:radio[name=bw]').click(() => {
     $('.alert').hide();
-    let rid = $('input:radio[name="b"]:checked').attr('id');
-    $('.backend input').removeAttr('checked');
-    $('.backend label').removeClass('checked');
-    $('#' + rid).attr('checked', 'checked');
-    $('#l-' + rid).addClass('checked');
+    let polyfillId = $('input:radio[name="bp"]:checked').attr('id') || $('input:radio[name="bp"][checked="checked"]').attr('id');
+    $('.b-polyfill input').removeAttr('checked');
+    $('.b-polyfill label').removeClass('checked');
+    $('#' + polyfillId).attr('checked', 'checked');
+    $('#l-' + polyfillId).addClass('checked');
 
-    if (rid == 'WASM' || rid == 'WebGL') {
-      $('.ml').removeAttr('checked');
-      $('.lml').removeClass('checked');
-    }
+    let webnnId = $('input:radio[name="bw"]:checked').attr('id') || $('input:radio[name="bw"][checked="checked"]').attr('id');
+    $('.b-webnn input').removeAttr('checked');
+    $('.b-webnn label').removeClass('checked');
+    $('#' + webnnId).attr('checked', 'checked');
+    $('#l-' + webnnId).addClass('checked');
 
-    if (rid == 'WASM' || rid == 'WebGL') {
-      currentBackend = rid;
-      currentPrefer = 'none';
-    } else if (rid == 'fast' || rid == 'sustained' || rid == 'low') {
-      currentBackend = 'WebML';
-      currentPrefer = rid;
-    }
+    currentBackend = polyfillId;
+    currentPrefer = webnnId;
 
     updateTitle(currentBackend, currentPrefer, `${um}`, `${ut}`);
     strsearch = `?prefer=${currentPrefer}&b=${currentBackend}&m=${um}&t=${ut}&s=${us}&d=${ud}`;

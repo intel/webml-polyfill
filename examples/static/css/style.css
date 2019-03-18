@@ -11,13 +11,89 @@ body {
   padding: 5px 45px;
   border-radius: 50px;
   border: none;
-  margin-bottom: 12px;
+  margin-bottom: 6px;
 }
 .row button.col-4:hover {
   background: rgba(255, 111, 97, 1);
 }
 .row .col-4 {
   flex: 0 0 30%;
+  margin: auto;
+}
+@media (max-width: 768px) {
+  .row .col-4 {
+    flex: 0 0 100%;
+    max-width: 90%;
+  }
+}
+[type="checkbox"]:not(:checked),[type="checkbox"]:checked {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+[type="checkbox"]+span:not(.lever) {
+  position: relative;
+  padding-left: 35px;
+  cursor: pointer;
+  display: inline-block;
+  height: 25px;
+  line-height: 25px;
+  font-size: 0.8rem;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none
+}
+[type="checkbox"]+span:not(.lever):before,[type="checkbox"]:not(.filled-in)+span:not(.lever):after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 18px;
+  height: 18px;
+  z-index: 0;
+  border: 1px solid #919191;
+  border-radius: 1px;
+  margin-top: 3px;
+  -webkit-transition: .2s;
+  transition: .2s
+}
+[type="checkbox"]:not(.filled-in)+span:not(.lever):after {
+  border: 0;
+  -webkit-transform: scale(0);
+  transform: scale(0)
+}
+[type="checkbox"]:not(:checked):disabled+span:not(.lever):before {
+  border: none;
+  background-color: rgba(0,0,0,0.42)
+}
+[type="checkbox"].tabbed:focus+span:not(.lever):after {
+  -webkit-transform: scale(1);
+  transform: scale(1);
+  border: 0;
+  border-radius: 50%;
+  -webkit-box-shadow: 0 0 0 10px rgba(0,0,0,0.1);
+  box-shadow: 0 0 0 10px rgba(0,0,0,0.1);
+  background-color: rgba(0,0,0,0.1)
+}
+[type="checkbox"]:checked+span:not(.lever):before {
+  top: -4px;
+  left: -5px;
+  width: 12px;
+  height: 22px;
+  border-top: 1.5px solid transparent;
+  border-left: 1.5px solid transparent;
+  border-right: 1.5px solid rgba(25, 190, 225, 1.0);;
+  border-bottom: 1.5px solid rgba(25, 190, 225, 1.0);;
+  -webkit-transform: rotate(40deg);
+  transform: rotate(40deg);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  -webkit-transform-origin: 100% 100%;
+  transform-origin: 100% 100%
+}
+[type="checkbox"]:checked:disabled+span:before {
+  border-right: 1px solid rgba(0,0,0,0.42);
+  border-bottom: 1px solid rgba(0,0,0,0.42)
 }
 .b_bg,
 .b {
@@ -1829,6 +1905,8 @@ button.xclose {
   background: transparent;
   height: 0px;
   width: 0px !important;
+  opacity: 1;
+  position: initial;
 }
 
 #posenet ul li .c input[type=checkbox]:hover, #posenet ul li .c input[type=checkbox]:active {

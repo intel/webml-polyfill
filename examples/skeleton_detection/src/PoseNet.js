@@ -35,7 +35,7 @@ class PoseNet {
     this._compilation = await this._model.createCompilation();
 
     let start = performance.now();
-    this._compilation.setPreference(getPreferCode(this._backend, this._prefer), supportedOpsList);
+    this._compilation.setPreference(getPreferCode(this._backend, this._prefer), this._prefer, supportedOpsList, false);
     await this._compilation.finish();
     this._execution = await this._compilation.createExecution();
     let elapsed = performance.now() - start;

@@ -247,7 +247,7 @@ class Benchmark {
       bkPoseImageSrc = imageElement.src;
       imageElement.src = segCanvas.toDataURL();
     }
-    if (this.model._backend === 'WASM')
+    if (this.model._backend !== 'WebML')
       this.model._compilation._preparedModel.getReport();
     return {"computeResults": computeResults, "decodeResults": decodeResults};
   }
@@ -671,7 +671,7 @@ async function run() {
     Object.keys(configuration).forEach(key => {
       if (key === 'backend') {
         let selectedOpt = preferSelectElement.options[preferSelectElement.selectedIndex];
-        logger.log(`${key.padStart(12)}: ${getNativeAPI(selectedOpt.value)}(${selectedOpt.text})`);
+        logger.log(`${key.padStart(12)}: ${configuration[key].indexOf('native') < 0 ? `${configuration[key]} + ` : ' ' }${getNativeAPI(selectedOpt.value)}(${selectedOpt.text})`);
       } else if (key === 'modelName') {
         let model = getModelDicItem(configuration[key]);
         logger.log(`${key.padStart(12)}: ${model.modelName}`);
@@ -801,7 +801,7 @@ document.addEventListener('DOMContentLoaded', () => {
   for (let configuration of configurations) {
     let option = document.createElement('option');
     option.value = JSON.stringify(configuration);
-    option.textContent = configuration.framework + ' (' + (configuration.backend === 'WASM' ? 'Hybrid' : configuration.backend) + ' backend)';
+    option.textContent = `${configuration.framework} (${configuration.backend} ${configuration.framework.indexOf('WebML') < 0 ? 'Hybrid ' : ''}backend)`;
     if (configuration.framework === 'WebML API') {
       if (navigator.ml.isPolyfill) {
         option.disabled = true;

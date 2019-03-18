@@ -4,7 +4,6 @@ import * as utils from '../utils'
 import { product } from '../utils';
 import Graph from '../GraphUtils';
 
-var supportedOpCode = new Set([]);
 var executeTimes = 0;
 var skipWarmUpRuns = 1;
 var profiling = [];
@@ -12,6 +11,7 @@ var profiling = [];
 export default class PreparedModel {
   constructor() {
     this._nnNative = navigator.ml.getNeuralNetworkContext();
+    this._supportedOpCode = new Set([]);
     this._operations = [];
     this._operands = [];
     this._prepared = false;
@@ -37,13 +37,14 @@ export default class PreparedModel {
       fast: this._nnNative.PREFER_FAST_SINGLE_ANSWER,
       sustained: this._nnNative.PREFER_SUSTAINED_SPEED,
     }[model.hybridPrefer];
-    supportedOpCode = new Set(model.supportedOpsList);
-    console.debug(`Supported Ops: ${Array.from(supportedOpCode).map(op => Object.keys(OperationCode).find(k => OperationCode[k] === op)).join(', ')}`)
+    console.debug(`Backend: WASM + ${model.hybridPrefer}`);
+    this._supportedOpCode = new Set(model.supportedOpsList);
+    console.debug(`Supported Ops: ${Array.from(this._supportedOpCode).map(op => Object.keys(OperationCode).find(k => OperationCode[k] === op)).join(', ') || 'None'}`)
 
     const graph = new Graph(model._operations.length);
     model._operations.forEach((op, i) => {
       graph.addNode(i, op.inputs, op.outputs);
-      if (!supportedOpCode.has(op.type)) {
+      if (!this._supportedOpCode.has(op.type)) {
         graph.setBlack(i);
       }
     })
@@ -72,10 +73,10 @@ export default class PreparedModel {
     }
 
     for (const {nodes, inTensors, outTensors} of partitions) {
-      const subgraphName = `Subgraph ${typeof this.subgraphcounter === 'undefined' ? this.subgraphcounter = 0 : ++this.subgraphcounter}\t (${supportedOpCode.has(model._operations[nodes[0]].type) ? 'WebNN' : 'WASM'}):\t{${Object.entries(nodes.map(opId => Object.keys(OperationCode).find(k => OperationCode[k] === model._operations[opId].type)).reduce((counts, v) => {counts[v]?counts[v]++:counts[v]=1; return counts}, {})).map(n => `${n[0]} x ${n[1]}`).join(', ')}}`;
+      const subgraphName = `Subgraph ${typeof this.subgraphcounter === 'undefined' ? this.subgraphcounter = 0 : ++this.subgraphcounter}\t (${this._supportedOpCode.has(model._operations[nodes[0]].type) ? 'WebNN' : 'WASM'}):\t{${Object.entries(nodes.map(opId => Object.keys(OperationCode).find(k => OperationCode[k] === model._operations[opId].type)).reduce((counts, v) => {counts[v]?counts[v]++:counts[v]=1; return counts}, {})).map(n => `${n[0]} x ${n[1]}`).join(', ')}}`;
       console.debug(subgraphName);
 
-      if (!supportedOpCode.has(model._operations[nodes[0]].type)) {
+      if (!this._supportedOpCode.has(model._operations[nodes[0]].type)) {
 
         // run in polyfil
 
@@ -190,8 +191,7 @@ export default class PreparedModel {
 
     outputs.forEach((output) => {
       const operand = this._operands[output.index];
-      const buffer = output.buffer;
-      this._getTensorData(operand.type, operand.value, buffer);
+      this._getTensorData(operand.type, operand.value, output.buffer);
     });
   }
 

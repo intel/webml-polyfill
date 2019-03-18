@@ -68,6 +68,7 @@ class Utils {
       rawModel: this.tfModel,
       backend: backend,
       prefer: prefer,
+      hybridPrefer: prefer,
     };
     this.model = new TFliteModelImporter(kwargs);
     let result = await this.model.createCompiledModel();
