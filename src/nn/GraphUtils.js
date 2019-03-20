@@ -3,23 +3,29 @@ export default class Graph {
   constructor(vertices) {
     this.vertices = vertices;
     this.color = new Array(vertices).fill(false); // false - white, true - black
-    this.tensors = new Map();
     this.next = [];
+    this.prev = [];
+    this.tensors = new Map();
+    this.tensorMapping = [];
     this.inTensorsOfInputNode = new Map();
     this.outTensorsOfOutputNode = new Map();
     for (let i = 0; i < vertices; i++) {
-      this.next[i] = new Map();
+      this.next[i] = [];
+      this.prev[i] = [];
+      this.tensorMapping[i] = [];
     }
   }
 
   addEdge(i, j, tensor) {
-    this.next[i].set(j, tensor); // at most one tensor attached to edge i->j
+    // at most one tensor attached to edge i->j
+    this.next[i].push(j);
+    this.prev[j].push(i);
+    this.tensorMapping[i][j] = typeof tensor !== 'undefined' ? tensor : -1;
   }
 
   addNode(nodeId, inTensors, outTensors) {
-    nodeId = parseInt(nodeId);
     for (const i of inTensors) {
-      if (typeof this.tensors.get(i) === 'undefined') {
+      if (!this.tensors.has(i)) {
         this.tensors.set(i, {
           from: new Set(),
           to: new Set()
@@ -31,7 +37,7 @@ export default class Graph {
       this.tensors.get(i).to.add(nodeId);
     }
     for (const i of outTensors) {
-      if (typeof this.tensors.get(i) === 'undefined') {
+      if (!this.tensors.has(i)) {
         this.tensors.set(i, {
           from: new Set(),
           to: new Set()
@@ -44,18 +50,28 @@ export default class Graph {
     }
   }
 
+  setBlack(i) {
+    this.color[i] = true;
+  }
+
   identifyInputOutputTensors(inTensors, outTensors) {
     for (const t of inTensors) {
+      if (!this.tensors.has(t)) {
+        return;
+      }
       for (const n of this.tensors.get(t).to) {
-        if (typeof this.inTensorsOfInputNode.get(n) === 'undefined') {
+        if (!this.inTensorsOfInputNode.has(n)) {
           this.inTensorsOfInputNode.set(n, new Set());
         }
         this.inTensorsOfInputNode.get(n).add(t);
       }
     }
     for (const t of outTensors) {
+      if (!this.tensors.has(t)) {
+        return;
+      }
       for (const n of this.tensors.get(t).from) {
-        if (typeof this.outTensorsOfOutputNode.get(n) === 'undefined') {
+        if (!this.outTensorsOfOutputNode.has(n)) {
           this.outTensorsOfOutputNode.set(n, new Set());
         }
         this.outTensorsOfOutputNode.get(n).add(t);
@@ -64,125 +80,54 @@ export default class Graph {
   }
 
   topologicalSort() {
-    const _this = this;
-    const visited = new Array(this.vertices).fill(false);
+    const indegree = new Array(this.vertices).fill(0);
     const result = [];
-    const dfs = (v) => {
-      visited[v] = true;
-      for (const i of _this.next[v].keys()) {
-        if (!visited[i]) {
-          dfs(i);
+    const q = [];
+    for (let i = 0; i < this.vertices; i++) {
+      indegree[i] = this.prev[i].length;
+      if (!indegree[i]) {
+        q.push(i); // push node i with indegree zero
+      }
+    }
+    let cnt = 0;
+    while (q.length) {
+      const u = q.shift();
+      result.push(u);
+      cnt++;
+      for (const v of this.next[u]) {
+        if (!--indegree[v]) {
+          q.push(v);
         }
       }
-      result.unshift(v);
-    };
-    for (let i = 0; i < this.vertices; i++) {
-      if (!visited[i]) {
-        dfs(i);
-      }
+    }
+    if (cnt !== this.vertices) {
+      throw new Error('Not a DAG');
     }
     return result;
   }
 
-  setBlack(i) {
-    this.color[i] = true;
-  }
-
   biTopologicalSort() {
-    const _this = this;
-
-    function dfsColor(v, color) {
-      const result = new Set();
-      const visited = new Array(_this.vertices).fill(false);
-      const _dfsColor = (v) => {
-        visited[v] = true;
-        if (_this.color[v] !== color) {
-          return;
-        }
-        result.add(v);
-        for (const i of _this.next[v].keys()) {
-          if (!visited[i]) {
-            _dfsColor(i);
-          }
-        }
-      };
-      for (const i of _this.next[v].keys()) {
-        if (!visited[i]) {
-          _dfsColor(i);
+    const order = new Array(this.vertices).fill(0);
+    for (const u of this.topologicalSort()) {
+      for (const v of this.prev[u]) {
+        if (this.color[u] === this.color[v]) {
+          order[u] = Math.max(order[u], order[v]);
+        } else {
+          order[u] = Math.max(order[u], order[v] + 1);
         }
       }
-      return result;
     }
-
-    function dfsSameColor(v) {
-      return dfsColor(v, _this.color[v]);
-    }
-
-    function dfsDiffColor(v) {
-      return dfsColor(v, !_this.color[v]);
-    }
-
-    function diff(a, b) {
-      return new Set([...a].filter(x => !b.has(x)));
-    }
-
-    function union(a, b) {
-      return new Set([...a, ...b]);
-    }
-
     const result = [];
-    const processed = new Array(this.vertices).fill(false);
-    const topoOrder = this.topologicalSort();
-    const topoIndex = new Array(topoOrder.length);
-    for (const [i, v] of topoOrder.entries()) {
-      topoIndex[v] = i;
-    }
-
-    for (const i of topoOrder) {
-      if (processed[i])
-        continue;
-      const sameColorSet = dfsSameColor(i);
-      let partition = sameColorSet.add(i);
-      // console.log(`processing node ${i}`);
-      let maxTopoIndexInPartition = Number.MIN_SAFE_INTEGER;
-      let minTopoIndexInPartition = Number.MAX_SAFE_INTEGER;
-      for (const v of partition) {
-        if (topoIndex[v] > maxTopoIndexInPartition) {
-          maxTopoIndexInPartition = topoIndex[v];
-        }
-        if (topoIndex[v] < minTopoIndexInPartition) {
-          minTopoIndexInPartition = topoIndex[v];
-        }
+    for (const [nodeId, ord] of order.entries()) {
+      if (typeof result[ord] === 'undefined') {
+        result[ord] = new Set();
       }
-      const currColor = _this.color[i];
-      for (let j = minTopoIndexInPartition; j <= maxTopoIndexInPartition; j++) {
-        const node = topoOrder[j];
-        if (!processed[node] && _this.color[node] !== currColor) {
-          const diffColorSet = dfsDiffColor(node);
-          partition = diff(partition, diffColorSet);
-        }
-      }
-      partition.forEach((v) => processed[v] = true);
-      result.push(partition);
+      result[ord].add(nodeId);
     }
-    // merge adjacent partitions with same color
-    const merged = [result.shift()];
-    while (result.length) {
-      const prev = merged.pop();
-      const curr = result.shift();
-      const partitionColor = (s) => _this.color[Array.from(s)[0]];
-      if (partitionColor(prev) === partitionColor(curr)) {
-        merged.push(union(prev, curr));
-      } else {
-        merged.push(prev);
-        merged.push(curr);
-      }
-    }
-    return merged;
+    return result;
   }
-  partition(eager = false) {
-    const _this = this;
 
+  partition(eager = false) {
     function union(a, b) {
       return new Set([...a, ...b]);
     }
@@ -193,7 +138,7 @@ export default class Graph {
     const result = [];
     // crossTensor - tensor lies on the cross edge
     const crossTensorsTo = new Map();
-    for (let i = 0; i < _this.vertices; i++) {
+    for (let i = 0; i < this.vertices; i++) {
       crossTensorsTo.set(i, new Set());
     }
 
@@ -209,21 +154,21 @@ export default class Graph {
       let inTensors = new Set();
       let outTensors = new Set();
       for (const u of partition) {
-        for (const v of _this.next[u].keys()) {
+        for (const v of this.next[u]) {
           if (!partition.has(v)) {
-            const tensorUV = _this.next[u].get(v);
+            const tensorUV = this.tensorMapping[u][v];
             crossTensorsTo.get(v).add(tensorUV);
             outTensors.add(tensorUV);
           }
         }
-        if (_this.outTensorsOfOutputNode.has(u)) {
-          outTensors = union(outTensors, _this.outTensorsOfOutputNode.get(u));
+        if (this.outTensorsOfOutputNode.has(u)) {
+          outTensors = union(outTensors, this.outTensorsOfOutputNode.get(u));
         }
       }
       for (const u of partition) {
         inTensors = union(inTensors, crossTensorsTo.get(u));
-        if (_this.inTensorsOfInputNode.has(u)) {
-          inTensors = union(inTensors, _this.inTensorsOfInputNode.get(u));
+        if (this.inTensorsOfInputNode.has(u)) {
+          inTensors = union(inTensors, this.inTensorsOfInputNode.get(u));
         }
       }
       result.push({
