@@ -117,11 +117,11 @@
       </table>
     </div>
   </form>
-  <div class="container">
+  <div class="container supported-ops-select">
     <div class="row small">
-      <button class="col-4" onclick="document.querySelectorAll('input[name=supportedOp]').forEach(x => x.checked = true)">Select All</button>
+      <button class="col-4" onclick="defaultSupportedOps=getDefaultSupportedOps(currentBackend, currentPrefer);document.querySelectorAll('input[name=supportedOp]').forEach(x => x.checked=defaultSupportedOps.has(parseInt(x.value)))">Select Supported</button>
       <button class="col-4" onclick="document.querySelectorAll('input[name=supportedOp]').forEach(x => x.checked = false)">Uncheck All</button>
-      <button class="col-4" onclick="utils.backend='';main(us === 'camera')">Update Backend</button>
+      <button class="col-4" onclick="$('.alert').hide();supportedOps=getSelectedOps();utils.backend='';main(us === 'camera')">Update Backend</button>
       <label class="col-4"><input type="checkbox" name="supportedOp" value="0"><span>ADD</span></label>
       <label class="col-4"><input type="checkbox" name="supportedOp" value="10003"><span>ATROUS_CONV_2D</span></label>
       <label class="col-4"><input type="checkbox" name="supportedOp" value="10004"><span>ATROUS_DEPTHWISE_CONV_2D</span></label>

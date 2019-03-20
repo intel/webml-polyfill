@@ -13,7 +13,7 @@ export default class Compilation {
   constructor(model) {
     this._model = model;
     this._finished = false;
-    this._preference = PreferenceCode.fast_single_answer;
+    this._preference = PreferenceCode.FAST_SINGLE_ANSWER;
     this._device = new Device;
     this._preparedModel = null;
     this._backend = model._backend;
@@ -37,10 +37,7 @@ export default class Compilation {
    * 
    * @param {number} preference - The execution preference, e.g. PreferenceCode.LOW_POWER.
    */
-  setPreference(preference, hybridPrefer, supportedOpsList, eagerMode=false) {
-    this._model.supportedOpsList = supportedOpsList;
-    this._model.eagerMode = eagerMode;
-    this._model.hybridPrefer = hybridPrefer;
+  setPreference(preference) {
     if (this._finished) {
       throw new Error('setPreference cant modify after compilation finished');
     }
@@ -48,6 +45,7 @@ export default class Compilation {
       throw new Error(`Invalid preference value ${preference}`);
     }
     this._preference = preference;
+    this._model._preference = preference;
     return ResultCode.NO_ERROR;
   }
 

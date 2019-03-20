@@ -56,19 +56,30 @@ function getModelDicItem(modelFormatName) {
   }
 }
 
-function getPreferString(backend) {
-  let prefer;
-  let backendLC = backend.toLowerCase();
+function getPreferString() {
+  return preferSelectElement.options[preferSelectElement.selectedIndex].value;
+}
 
-  if (backendLC === 'wasm') {
-    prefer = 'fast';
-  } else if (backendLC === 'webgl') {
-    prefer = 'sustained';
-  } else if (backendLC === 'webml') {
-    prefer = preferSelectElement.options[preferSelectElement.selectedIndex].value;
+function getSelectedOps() {
+  return getPreferString() === 'none' ? new Set() : new Set(
+    Array.from(
+      document.querySelectorAll('input[name=supportedOp]:checked')).map(
+        x => parseInt(x.value)));
+}
+
+function updateOpsSelect() {
+  const backend = JSON.parse(configurations.value).backend;
+  const prefer = preferSelect.value;
+  if (backend !== 'native' && prefer !== 'none') {
+    // hybrid mode
+    document.getElementById('supported-ops-select').style.visibility = 'visible';
+  } else if (backend === 'WebML' && prefer === 'none') {
+    throw new Error('No backend selected');
+  } else {
+    // solo mode
+    document.getElementById('supported-ops-select').style.visibility = 'hidden';
   }
-
-  return prefer;
+  supportedOps = getSelectedOps();
 }
 
 const util = new Utils();
@@ -248,7 +259,7 @@ class Benchmark {
       imageElement.src = segCanvas.toDataURL();
     }
     if (this.model._backend !== 'WebML')
-      this.model._compilation._preparedModel.getReport();
+      this.model._compilation._preparedModel.dumpProfilingResults();
     return {"computeResults": computeResults, "decodeResults": decodeResults};
   }
   /**
@@ -531,9 +542,8 @@ class WebMLJSBenchmark extends Benchmark {
       let kwargs = {
         rawModel: rawModel,
         backend: backend,
-        prefer: getPreferString(backend),
+        prefer: getPreferString(),
         softmax: postOptions.softmax || false,
-        hybridPrefer: preferSelectElement.options[preferSelectElement.selectedIndex].value
       };
       this.model = new TFliteModelImporter(kwargs);
     } else if (onnxModelArray.indexOf(modelName) !== -1) {
@@ -550,9 +560,8 @@ class WebMLJSBenchmark extends Benchmark {
       let kwargs = {
         rawModel: rawModel,
         backend: backend,
-        prefer: getPreferString(backend),
+        prefer: getPreferString(),
         softmax: postOptions.softmax || false,
-        hybridPrefer: preferSelectElement.options[preferSelectElement.selectedIndex].value
       };
       this.model = new OnnxModelImporter(kwargs);
     } else if (ssdModelArray.indexOf(modelName) !== -1) {
@@ -564,8 +573,7 @@ class WebMLJSBenchmark extends Benchmark {
       let kwargs = {
         rawModel: rawModel,
         backend: backend,
-        prefer: getPreferString(backend),
-        hybridPrefer: preferSelectElement.options[preferSelectElement.selectedIndex].value
+        prefer: getPreferString(),
       };
       this.model = new TFliteModelImporter(kwargs);
     } else if (modelName === 'posenet') {
@@ -574,7 +582,7 @@ class WebMLJSBenchmark extends Benchmark {
       let cacheMap = new Map();
       let useAtrousConv = false; // Default false, NNAPI and BNNS don't support AtrousConv
       this.model = new PoseNet(modelArch, this.modelVersion, useAtrousConv, this.outputStride,
-                               this.scaleInputSize, smType, cacheMap, backend, getPreferString(backend));
+                               this.scaleInputSize, smType, cacheMap, backend, getPreferString());
     } else if (segmentationModelArray.indexOf(modelName) !== -1) {
       let model = getModelDicItem(modelName);
       let resultTflite = await this.loadModelAndLabels(model);
@@ -584,12 +592,11 @@ class WebMLJSBenchmark extends Benchmark {
       let kwargs = {
         rawModel: rawModel,
         backend: backend,
-        prefer: getPreferString(backend),
-        hybridPrefer: preferSelectElement.options[preferSelectElement.selectedIndex].value
+        prefer: getPreferString(),
       };
       this.model = new TFliteModelImporter(kwargs);
     }
-    supportedOpsList = Array.from(document.querySelectorAll('input[name=supportedOp]:checked')).map(x => parseInt(x.value));
+    supportedOps =  getSelectedOps();
     await this.model.createCompiledModel();
   }
   printPredictResult() {
@@ -671,7 +678,15 @@ async function run() {
     Object.keys(configuration).forEach(key => {
       if (key === 'backend') {
         let selectedOpt = preferSelectElement.options[preferSelectElement.selectedIndex];
-        logger.log(`${key.padStart(12)}: ${configuration[key].indexOf('native') < 0 ? `${configuration[key]} + ` : ' ' }${getNativeAPI(selectedOpt.value)}(${selectedOpt.text})`);
+        let backendName = configuration[key];
+        if (configuration[key].indexOf('native') < 0) {
+          if (getPreferString() !== 'none') {
+            backendName += ` + ${getNativeAPI(selectedOpt.value)}(${selectedOpt.text})`;
+          }
+        } else {
+          backendName = `${getNativeAPI(selectedOpt.value)}(${selectedOpt.text})`;
+        }
+        logger.log(`${key.padStart(12)}: ${backendName}`);
       } else if (key === 'modelName') {
         let model = getModelDicItem(configuration[key]);
         logger.log(`${key.padStart(12)}: ${model.modelName}`);
@@ -697,7 +712,6 @@ async function run() {
   logger.groupEnd();
 }
 document.addEventListener('DOMContentLoaded', () => {
-  document.querySelectorAll('input[name=supportedOp]').forEach(x => x.checked = true)
   inputElement = document.getElementById('input');
   pickBtnEelement = document.getElementById('pickButton');
   imageElement = document.getElementById('image');
@@ -753,29 +767,35 @@ document.addEventListener('DOMContentLoaded', () => {
         imageElement.src = document.getElementById('imageClassificationImage').src;
       }
     }
-    let currentConfig = configurationsElement.options[configurationsElement.selectedIndex].text;
-    if (currentConfig.indexOf('WebML API') !== -1 || currentConfig.indexOf('Hybrid') !== -1) {
-      preferDivElement.setAttribute('class', "prefer-show");
-      if (currentOS === 'Mac OS') {
-        for (var i=0; i<preferSelectElement.options.length; i++) {
-          let preferOpt = preferSelectElement.options[i];
-          if (preferOpt.value === 'low') {
-            preferOpt.disabled = true;
-          }
-        }
-      } else if (['Windows', 'Linux'].indexOf(currentOS) !== -1) {
-        for (var i=0; i<preferSelectElement.options.length; i++) {
-          let preferOpt = preferSelectElement.options[i];
-          if (preferOpt.value === 'sustained') {
-            preferOpt.selected = true;
-          } else if (preferOpt.value === 'low') {
-            preferOpt.disabled = true;
-          }
+
+    if (currentOS === 'Mac OS') {
+      for (var i=0; i<preferSelectElement.options.length; i++) {
+        let preferOpt = preferSelectElement.options[i];
+        if (preferOpt.value === 'low') {
+          preferOpt.disabled = true;
         }
       }
-    } else {
-      preferDivElement.setAttribute('class', "prefer-hidden");
+    } else if (['Windows', 'Linux'].indexOf(currentOS) !== -1) {
+      for (var i=0; i<preferSelectElement.options.length; i++) {
+        let preferOpt = preferSelectElement.options[i];
+        if (preferOpt.value === 'sustained') {
+          preferOpt.selected = true;
+        } else if (preferOpt.value === 'low') {
+          preferOpt.disabled = true;
+        }
+      }
     }
+    if (JSON.parse(e.target.value).framework === 'WebML API') {
+      document.querySelector('#preferSelect option[value=none]').disabled = true;
+    } else {
+      document.querySelector('#preferSelect option[value=none]').disabled = false;
+    }
+    updateOpsSelect();
+  }, false);
+
+  let preferSelectElement = document.getElementById('preferSelect');
+  preferSelectElement.addEventListener('change', () => {
+    updateOpsSelect();
   }, false);
 
   let webmljsConfigurations = [{
@@ -802,18 +822,13 @@ document.addEventListener('DOMContentLoaded', () => {
     let option = document.createElement('option');
     option.value = JSON.stringify(configuration);
     option.textContent = `${configuration.framework} (${configuration.backend} ${configuration.framework.indexOf('WebML') < 0 ? 'Hybrid ' : ''}backend)`;
-    if (configuration.framework === 'WebML API') {
-      if (navigator.ml.isPolyfill) {
-        option.disabled = true;
-      }
-      if (['Android', 'Windows', 'Linux'].indexOf(currentOS) !== -1) {
-        for (var i=0; i<preferSelectElement.options.length; i++) {
-          let preferOp = preferSelectElement.options[i];
-          if (preferOp.text === 'sustained') {
-            preferOp.selected = true;
-          } else if (preferOp.text === 'fast') {
-            preferOp.disabled = true;
-          }
+    if (['Android', 'Windows', 'Linux'].indexOf(currentOS) !== -1) {
+      for (var i=0; i<preferSelectElement.options.length; i++) {
+        let preferOp = preferSelectElement.options[i];
+        if (preferOp.text === 'sustained') {
+          preferOp.selected = true;
+        } else if (preferOp.text === 'fast') {
+          preferOp.disabled = true;
         }
       }
     }

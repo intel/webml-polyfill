@@ -13,6 +13,8 @@ export default class Model {
     this._inputs = null;
     this._outputs = null;
     this._backend = options.backend;
+    this._eager = options.eager || false;
+    this._supportedOps = options.supportedOps || new Set();
   }
 
   /**

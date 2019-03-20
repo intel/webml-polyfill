@@ -1,6 +1,3 @@
-let supportedOpsList = [];
-let eagerMode = false;
-
 class Utils {
   constructor(canvas) {
     this.rawModel;
@@ -68,7 +65,6 @@ class Utils {
   }
 
   async init(backend, prefer) {
-    supportedOpsList = Array.from(document.querySelectorAll('input[name=supportedOp]:checked')).map(x => parseInt(x.value));
     if (!this.loaded) {
       return 'NOT_LOADED';
     }
@@ -82,7 +78,6 @@ class Utils {
       rawModel: this.rawModel,
       backend: backend,
       prefer: prefer,
-      hybridPrefer: prefer,
       softmax: this.postOptions.softmax || false,
     };
     switch (this.rawModel._rawFormat) {

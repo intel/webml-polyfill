@@ -1,5 +1,6 @@
-import {OperationCode, OperandCode, PaddingCode, FuseCode} from '../Enums'
-import * as utils from '../utils'
+import {OperationCode, OperandCode, PaddingCode, FuseCode, PreferenceCode} from '../Enums';
+import * as utils from '../utils';
+import { product, findKey } from '../utils';
 import * as tf from '@tensorflow/tfjs-core';
 import Graph from '../GraphUtils';
 
@@ -15,12 +16,12 @@ export default class WebGLModel {
    */
   constructor(model) {
     this._nnNative = navigator.ml.getNeuralNetworkContext();
-    this._supportedOpCode = new Set([]);
+    this._supportedOps = new Set([]);
     this._model = model;
     this._operations = [];
     this._operands = [];
     this._nnOperands = [];
-    this._syncedFromWebGL = [];
+    this._preference = PreferenceCode.FAST_SINGLE_ANSWER;
     this._prepared = false;
 
     if (tf.ENV.backend.floatPrecision() === 16) {
@@ -33,38 +34,29 @@ export default class WebGLModel {
   async prepareModel() {
     const model = this._model;
 
-    this._hybridPreferCode = {
-      low: this._nnNative.PREFER_LOW_POWER,
-      fast: this._nnNative.PREFER_FAST_SINGLE_ANSWER,
-      sustained: this._nnNative.PREFER_SUSTAINED_SPEED,
-    }[model.hybridPrefer];
-    console.debug(`Backend: WebGL + ${model.hybridPrefer}`);
-    this._supportedOpCode = new Set(model.supportedOpsList);
-    console.debug(`Supported Ops: ${Array.from(this._supportedOpCode).map(op => Object.keys(OperationCode).find(k => OperationCode[k] === op)).join(', ') || 'None'}`);
+    this._preference = model._preference;
+    this._supportedOps = model._supportedOps;
+    this._eager = model._eager;
 
     const graph = new Graph(model._operations.length);
     model._operations.forEach((op, i) => {
       graph.addNode(i, op.inputs, op.outputs);
-      if (!this._supportedOpCode.has(op.type)) {
+      if (!this._supportedOps.has(op.type)) {
         graph.setBlack(i);
       }
-    })
+    });
     graph.identifyInputOutputTensors(model._inputs, model._outputs);
 
-    let isEagerMode = model.eagerMode;
-    console.debug(`Mode: ${isEagerMode ? 'Eager' : 'Graph'}`);
-
-    const partitions = graph.partition(isEagerMode);
+    const partitions = graph.partition(this._eager);
 
     for (const {nodes, inTensors, outTensors} of partitions) {
-      const subgraphName = `Subgraph ${typeof this.subgraphcounter === 'undefined' ? this.subgraphcounter = 0 : ++this.subgraphcounter}\t (${this._supportedOpCode.has(model._operations[nodes[0]].type) ? 'WebNN' : 'WebGL'}):\t{${Object.entries(nodes.map(opId => Object.keys(OperationCode).find(k => OperationCode[k] === model._operations[opId].type)).reduce((counts, v) => {counts[v]?counts[v]++:counts[v]=1; return counts}, {})).map(n => `${n[0]} x ${n[1]}`).join(', ')}}`;
-      console.debug(subgraphName);
+      const subgraphName = `Subgraph ${typeof this.subgraphcounter === 'undefined' ? this.subgraphcounter = 0 : ++this.subgraphcounter}\t (${this._supportedOps.has(model._operations[nodes[0]].type) ? 'WebNN' : 'WebGL'}):\t{${Object.entries(nodes.map(opId => findKey(OperationCode, model._operations[opId].type)).reduce((counts, v) => {counts[v]?counts[v]++:counts[v]=1; return counts}, {})).map(n => `${n[0]} x ${n[1]}`).join(', ')}}`;
 
-      if (!this._supportedOpCode.has(model._operations[nodes[0]].type)) {
+      if (!this._supportedOps.has(model._operations[nodes[0]].type)) {
 
         // run in polyfil
 
-        // break group of WebGL operaions to singletons in eager mode
+        // break a group of WebGL operaions to singletons
         for (const operationId of nodes) {
           const operation = model._operations[operationId];
           operation.subgraphName = subgraphName;
@@ -142,7 +134,7 @@ export default class WebGLModel {
         await submodel.finish();
 
         const compilation = await submodel.createCompilation();
-        compilation.setPreference(this._hybridPreferCode);
+        compilation.setPreference(this._preference);
         await compilation.finish();
 
         const execution = await compilation.createExecution();
@@ -151,7 +143,7 @@ export default class WebGLModel {
         });
 
         this._operations.push({
-          type: OperationCode.NATIVE_OP,
+          type: OperationCode.WEBNN_SUBGRAPH,
           inputs: inTensors,
           outputs: outTensors,
           execution: execution,
@@ -190,7 +182,7 @@ export default class WebGLModel {
     let start = performance.now();
 
     const firstOp = this._operations[0];
-    if (firstOp.type !== OperationCode.NATIVE_OP) {
+    if (firstOp.type !== OperationCode.WEBNN_SUBGRAPH) {
       // copy to WebGL texture
       inputs.forEach(input => {
         const operand = this._operands[input.index];
@@ -203,7 +195,7 @@ export default class WebGLModel {
 
     for (const [i, operation] of this._operations.entries()) {
 
-      if (operation.type === OperationCode.NATIVE_OP) {
+      if (operation.type === OperationCode.WEBNN_SUBGRAPH) {
         let end = performance.now();
         profiling[i - 1] += end - start;
         start = end;
@@ -220,7 +212,7 @@ export default class WebGLModel {
     }
 
     const lastOp = this._operations[this._operations.length - 1];
-    if (lastOp.type !== OperationCode.NATIVE_OP) {
+    if (lastOp.type !== OperationCode.WEBNN_SUBGRAPH) {
       // copy from WebGL texture
       outputs.forEach(output => {
         const operand = this._operands[output.index];  
@@ -675,11 +667,17 @@ export default class WebGLModel {
     return tf.getBackend() === 'webgl';
   }
 
-  getReport() {
+  dumpProfilingResults() {
+    if (executeTimes === 0) {
+      console.debug(`Report will be available after at least ${skipWarmUpRuns + 1} executions.`);
+      return;
+    }
     executeTimes -= skipWarmUpRuns;
     let webglTime = 0;
     let webnnTime = 0;
-    console.debug(`\n\nExecution calls: ${executeTimes} (omitted ${skipWarmUpRuns} warm-up runs)`);
+    console.debug(`Execution calls: ${executeTimes} (omitted ${skipWarmUpRuns} warm-up runs)`);
+    console.debug(`Supported Ops: ${Array.from(this._supportedOps).map(op => findKey(OperationCode, op)).join(', ') || 'None'}`);
+    console.debug(`Mode: ${this._eager ? 'Eager' : 'Graph'}`);
     console.debug(`Note: Sync time is included in WebGL op.`);
     for (const [i, op] of this._operations.entries()) {
       const avgTime = profiling[i] / executeTimes;

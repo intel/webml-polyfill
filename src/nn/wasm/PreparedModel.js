@@ -1,7 +1,7 @@
 import getNNOpsInstance from './NNOps'
 import { OperationCode, OperandCode, PaddingCode, PreferenceCode, FuseCode, OperandLifetime } from '../Enums'
 import * as utils from '../utils'
-import { product } from '../utils';
+import { product, findKey } from '../utils';
 import Graph from '../GraphUtils';
 
 var executeTimes = 0;
@@ -11,12 +11,13 @@ var profiling = [];
 export default class PreparedModel {
   constructor() {
     this._nnNative = navigator.ml.getNeuralNetworkContext();
-    this._supportedOpCode = new Set([]);
+    this._supportedOps = new Set([]);
     this._operations = [];
     this._operands = [];
     this._prepared = false;
     this._nn_ops = null;
     this._model;
+    this._preference = PreferenceCode.FAST_SINGLE_ANSWER;
     this._toDelete = {
       tensorValue: [],
       tensorShape: []
@@ -32,28 +33,20 @@ export default class PreparedModel {
     this._model = model;
     this._nn_ops = await getNNOpsInstance();
 
-    this._hybridPreferCode = {
-      low: this._nnNative.PREFER_LOW_POWER,
-      fast: this._nnNative.PREFER_FAST_SINGLE_ANSWER,
-      sustained: this._nnNative.PREFER_SUSTAINED_SPEED,
-    }[model.hybridPrefer];
-    console.debug(`Backend: WASM + ${model.hybridPrefer}`);
-    this._supportedOpCode = new Set(model.supportedOpsList);
-    console.debug(`Supported Ops: ${Array.from(this._supportedOpCode).map(op => Object.keys(OperationCode).find(k => OperationCode[k] === op)).join(', ') || 'None'}`)
+    this._preference = model._preference;
+    this._supportedOps = model._supportedOps;
+    this._eager = model._eager;
 
     const graph = new Graph(model._operations.length);
     model._operations.forEach((op, i) => {
       graph.addNode(i, op.inputs, op.outputs);
-      if (!this._supportedOpCode.has(op.type)) {
+      if (!this._supportedOps.has(op.type)) {
         graph.setBlack(i);
       }
-    })
+    });
     graph.identifyInputOutputTensors(model._inputs, model._outputs);
 
-    let isEagerMode = model.eagerMode;
-    console.debug(`Mode: ${isEagerMode ? 'Eager' : 'Graph'}`);
-
-    const partitions = graph.partition(isEagerMode);
+    const partitions = graph.partition(this._eager);
 
     // allocate runtime operands
     for (let i = 0; i < model._operands.length; ++i) {
@@ -73,10 +66,9 @@ export default class PreparedModel {
     }
 
     for (const {nodes, inTensors, outTensors} of partitions) {
-      const subgraphName = `Subgraph ${typeof this.subgraphcounter === 'undefined' ? this.subgraphcounter = 0 : ++this.subgraphcounter}\t (${this._supportedOpCode.has(model._operations[nodes[0]].type) ? 'WebNN' : 'WASM'}):\t{${Object.entries(nodes.map(opId => Object.keys(OperationCode).find(k => OperationCode[k] === model._operations[opId].type)).reduce((counts, v) => {counts[v]?counts[v]++:counts[v]=1; return counts}, {})).map(n => `${n[0]} x ${n[1]}`).join(', ')}}`;
-      console.debug(subgraphName);
+      const subgraphName = `Subgraph ${typeof this.subgraphcounter === 'undefined' ? this.subgraphcounter = 0 : ++this.subgraphcounter}\t (${this._supportedOps.has(model._operations[nodes[0]].type) ? 'WebNN' : 'WASM'}):\t{${Object.entries(nodes.map(opId => findKey(OperationCode, model._operations[opId].type)).reduce((counts, v) => {counts[v]?counts[v]++:counts[v]=1; return counts}, {})).map(n => `${n[0]} x ${n[1]}`).join(', ')}}`;
 
-      if (!this._supportedOpCode.has(model._operations[nodes[0]].type)) {
+      if (!this._supportedOps.has(model._operations[nodes[0]].type)) {
 
         // run in polyfil
 
@@ -128,7 +120,7 @@ export default class PreparedModel {
         await submodel.finish();
 
         const compilation = await submodel.createCompilation();
-        compilation.setPreference(this._hybridPreferCode);
+        compilation.setPreference(this._preference);
         await compilation.finish();
 
         const execution = await compilation.createExecution();
@@ -146,7 +138,7 @@ export default class PreparedModel {
         });
 
         this._operations.push({
-          type: OperationCode.NATIVE_OP,
+          type: OperationCode.WEBNN_SUBGRAPH,
           inputs: inTensors,
           outputs: outTensors,
           execution: execution,
@@ -277,7 +269,7 @@ export default class PreparedModel {
     }
 
     switch(op) {
-      case OperationCode.NATIVE_OP: {
+      case OperationCode.WEBNN_SUBGRAPH: {
         const execution = operation.execution;
 
         inputs.forEach((tensorId, i) => {
@@ -905,11 +897,19 @@ export default class PreparedModel {
     this._model._operands = [];
   }
 
-  getReport() {
+  dumpProfilingResults() {
+    if (executeTimes === 0) {
+      console.debug(`Report will be available after at least ${skipWarmUpRuns + 1} executions.`);
+      return;
+    }
     executeTimes -= skipWarmUpRuns;
     let wasmTime = 0;
     let webnnTime = 0;
-    console.debug(`\n\nExecution calls: ${executeTimes} (omitted ${skipWarmUpRuns} warm-up runs)`);
+    console.debug(`Execution calls: ${executeTimes} (omitted ${skipWarmUpRuns} warm-up runs)`);
+    console.debug(`Supported Ops: ${Array.from(this._supportedOps).map(op => findKey(OperationCode, op)).join(', ') || 'None'}`);
+    console.debug(`Mode: ${this._eager ? 'Eager' : 'Graph'}`);
+    console.debug(`Note: Successive WASM ops belong to a same subgraph.`);
+
     for (const [i, op] of this._operations.entries()) {
       const avgTime = profiling[i] / executeTimes;
       console.debug(`${avgTime.toFixed(5)} ms\t- ${op.subgraphName}`);
@@ -921,7 +921,7 @@ export default class PreparedModel {
     }
     console.debug(`WASM time: ${wasmTime.toFixed(5)} ms`);
     console.debug(`WebNN time: ${webnnTime.toFixed(5)} ms`);
-    console.debug(`Sum: ${(profiling.reduce((a,b)=>a+b) / executeTimes).toFixed(5)} ms`);
+    console.debug(`Sum: ${(wasmTime + webnnTime).toFixed(5)} ms`);
     executeTimes = 0;
   }
 }

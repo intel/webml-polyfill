@@ -88,6 +88,7 @@
               <option value="sustained" selected>SUSTAINED_SPEED</option>
               <option value="fast">FAST_SINGLE_ANSWER</option>
               <option value="low">LOW_POWER</option>
+              <option value="none">None</option>
             </select>
           </div>
           <div>
@@ -95,8 +96,8 @@
             1(warming up) + <input type="number" id="iteration" min="1" size="4" value="200"/>
           </div>
           <div class="row top-margin">
-            <div class="col-4">
-              <label><input type="checkbox" onchange="eagerMode=this.checked;document.querySelectorAll('input[name=supportedOp]').forEach(x=>{x.checked=true;x.disabled=this.checked})"> Eager Mode</label>
+            <div class="col-4" id="supported-ops-select">
+              <label><input type="checkbox" onchange="eager=this.checked;document.querySelectorAll('input[name=supportedOp]').forEach(x=>{x.checked=true;x.disabled=this.checked})"> Eager Mode</label>
               <br><br>
               <button onclick="document.querySelectorAll('input[name=supportedOp]').forEach(x => x.checked = true)">Select All</button>
               <button onclick="document.querySelectorAll('input[name=supportedOp]').forEach(x => x.checked = false)">Uncheck All</button>

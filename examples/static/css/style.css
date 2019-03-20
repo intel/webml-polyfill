@@ -11,6 +11,7 @@ body {
   padding: 5px 45px;
   border-radius: 50px;
   border: none;
+  outline:none;
   margin-bottom: 6px;
 }
 .row button.col-4:hover {

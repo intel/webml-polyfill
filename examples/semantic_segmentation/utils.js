@@ -1,6 +1,3 @@
-let supportedOpsList = [];
-let eagerMode = false;
-
 class Utils {
   constructor() {
     this.tfModel;
@@ -54,7 +51,6 @@ class Utils {
 
 
   async init(backend, prefer) {
-    supportedOpsList = Array.from(document.querySelectorAll('input[name=supportedOp]:checked')).map(x => parseInt(x.value));
     if (!this.loaded) {
       return 'NOT_LOADED';
     }
@@ -68,7 +64,6 @@ class Utils {
       rawModel: this.tfModel,
       backend: backend,
       prefer: prefer,
-      hybridPrefer: prefer,
     };
     this.model = new TFliteModelImporter(kwargs);
     let result = await this.model.createCompiledModel();

@@ -5,8 +5,8 @@ let ud = getUrlParam('d');
 let strsearch;
 
 if (!location.search) {
-  strsearch = `?prefer=fast&b=WASM&s=image&d=0`;
-  currentBackend = 'WASM';
+  strsearch = `?prefer=none&b=none&s=image&d=0`;
+  currentBackend = 'none';
   let path = location.href;
   location.href = path + strsearch;
 }
@@ -33,6 +33,29 @@ const optionCompact = () => {
     if(s.innerText.toLowerCase() == 'showboundingbox') { s.innerText = 'Bounding'; s.setAttribute('title', 'ShowBoundingBox'); }
   }
 }
+
+const toggleOpsSelect = (backend, prefer) => {
+  
+  if (backend !== 'WebML' && prefer !== 'none') {
+    // hybrid mode
+    supportedOps = getSelectedOps();
+    $('.supported-ops-select').slideDown();
+  } else if (backend === 'WebML' && prefer === 'none') {
+    showError('No backend selected', 'Please select a backend to start prediction.');
+    throw new Error('No backend selected');
+  } else {
+    // solo mode
+    supportedOps = new Set();
+    $('.supported-ops-select').slideUp();
+  }
+};
+
+const getSelectedOps = () => {
+  return new Set(
+    Array.from(
+      document.querySelectorAll('input[name=supportedOp]:checked')).map(
+        x => parseInt(x.value)));
+};
 
 $(document).ready(() => {
 
@@ -81,27 +104,61 @@ $(document).ready(() => {
       currentprefertext = 'SUSTAINED_SPEED';
     } else if (prefer == 'low') {
       currentprefertext = 'LOW_POWER';
+    } else if (prefer == 'none') {
+      currentprefertext = 'None';
     }
     $('#ictitle').html(`Skeleton Detection / ${backend} / ${currentprefertext}`);
   }
   updateTitle(ub, up);
 
-  $('input:radio[name=bp], input:radio[name=bw]').click(() => {
+  
+  $('input:radio[name=bp]').click(() => {
     $('.alert').hide();
     let polyfillId = $('input:radio[name="bp"]:checked').attr('id') || $('input:radio[name="bp"][checked="checked"]').attr('id');
     $('.b-polyfill input').removeAttr('checked');
     $('.b-polyfill label').removeClass('checked');
-    $('#' + polyfillId).attr('checked', 'checked');
-    $('#l-' + polyfillId).addClass('checked');
+
+    if (polyfillId !== currentBackend) {
+      $('#' + polyfillId).attr('checked', 'checked');
+      $('#l-' + polyfillId).addClass('checked');
+    } else {
+      polyfillId = 'WebML';
+    }
+
+    currentBackend = polyfillId;
+
+    toggleOpsSelect(currentBackend, currentPrefer);
+
+    if(currentBackend === 'none' || currentBackend === '') {
+      $('#option').hide();
+    } else {
+      $('#option').show();
+      optionCompact();
+    }
+
+    updateTitle(currentBackend, currentPrefer);
+    strsearch = `?prefer=${currentPrefer}&b=${currentBackend}&s=${us}&d=${ud}`;
+    window.history.pushState(null, null, strsearch);
+
+    main(us === 'camera');
+  });
+
+  $('input:radio[name=bw]').click(() => {
+    $('.alert').hide();
 
     let webnnId = $('input:radio[name="bw"]:checked').attr('id') || $('input:radio[name="bw"][checked="checked"]').attr('id');
     $('.b-webnn input').removeAttr('checked');
     $('.b-webnn label').removeClass('checked');
-    $('#' + webnnId).attr('checked', 'checked');
-    $('#l-' + webnnId).addClass('checked');
+    if (webnnId !== currentPrefer) {
+      $('#' + webnnId).attr('checked', 'checked');
+      $('#l-' + webnnId).addClass('checked');
+    } else {
+      webnnId = 'none';
+    }
 
-    currentBackend = polyfillId;
     currentPrefer = webnnId;
+
+    toggleOpsSelect(currentBackend, currentPrefer);
 
     if(currentBackend === 'none' || currentBackend === '') {
       $('#option').hide();
@@ -227,6 +284,7 @@ $(window).load(() => {
   if (ud != '0') {
     componentToggle();
   }
+  toggleOpsSelect(currentBackend, currentPrefer);
   if(currentBackend === 'none' || currentBackend === '') {
     showError('No backend selected', 'Please select a backend to start prediction.');
     $('#option').hide();

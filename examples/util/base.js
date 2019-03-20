@@ -525,21 +525,53 @@ const getPrefer = (backend) => {
 const getPreferCode = (backend, prefer) => {
   let preferCode;
   let nn = navigator.ml.getNeuralNetworkContext();
-  if (backend === 'WASM') {
-    preferCode = nn.PREFER_FAST_SINGLE_ANSWER;
-  } else if (backend === 'WebGL') {
+  if (prefer === 'sustained') {
     preferCode = nn.PREFER_SUSTAINED_SPEED;
-  } else if (backend === 'WebML') {
-    if (prefer === 'sustained') {
-      preferCode = nn.PREFER_SUSTAINED_SPEED;
-    } else if (prefer === 'fast') {
-      preferCode = nn.PREFER_FAST_SINGLE_ANSWER;
-    } else if (prefer === 'low') {
-      preferCode = nn.PREFER_LOW_POWER;
-    }
+  } else if (prefer === 'fast') {
+    preferCode = nn.PREFER_FAST_SINGLE_ANSWER;
+  } else if (prefer === 'low') {
+    preferCode = nn.PREFER_LOW_POWER;
+  } else {
+    preferCode = nn.PREFER_FAST_SINGLE_ANSWER;
   }
   return preferCode;
-}
+};
+
+let eager = false;
+let supportedOps = new Set();
+
+const getDefaultSupportedOps = (backend, prefer) => {
+  const nn = navigator.ml.getNeuralNetworkContext();
+  if (prefer === 'none' && backend !== 'WebML') {
+    // if `prefer` is none, all ops should only run on polyfill
+    return new Set();
+  }
+
+  const backendEnums =        { NN: 0,    MPS: 1,  BNNS: 2,  clDNN: 3, mklDNN: 4 };
+  const supportedTable =
+  { ADD:                      [ true,     true,    true,     true,     false ],
+    ATROUS_CONV_2D:           [ false,    false,   false,    true,     true  ],
+    ATROUS_DEPTHWISE_CONV_2D: [ false,    false,   false,    true,     true  ],
+    AVERAGE_POOL_2D:          [ true,     true,    true,     true,     true  ],
+    CONCATENATION:            [ true,     true,    true,     true,     true  ],
+    CONV_2D:                  [ true,     true,    true,     true,     true  ],
+    DEPTHWISE_CONV_2D:        [ true,     true,    false,    true,     true  ],
+    FULLY_CONNECTED:          [ true,     true,    true,     true,     true  ],
+    MAX_POOL_2D:              [ true,     true,    true,     true,     true  ],
+    MUL:                      [ true,     true,    true,     true,     false ],
+    RESHAPE:                  [ true,     true,    true,     true,     true  ],
+    RESIZE_BILINEAR:          [ true,     false,   true,     true,     false ],
+    SOFTMAX:                  [ true,     true,    true,     true,     true  ]};
+
+  const supportedOps = new Set();
+  const backendId = backendEnums[getNativeAPI(prefer)];
+  for (const opName in supportedTable) {
+    if (supportedTable[opName][backendId]) {
+      supportedOps.add(nn[opName]);
+    }
+  }
+  return supportedOps;
+};
 
 const getSearchParamsPrefer = () => {
   let searchParams = new URLSearchParams(location.search);
