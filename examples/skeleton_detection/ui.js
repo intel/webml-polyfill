@@ -18,6 +18,7 @@ const componentToggle = () => {
   $('.github-corner').slideToggle();
   $('footer').slideToggle();
   $('#extra span').toggle();
+  toggleOpsSelect(currentBackend, currentPrefer);
 }
 
 const optionCompact = () => {
@@ -35,18 +36,22 @@ const optionCompact = () => {
 }
 
 const toggleOpsSelect = (backend, prefer) => {
-  
+  if (ud === '1') {
+    // hide unconditonally if ud is set to 1
+    $('.supported-ops-select').slideUp();
+    return;
+  }
   if (backend !== 'WebML' && prefer !== 'none') {
     // hybrid mode
     supportedOps = getSelectedOps();
-    $('.supported-ops-select').slideDown();
+    $('.supported-ops-select').slideDown(300);
   } else if (backend === 'WebML' && prefer === 'none') {
     showError('No backend selected', 'Please select a backend to start prediction.');
     throw new Error('No backend selected');
   } else {
     // solo mode
     supportedOps = new Set();
-    $('.supported-ops-select').slideUp();
+    $('.supported-ops-select').slideUp(300);
   }
 };
 
@@ -174,8 +179,33 @@ $(document).ready(() => {
     main(us === 'camera');
   });
 
+  $('.supported-ops-select label').each((_, e) => {
+    let opName = $(e).find('span').html();
+    $(e).attr('title', `select to offload the ${opName} to the WebNN`);
+  });
+
+  $('.select-supported-ops').click(() => {
+    let support = getDefaultSupportedOps(currentBackend, currentPrefer);
+    document.querySelectorAll('input[name=supportedOp]').forEach((x) => {
+      x.checked = support.has(parseInt(x.value));
+    });
+  });
+
+  $('.uncheck-supported-ops').click(() => {
+    document.querySelectorAll('input[name=supportedOp]').forEach((x) => {
+      x.checked = false;
+    });
+  });
+
+  $('.update-supported-ops').click(() => {
+    $('.alert').hide();
+    supportedOps = getSelectedOps();
+    utils.backend = '';
+    main(us === 'camera');
+  });
+
   $('#extra').click(() => {
-    componentToggle();
+
     let display;
     if (ud == '0') {
       display = '1';
@@ -184,6 +214,8 @@ $(document).ready(() => {
       display = '0';
       ud = '0';
     }
+
+    componentToggle();
 
     let strsearch;
     if (currentBackend && currentPrefer) {

@@ -97,35 +97,35 @@
           </div>
           <div class="row top-margin">
             <div class="col-4" id="supported-ops-select">
-              <label><input type="checkbox" onchange="eager=this.checked;document.querySelectorAll('input[name=supportedOp]').forEach(x=>{x.checked=true;x.disabled=this.checked})"> Eager Mode</label>
+              <label><input id="eagerMode" type="checkbox"> Eager Mode</label>
               <br><br>
-              <button onclick="document.querySelectorAll('input[name=supportedOp]').forEach(x => x.checked = true)">Select All</button>
-              <button onclick="document.querySelectorAll('input[name=supportedOp]').forEach(x => x.checked = false)">Uncheck All</button>
+              <button id="selectAllOps">Select All</button>
+              <button id="uncheckAllOps">Uncheck All</button>
               <br><br>
               <label><input type="checkbox" name="supportedOp" value="0"> ADD</label>
-              <br />
+              <br>
               <label><input type="checkbox" name="supportedOp" value="10003"> ATROUS_CONV_2D</label>
-              <br />
+              <br>
               <label><input type="checkbox" name="supportedOp" value="10004"> ATROUS_DEPTHWISE_CONV_2D</label>
-              <br />
+              <br>
               <label><input type="checkbox" name="supportedOp" value="1"> AVERAGE_POOL_2D</label>
-              <br />
+              <br>
               <label><input type="checkbox" name="supportedOp" value="2"> CONCATENATION</label>
-              <br />
+              <br>
               <label><input type="checkbox" name="supportedOp" value="3"> CONV_2D</label>
-              <br />
+              <br>
               <label><input type="checkbox" name="supportedOp" value="4"> DEPTHWISE_CONV_2D</label>
-              <br />
+              <br>
               <label><input type="checkbox" name="supportedOp" value="9"> FULLY_CONNECTED</label>
-              <br />
+              <br>
               <label><input type="checkbox" name="supportedOp" value="17"> MAX_POOL_2D</label>
-              <br />
+              <br>
               <label><input type="checkbox" name="supportedOp" value="18"> MUL</label>
-              <br />
+              <br>
               <label><input type="checkbox" name="supportedOp" value="22"> RESHAPE</label>
-              <br />
+              <br>
               <label><input type="checkbox" name="supportedOp" value="23"> RESIZE_BILINEAR</label>
-              <br />
+              <br>
               <label><input type="checkbox" name="supportedOp" value="25"> SOFTMAX</label>
             </div>
             <div class="col-8" align="center">

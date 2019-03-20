@@ -143,6 +143,9 @@ const updateScenario = async (camera = false) => {
 const updateBackend = async (camera = false) => {
   streaming = false;
   logConfig();
+  await showProgress('Updating Backend ...');
+  // wait for JS animation
+  await new Promise(resolve => setTimeout(resolve, 300));
   try {
     await utils.init(currentBackend, currentPrefer);
     predictPath(camera);

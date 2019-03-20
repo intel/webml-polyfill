@@ -793,6 +793,30 @@ document.addEventListener('DOMContentLoaded', () => {
     updateOpsSelect();
   }, false);
 
+  let selectAllOpsElement = document.getElementById('selectAllOps');
+  selectAllOpsElement.addEventListener('click', () => {
+    document.querySelectorAll('input[name=supportedOp]').forEach((x) => {
+      x.checked = true;
+    });
+  }, false);
+
+  let uncheckAllOpsElement = document.getElementById('uncheckAllOps');
+  uncheckAllOpsElement.addEventListener('click', () => {
+    document.querySelectorAll('input[name=supportedOp]').forEach((x) => {
+      x.checked = false;
+    });
+  }, false);
+
+  let eagerModeElement = document.getElementById('eagerMode');
+  eagerModeElement.addEventListener('change', (e) => {
+    eager = e.target.checked;
+    document.querySelectorAll('input[name=supportedOp]').forEach((x) => {
+      x.checked = true;
+      x.disabled = e.target.checked;
+    });
+  }, false);
+
+
   let preferSelectElement = document.getElementById('preferSelect');
   preferSelectElement.addEventListener('change', () => {
     updateOpsSelect();
