@@ -6837,7 +6837,7 @@ describe('Unit Test/Model Test', function() {
       });
     });
 
-    it('"4-D tensor as input0 that is TENSOR_FLOAT32 type and 1-D tensor as input1 that is TENSOR_INT32 type" are ok for "BATCH_TO_SPACE_ND" operation', function() {
+    it('"4-D tensor as input0 that is TENSOR_FLOAT32 type and 1-D tensor as input1 (all values >= 1) that is TENSOR_INT32 type" are ok for "BATCH_TO_SPACE_ND" operation', function() {
       return nn.createModel(options).then((model)=>{
         let input0 = {type: nn.TENSOR_FLOAT32, dimensions: [4, 1, 1, 1]};
         let input1 = {type: nn.TENSOR_INT32, dimensions: [2]};
@@ -6852,7 +6852,7 @@ describe('Unit Test/Model Test', function() {
       });
     });
 
-    it('"4-D tensor as input0 that is TENSOR_QUANT8_ASYMM type and 1-D tensor as input1 that is TENSOR_INT32 type" are ok for "BATCH_TO_SPACE_ND" operation', function() {
+    it('"4-D tensor as input0 that is TENSOR_QUANT8_ASYMM type and 1-D tensor as input1 (all values >= 1) that is TENSOR_INT32 type" are ok for "BATCH_TO_SPACE_ND" operation', function() {
       return nn.createModel(options).then((model)=>{
         let input0 = {type: nn.TENSOR_QUANT8_ASYMM, dimensions: [100, 32, 32, 3], scale: 0.5, zeroPoint: 1};
         let input1 = {type: nn.TENSOR_INT32, dimensions: [2]};
