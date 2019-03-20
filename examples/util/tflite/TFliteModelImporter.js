@@ -352,13 +352,11 @@ class TFliteModelImporter {
           inputs.push(this._addScalarInt32(options.alignCorners() ? 1 : 0));
           opType = this._nn.RESIZE_BILINEAR;
         } break;
-        case tflite.BuiltinOperator.LOGISTIC: {
-          opType = this._nn.LOGISTIC;
-        } break;
         case tflite.BuiltinOperator.TANH: {
           opType = this._nn.TANH;
         } break;
         case tflite.BuiltinOperator.BATCH_TO_SPACE_ND: {
+          inputs = [inputs[0], inputs[1]];
           opType = this._nn.BATCH_TO_SPACE_ND;
         } break;
         case tflite.BuiltinOperator.TRANSPOSE: {
@@ -366,23 +364,6 @@ class TFliteModelImporter {
         } break;
         case tflite.BuiltinOperator.MAXIMUM: {
           opType = this._nn.MAXIMUM;
-        } break;
-        case tflite.BuiltinOperator.TRANSPOSE_CONV: {
-          let options = operator.builtinOptions(new tflite.TransposeConvOptions());
-          let paddingCode = PaddingCodeMap.get(options.padding());
-          if (typeof paddingCode === 'undefined') {
-            throw new Error(`Padding code ${options.padding()} is not supported.`);
-          }
-          inputs = [inputs[2] /* input */, inputs[1] /* filter */,
-                    null /* bias */, inputs[0] /* outputShape */];
-          // create a tensor specifying the bias
-          let outChannel = graph.tensors(inputs[1]).shapeArray()[0];
-          inputs[2] = this._addTensorFloat32(outChannel, [outChannel]);
-          inputs.push(this._addScalarInt32(paddingCode));
-          inputs.push(this._addScalarInt32(options.strideW()));
-          inputs.push(this._addScalarInt32(options.strideH()));
-          inputs.push(this._addScalarInt32(this._nn.FUSED_NONE));
-          opType = this._nn.TRANSPOSE_CONV;
         } break;
         default: {
           throw new Error(`operator type ${opCode} is not supported.`);

@@ -216,10 +216,12 @@ const objectDetectionModels = [{
   modelFormatName: 'ssd_mobilenet_v1_tflite',
   modelSize: '27.3MB',
   modelFile: '../object_detection/model/ssd_mobilenet_v1.tflite',
-  labelsFile: '../object_detection/model/coco_labels_list.txt',
+  labelsFile: '../object_detection/model/coco_classes.txt',
+  type: 'SSD',
   box_size: 4,
   num_classes: 91,
   num_boxes: 1083 + 600 + 150 + 54 + 24 + 6,
+  margin: [1, 1, 1, 1],
   inputSize: [300, 300, 3],
   preOptions: {
     mean: [127.5, 127.5, 127.5],
@@ -232,33 +234,71 @@ const objectDetectionModels = [{
   modelFormatName: 'ssd_mobilenet_v2_tflite',
   modelSize: '67.3MB',
   modelFile: '../object_detection/model/ssd_mobilenet_v2.tflite',
-  labelsFile: '../object_detection/model/coco_labels_list.txt',
+  labelsFile: '../object_detection/model/coco_classes.txt',
+  type: 'SSD',
   box_size: 4,
   num_classes: 91,
   num_boxes: 1083 + 600 + 150 + 54 + 24 + 6,
+  margin: [1, 1, 1, 1],
   inputSize: [300, 300, 3],
   preOptions: {
     mean: [127.5, 127.5, 127.5],
     std: [127.5, 127.5, 127.5],
   },
-  intro: 'MobileNet V2 with SSD. This model is faster than Mobilenet V1 SSD at the same accuracy.',
+  intro: 'SSD MobileNet V2 is slower than SSD Mobilenet V1, but has higher accuracy.',
   paperUrl: 'https://arxiv.org/abs/1801.04381'
 }, {
   modelName: 'SSDLite MobileNet v2 (TFLite)',
   modelFormatName: 'ssdlite_mobilenet_v2_tflite',
   modelSize: '17.9MB',
   modelFile: '../object_detection/model/ssdlite_mobilenet_v2.tflite',
-  labelsFile: '../object_detection/model/coco_labels_list.txt',
+  labelsFile: '../object_detection/model/coco_classes.txt',
+  type: 'SSD',
   box_size: 4,
   num_classes: 91,
   num_boxes: 1083 + 600 + 150 + 54 + 24 + 6,
+  margin: [1, 1, 1, 1],
   inputSize: [300, 300, 3],
   preOptions: {
     mean: [127.5, 127.5, 127.5],
     std: [127.5, 127.5, 127.5],
   },
-  intro: 'MobileNet V2 with SSDLite. This model is faster than Mobilenet V1 SSD at the same accuracy.',
+  intro: 'SSDLite MobileNet V2 is an upgraded version of SSD MobileNet V2. Compared with SSD Mobilenet V2, SSDLite Mobilenet V2 is much faster, and almost has no loss of the accuracy.',
   paperUrl: 'https://arxiv.org/abs/1801.04381'
+}, {
+  modelName: 'Tiny Yolo v2 COCO (TFLite)',
+  modelFormatName: 'tiny_yolov2_coco_tflite',
+  modelSize: '44.9MB',
+  modelFile: '../object_detection/model/tiny_yolov2_coco.tflite',
+  labelsFile: '../object_detection/model/coco_classes_part.txt',
+  type: 'YOLO',
+  num_classes: 80,
+  margin: [1, 1, 1, 1],
+  inputSize: [416, 416, 3],
+  outputSize: 1 * 13 * 13 * 425,
+  anchors: [0.57273, 0.677385, 1.87446, 2.06253, 3.33843, 5.47434, 7.88282, 3.52778, 9.77052, 9.16828],
+  preOptions: {
+    norm: true,
+  },
+  intro: 'Tiny YOLO is based off of the Darknet reference network and is much faster but less accurate than the normal YOLO model. And this model is trained by COCO dataset.',
+  paperUrl: 'https://arxiv.org/abs/1612.08242'
+}, {
+  modelName: 'Tiny Yolo v2 VOC (TFLite)',
+  modelFormatName: 'tiny_yolov2_voc_tflite',
+  modelSize: '63.4MB',
+  modelFile: '../object_detection/model/tiny_yolov2_voc.tflite',
+  labelsFile: '../object_detection/model/pascal_classes.txt',
+  type: 'YOLO',
+  num_classes: 20,
+  margin: [1, 1, 1, 1],
+  inputSize: [416, 416, 3],
+  outputSize: 1 * 13 * 13 * 125,
+  anchors: [1.08, 1.19, 3.42, 4.41, 6.63, 11.38, 9.42, 5.11, 16.62, 10.52],
+  preOptions: {
+    norm: true,
+  },
+  intro: 'Tiny YOLO is based off of the Darknet reference network and is much faster but less accurate than the normal YOLO model. And this model is trained by VOC dataset.',
+  paperUrl: 'https://arxiv.org/abs/1612.08242'
 }];
 
 const humanPoseEstimationModels = [{
@@ -283,6 +323,10 @@ const semanticSegmentationModels = [{
     labelsFile: '../semantic_segmentation/model/labels.txt',
     inputSize: [224, 224, 3],
     outputSize: [224, 224, 21],
+    preOptions: {
+      mean: [127.5, 127.5, 127.5],
+      std: [127.5, 127.5, 127.5],
+    },
     intro: 'DeepLab is a state-of-art deep learning model for semantic image segmentation, where the goal is to assign semantic labels (e.g., person, dog, cat and so on) to every pixel in the input image.',
     paperUrl: 'https://arxiv.org/abs/1802.02611'
   }, {
@@ -293,6 +337,10 @@ const semanticSegmentationModels = [{
     labelsFile: '../semantic_segmentation/model/labels.txt',
     inputSize: [224, 224, 3],
     outputSize: [224, 224, 21],
+    preOptions: {
+      mean: [127.5, 127.5, 127.5],
+      std: [127.5, 127.5, 127.5],
+    },
     intro: 'Equivalent to the model above (without dilated suffix) but only available on platforms that natively support atrous convolution.',
     paperUrl: 'https://arxiv.org/abs/1802.02611'
   }, {
@@ -303,6 +351,10 @@ const semanticSegmentationModels = [{
     labelsFile: '../semantic_segmentation/model/labels.txt',
     inputSize: [257, 257, 3],
     outputSize: [257, 257, 21],
+    preOptions: {
+      mean: [127.5, 127.5, 127.5],
+      std: [127.5, 127.5, 127.5],
+    },
     intro: 'DeepLab is a state-of-art deep learning model for semantic image segmentation, where the goal is to assign semantic labels (e.g., person, dog, cat and so on) to every pixel in the input image.',
     paperUrl: 'https://arxiv.org/abs/1802.02611'
   }, {
@@ -313,6 +365,10 @@ const semanticSegmentationModels = [{
     labelsFile: '../semantic_segmentation/model/labels.txt',
     inputSize: [257, 257, 3],
     outputSize: [257, 257, 21],
+    preOptions: {
+      mean: [127.5, 127.5, 127.5],
+      std: [127.5, 127.5, 127.5],
+    },
     intro: 'Equivalent to the model above (without dilated suffix) but only available on platforms that natively support atrous convolution.',
     paperUrl: 'https://arxiv.org/abs/1802.02611'
   }, {
@@ -323,6 +379,10 @@ const semanticSegmentationModels = [{
     labelsFile: '../semantic_segmentation/model/labels.txt',
     inputSize: [321, 321, 3],
     outputSize: [321, 321, 21],
+    preOptions: {
+      mean: [127.5, 127.5, 127.5],
+      std: [127.5, 127.5, 127.5],
+    },
     intro: 'DeepLab is a state-of-art deep learning model for semantic image segmentation, where the goal is to assign semantic labels (e.g., person, dog, cat and so on) to every pixel in the input image.',
     paperUrl: 'https://arxiv.org/abs/1802.02611'
   }, {
@@ -333,6 +393,10 @@ const semanticSegmentationModels = [{
     labelsFile: '../semantic_segmentation/model/labels.txt',
     inputSize: [321, 321, 3],
     outputSize: [321, 321, 21],
+    preOptions: {
+      mean: [127.5, 127.5, 127.5],
+      std: [127.5, 127.5, 127.5],
+    },
     intro: 'Equivalent to the model above (without dilated suffix) but only available on platforms that natively support atrous convolution.',
     paperUrl: 'https://arxiv.org/abs/1802.02611'
   }, {
@@ -343,6 +407,10 @@ const semanticSegmentationModels = [{
     labelsFile: '../semantic_segmentation/model/labels.txt',
     inputSize: [513, 513, 3],
     outputSize: [513, 513, 21],
+    preOptions: {
+      mean: [127.5, 127.5, 127.5],
+      std: [127.5, 127.5, 127.5],
+    },
     intro: 'DeepLab is a state-of-art deep learning model for semantic image segmentation, where the goal is to assign semantic labels (e.g., person, dog, cat and so on) to every pixel in the input image.',
     paperUrl: 'https://arxiv.org/abs/1802.02611'
   }, {
@@ -353,6 +421,10 @@ const semanticSegmentationModels = [{
     labelsFile: '../semantic_segmentation/model/labels.txt',
     inputSize: [513, 513, 3],
     outputSize: [513, 513, 21],
+    preOptions: {
+      mean: [127.5, 127.5, 127.5],
+      std: [127.5, 127.5, 127.5],
+    },
     intro: 'Equivalent to the model above (without dilated suffix) but only available on platforms that natively support atrous convolution.',
     paperUrl: 'https://arxiv.org/abs/1802.02611'
 }];

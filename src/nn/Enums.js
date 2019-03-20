@@ -1189,22 +1189,15 @@ export const OperationCode = {
    * This is the reverse of SpaceToBatch.
    *
    * Supported tensor {@link OperandCode}:
-   * * {@link ANEURALNETWORKS_TENSOR_FLOAT16}
-   * * {@link ANEURALNETWORKS_TENSOR_FLOAT32}
-   * * {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM}
+   * * {@link TENSOR_FLOAT32}
+   * * {@link TENSOR_QUANT8_ASYMM}
    *
-   * Supported tensor rank: 4, with "NHWC" or "NCHW" data layout.
-   * With the default data layout NHWC, the data is stored in the order of:
-   * [batch, height, width, channels]. Alternatively, the data layout could
-   * be NCHW, the data storage order of: [batch, channels, height, width].
+   * Supported tensor rank: 4
    *
    * Inputs:
-   * * 0: An n-D tensor, specifying the tensor to be reshaped
-   * * 1: A 1-D Tensor of {@link ANEURALNETWORKS_TENSOR_INT32}, the block
-   *      sizes for each spatial dimension of the input tensor. All values
-   *      must be >= 1.
-   * * 2: An optional {@link ANEURALNETWORKS_BOOL} scalar, default to false.
-   *      Set to true to specify NCHW data layout for input0 and output0.
+   * * 0: An n-D tensor, specifying the tensor to be reshaped.
+   * * 1: A 1-D Tensor of {@link TENSOR_INT32}, the block sizes for each 
+   *      spatial dimension of the input tensor. All values must be >= 1.
    *
    * Outputs:
    * * 0: A tensor of the same {@link OperandCode} as input0.
@@ -1221,16 +1214,15 @@ export const OperationCode = {
    * regular matrix transpose on 2-D input Tensors.
    *
    * Supported tensor {@link OperandCode}:
-   * * {@link ANEURALNETWORKS_TENSOR_FLOAT16}
-   * * {@link ANEURALNETWORKS_TENSOR_FLOAT32}
-   * * {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM}
+   * * {@link TENSOR_FLOAT32}
+   * * {@link TENSOR_QUANT8_ASYMM}
    *
    * Supported tensor rank: up to 4
    *
    * Inputs:
    * * 0: An n-D tensor, specifying the tensor to be transposed.
-   * * 1: An optional 1-D Tensor of {@link ANEURALNETWORKS_TENSOR_INT32},
-   *      the permutation of the dimensions of the input tensor.
+   * * 1: An optional 1-D Tensor of {@link TENSOR_INT32}, the permutation of 
+   *      the dimensions of the input tensor.
    *
    * Outputs:
    * * 0: A tensor of the same {@link OperandCode} as input0.
@@ -1241,10 +1233,9 @@ export const OperationCode = {
    * Returns the element-wise maximum of two tensors.
    *
    * Supported tensor {@link OperandCode}:
-   * * {@link ANEURALNETWORKS_TENSOR_FLOAT16}
-   * * {@link ANEURALNETWORKS_TENSOR_FLOAT32}
-   * * {@link ANEURALNETWORKS_TENSOR_INT32}
-   * * {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM}
+   * * {@link TENSOR_FLOAT32}
+   * * {@link TENSOR_INT32}
+   * * {@link TENSOR_QUANT8_ASYMM}
    *
    * Inputs:
    * * 0: A tensor.
@@ -1253,93 +1244,9 @@ export const OperationCode = {
    *
    * Outputs:
    * * 0: The sum, a tensor of the same {@link OperandCode} as input0.
+   *
    */
-  MAXIMUM: 64,
-
-  /**
-   * Performs the tranpose of 2-D convolution operation.
-   *
-   * This operation is sometimes called "deconvolution" after Deconvolutional
-   * Networks, but is actually the transpose (gradient) of
-   * {@link ANEURALNETWORKS_CONV_2D} rather than an actual deconvolution.
-   *
-   * The output dimensions are functions of the filter dimensions, stride, and
-   * padding.
-   *
-   * Supported tensor {@link OperandCode}:
-   * * {@link ANEURALNETWORKS_TENSOR_FLOAT16}
-   * * {@link ANEURALNETWORKS_TENSOR_FLOAT32}
-   * * {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM}
-   *
-   * Supported tensor rank: 4, with "NHWC" or "NCHW" data layout.
-   * With the default data layout NHWC, the data is stored in the order of:
-   * [batch, height, width, channels]. Alternatively, the data layout could
-   * be NCHW, the data storage order of: [batch, channels, height, width].
-   *
-   * Both explicit padding and implicit padding are supported.
-   *
-   * Inputs (explicit padding):
-   * * 0: A 4-D tensor, of shape [batches, height, width, depth_in],
-   *      specifying the input.
-   * * 1: A 4-D tensor, of shape
-   *      [depth_out, filter_height, filter_width, depth_in], specifying the
-   *      filter.
-   * * 2: A 1-D tensor, of shape [depth_out], specifying the bias. For input
-   *      tensor of type {@link ANEURALNETWORKS_TENSOR_FLOAT32} or
-   *      {@link ANEURALNETWORKS_TENSOR_FLOAT16}, the bias should be of the
-   *      same type. For input tensor of type
-   *      {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM}, the bias should be
-   *      of {@link ANEURALNETWORKS_TENSOR_INT32}, with zeroPoint of 0 and
-   *      bias_scale == input_scale * filter_scale.
-   * * 3: An {@link ANEURALNETWORKS_INT32} scalar, specifying the padding on
-   *      the left, in the ‘width’ dimension.
-   * * 4: An {@link ANEURALNETWORKS_INT32} scalar, specifying the padding on
-   *      the right, in the ‘width’ dimension.
-   * * 5: An {@link ANEURALNETWORKS_INT32} scalar, specifying the padding on
-   *      the top, in the ‘height’ dimension.
-   * * 6: An {@link ANEURALNETWORKS_INT32} scalar, specifying the padding on
-   *      the bottom, in the ‘height’ dimension.
-   * * 7: An {@link ANEURALNETWORKS_INT32} scalar, specifying the stride when
-   *      walking through input in the ‘width’ dimension.
-   * * 8: An {@link ANEURALNETWORKS_INT32} scalar, specifying the stride when
-   *      walking through input in the ‘height’ dimension.
-   * * 9: An {@link ANEURALNETWORKS_INT32} scalar, and has to be one of the
-   *      {@link FuseCode} values. Specifies the activation to
-   *      invoke on the result.
-   *
-   * Inputs (implicit padding):
-   * * 0: A 4-D tensor, of shape [batches, height, width, depth_in],
-   *      specifying the input.
-   * * 1: A 4-D tensor, of shape
-   *      [depth_out, filter_height, filter_width, depth_in], specifying the
-   *      filter.
-   * * 2: A 1-D tensor, of shape [depth_out], specifying the bias. For input
-   *      tensor of type {@link ANEURALNETWORKS_TENSOR_FLOAT32} or
-   *      {@link ANEURALNETWORKS_TENSOR_FLOAT16}, the bias should be of the
-   *      same type. For input tensor of type
-   *      {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM}, the bias should be
-   *      of {@link ANEURALNETWORKS_TENSOR_INT32}, with zeroPoint of 0 and
-   *      bias_scale == input_scale * filter_scale.
-   * * 3: An {@link ANEURALNETWORKS_TENSOR_INT32} tensor, specifying the output
-   *      tensor shape.
-   * * 4: An {@link ANEURALNETWORKS_INT32} scalar, specifying the implicit
-   *      padding scheme, has to be one of the
-   *      {@link PaddingCode} values.
-   * * 5: An {@link ANEURALNETWORKS_INT32} scalar, specifying the stride when
-   *      walking through input in the ‘width’ dimension.
-   * * 6: An {@link ANEURALNETWORKS_INT32} scalar, specifying the stride when
-   *      walking through input in the ‘height’ dimension.
-   * * 7: An {@link ANEURALNETWORKS_INT32} scalar, and has to be one of the
-   *      {@link FuseCode} values. Specifies the activation to
-   *      invoke on the result.
-   *
-   * Outputs:
-   * * 0: The output 4-D tensor, of shape
-   *      [batches, out_height, out_width, depth_out]. For output tensor of
-   *      {@link ANEURALNETWORKS_TENSOR_QUANT8_ASYMM}, the following condition
-   *      must be satisfied: output_scale > input_scale * filter_scale.
-   */
-  TRANSPOSE_CONV: 84,
+  MAXIMUM: 65,
 
   /** Performs a atrous 2-D convolution operation.
    *

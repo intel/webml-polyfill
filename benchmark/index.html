@@ -61,7 +61,17 @@
               <option value="ssd_mobilenet_v1_tflite">SSD MobileNet v1 (TFLite)</option>
               <option value="ssd_mobilenet_v2_tflite">SSD MobileNet v2 (TFLite)</option>
               <option value="ssdlite_mobilenet_v2_tflite">SSDLite MobileNet v2 (TFLite)</option>
+              <option value="tiny_yolov2_coco_tflite">Tiny Yolo v2 COCO (TFLite)</option>
+              <option value="tiny_yolov2_voc_tflite">Tiny Yolo v2 VOC (TFLite)</option>
               <option value="posenet">PoseNet</option>
+              <option value="deeplab_mobilenet_v2_224_tflite">Deeplab 224 (TFLite)</option>
+              <option value="deeplab_mobilenet_v2_224_atrous_tflite">Deeplab 224 Atrous (TFLite)</option>
+              <option value="deeplab_mobilenet_v2_257_tflite">Deeplab 257 (TFLite)</option>
+              <option value="deeplab_mobilenet_v2_257_atrous_tflite">Deeplab 257 Atrous (TFLite)</option>
+              <option value="deeplab_mobilenet_v2_321_tflite">Deeplab 321 (TFLite)</option>
+              <option value="deeplab_mobilenet_v2_321_atrous_tflite">Deeplab 321 Atrous (TFLite)</option>
+              <option value="deeplab_mobilenet_v2_513_tflite">Deeplab 513 (TFLite)</option>
+              <option value="deeplab_mobilenet_v2_513_atrous_tflite">Deeplab 513 Atrous (TFLite)</option>
             </select>
           </div>
           <div>
@@ -87,15 +97,18 @@
             <div class="col-8" align="center">
               <canvas id="poseCanvas"></canvas>
               <canvas id="poseCanvasPredict" width="513" height="513"></canvas>
+              <canvas id="segCanvas"></canvas>
               <canvas id="canvas"></canvas>
               <img id="image" crossorigin="anonymous" class="img-fluid" alt="Responsive image" src="../examples/image_classification/img/bee_eater.jpg">
               <img id="imageClassificationImage" hidden crossorigin="anonymous" class="img-fluid" alt="Responsive image" src="../examples/image_classification/img/bee_eater.jpg">
               <img id="poseImage" hidden  crossorigin="anonymous" class="img-fluid" alt="Responsive image" src="../examples/skeleton_detection/img/download.png">
               <img id="ssdMobileImage" hidden crossorigin="anonymous" class="img-fluid" alt="Responsive image" src="../examples/object_detection/img/image1.jpg">
+              <img id='segmentationImage' hidden crossorigin='anonymous' class='img-fluid' alt='Responsive image' src='../examples/semantic_segmentation/img/woman.jpg'>
             </div>
             <div class="col">
             </div>
           </div>
+          <div class='row labels-wrapper' id='labelitem'></div>
           <div class="row top-margin">
             <div class="col">
             </div>
@@ -125,13 +138,19 @@
     <script src="../examples/util/onnx/onnx.js"></script>
     <script src="../examples/util/onnx/OnnxModelUtils.js"></script>
     <script src="../examples/util/onnx/OnnxModelImporter.js"></script>
-
     <script src="../examples/skeleton_detection/src/decodePose.js"></script>
     <script src="../examples/skeleton_detection/src/helperFunc.js"></script>
     <script src="../examples/skeleton_detection/utils.js"></script>
     <script src="../examples/skeleton_detection/src/PoseNet.js"></script>
     <script src="../examples/skeleton_detection/src/DrawOutputs.js"></script>
     <script src="../examples/util/decoders/SsdDecoder.js"></script>
+    <script src="../examples/util/decoders/Yolo2Decoder.js"></script>
+    <script src='../examples/semantic_segmentation/src/WebGLUtils.js'></script>
+    <script src='../examples/semantic_segmentation/src/Shader.js'></script>
+    <script src='../examples/semantic_segmentation/src/GuidedFilter.js'></script>
+    <script src="../examples/semantic_segmentation/src/DrawOutputs.js"></script>
+    <script src='../examples/static/lib/jquery/jquery.min.js'></script>
+
     <script src="index.js"></script>
   </body>
 </html>

@@ -27,7 +27,7 @@ const updateProgress = (ev) => {
   if (ev.lengthComputable) {
     let totalSize = ev.total / (1000 * 1000);
     let loadedSize = ev.loaded / (1000 * 1000);
-    let percentComplete = ev.loaded / ev.total * 100;    
+    let percentComplete = ev.loaded / ev.total * 100;
     percentComplete = percentComplete.toFixed(0);
     progressBar.style = `width: ${percentComplete}%`;
     updateLoading(loadedSize.toFixed(1), totalSize.toFixed(1), percentComplete);
@@ -42,7 +42,7 @@ const updateResult = (result) => {
     console.log(`Inference time: ${result.time} ms`);
     let inferenceTimeElement = document.getElementById('inferenceTime');
     inferenceTimeElement.innerHTML = `inference time: <span class='ir'>${result.time} ms</span>`;
-  } catch(e) {
+  } catch (e) {
     console.log(e);
   }
   try {
@@ -55,7 +55,7 @@ const updateResult = (result) => {
       probElement.innerHTML = `${c.prob}%`;
     });
   }
-  catch(e) {
+  catch (e) {
     console.log(e);
   }
 }
@@ -86,16 +86,11 @@ const startPredictCamera = async () => {
 const utilsPredict = async (imageElement, backend, prefer) => {
   streaming = false;
   // Stop webcam opened by navigator.getUserMedia if user visits 'LIVE CAMERA' tab before
-  if(track) {
+  if (track) {
     track.stop();
   }
   await showProgress('Image inferencing ...');
   try {
-    // return immediately if model, backend, prefer are all unchanged
-    let init = await utils.init(backend, prefer);    
-    if (init == 'NOT_LOADED') {
-      return;
-    }
     let ret = await utils.predict(imageElement);
     showResults();
     updateResult(ret);
@@ -109,16 +104,12 @@ const utilsPredictCamera = async (backend, prefer) => {
   streaming = true;
   await showProgress('Camera inferencing ...');
   try {
-    let init = await utils.init(backend, prefer);    
-    if (init == 'NOT_LOADED') {
-      return;
-    }
     let stream = await navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: 'environment' } });
     video.srcObject = stream;
     track = stream.getTracks()[0];
     startPredictCamera();
     showResults();
-  } 
+  }
   catch (e) {
     errorHandler(e);
   }
@@ -128,10 +119,30 @@ const predictPath = (camera) => {
   (!camera) ? utilsPredict(imageElement, currentBackend, currentPrefer) : utilsPredictCamera(currentBackend, currentPrefer);
 }
 
+const utilsInit = async (backend, prefer) => {
+  // return immediately if model, backend, prefer are all unchanged
+  let init = await utils.init(backend, prefer);
+  if (init == 'NOT_LOADED') {
+    return;
+  }
+}
+
 const updateScenario = async (camera = false) => {
   streaming = false;
   logConfig();
   predictPath(camera);
+}
+
+const updateBackend = async (camera = false) => {
+  streaming = false;
+  logConfig();
+  try {
+    await utilsInit(currentBackend, currentPrefer);
+    predictPath(camera);
+  }
+  catch (e) {
+    errorHandler(e);
+  }
 }
 
 inputElement.addEventListener('change', (e) => {
@@ -147,13 +158,13 @@ imageElement.addEventListener('load', () => {
 
 const main = async (camera = false) => {
   streaming = false;
-  try { utils.deleteAll(); } catch (e) {}
+  try { utils.deleteAll(); } catch (e) { }
   logConfig();
   await showProgress('Loading model ...');
   try {
     let model = imageClassificationModels.filter(f => f.modelFormatName == currentModel);
-    console.log(model)
     await utils.loadModel(model[0]);
+    await utilsInit(currentBackend, currentPrefer);
   } catch (e) {
     errorHandler(e);
   }

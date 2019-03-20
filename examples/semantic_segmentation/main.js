@@ -97,6 +97,10 @@ const startPredict = async () => {
 
 const predictCamera = async () => {
   try {
+    let init = await utils.init(currentBackend, currentPrefer);    
+    if (init == 'NOT_LOADED') {
+      return;
+    }
     streaming = true;
     // let res = utils.getFittedResolution(4 / 3);
     // setCamResolution(res);
@@ -127,21 +131,25 @@ const predictAndDraw = async (source, camera = false) => {
 }
 
 const predictPath = (camera) => {
-  camera ? predictCamera() : predictAndDraw(imageElement, currentBackend, currentPrefer, false);
+  camera ? predictCamera() : predictAndDraw(imageElement, false);
 }
 
 const updateScenario = async (camera = false) => {
   streaming = false;
   logConfig();
-  try { utils.deleteAll(); } catch (e) { }
-  await showProgress('Inferencing ...');
+  predictPath(camera);
+}
+
+const updateBackend = async (camera = false) => {
+  streaming = false;
+  logConfig();
   try {
     await utils.init(currentBackend, currentPrefer);
+    predictPath(camera);
   }
   catch (e) {
     errorHandler(e);
   }
-  predictPath(camera);
 }
 
 inputElement.addEventListener('change', (e) => {
@@ -167,7 +175,7 @@ const main = async (camera = false) => {
   showProgress('Loading model and initializing...');
   try {
     let model = semanticSegmentationModels.filter(f => f.modelFormatName == currentModel);
-    utils.changeModelParam(model[0]);
+    await utils.loadModel(model[0]);
     await utils.init(currentBackend, currentPrefer);
   } catch (e) {
     errorHandler(e);

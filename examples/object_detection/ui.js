@@ -1,36 +1,49 @@
 let up = getUrlParam('prefer');
 let ub = getUrlParam('b');
+let um = getUrlParam('m');
+let ut = getUrlParam('t');
 let us = getUrlParam('s');
 let ud = getUrlParam('d');
 let strsearch;
 
 if (!location.search) {
-  strsearch = `?prefer=none&b=none&s=image&d=0`;
-  currentBackend = 'none';
+  strsearch = `?prefer=none&b=WASM&m=none&t=none&s=image&d=0`;
   let path = location.href;
   location.href = path + strsearch;
 }
 
+const fpsToggle = (showFPS) => {
+  showFPS ? $('#fps').show() : $('#fps').hide(); 
+}
+
 const componentToggle = () => {
+  // $('#header-sticky-wrapper').attr('style', 'display:block');
   $('#header-sticky-wrapper').slideToggle();
   $('#query').slideToggle();
   $('.nav-pills').slideToggle();
   $('.github-corner').slideToggle();
+  // $('#mobile-nav-toggle').slideToggle(100);
   $('footer').slideToggle();
   $('#extra span').toggle();
 }
 
-const optionCompact = () => {
-  for (s of $('#my-gui-container ul li .property-name')) {
-    if(s.innerText.toLowerCase() == 'model') { s.setAttribute('title', 'Model: The larger the value, the larger the size of the layers, and more accurate the model at the cost of speed.'); }
-    if(s.innerText.toLowerCase() == 'useatrousconv' || s.innerText == 'useAtrousConv') { s.innerText = 'AtrousConv'; s.setAttribute('title', 'UseAtrousConvOps'); }
-    if(s.innerText.toLowerCase() == 'outputstride') { s.innerText = 'Stride'; s.setAttribute('title', 'OutputStride: The desired stride for the output decides output dimension of model. The higher the number, the faster the performance but slower the accuracy. '); }
-    if(s.innerText.toLowerCase() == 'scalefactor') { s.innerText = 'Scale'; s.setAttribute('title', 'ScaleFactor: Scale down the image size before feed it through model, set this number lower to scale down the image and increase the speed when feeding through the network at the cost of accuracy.'); }
-    if(s.innerText.toLowerCase() == 'scorethreshold') { s.innerText = 'Threshold'; s.setAttribute('title', 'ScoreThreshold: Score is the probability of keypoint and pose, set score threshold higher to reduce the number of poses to draw on image and visa versa.'); }
-    if(s.innerText.toLowerCase() == 'nmsradius') { s.innerText = 'Radius'; s.setAttribute('title', 'NmsRadius: The minimal distance value between two poses under multiple poses situation. The smaller this value, the poses in image are more concentrated.'); }
-    if(s.innerText.toLowerCase() == 'maxdetections') { s.innerText = 'Detections'; s.setAttribute('title', 'MaxDetections: The maximul number of poses to be detected in multiple poses situation.'); }
-    if(s.innerText.toLowerCase() == 'showpose') { s.innerText = 'Pose'; s.setAttribute('title', 'ShowPose'); }
-    if(s.innerText.toLowerCase() == 'showboundingbox') { s.innerText = 'Bounding'; s.setAttribute('title', 'ShowBoundingBox'); }
+const disableModel = () => {
+  if (`${um}` && `${ut}`) {
+    let m_t = `${um}` + '_' + `${ut}`;
+    $('.model input').attr('disabled', false)
+    $('.model label').removeClass('cursordefault');
+    $('#' + m_t).attr('disabled', true)
+    $('#l-' + m_t).addClass('cursordefault');
+  }
+}
+
+const checkedModelStyle = () => {
+  if (`${um}` && `${ut}`) {
+    $('.model input').removeAttr('checked');
+    $('.model label').removeClass('checked');
+    let m_t = `${um}` + '_' + `${ut}`;
+    $('#' + m_t).attr('checked', 'checked');
+    $('#l-' + m_t).addClass('checked');
   }
 }
 
@@ -41,14 +54,14 @@ $(document).ready(() => {
     $('.nav-pills #cam').addClass('active');
     $('#imagetab').removeClass('active');
     $('#cameratab').addClass('active');
-    currentTab = 'camera';
+    fpsToggle(true);
   } else {
     $('.nav-pills li').removeClass('active');
     $('.nav-pills #img').addClass('active');
     $('#cameratab').removeClass('active');
     $('#imagetab').addClass('active');
     $('#fps').html('');
-    currentTab = 'image';
+    fpsToggle(false);
   }
 
   if (hasUrlParam('b')) {
@@ -56,6 +69,10 @@ $(document).ready(() => {
     $('.backend label').removeClass('checked');
     $('#' + getUrlParam('b')).attr('checked', 'checked');
     $('#l-' + getUrlParam('b')).addClass('checked');
+  }
+
+  if (hasUrlParam('m') && hasUrlParam('t')) {
+    checkedModelStyle();
   }
 
   if (hasUrlParam('prefer')) {
@@ -70,18 +87,11 @@ $(document).ready(() => {
     }
   }
 
-  $('#my-gui-container ul li select').after('<div class=\'select__arrow\'></div>');
-  $('#my-gui-container ul li input[type=checkbox]').after('<label class=\'\'></label>');
-  // $('#my-gui-container ul li .slider').remove();
-  $('#posenet ul li .c input[type=text]').attr('title', 'Update value by dragging mouse up/down on inputbox');
-  $('#my-gui-container ul li.string').remove();
-
-  optionCompact();
-
-  const updateTitle = (backend, prefer) => {
+  const updateTitle = (backend, prefer, model, modeltype) => {
+    model = model.replace(/_/g, ' ');
     let currentprefertext;
     if (backend == 'WASM' || backend == 'WebGL') {
-      $('#ictitle').html(`Skeleton Detection / ${backend}`);
+      $('#ictitle').html(`Object Detection / ${backend} / ${model} (${modeltype})`);
     } else if (backend == 'WebML') {
       if (getUrlParam('p') == 'fast') {
         prefer = 'FAST_SINGLE_ANSWER';
@@ -90,10 +100,10 @@ $(document).ready(() => {
       } else if (getUrlParam('p') == 'low') {
         prefer = 'LOW_POWER';
       }
-      $('#ictitle').html(`Skeleton Detection / WebNN / ${prefer}`);
+      $('#ictitle').html(`Object Detection / WebNN / ${prefer} / ${model} (${modeltype})`);
     }
   }
-  updateTitle(ub, up);
+  updateTitle(ub, up, um, ut);
 
   $('input:radio[name=b]').click(() => {
     $('.alert').hide();
@@ -116,17 +126,41 @@ $(document).ready(() => {
       currentPrefer = rid;
     }
 
-    if(currentBackend === 'none' || currentBackend === '') {
-      $('#option').hide();
-    } else {
-      $('#option').show();
-      optionCompact();
-    }
-
-    updateTitle(currentBackend, currentPrefer);
-    strsearch = `?prefer=${currentPrefer}&b=${currentBackend}&s=${us}&d=${ud}`;
+    updateTitle(currentBackend, currentPrefer, `${um}`, `${ut}`);
+    strsearch = `?prefer=${currentPrefer}&b=${currentBackend}&m=${um}&t=${ut}&s=${us}&d=${ud}`;
     window.history.pushState(null, null, strsearch);
 
+    if(um === 'none') {
+      showError('No model selected', 'Please select a model to start prediction.');
+      return;
+    }
+
+    updateBackend(us === 'camera');
+  });
+
+  $('input:radio[name=m]').click(() => {
+    $('.alert').hide();
+    let rid = $('input:radio[name="m"]:checked').attr('id');
+    if (rid.indexOf('_onnx') > -1) {
+      um = rid.replace('_onnx', '');
+      ut = 'onnx';
+    }
+    if (rid.indexOf('_tflite') > -1) {
+      um = rid.replace('_tflite', '');
+      ut = 'tflite';
+    }
+    if (currentBackend && currentPrefer) {
+      strsearch = `?prefer=${currentPrefer}&b=${currentBackend}&m=${um}&t=${ut}&s=${us}&d=${ud}`;
+    } else {
+      strsearch = `?prefer=${up}&b=${ub}&m=${um}&t=${ut}&s=${us}&d=${ud}`;
+    }
+    // location.href = strsearch;
+    window.history.pushState(null, null, strsearch);
+
+    checkedModelStyle();
+    disableModel();
+    currentModel = `${um}_${ut}`;
+    updateTitle(currentBackend, currentPrefer, `${um}`, `${ut}`);
     main(us === 'camera');
   });
 
@@ -143,9 +177,9 @@ $(document).ready(() => {
 
     let strsearch;
     if (currentBackend && currentPrefer) {
-      strsearch = `?prefer=${currentPrefer}&b=${currentBackend}&s=${us}&d=${display}`;
+      strsearch = `?prefer=${currentPrefer}&b=${currentBackend}&m=${um}&t=${ut}&s=${us}&d=${display}`;
     } else {
-      strsearch = `?prefer=${up}&b=${ub}&s=${us}&d=${display}`;
+      strsearch = `?prefer=${up}&b=${ub}&m=${um}&t=${ut}&s=${us}&d=${display}`;
     }
     window.history.pushState(null, null, strsearch);
   });
@@ -160,15 +194,15 @@ $(document).ready(() => {
     $('#imagetab').addClass('active');
     $('#cameratab').removeClass('active');
     us = 'image';
-    strsearch = `?prefer=${up}&b=${currentBackend}&s=${us}&d=${ud}`;
+    strsearch = `?prefer=${up}&b=${ub}&m=${um}&t=${ut}&s=${us}&d=${ud}`;
     window.history.pushState(null, null, strsearch);
-
-    if(currentBackend === 'none') {
-      showError('No backend selected', 'Please select a backend to start prediction.');
+    
+    if(um === 'none') {
+      showError('No model selected', 'Please select a model to start prediction.');
       return;
     }
-    currentTab = 'image';
-    updateScenario(false);
+    fpsToggle(false);
+    updateScenario();
   });
 
   $('#cam').click(() => {
@@ -178,27 +212,26 @@ $(document).ready(() => {
     $('#cameratab').addClass('active');
     $('#imagetab').removeClass('active');
     us = 'camera';
-    strsearch = `?prefer=${up}&b=${currentBackend}&s=${us}&d=${ud}`;
+    strsearch = `?prefer=${up}&b=${ub}&m=${um}&t=${ut}&s=${us}&d=${ud}`;
     window.history.pushState(null, null, strsearch);
-
-    if(currentBackend === 'none') {
-      showError('No backend selected', 'Please select a backend to start prediction.');
+    
+    if(um === 'none') {
+      showError('No model selected', 'Please select a model to start prediction.');
       return;
     }
-    currentTab = 'camera';
+    fpsToggle(true);
     updateScenario(true);
   });
 
   $('#fullscreen i svg').click(() => {
     $('#fullscreen i').toggle();
     toggleFullScreen();
-    $('#canvasvideo').toggleClass('fullscreen');
+    $('#canvasshow').toggleClass('fullscreen');
     $('#overlay').toggleClass('video-overlay');
     $('#fps').toggleClass('fullscreen');
     $('#fullscreen i').toggleClass('fullscreen');
     $('#ictitle').toggleClass('fullscreen');
     $('#inference').toggleClass('fullscreen');
-    $('#my-gui-container').toggleClass('fullscreen');
   });
 
 });
@@ -233,19 +266,17 @@ const showError = (title, description) => {
 }
 
 const updateLoading = (loadedSize, totalSize, percentComplete) => {
-  $('.loading-page .counter h1').html(`${loadedSize}/${totalSize} ${percentComplete}%`);
+  $('.loading-page .counter h1').html(`${loadedSize}/${totalSize}MB ${percentComplete}%`);
 }
 
 $(window).load(() => {
   if (ud != '0') {
     componentToggle();
   }
-  if(currentBackend === 'none' || currentBackend === '') {
-    showError('No backend selected', 'Please select a backend to start prediction.');
-    $('#option').hide();
+  disableModel();
+  if(um === 'none') {
+    showError('No model selected', 'Please select a model to start prediction.');
     return;
-  } else {
-    $('#option').show();
   }
   main(us === 'camera');
 })

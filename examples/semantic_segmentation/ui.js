@@ -44,7 +44,7 @@ const checkedModelStyle = () => {
 }
 
 const buttonUI = (camera = false) => {
-  if(camera) {
+  if (camera) {
     $('#pickimage').hide();
     $('#fps').show();
   } else {
@@ -54,8 +54,9 @@ const buttonUI = (camera = false) => {
 }
 
 const setFullScreenIconPosition = (modelname) => {
-  let svgstyle = 'p' + modelname.replace('deeplab_mobilenet_v2_', '').replace('_tflite', '').replace(/_/g, '').replace('atrous','');
-  $('#semanticsegmentation #fullscreen i svg').removeClass('p224').removeClass('p257').removeClass('p321').removeClass('p513').addClass(svgstyle);
+  let svgstyle = 'p' + modelname.replace('deeplab_mobilenet_v2_', '').replace('_tflite', '').replace(/_/g, '').replace('atrous', '');
+  // $('#semanticsegmentation #fullscreen i svg').removeClass('p224').removeClass('p257').removeClass('p321').removeClass('p513').addClass(svgstyle);
+  $('#semanticsegmentation #fullscreen i svg').addClass('p513');
 }
 
 $(document).ready(() => {
@@ -144,7 +145,7 @@ $(document).ready(() => {
       showError('No model selected', 'Please select a model to start prediction.');
       return;
     }
-    updateScenario(us == 'camera');
+    updateBackend(us === 'camera');
   });
 
   $('input:radio[name=m]').click(() => {
@@ -178,7 +179,7 @@ $(document).ready(() => {
     disableModel();
     currentModel = `${um}_${ut}`;
     updateTitle(currentBackend, currentPrefer, `${um}`, `${ut}`);
-    main(us == 'camera');
+    main(us === 'camera');
   });
 
   $('#extra').click(() => {
@@ -321,12 +322,46 @@ $(window).load(() => {
   });
 
   zoomSlider.value = renderer.zoom * 100;
+
+  const doubleZoomLevel = (modelname) => {
+    let doublezoomlevel = modelname.replace('deeplab_mobilenet_v2_', '').replace('_tflite', '').replace(/_/g, '').replace('atrous', '');
+    if (doublezoomlevel) {
+      switch (parseInt(doublezoomlevel)) {
+        case 513:
+          renderer.zoom = 1;
+          zoomSlider.value = 100;
+          break;
+        case 224:
+          renderer.zoom = 2.3;
+          zoomSlider.value = 2.3;
+          break;
+        case 257:
+          renderer.zoom = 2;
+          zoomSlider.value = 2;
+          break;
+        case 321:
+          renderer.zoom = 1.6;
+          zoomSlider.value = 1.6;
+          break;
+        default:
+          renderer.zoom = 1;
+          zoomSlider.value = 100;
+      }
+    }
+  }
+
+  doubleZoomLevel(um);
   $('.zoom-value').html(renderer.zoom + 'x');
   zoomSlider.oninput = () => {
     let zoom = zoomSlider.value / 100;
     $('.zoom-value').html(zoom + 'x');
     renderer.zoom = zoom;
   };
+
+  $('input:radio[name=m]').click(() => {
+    let rid = $('input:radio[name="m"]:checked').attr('id');
+    doubleZoomLevel(rid);
+  });
 
   colorMapAlphaSlider.value = renderer.colorMapAlpha * 100;
   $('.color-map-alpha-value').html(renderer.colorMapAlpha);
