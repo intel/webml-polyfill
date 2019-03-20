@@ -1,6 +1,6 @@
 WebML Super-Resolution Sample
 ======
-This sample loads FSRCNN/SRGAN model trained by DIV2K in TensorFlow Lite format, constructs and inferences it by WebML API.
+This sample loads SRGAN model trained by DIV2K in TensorFlow Lite format, constructs and inferences it by WebML API.
 
 Download Model
 -----------
