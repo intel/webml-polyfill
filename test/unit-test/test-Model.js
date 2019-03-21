@@ -6836,6 +6836,833 @@ describe('Unit Test/Model Test', function() {
         });
       });
     });
+
+    it('"4-D tensor as input0 that is TENSOR_FLOAT32 type and 1-D tensor as input1 (all values >= 1) that is TENSOR_INT32 type" are ok for "BATCH_TO_SPACE_ND" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let input0 = {type: nn.TENSOR_FLOAT32, dimensions: [4, 1, 1, 1]};
+        let input1 = {type: nn.TENSOR_INT32, dimensions: [2]};
+        let output = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2, 1]};
+        model.addOperand(input0);
+        model.addOperand(input1);
+        model.addOperand(output);
+        model.setOperandValue(1, new Int32Array([2, 2]));
+        assert.doesNotThrow(() => {
+          model.addOperation(nn.BATCH_TO_SPACE_ND, [0, 1], [2]);
+        });
+      });
+    });
+
+    it('"4-D tensor as input0 that is TENSOR_QUANT8_ASYMM type and 1-D tensor as input1 (all values >= 1) that is TENSOR_INT32 type" are ok for "BATCH_TO_SPACE_ND" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let input0 = {type: nn.TENSOR_QUANT8_ASYMM, dimensions: [100, 32, 32, 3], scale: 0.5, zeroPoint: 1};
+        let input1 = {type: nn.TENSOR_INT32, dimensions: [2]};
+        let output = {type: nn.TENSOR_QUANT8_ASYMM, dimensions: [100, 32, 32, 3], scale: 0.5, zeroPoint: 1};
+        model.addOperand(input0);
+        model.addOperand(input1);
+        model.addOperand(output);
+        model.setOperandValue(1, new Int32Array([2, 2]));
+        assert.doesNotThrow(() => {
+          model.addOperation(nn.BATCH_TO_SPACE_ND, [0, 1], [2]);
+        });
+      });
+    });
+
+    it('raise error when the type of input0 is TENSOR_INT32 (not TENSOR_FLOAT32 or TENSOR_QUANT8_ASYMM) and the type of input1 is TENSOR_INT32 for "BATCH_TO_SPACE_ND" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let input0 = {type: nn.TENSOR_INT32, dimensions: [4, 1, 1, 1]};
+        let input1 = {type: nn.TENSOR_INT32, dimensions: [2]};
+        let output = {type: nn.TENSOR_INT32, dimensions: [1, 2, 2, 1]};
+        model.addOperand(input0);
+        model.addOperand(input1);
+        model.addOperand(output);
+        model.setOperandValue(1, new Int32Array([2, 2]));
+        assert.throws(() => {
+          model.addOperation(nn.BATCH_TO_SPACE_ND, [0, 1], [2]);
+        });
+      });
+    });
+
+    it('raise error when the type of input0 is INT32 (not TENSOR_FLOAT32 or TENSOR_QUANT8_ASYMM) and the type of input1 is TENSOR_INT32 for "BATCH_TO_SPACE_ND" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let input0 = {type: nn.INT32};
+        let input1 = {type: nn.TENSOR_INT32, dimensions: [2]};
+        let output = {type: nn.INT32};
+        model.addOperand(input0);
+        model.addOperand(input1);
+        model.addOperand(output);
+        model.setOperandValue(1, new Int32Array([2, 2]));
+        assert.throws(() => {
+          model.addOperation(nn.BATCH_TO_SPACE_ND, [0, 1], [2]);
+        });
+      });
+    });
+
+    it('raise error when the type of input0 is FLOAT32 (not TENSOR_FLOAT32 or TENSOR_QUANT8_ASYMM) and the type of input1 is TENSOR_INT32 for "BATCH_TO_SPACE_ND" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let input0 = {type: nn.FLOAT32};
+        let input1 = {type: nn.TENSOR_INT32, dimensions: [2]};
+        let output = {type: nn.FLOAT32};
+        model.addOperand(input0);
+        model.addOperand(input1);
+        model.addOperand(output);
+        model.setOperandValue(1, new Int32Array([2, 2]));
+        assert.throws(() => {
+          model.addOperation(nn.BATCH_TO_SPACE_ND, [0, 1], [2]);
+        });
+      });
+    });
+
+    it('raise error when the type of input0 is UINT32 (not TENSOR_FLOAT32 or TENSOR_QUANT8_ASYMM) and the type of input1 is TENSOR_INT32 for "BATCH_TO_SPACE_ND" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let input0 = {type: nn.UINT32};
+        let input1 = {type: nn.TENSOR_INT32, dimensions: [2]};
+        let output = {type: nn.UINT32};
+        model.addOperand(input0);
+        model.addOperand(input1);
+        model.addOperand(output);
+        model.setOperandValue(1, new Int32Array([2, 2]));
+        assert.throws(() => {
+          model.addOperation(nn.BATCH_TO_SPACE_ND, [0, 1], [2]);
+        });
+      });
+    });
+
+    it('raise error when the type of input0 is TENSOR_FLOAT32 and the type of input1 is TENSOR_FLOAT32 (not TENSOR_INT32) for "BATCH_TO_SPACE_ND" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let input0 = {type: nn.TENSOR_FLOAT32, dimensions: [4, 1, 1, 1]};
+        let input1 = {type: nn.TENSOR_FLOAT32, dimensions: [2]};
+        let output = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2, 1]};
+        model.addOperand(input0);
+        model.addOperand(input1);
+        model.addOperand(output);
+        model.setOperandValue(1, new Float32Array([2.0, 2.0]));
+        assert.throws(() => {
+          model.addOperation(nn.BATCH_TO_SPACE_ND, [0, 1], [2]);
+        });
+      });
+    });
+
+    it('raise error when the type of input0 is TENSOR_FLOAT32 and the type of input1 is TENSOR_QUANT8_ASYMM (not TENSOR_INT32) for "BATCH_TO_SPACE_ND" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let input0 = {type: nn.TENSOR_FLOAT32, dimensions: [4, 1, 1, 1]};
+        let input1 = {type: nn.TENSOR_QUANT8_ASYMM, dimensions: [1, 2, 2, 1], scale: 0.5, zeroPoint: 1};
+        let output = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2, 1]};
+        model.addOperand(input0);
+        model.addOperand(input1);
+        model.addOperand(output);
+        assert.throws(() => {
+          model.addOperation(nn.BATCH_TO_SPACE_ND, [0, 1], [2]);
+        });
+      });
+    });
+
+    it('raise error when the type of input0 is TENSOR_FLOAT32 and the type of input1 is FLOAT32 (not TENSOR_INT32) for "BATCH_TO_SPACE_ND" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let input0 = {type: nn.TENSOR_FLOAT32, dimensions: [4, 1, 1, 1]};
+        let input1 = {type: nn.FLOAT32};
+        let output = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2, 1]};
+        model.addOperand(input0);
+        model.addOperand(input1);
+        model.addOperand(output);
+        model.setOperandValue(1, new Float32Array([2.0]));
+        assert.throws(() => {
+          model.addOperation(nn.BATCH_TO_SPACE_ND, [0, 1], [2]);
+        });
+      });
+    });
+
+    it('raise error when the type of input0 is TENSOR_FLOAT32 and the type of input1 is INT32 (not TENSOR_INT32) for "BATCH_TO_SPACE_ND" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let input0 = {type: nn.TENSOR_FLOAT32, dimensions: [4, 1, 1, 1]};
+        let input1 = {type: nn.INT32};
+        let output = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2, 1]};
+        model.addOperand(input0);
+        model.addOperand(input1);
+        model.addOperand(output);
+        model.setOperandValue(1, new Int32Array([2]));
+        assert.throws(() => {
+          model.addOperation(nn.BATCH_TO_SPACE_ND, [0, 1], [2]);
+        });
+      });
+    });
+
+    it('raise error when the type of input0 is TENSOR_FLOAT32 and the type of input1 is UINT32 (not TENSOR_INT32) for "BATCH_TO_SPACE_ND" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let input0 = {type: nn.TENSOR_FLOAT32, dimensions: [4, 1, 1, 1]};
+        let input1 = {type: nn.UINT32};
+        let output = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2, 1]};
+        model.addOperand(input0);
+        model.addOperand(input1);
+        model.addOperand(output);
+        assert.throws(() => {
+          model.addOperation(nn.BATCH_TO_SPACE_ND, [0, 1], [2]);
+        });
+      });
+    });
+
+    it('raise error when 5-D tensor as input0 that is TENSOR_FLOAT32 type and 1-D tensor as input1 that is TENSOR_INT32 type for "BATCH_TO_SPACE_ND" operation', async function() {
+      let model = await nn.createModel(options);
+      let input0 = {type: nn.TENSOR_FLOAT32, dimensions: [4, 1, 1, 1, 1]};
+      let input1 = {type: nn.TENSOR_INT32, dimensions: [2]};
+      let output = {type: nn.TENSOR_FLOAT32, dimensions: [1, 1, 2, 2, 1]};
+
+      model.addOperand(input0);
+      model.addOperand(input1);
+      model.addOperand(output);
+
+      model.setOperandValue(1, new Int32Array([2, 2]));
+      model.addOperation(nn.BATCH_TO_SPACE_ND, [0, 1], [2]);
+      model.identifyInputsAndOutputs([0], [2]);
+      await model.finish();
+
+      let compilation = await model.createCompilation();
+      compilation.setPreference(getPreferenceCode(options.prefer));
+      await compilation.finish();
+
+      let execution = await compilation.createExecution();
+      execution.setInput(0, new Float32Array([1.0, 2.0, 3.0, 4.0]));
+      execution.setOutput(0, new Float32Array(product(output.dimensions)));
+      await assertThrowsAsync(async() => {
+        await execution.startCompute();
+      });
+    });
+
+    it('raise error when 2-D tensor as input0 that is TENSOR_FLOAT32 type and 1-D tensor as input1 that is TENSOR_INT32 type for "BATCH_TO_SPACE_ND" operation', async function() {
+      let model = await nn.createModel(options);
+      let input0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2]};
+      let input1 = {type: nn.TENSOR_INT32, dimensions: [2]};
+      let output = {type: nn.TENSOR_FLOAT32, dimensions: [4, 4]};
+
+      model.addOperand(input0);
+      model.addOperand(input1);
+      model.addOperand(output);
+
+      model.setOperandValue(1, new Int32Array([2, 2]));
+      model.addOperation(nn.BATCH_TO_SPACE_ND, [0, 1], [2]);
+      model.identifyInputsAndOutputs([0], [2]);
+      await model.finish();
+
+      let compilation = await model.createCompilation();
+      compilation.setPreference(getPreferenceCode(options.prefer));
+      await compilation.finish();
+
+      let execution = await compilation.createExecution();
+      execution.setInput(0, new Float32Array([1, 2, 3, 4]));
+      execution.setOutput(0, new Float32Array(product(output.dimensions)));
+      await assertThrowsAsync(async() => {
+        await execution.startCompute();
+      });
+    });
+
+    it('raise error when 4-D tensor as input0 that is TENSOR_FLOAT32 type and 4-D tensor as input1 that is TENSOR_INT32 type for "BATCH_TO_SPACE_ND" operation', async function() {
+      let model = await nn.createModel(options);
+      let input0 = {type: nn.TENSOR_FLOAT32, dimensions: [4, 1, 1, 1]};
+      let input1 = {type: nn.TENSOR_INT32, dimensions: [1, 2, 2, 1]};
+      let output = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2, 1]};
+
+      model.addOperand(input0);
+      model.addOperand(input1);
+      model.addOperand(output);
+
+      model.setOperandValue(1, new Int32Array([2, 2, 2, 2]));
+      model.addOperation(nn.BATCH_TO_SPACE_ND, [0, 1], [2]);
+      model.identifyInputsAndOutputs([0], [2]);
+      await model.finish();
+
+      let compilation = await model.createCompilation();
+      compilation.setPreference(getPreferenceCode(options.prefer));
+      await compilation.finish();
+
+      let execution = await compilation.createExecution();
+      execution.setInput(0, new Float32Array([1, 2, 3, 4]));
+      execution.setOutput(0, new Float32Array(product(output.dimensions)));
+      await assertThrowsAsync(async() => {
+        await execution.startCompute();
+      });
+    });
+
+    it('raise error when only one input that is 4-D tensor as TENSOR_FLOAT32 type for "BATCH_TO_SPACE_ND" operation', async function() {
+      let model = await nn.createModel(options);
+      let input = {type: nn.TENSOR_FLOAT32, dimensions: [4, 1, 1, 1]};
+      let output = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2, 1]};
+
+      model.addOperand(input);
+      model.addOperand(output);
+
+      model.addOperation(nn.BATCH_TO_SPACE_ND, [0], [1]);
+      model.identifyInputsAndOutputs([0], [1]);
+      await model.finish();
+
+      let compilation = await model.createCompilation();
+      compilation.setPreference(getPreferenceCode(options.prefer));
+      await compilation.finish();
+
+      let execution = await compilation.createExecution();
+      execution.setInput(0, new Float32Array([1, 2, 3, 4]));
+      execution.setOutput(0, new Float32Array(product(output.dimensions)));
+      await assertThrowsAsync(async() => {
+        await execution.startCompute();
+      });
+    });
+
+    it('raise error when setting 0 input for "BATCH_TO_SPACE_ND" operation', async function() {
+      let model = await nn.createModel(options);
+      let output = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2, 1]};
+
+      model.addOperand(output);
+
+      model.addOperation(nn.BATCH_TO_SPACE_ND, [], [0]);
+      model.identifyInputsAndOutputs([], [0]);
+      await model.finish();
+
+      let compilation = await model.createCompilation();
+      compilation.setPreference(getPreferenceCode(options.prefer));
+      await compilation.finish();
+
+      let execution = await compilation.createExecution();
+      execution.setOutput(0, new Float32Array(product(output.dimensions)));
+      await assertThrowsAsync(async() => {
+        await execution.startCompute();
+      });
+    });
+
+    it('raise error when setting 0 output for "BATCH_TO_SPACE_ND" operation', async function() {
+      let model = await nn.createModel(options);
+      let input0 = {type: nn.TENSOR_FLOAT32, dimensions: [4, 1, 1, 1]};
+      let input1 = {type: nn.TENSOR_INT32, dimensions: [2]};
+
+      model.addOperand(input0);
+      model.addOperand(input1);
+
+      model.setOperandValue(1, new Int32Array([2, 2]));
+      model.addOperation(nn.BATCH_TO_SPACE_ND, [0, 1], []);
+      model.identifyInputsAndOutputs([0], []);
+      await model.finish();
+
+      let compilation = await model.createCompilation();
+      compilation.setPreference(getPreferenceCode(options.prefer));
+      await compilation.finish();
+
+      let execution = await compilation.createExecution();
+      execution.setInput(0, new Float32Array([1, 2, 3, 4]));
+      await assertThrowsAsync(async() => {
+        await execution.startCompute();
+      });
+    });
+
+    it('raise error when the block value < 1 and input1 that is TENSOR_FLOAT32 type for "BATCH_TO_SPACE_ND" operation', async function() {
+      let model = await nn.createModel(options);
+      let input0 = {type: nn.TENSOR_FLOAT32, dimensions: [4, 1, 1, 1]};
+      let input1 = {type: nn.TENSOR_FLOAT32, dimensions: [2]};
+      let output = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2, 1]};
+
+      model.addOperand(input0);
+      model.addOperand(input1);
+      model.addOperand(output);
+
+      model.setOperandValue(1, new Float32Array([0.2, 0.2]));
+      model.addOperation(nn.BATCH_TO_SPACE_ND, [0, 1], [2]);
+      model.identifyInputsAndOutputs([0], [2]);
+      await model.finish();
+
+      let compilation = await model.createCompilation();
+      compilation.setPreference(getPreferenceCode(options.prefer));
+      await compilation.finish();
+
+      let execution = await compilation.createExecution();
+      execution.setInput(0, new Float32Array([1, 2, 3, 4]));
+      execution.setOutput(0, new Float32Array(product(output.dimensions)));
+      await assertThrowsAsync(async() => {
+        await execution.startCompute();
+      });
+    });
+
+    it('raise error when the block value < 1 and input1 that is TENSOR_INT32 type for "BATCH_TO_SPACE_ND" operation', async function() {
+      let model = await nn.createModel(options);
+      let input0 = {type: nn.TENSOR_FLOAT32, dimensions: [4, 1, 1, 1]};
+      let input1 = {type: nn.TENSOR_INT32, dimensions: [2]};
+      let output = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2, 1]};
+
+      model.addOperand(input0);
+      model.addOperand(input1);
+      model.addOperand(output);
+
+      model.setOperandValue(1, new Int32Array([-1, -1]));
+      model.addOperation(nn.BATCH_TO_SPACE_ND, [0, 1], [2]);
+      model.identifyInputsAndOutputs([0], [2]);
+      await model.finish();
+
+      let compilation = await model.createCompilation();
+      compilation.setPreference(getPreferenceCode(options.prefer));
+      await compilation.finish();
+
+      let execution = await compilation.createExecution();
+      execution.setInput(0, new Float32Array([1, 2, 3, 4]));
+      execution.setOutput(0, new Float32Array(product(output.dimensions)));
+      await assertThrowsAsync(async() => {
+        await execution.startCompute();
+      });
+    });
+
+    it('"only one input that is 4-D tensor as TENSOR_FLOAT32 type" is ok for "TRANSPOSE" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let input = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2, 1]};
+        let output = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2, 1]};
+        model.addOperand(input);
+        model.addOperand(output);
+        assert.doesNotThrow(() => {
+          model.addOperation(nn.TRANSPOSE, [0], [1]);
+        });
+      });
+    });
+
+    it('"only one input that is 2-D tensor as TENSOR_FLOAT32 type" is ok for "TRANSPOSE" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let input = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2]};
+        let output = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2]};
+        model.addOperand(input);
+        model.addOperand(output);
+        assert.doesNotThrow(() => {
+          model.addOperation(nn.TRANSPOSE, [0], [1]);
+        });
+      });
+    });
+
+    it('"only one input that is 4-D tensor as TENSOR_QUANT8_ASYMM type" is ok for "TRANSPOSE" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let input = {type: nn.TENSOR_QUANT8_ASYMM, dimensions: [1, 2, 2, 1], scale: 0.5, zeroPoint: 1};
+        let output = {type: nn.TENSOR_QUANT8_ASYMM, dimensions: [1, 2, 2, 1], scale: 0.5, zeroPoint: 1};
+        model.addOperand(input);
+        model.addOperand(output);
+        assert.doesNotThrow(() => {
+          model.addOperation(nn.TRANSPOSE, [0], [1]);
+        });
+      });
+    });
+
+    it('"only one input that is 2-D tensor as TENSOR_QUANT8_ASYMM type" is ok for "TRANSPOSE" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let input = {type: nn.TENSOR_QUANT8_ASYMM, dimensions: [2, 2], scale: 0.5, zeroPoint: 1};
+        let output = {type: nn.TENSOR_QUANT8_ASYMM, dimensions: [2, 2], scale: 0.5, zeroPoint: 1};
+        model.addOperand(input);
+        model.addOperand(output);
+        assert.doesNotThrow(() => {
+          model.addOperation(nn.TRANSPOSE, [0], [1]);
+        });
+      });
+    });
+
+    it('"4-D tensor as input0 that is TENSOR_FLOAT32 type and 1-D tensor as input1 that is TENSOR_INT32 type" are ok for "TRANSPOSE" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let input0 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2, 1]};
+        let input1 = {type: nn.TENSOR_INT32, dimensions: [4]};
+        let output = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2, 1]};
+        model.addOperand(input0);
+        model.addOperand(input1);
+        model.addOperand(output);
+        model.setOperandValue(1, new Int32Array([0, 2, 1, 3]));
+        assert.doesNotThrow(() => {
+          model.addOperation(nn.TRANSPOSE, [0, 1], [2]);
+        });
+      });
+    });
+
+    it('"2-D tensor as input0 that is TENSOR_FLOAT32 type and 1-D tensor as input1 that is TENSOR_INT32 type" are ok for "TRANSPOSE" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let input0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2]};
+        let input1 = {type: nn.TENSOR_INT32, dimensions: [2]};
+        let output = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2]};
+        model.addOperand(input0);
+        model.addOperand(input1);
+        model.addOperand(output);
+        model.setOperandValue(1, new Int32Array([1, 0]));
+        assert.doesNotThrow(() => {
+          model.addOperation(nn.TRANSPOSE, [0, 1], [2]);
+        });
+      });
+    });
+
+    it('"4-D tensor as input0 that is TENSOR_QUANT8_ASYMM type and 1-D tensor as input1 that is TENSOR_INT32 type" are ok for "TRANSPOSE" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let input0 = {type: nn.TENSOR_QUANT8_ASYMM, dimensions: [1, 2, 2, 1], scale: 0.5, zeroPoint: 1};
+        let input1 = {type: nn.TENSOR_INT32, dimensions: [4]};
+        let output = {type: nn.TENSOR_QUANT8_ASYMM, dimensions: [1, 2, 2, 1], scale: 0.5, zeroPoint: 1};
+        model.addOperand(input0);
+        model.addOperand(input1);
+        model.addOperand(output);
+        model.setOperandValue(1, new Int32Array([0, 2, 1, 3]));
+        assert.doesNotThrow(() => {
+          model.addOperation(nn.TRANSPOSE, [0, 1], [2]);
+        });
+      });
+    });
+
+    it('"2-D tensor as input0 that is TENSOR_QUANT8_ASYMM type and 1-D tensor as input1 that is TENSOR_INT32 type" are ok for "TRANSPOSE" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let input0 = {type: nn.TENSOR_QUANT8_ASYMM, dimensions: [2, 2], scale: 0.5, zeroPoint: 1};
+        let input1 = {type: nn.TENSOR_INT32, dimensions: [2]};
+        let output = {type: nn.TENSOR_QUANT8_ASYMM, dimensions: [2, 2], scale: 0.5, zeroPoint: 1};
+        model.addOperand(input0);
+        model.addOperand(input1);
+        model.addOperand(output);
+        model.setOperandValue(1, new Int32Array([1, 0]));
+        assert.doesNotThrow(() => {
+          model.addOperation(nn.TRANSPOSE, [0, 1], [2]);
+        });
+      });
+    });
+
+    it('raise error when the type of input is TENSOR_INT32 (not TENSOR_FLOAT32 or TENSOR_QUANT8_ASYMM) for "TRANSPOSE" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let input = {type: nn.TENSOR_INT32, dimensions: [1, 2, 2, 1]};
+        let output = {type: nn.TENSOR_INT32, dimensions: [1, 2, 2, 1]};
+        model.addOperand(input);
+        model.addOperand(output);
+        assert.throws(() => {
+          model.addOperation(nn.TRANSPOSE, [0], [1]);
+        });
+      });
+    });
+
+    it('raise error when the type of input is INT32 (not TENSOR_FLOAT32 or TENSOR_QUANT8_ASYMM) for "TRANSPOSE" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let input = {type: nn.INT32};
+        let output = {type: nn.INT32};
+        model.addOperand(input);
+        model.addOperand(output);
+        assert.throws(() => {
+          model.addOperation(nn.TRANSPOSE, [0], [1]);
+        });
+      });
+    });
+
+    it('raise error when the type of input is FLOAT32 (not TENSOR_FLOAT32 or TENSOR_QUANT8_ASYMM) for "TRANSPOSE" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let input = {type: nn.FLOAT32};
+        let output = {type: nn.FLOAT32};
+        model.addOperand(input);
+        model.addOperand(output);
+        assert.throws(() => {
+          model.addOperation(nn.TRANSPOSE, [0], [1]);
+        });
+      });
+    });
+
+    it('raise error when the type of input is UINT32 (not TENSOR_FLOAT32 or TENSOR_QUANT8_ASYMM) for "TRANSPOSE" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let input = {type: nn.UINT32};
+        let output = {type: nn.UINT32};
+        model.addOperand(input);
+        model.addOperand(output);
+        assert.throws(() => {
+          model.addOperation(nn.TRANSPOSE, [0], [1]);
+        });
+      });
+    });
+
+    it('raise error when the type of input0 is TENSOR_INT32 (not TENSOR_FLOAT32 or TENSOR_QUANT8_ASYMM) and the type of input1 is TENSOR_INT32 for "TRANSPOSE" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let input0 = {type: nn.TENSOR_INT32, dimensions: [1, 2, 2, 1]};
+        let input1 = {type: nn.TENSOR_INT32, dimensions: [4]};
+        let output = {type: nn.TENSOR_INT32, dimensions: [1, 2, 2, 1]};
+        model.addOperand(input0);
+        model.addOperand(input1);
+        model.addOperand(output);
+        model.setOperandValue(1, new Int32Array([0, 2, 1, 3]));
+        assert.throws(() => {
+          model.addOperation(nn.TRANSPOSE, [0, 1], [2]);
+        });
+      });
+    });
+
+    it('raise error when the type of input0 is INT32 (not TENSOR_FLOAT32 or TENSOR_QUANT8_ASYMM) and the type of input1 is TENSOR_INT32 for "TRANSPOSE" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let input0 = {type: nn.INT32};
+        let input1 = {type: nn.TENSOR_INT32, dimensions: [4]};
+        let output = {type: nn.INT32};
+        model.addOperand(input0);
+        model.addOperand(input1);
+        model.addOperand(output);
+        model.setOperandValue(1, new Int32Array([0, 2, 1, 3]));
+        assert.throws(() => {
+          model.addOperation(nn.TRANSPOSE, [0, 1], [2]);
+        });
+      });
+    });
+
+    it('raise error when the type of input0 is FLOAT32 (not TENSOR_FLOAT32 or TENSOR_QUANT8_ASYMM) and the type of input1 is TENSOR_INT32 for "TRANSPOSE" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let input0 = {type: nn.FLOAT32};
+        let input1 = {type: nn.TENSOR_INT32, dimensions: [4]};
+        let output = {type: nn.FLOAT32};
+        model.addOperand(input0);
+        model.addOperand(input1);
+        model.addOperand(output);
+        model.setOperandValue(1, new Int32Array([0, 2, 1, 3]));
+        assert.throws(() => {
+          model.addOperation(nn.TRANSPOSE, [0, 1], [2]);
+        });
+      });
+    });
+
+    it('raise error when the type of input0 is UINT32 (not TENSOR_FLOAT32 or TENSOR_QUANT8_ASYMM) and the type of input1 is TENSOR_INT32 for "TRANSPOSE" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let input0 = {type: nn.UINT32};
+        let input1 = {type: nn.TENSOR_INT32, dimensions: [4]};
+        let output = {type: nn.UINT32};
+        model.addOperand(input0);
+        model.addOperand(input1);
+        model.addOperand(output);
+        model.setOperandValue(1, new Int32Array([0, 2, 1, 3]));
+        assert.throws(() => {
+          model.addOperation(nn.TRANSPOSE, [0, 1], [2]);
+        });
+      });
+    });
+
+    it('raise error when the type of input0 is TENSOR_FLOAT32 and the type of input1 is TENSOR_FLOAT32 (not TENSOR_INT32) for "TRANSPOSE" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let input0 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2, 1]};
+        let input1 = {type: nn.TENSOR_FLOAT32, dimensions: [4]};
+        let output = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2, 1]};
+        model.addOperand(input0);
+        model.addOperand(input1);
+        model.addOperand(output);
+        model.setOperandValue(1, new Float32Array([0.0, 2.0, 1.0, 3.0]));
+        assert.throws(() => {
+          model.addOperation(nn.TRANSPOSE, [0, 1], [2]);
+        });
+      });
+    });
+
+    it('raise error when the type of input0 is TENSOR_FLOAT32 and the type of input1 is TENSOR_QUANT8_ASYMM (not TENSOR_INT32) for "TRANSPOSE" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let input0 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2, 1]};
+        let input1 = {type: nn.TENSOR_QUANT8_ASYMM, dimensions: [1, 2, 2, 1], scale: 0.5, zeroPoint: 1};
+        let output = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2, 1]};
+        model.addOperand(input0);
+        model.addOperand(input1);
+        model.addOperand(output);
+        assert.throws(() => {
+          model.addOperation(nn.TRANSPOSE, [0, 1], [2]);
+        });
+      });
+    });
+
+    it('raise error when the type of input0 is TENSOR_FLOAT32 and the type of input1 is FLOAT32 (not TENSOR_INT32) for "TRANSPOSE" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let input0 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2, 1]};
+        let input1 = {type: nn.FLOAT32};
+        let output = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2, 1]};
+        model.addOperand(input0);
+        model.addOperand(input1);
+        model.addOperand(output);
+        model.setOperandValue(1, new Float32Array([2.0]));
+        assert.throws(() => {
+          model.addOperation(nn.TRANSPOSE, [0, 1], [2]);
+        });
+      });
+    });
+
+    it('raise error when the type of input0 is TENSOR_FLOAT32 and the type of input1 is INT32 (not TENSOR_INT32) for "TRANSPOSE" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let input0 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2, 1]};
+        let input1 = {type: nn.INT32};
+        let output = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2, 1]};
+        model.addOperand(input0);
+        model.addOperand(input1);
+        model.addOperand(output);
+        model.setOperandValue(1, new Int32Array([2]));
+        assert.throws(() => {
+          model.addOperation(nn.TRANSPOSE, [0, 1], [2]);
+        });
+      });
+    });
+
+    it('raise error when the type of input0 is TENSOR_FLOAT32 and the type of input1 is UINT32 (not TENSOR_INT32) for "TRANSPOSE" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let input0 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2, 1]};
+        let input1 = {type: nn.UINT32};
+        let output = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2, 1]};
+        model.addOperand(input0);
+        model.addOperand(input1);
+        model.addOperand(output);
+        assert.throws(() => {
+          model.addOperation(nn.TRANSPOSE, [0, 1], [2]);
+        });
+      });
+    });
+
+    it('raise error when 5-D tensor as input that is TENSOR_FLOAT32 type for "TRANSPOSE" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let input = {type: nn.TENSOR_FLOAT32, dimensions: [1, 1, 2, 2, 1]};
+        let output = {type: nn.TENSOR_FLOAT32, dimensions: [1, 1, 2, 2, 1]};
+        model.addOperand(input);
+        model.addOperand(output);
+        assert.doesNotThrow(() => {
+          model.addOperation(nn.TRANSPOSE, [0], [1]);
+        });
+      });
+    });
+
+    it('raise error when 5-D tensor as input0 that is TENSOR_FLOAT32 type and 1-D tensor as input1 that is TENSOR_INT32 type for "TRANSPOSE" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let input0 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 1, 2, 2, 1]};
+        let input1 = {type: nn.TENSOR_INT32, dimensions: [5]};
+        let output = {type: nn.TENSOR_FLOAT32, dimensions: [1, 1, 2, 2, 1]};
+        model.addOperand(input0);
+        model.addOperand(input1);
+        model.addOperand(output);
+        model.setOperandValue(1, new Int32Array([0, 2, 1, 3, 4]));
+        assert.doesNotThrow(() => {
+          model.addOperation(nn.TRANSPOSE, [0, 1], [2]);
+        });
+      });
+    });
+
+    it('raise error when 4-D tensor as input0 that is TENSOR_FLOAT32 type and 2-D tensor as input1 that is TENSOR_INT32 type for "TRANSPOSE" operation', function() {
+      return nn.createModel(options).then((model)=>{
+        let input0 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2, 1]};
+        let input1 = {type: nn.TENSOR_INT32, dimensions: [2, 2]};
+        let output = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2, 1]};
+        model.addOperand(input0);
+        model.addOperand(input1);
+        model.addOperand(output);
+        model.setOperandValue(1, new Int32Array([0, 2, 1, 3]));
+        assert.doesNotThrow(() => {
+          model.addOperation(nn.TRANSPOSE, [0, 1], [2]);
+        });
+      });
+    });
+
+    it('raise error when 3 inputs and 1 output for "TRANSPOSE" operation', async function() {
+      let model = await nn.createModel(options);
+      let input0 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2, 1]};
+      let input1 = {type: nn.TENSOR_INT32, dimensions: [4]};
+      let output = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2, 1]};
+
+      model.addOperand(input0);
+      model.addOperand(input1);
+      model.addOperand(input0);
+      model.addOperand(output);
+
+      model.setOperandValue(1, new Int32Array([0, 2, 1, 3]));
+      model.setOperandValue(2, new Float32Array([1.0, 2.0, 3.0, 4.0]));
+      model.addOperation(nn.TRANSPOSE, [0, 1, 2], [3]);
+      model.identifyInputsAndOutputs([0], [3]);
+      await model.finish();
+
+      let compilation = await model.createCompilation();
+      compilation.setPreference(getPreferenceCode(options.prefer));
+      await compilation.finish();
+
+      let execution = await compilation.createExecution();
+      execution.setInput(0, new Float32Array([1.0, 2.0, 3.0, 4.0]));
+      execution.setOutput(0, new Float32Array(product(output.dimensions)));
+      await assertThrowsAsync(async() => {
+        await execution.startCompute();
+      });
+    });
+
+    it('raise error when 1 input and 2 outputs for "TRANSPOSE" operation', async function() {
+      let model = await nn.createModel(options);
+      let input = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2, 1]};
+      let output = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2, 1]};
+
+      model.addOperand(input);
+      model.addOperand(output);
+      model.addOperand(output);
+
+      model.addOperation(nn.TRANSPOSE, [0], [1, 2]);
+      model.identifyInputsAndOutputs([0], [1, 2]);
+      await model.finish();
+
+      let compilation = await model.createCompilation();
+      compilation.setPreference(getPreferenceCode(options.prefer));
+      await compilation.finish();
+
+      let execution = await compilation.createExecution();
+      execution.setInput(0, new Float32Array([1.0, 2.0, 3.0, 4.0]));
+      execution.setOutput(0, new Float32Array(product(output.dimensions)));
+      execution.setOutput(1, new Float32Array(product(output.dimensions)));
+      await assertThrowsAsync(async() => {
+        await execution.startCompute();
+      });
+    });
+
+    it('raise error when 2 inputs and 2 outputs for "TRANSPOSE" operation', async function() {
+      let model = await nn.createModel(options);
+      let input0 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2, 1]};
+      let input1 = {type: nn.TENSOR_INT32, dimensions: [4]};
+      let output = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2, 1]};
+
+      model.addOperand(input0);
+      model.addOperand(input1);
+      model.addOperand(output);
+      model.addOperand(output);
+
+      model.setOperandValue(1, new Int32Array([0, 2, 1, 3]));
+      model.addOperation(nn.TRANSPOSE, [0, 1], [2, 3]);
+      model.identifyInputsAndOutputs([0], [2, 3]);
+      await model.finish();
+
+      let compilation = await model.createCompilation();
+      compilation.setPreference(getPreferenceCode(options.prefer));
+      await compilation.finish();
+
+      let execution = await compilation.createExecution();
+      execution.setInput(0, new Float32Array([1.0, 2.0, 3.0, 4.0]));
+      execution.setOutput(0, new Float32Array(product(output.dimensions)));
+      execution.setOutput(1, new Float32Array(product(output.dimensions)));
+      await assertThrowsAsync(async() => {
+        await execution.startCompute();
+      });
+    });
+
+    it('raise error when setting 0 input for "TRANSPOSE" operation', async function() {
+      let model = await nn.createModel(options);
+      let output = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2, 1]};
+
+      model.addOperand(output);
+      model.addOperation(nn.TRANSPOSE, [], [0]);
+
+      model.identifyInputsAndOutputs([], [0]);
+      await model.finish();
+
+      let compilation = await model.createCompilation();
+      compilation.setPreference(getPreferenceCode(options.prefer));
+      await compilation.finish();
+
+      let execution = await compilation.createExecution();
+      execution.setOutput(0, new Float32Array(product(output.dimensions)));
+      await assertThrowsAsync(async() => {
+        await execution.startCompute();
+      });
+    });
+
+    it('raise error when setting 0 output for "TRANSPOSE" operation', async function() {
+      let model = await nn.createModel(options);
+      let input0 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2, 1]};
+      let input1 = {type: nn.TENSOR_INT32, dimensions: [4]};
+
+      model.addOperand(input0);
+      model.addOperand(input1);
+      model.setOperandValue(1, new Int32Array([0, 2, 1, 3]));
+      model.addOperation(nn.TRANSPOSE, [0, 1], []);
+
+      model.identifyInputsAndOutputs([0], []);
+      await model.finish();
+
+      let compilation = await model.createCompilation();
+      compilation.setPreference(getPreferenceCode(options.prefer));
+      await compilation.finish();
+
+      let execution = await compilation.createExecution();
+      execution.setInput(0, new Float32Array([1.0, 2.0, 3.0, 4.0]));
+      await assertThrowsAsync(async() => {
+        await execution.startCompute();
+      });
+    });
   });
 
   describe('#identifyInputsAndOutputs API', function() {
