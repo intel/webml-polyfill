@@ -141,6 +141,8 @@ export default class PreparedModel {
           type: OperationCode.WEBNN_SUBGRAPH,
           inputs: inTensors,
           outputs: outTensors,
+          model: submodel,          // keep a ref to avoid GC
+          compilation: compilation, // keep a ref to avoid GC
           execution: execution,
           subgraphName: subgraphName,
         });
