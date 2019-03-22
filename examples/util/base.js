@@ -31,6 +31,17 @@ const imageClassificationModels = [{
   intro: 'An efficient Convolutional Neural Networks for Mobile Vision Applications.',
   paperUrl: 'https://arxiv.org/pdf/1704.04861.pdf'
 }, {
+  modelName: 'Mobilenet v1 Quant(TFLite)',
+  modelFormatName: 'mobilenet_v1_quant_tflite',
+  isQuantized: true,
+  modelSize: '4.3MB',
+  inputSize: [224, 224, 3],
+  outputSize: 1001,
+  modelFile: '../image_classification/model/mobilenet_v1_1.0_224_quant.tflite',
+  labelsFile: '../image_classification/model/labels1001.txt',
+  intro: 'Quantized version of Mobilenet v1',
+  paperUrl: 'https://arxiv.org/pdf/1712.05877.pdf'
+}, {
   modelName: 'Mobilenet v2 (TFLite)',
   modelFormatName: 'mobilenet_v2_tflite',
   modelSize: '14.0MB',
@@ -44,6 +55,20 @@ const imageClassificationModels = [{
   },
   intro: 'MobileNetV2 improves the state of the art performance of mobile models.',
   paperUrl: 'https://arxiv.org/abs/1801.04381'
+}, {
+  modelName: 'Mobilenet v2 Quant(TFLite)',
+  modelFormatName: 'mobilenet_v2_quant_tflite',
+  isQuantized: true,
+  modelSize: '6.9MB',
+  inputSize: [224, 224, 3],
+  outputSize: 1001,
+  modelFile: '../image_classification/model/mobilenet_v2_1.0_224_quant.tflite',
+  labelsFile: '../image_classification/model/labels1001.txt',
+  postOptions: {
+    softmax: true,
+  },
+  intro: 'Quantized version of Mobilenet v2',
+  paperUrl: 'https://arxiv.org/abs/1806.08342'
 }, {
   modelName: 'Inception v3 (TFLite)',
   modelFormatName: 'inception_v3_tflite',
@@ -230,6 +255,21 @@ const objectDetectionModels = [{
   intro: 'SSD (Single Shot MultiBox Detector) is an unified framework for object detection with a single network. Loading SSD MobileNet model (converted from Tensorflow SSD MobileNet model) trained by COCO in TensorFlow Lite format, constructs and inferences it by WebML API.',
   paperUrl: 'https://arxiv.org/abs/1803.08225'
 }, {
+  modelName: 'SSD MobileNet v1 Quant(TFLite)',
+  modelFormatName: 'ssd_mobilenet_v1_quant_tflite',
+  isQuantized: true,
+  modelSize: '6.9MB',
+  modelFile: '../object_detection/model/ssd_mobilenet_v1_quant.tflite',
+  labelsFile: '../object_detection/model/coco_classes.txt',
+  type: 'SSD',
+  box_size: 4,
+  num_classes: 91,
+  num_boxes: 1083 + 600 + 150 + 54 + 24 + 6,
+  margin: [1, 1, 1, 1],
+  inputSize: [300, 300, 3],
+  intro: 'Quantized version of SSD Mobilenet v1',
+  paperUrl: 'https://arxiv.org/pdf/1712.05877.pdf'
+}, {
   modelName: 'SSD MobileNet v2 (TFLite)',
   modelFormatName: 'ssd_mobilenet_v2_tflite',
   modelSize: '67.3MB',
@@ -247,6 +287,21 @@ const objectDetectionModels = [{
   },
   intro: 'SSD MobileNet V2 is slower than SSD Mobilenet V1, but has higher accuracy.',
   paperUrl: 'https://arxiv.org/abs/1801.04381'
+}, {
+  modelName: 'SSD MobileNet v2 Quant(TFLite)',
+  modelFormatName: 'ssd_mobilenet_v2_quant_tflite',
+  isQuantized: true,
+  modelSize: '6.2MB',
+  modelFile: '../object_detection/model/ssd_mobilenet_v2_quant.tflite',
+  labelsFile: '../object_detection/model/coco_classes.txt',
+  type: 'SSD',
+  box_size: 4,
+  num_classes: 91,
+  num_boxes: 1083 + 600 + 150 + 54 + 24 + 6,
+  margin: [1, 1, 1, 1],
+  inputSize: [300, 300, 3],
+  intro: 'Quantized version of SSD Mobilenet v2',
+  paperUrl: 'https://arxiv.org/abs/1806.08342'
 }, {
   modelName: 'SSDLite MobileNet v2 (TFLite)',
   modelFormatName: 'ssdlite_mobilenet_v2_tflite',

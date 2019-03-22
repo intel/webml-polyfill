@@ -36,8 +36,15 @@ class Utils {
     this.labelsFile = model.labelsFile;
     this.preOptions = model.preOptions || {};
     this.postOptions = model.postOptions || {};
-    this.inputTensor = new Float32Array(this.inputSize.reduce((a, b) => a * b));
-    this.outputTensor = new Float32Array(this.outputSize);
+    this.isQuantized = model.isQuantized;
+    let typedArray;
+    if (this.isQuantized) {
+      typedArray = Uint8Array;
+    } else {
+      typedArray = Float32Array;
+    }
+    this.inputTensor = new typedArray(this.inputSize.reduce((a, b) => a * b));
+    this.outputTensor = new typedArray(this.outputSize);
 
     this.canvasElement.width = model.inputSize[1];
     this.canvasElement.height = model.inputSize[0];
@@ -109,7 +116,7 @@ class Utils {
     let elapsed = performance.now() - start;
     return {
       time: elapsed.toFixed(2),
-      classes: this.getTopClasses(this.outputTensor, this.labels, 3)
+      classes: this.getTopClasses(this.outputTensor, this.labels, 3, this.model._deQuantizeParams)
     };
   }
 
@@ -192,7 +199,7 @@ class Utils {
 
   }
 
-  getTopClasses(tensor, labels, k = 5) {
+  getTopClasses(tensor, labels, k = 5, deQuantizeParams) {
     let probs = Array.from(tensor);
     let indexes = probs.map((prob, index) => [prob, index]);
     let sorted = indexes.sort((a, b) => {
@@ -202,7 +209,12 @@ class Utils {
     sorted.reverse();
     let classes = [];
     for (let i = 0; i < k; ++i) {
-      let prob = sorted[i][0];
+      let prob;
+      if (this.isQuantized) {
+        prob = deQuantizeParams[0].scale * (sorted[i][0] - deQuantizeParams[0].zeroPoint);
+      } else {
+        prob = sorted[i][0];
+      }
       let index = sorted[i][1];
       let c = {
         label: labels[index],
