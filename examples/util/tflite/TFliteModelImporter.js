@@ -7,6 +7,8 @@ class TFliteModelImporter {
     this._tensorIds = [];
     this._operands = [];
     this._operandIndex = 0;
+    this._outputs;
+    this._deQuantizeParams = [];
     this._options = {
       softmax: kwargs.softmax,
     };
@@ -30,6 +32,7 @@ class TFliteModelImporter {
     this._addTensorOperands();
     this._addOpsAndParams();
     this._addInputsOutputs();
+    this._setDeQuantizeParams();
 
     await this._model.finish();
     this._compilation = await this._model.createCompilation();
@@ -73,12 +76,19 @@ class TFliteModelImporter {
           type = this._nn.TENSOR_INT32;
           typedArray = Int32Array;
         } break;
+        case tflite.TensorType.UINT8: {
+          type = this._nn.TENSOR_QUANT8_ASYMM;
+          typedArray = Uint8Array;
+        } break;
         default: {
           throw new Error(`tensor type ${tensor.type()} is not supproted.`);
         }
       }
       let dims = tensor.shapeArray().length ? Array.from(tensor.shapeArray()) : [1];
-      let tensorType = {type: type, dimensions: dims};
+      let quantization = tensor.quantization();
+      let scale = (quantization.scaleLength() === 1) ? quantization.scale(0) : 0;
+      let zeroPoint = (quantization.zeroPointLength() === 1) ? quantization.zeroPoint(0).toFloat64() : 0;
+      let tensorType = {type: type, dimensions: dims, scale: scale, zeroPoint: zeroPoint};
       let tensorId = this._addOperand(tensorType);
       this._tensorIds.push(tensorId);
       let buffer = this._rawModel.buffers(tensor.buffer());
@@ -98,17 +108,32 @@ class TFliteModelImporter {
     let opCode = this._rawModel.operatorCodes(operator.opcodeIndex()).builtinCode();
     if (this._options.softmax && opCode != tflite.BuiltinOperator.SOFTMAX)
       outputs = [this._operandIndex-1];
+    this._outputs = outputs;
     this._model.identifyInputsAndOutputs(inputs, outputs);
+  }
+
+  _setDeQuantizeParams() {
+    this._outputs.forEach(output => {
+      this._deQuantizeParams.push({
+        scale: this._operands[output].scale,
+        zeroPoint: this._operands[output].zeroPoint
+      });
+    });
   }
 
   _setOperandValue(index, value) {
     this._model.setOperandValue(index, value);
-    this._operands[index] = value;
+    this._operands[index].value = value;
   }
 
   _addOperand(type, value) {
     let index = this._operandIndex++;
     this._model.addOperand(type);
+    this._operands[index] = {
+      scale: type.scale,
+      zeroPoint: type.zeroPoint,
+      value: null
+    }
     if (typeof value !== 'undefined')
       this._setOperandValue(index, value); 
     return index;
@@ -345,7 +370,7 @@ class TFliteModelImporter {
         } break;
         case tflite.BuiltinOperator.RESIZE_BILINEAR: {
           let options = operator.builtinOptions(new tflite.ResizeBilinearOptions());
-          let newSize = this._operands[inputs[1]];
+          let newSize = this._operands[inputs[1]].value;
           inputs = [inputs[0]];
           inputs.push(this._addScalarInt32(newSize[0]));
           inputs.push(this._addScalarInt32(newSize[1]));
@@ -372,7 +397,12 @@ class TFliteModelImporter {
           inputs.push(this._addScalarFloat32(1.0));
           // Add outputs
           outputs = [];
-          let tensorType = {type: this._nn.TENSOR_FLOAT32, dimensions: Array.from(outputTensor.shapeArray())};
+          let tensorType;
+          if (graph.tensors(inputs[0]).type() === tflite.TensorType.UINT8) {
+            tensorType = {type: this._nn.TENSOR_QUANT8_ASYMM, dimensions: Array.from(outputTensor.shapeArray()), scale: 1 / 256, zeroPoint: 0};
+          } else {
+            tensorType = {type: this._nn.TENSOR_FLOAT32, dimensions: Array.from(outputTensor.shapeArray()), scale: 0, zeroPoint: 0};
+          }
           let tensorId = this._addOperand(tensorType);
           this._tensorIds.push(tensorId);
           outputs.push(tensorId);
