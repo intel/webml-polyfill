@@ -32,6 +32,8 @@ export default class PreparedModel {
       if (utils.isTensor(operand.type)) {
         runtimeOperand.value = this._allocateTensor(operand);
         runtimeOperand.runtimeshape = this._allocateRuntimeShape(operand);
+        runtimeOperand.scale = operand.scale;
+        runtimeOperand.zeroPoint = operand.zeroPoint;
         this._toDelete.tensorValue.push(runtimeOperand.value);
         this._toDelete.tensorShape.push(runtimeOperand.runtimeshape);
       } else {
@@ -111,24 +113,148 @@ export default class PreparedModel {
       return [paddingHead, paddingTail];
     }
 
-    function calculateActivationRangeFloat(activation) {
-      let activation_min, activation_max;
-      if (activation === FuseCode.RELU) {
-        activation_min = 0.0;
-        activation_max = nn_ops.MAX;
-      } else if (activation === FuseCode.RELU6) {
-        activation_min = 0.0;
-        activation_max = 6.0;
-      } else if (activation === FuseCode.RELU1) {
-        activation_min = -1.0;
-        activation_max = 1.0;
-      } else if (activation === FuseCode.NONE) {
-        activation_min = nn_ops.LOWEST;
-        activation_max = nn_ops.MAX;
+    function calculateActivationRange(activation, output) {
+      if (output.type === OperandCode.TENSOR_FLOAT32) {
+        let float_activation_min, float_activation_max;
+        if (activation === FuseCode.RELU) {
+          float_activation_min = 0.0;
+          float_activation_max = nn_ops.FLOAT_MAX;
+        } else if (activation === FuseCode.RELU6) {
+          float_activation_min = 0.0;
+          float_activation_max = 6.0;
+        } else if (activation === FuseCode.RELU1) {
+          float_activation_min = -1.0;
+          float_activation_max = 1.0;
+        } else if (activation === FuseCode.NONE) {
+          float_activation_min = nn_ops.FLOAT_LOWEST;
+          float_activation_max = nn_ops.FLOAT_MAX;
+        } else {
+          throw new Error("Unsupported fused activation function.");
+        }
+        return [float_activation_min, float_activation_max, 0, 0];
+      } else if (output.type === OperandCode.TENSOR_QUANT8_ASYMM) {
+        let quantized_activation_min, quantized_activation_max;
+        let scale = output.scale;
+        let zero_point = output.zeroPoint;
+
+        let quantize = function(f) {
+            return zero_point + Math.round(f / scale);
+        };
+
+        if (activation == FuseCode.RELU) {
+          quantized_activation_min = Math.max(nn_ops.UINT8_MIN, quantize(0.0));
+          quantized_activation_max = nn_ops.UINT8_MAX;
+        } else if (activation == FuseCode.RELU6) {
+          quantized_activation_min = Math.max(nn_ops.UINT8_MIN, quantize(0.0));
+          quantized_activation_max = Math.min(nn_ops.UINT8_MAX, quantize(6.0));
+        } else if (activation == FuseCode.RELU1) {
+          quantized_activation_min = Math.max(nn_ops.UINT8_MIN, quantize(-1.0));
+          quantized_activation_max = Math.min(nn_ops.UINT8_MAX, quantize(1.0));
+        } else if (activation == FuseCode.NONE){
+          quantized_activation_min = nn_ops.UINT8_MIN;
+          quantized_activation_max = nn_ops.UINT8_MAX;
+        } else {
+          throw new Error("Unsupported fused activation function.");
+        }
+        return [0.0, 0.0, quantized_activation_min, quantized_activation_max];
       } else {
-        throw new Error("Unsupported fused activation function.");
+        throw new Error("Unsupported type of tensor for fused activation function.");
       }
-      return { activation_min, activation_max };
+    }
+
+    function GetQuantizedConvolutionMultipler(input_scale, filter_scale, 
+                                              bias_scale, output_scale) {
+      let input_product_scale = input_scale * filter_scale;
+      // const float bias_scale = biasShape.scale;
+      // const float output_scale = outputShape.scale;
+
+      // The following conditions must be guaranteed by the training pipeline.
+      OPS_CHECK(Math.abs(input_product_scale - bias_scale) <=
+                (1e-6 * Math.min(input_product_scale, bias_scale)));
+      OPS_CHECK(input_product_scale >= 0);
+      OPS_CHECK(input_product_scale < output_scale);
+      let multiplier = input_product_scale / output_scale;
+      return multiplier;
+    }
+
+    function QuantizeMultiplierSmallerThanOne(double_multiplier) {
+      let quantized_multiplier, right_shift, q;
+      OPS_CHECK(double_multiplier >= 0.);
+      OPS_CHECK(double_multiplier < 1.);
+      if (double_multiplier === 0.) {
+        quantized_multiplier = 0;
+        right_shift = 0;
+        return [quantized_multiplier, right_shift];
+      }
+      OPS_CHECK(double_multiplier > 0.);
+      [q, right_shift] = frexp(double_multiplier);
+      right_shift *= -1;
+      quantized_multiplier = Math.round(q * -(1 << 31));
+      OPS_CHECK(quantized_multiplier <= -(1 << 31));
+      if (quantized_multiplier == -(1 << 31)) {
+        quantized_multiplier /= 2;
+        --right_shift;
+      }
+      OPS_CHECK(right_shift >= 0);
+      OPS_CHECK(quantized_multiplier <= nn_ops.INT32_MAX);
+      // quantized_multiplier = static_cast<int32_t>(q_fixed);
+      return [quantized_multiplier, right_shift];
+    }
+
+    function QuantizeMultiplierGreaterThanOne(double_multiplier) {
+      let quantized_multiplier, left_shift, q;
+      OPS_CHECK(double_multiplier > 1.);
+      [q, left_shift] = frexp(double_multiplier);
+      quantized_multiplier = Math.round(q * -(1 << 31));
+      OPS_CHECK(quantized_multiplier <= -(1 << 31));
+      if (quantized_multiplier == -(1 << 31)) {
+        quantized_multiplier /= 2;
+        ++left_shift;
+      }
+      OPS_CHECK(left_shift >= 0);
+      OPS_CHECK(quantized_multiplier <= nn_ops.INT32_MAX);
+      return [quantized_multiplier, left_shift];
+    }
+
+    function CalculateInputRadius(input_integer_bits, input_left_shift) {
+      let max_input_rescaled = 1.0 * ((1 << input_integer_bits) - 1) *
+                                        (1 << (31 - input_integer_bits)) /
+                                        (1 << input_left_shift);
+      // Tighten bound using floor.  Suppose that we could use the exact value.
+      // After scaling the difference, the result would be at the maximum.  Thus we
+      // must ensure that our value has lower magnitude.
+      return Math.floor(max_input_rescaled);
+    }
+
+    function frexp (arg) {
+      // http://locutus.io/c/math/frexp/index.html
+      arg = Number(arg);
+      const result = [arg, 0];
+      if (arg !== 0 && Number.isFinite(arg)) {
+        const absArg = Math.abs(arg)
+        // Math.log2 was introduced in ES2015, use it when available
+        const log2 = Math.log2 || function log2 (n) { return Math.log(n) * Math.LOG2E }
+        let exp = Math.max(-1023, Math.floor(log2(absArg)) + 1)
+        let x = absArg * Math.pow(2, -exp)
+    
+        // These while loops compensate for rounding errors that sometimes occur because of ECMAScript's Math.log2's undefined precision
+        // and also works around the issue of Math.pow(2, -exp) === Infinity when exp <= -1024
+        while (x < 0.5) {
+          x *= 2
+          exp--
+        }
+        while (x >= 1) {
+          x *= 0.5
+          exp++
+        }
+    
+        if (arg < 0) {
+          x = -x
+        }
+        result[0] = x
+        result[1] = exp
+      }
+      return result
     }
 
     function sameShape(input1, input2) {
@@ -159,8 +285,22 @@ export default class PreparedModel {
         let activation = operands[inputs[2]].value[0];
         let out = operands[outputs[0]];
 
-        let float_activation_min = calculateActivationRangeFloat(activation).activation_min;
-        let float_activation_max = calculateActivationRangeFloat(activation).activation_max;
+        let input1_multiplier = 0, input2_multiplier = 0, output_multiplier = 0;
+        let input1_shift = 0, input2_shift = 0, output_shift = 0;
+        let left_shift = 20;
+        if (out.type === OperandCode.TENSOR_QUANT8_ASYMM) {
+          let twice_max_input_scale = 2 * Math.max(in1.scale, in2.scale);
+          let real_input1_multiplier = in1.scale / twice_max_input_scale;
+          let real_input2_multiplier = in2.scale / twice_max_input_scale;
+          let real_output_multiplier = twice_max_input_scale / ((1 << left_shift) * out.scale);
+
+          [input1_multiplier, input1_shift] = QuantizeMultiplierSmallerThanOne(real_input1_multiplier);
+          [input2_multiplier, input2_shift] = QuantizeMultiplierSmallerThanOne(real_input2_multiplier);
+          [output_multiplier, output_shift] = QuantizeMultiplierSmallerThanOne(real_output_multiplier);
+        }
+
+        let [float_activation_min, float_activation_max,
+             quantized_activation_min, quantized_activation_max] = calculateActivationRange(activation, out);
 
         // Error check
         OPS_CHECK(in1.type === in2.type);
@@ -169,7 +309,19 @@ export default class PreparedModel {
         // init arithmeticParams
         let arithmeticParams = {
           float_activation_min: float_activation_min,
-          float_activation_max: float_activation_max
+          float_activation_max: float_activation_max,
+          input1_offset: -in1.zeroPoint || 0,
+          input2_offset: -in2.zeroPoint || 0,
+          output_offset: out.zeroPoint || 0,
+          output_multiplier: output_multiplier,
+          output_shift: -output_shift,
+          left_shift: left_shift,
+          input1_multiplier: input1_multiplier,
+          input1_shift: -input1_shift,
+          input2_multiplier: input2_multiplier,
+          input2_shift: -input2_shift,
+          quantized_activation_min: quantized_activation_min,
+          quantized_activation_max: quantized_activation_max
         }
         
         let needBroadCast = !sameShape(in1, in2);
@@ -179,10 +331,17 @@ export default class PreparedModel {
                                      in2.runtimeshape, in2.value,
                                      out.runtimeshape, out.value);
         } else {
-          nn_ops.addFloat32(arithmeticParams,
+          if (out.type === OperandCode.TENSOR_FLOAT32) {
+            nn_ops.addFloat32(arithmeticParams,
+                              in1.runtimeshape, in1.value,
+                              in2.runtimeshape, in2.value,
+                              out.runtimeshape, out.value);
+          } else if (out.type === OperandCode.TENSOR_QUANT8_ASYMM) {
+            nn_ops.addUint8(arithmeticParams,
                             in1.runtimeshape, in1.value,
                             in2.runtimeshape, in2.value,
                             out.runtimeshape, out.value);
+          }
         }
       } break;
       case OperationCode.MUL: {
@@ -192,8 +351,15 @@ export default class PreparedModel {
         let activation = operands[inputs[2]].value[0];
         let out = operands[outputs[0]];
 
-        let float_activation_min = calculateActivationRangeFloat(activation).activation_min;
-        let float_activation_max = calculateActivationRangeFloat(activation).activation_max;
+        let output_multiplier = 0, output_shift = 0;
+        if (out.type === OperandCode.TENSOR_QUANT8_ASYMM) {
+          let input_product_scale = in1.scale * in2.scale;
+          let real_multiplier = input_product_scale / out.scale;
+          [output_multiplier, output_shift] = QuantizeMultiplierSmallerThanOne(real_multiplier);
+        }
+
+        let [float_activation_min, float_activation_max,
+             quantized_activation_min, quantized_activation_max] = calculateActivationRange(activation, out);
 
         // Error check
         OPS_CHECK(in1.type === in2.type);
@@ -202,7 +368,19 @@ export default class PreparedModel {
         // init arithmeticParams
         let arithmeticParams = {
           float_activation_min: float_activation_min,
-          float_activation_max: float_activation_max
+          float_activation_max: float_activation_max,
+          input1_offset: -in1.zeroPoint || 0,
+          input2_offset: -in2.zeroPoint || 0,
+          output_offset: out.zeroPoint || 0,
+          output_multiplier: output_multiplier,
+          output_shift: -output_shift,
+          left_shift: 0,
+          input1_multiplier: 0,
+          input1_shift: 0,
+          input2_multiplier: 0,
+          input2_shift: 0,
+          quantized_activation_min: quantized_activation_min,
+          quantized_activation_max: quantized_activation_max
         }
 
         let needBroadCast = !sameShape(in1, in2);
@@ -273,14 +451,24 @@ export default class PreparedModel {
         }
         let output = operands[outputs[0]];
 
-        // init im2col operand
         let outBatch = output.runtimeshape.Dims(0);
         let outHeight = output.runtimeshape.Dims(1);
         let outWidth = output.runtimeshape.Dims(2);
         let inDepth = input.runtimeshape.Dims(3);
+
+        let output_multiplier = 0, output_shift = 0;
+        let typedArray = Float32Array;
+        if (output.type === OperandCode.TENSOR_QUANT8_ASYMM) {
+          let real_multiplier = GetQuantizedConvolutionMultipler(input.scale, filter.scale, 
+                                                                 bias.scale, output.scale);
+          [output_multiplier, output_shift] = QuantizeMultiplierSmallerThanOne(real_multiplier);
+          typedArray = Uint8Array;
+        }
+
+        // init im2col operand
         let im2colDepth = filterWidth * filterHeight * inDepth;
         let im2colDims = [outBatch, outHeight, outWidth, im2colDepth];
-        let im2colValue = new Float32Array(product(im2colDims));
+        let im2colValue = new typedArray(product(im2colDims));
         let operand = {
           type: OperandCode.TENSOR_FLOAT32,
           dimensions: im2colDims,
@@ -291,8 +479,8 @@ export default class PreparedModel {
         let im2colShape = this._allocateRuntimeShape(operand);
         let im2colData = this._allocateTensor(operand);
 
-        let float_activation_min = calculateActivationRangeFloat(activation).activation_min;
-        let float_activation_max = calculateActivationRangeFloat(activation).activation_max;
+        let [float_activation_min, float_activation_max,
+             quantized_activation_min, quantized_activation_max] = calculateActivationRange(activation, output);
 
         // Error check
         OPS_CHECK(input.type === filter.type);
@@ -322,15 +510,31 @@ export default class PreparedModel {
           dilation_width_factor: dilationWidth,
           dilation_height_factor: dilationHeight,
           float_activation_min: float_activation_min,
-          float_activation_max: float_activation_max
+          float_activation_max: float_activation_max,
+          input_offset: -input.zeroPoint || 0,
+          weights_offset: -filter.zeroPoint || 0,
+          output_offset: output.zeroPoint || 0,
+          output_multiplier: output_multiplier,
+          output_shift: -output_shift,
+          quantized_activation_min: quantized_activation_min,
+          quantized_activation_max: quantized_activation_max
         }
 
-        nn_ops.convFloat32(convParams, 
+        if (output.type === OperandCode.TENSOR_FLOAT32) {
+          nn_ops.convFloat32(convParams, 
+                             input.runtimeshape, input.value, 
+                             filter.runtimeshape, filter.value, 
+                             bias.runtimeshape, bias.value, 
+                             output.runtimeshape, output.value,
+                             im2colShape, im2colData);
+        } else if (output.type === OperandCode.TENSOR_QUANT8_ASYMM) {
+          nn_ops.convUint8(convParams, 
                            input.runtimeshape, input.value, 
                            filter.runtimeshape, filter.value, 
                            bias.runtimeshape, bias.value, 
                            output.runtimeshape, output.value,
                            im2colShape, im2colData);
+        }
         im2colShape.delete();
         nn_ops._free(im2colData);
       } break;
@@ -393,8 +597,14 @@ export default class PreparedModel {
         }
         let output = operands[outputs[0]];
 
-        let float_activation_min = calculateActivationRangeFloat(activation).activation_min;
-        let float_activation_max = calculateActivationRangeFloat(activation).activation_max;
+        let output_multiplier = 0, output_shift = 0;
+        if (output.type === OperandCode.TENSOR_QUANT8_ASYMM) {
+          let real_multiplier = GetQuantizedConvolutionMultipler(input.scale, filter.scale, 
+                                                                 bias.scale, output.scale);
+          [output_multiplier, output_shift] = QuantizeMultiplierSmallerThanOne(real_multiplier);
+        }
+        let [float_activation_min, float_activation_max,
+             quantized_activation_min, quantized_activation_max] = calculateActivationRange(activation, output);
 
         // Error check
         OPS_CHECK(input.type === filter.type);
@@ -424,13 +634,28 @@ export default class PreparedModel {
           dilation_height_factor: dilationHeight,
           float_activation_min: float_activation_min,
           float_activation_max: float_activation_max,
-          depth_multiplier: depthMultipler
+          depth_multiplier: depthMultipler,
+          input_offset: -input.zeroPoint || 0,
+          weights_offset: -filter.zeroPoint || 0,
+          output_offset: output.zeroPoint || 0,
+          output_multiplier: output_multiplier,
+          output_shift: -output_shift,
+          quantized_activation_min: quantized_activation_min,
+          quantized_activation_max: quantized_activation_max
         }
-        nn_ops.depthwiseConvFloat32(depthwiseParams, 
+        if (output.type === OperandCode.TENSOR_FLOAT32) {
+          nn_ops.depthwiseConvFloat32(depthwiseParams, 
+                                      input.runtimeshape, input.value, 
+                                      filter.runtimeshape, filter.value, 
+                                      bias.runtimeshape, bias.value, 
+                                      output.runtimeshape, output.value);
+        } else if (output.type === OperandCode.TENSOR_QUANT8_ASYMM) {
+          nn_ops.depthwiseConvUint8(depthwiseParams, 
                                     input.runtimeshape, input.value, 
                                     filter.runtimeshape, filter.value, 
                                     bias.runtimeshape, bias.value, 
                                     output.runtimeshape, output.value);
+        }
       } break;
       case OperationCode.AVERAGE_POOL_2D:
       case OperationCode.MAX_POOL_2D: {
@@ -473,8 +698,8 @@ export default class PreparedModel {
         }
         let output = operands[outputs[0]];
 
-        let float_activation_min = calculateActivationRangeFloat(activation).activation_min;
-        let float_activation_max = calculateActivationRangeFloat(activation).activation_max;
+        let [float_activation_min, float_activation_max,
+             quantized_activation_min, quantized_activation_max] = calculateActivationRange(activation, output);
 
         // Error check
         OPS_CHECK(input.runtimeshape.DimensionsCount() === 4);
@@ -492,13 +717,21 @@ export default class PreparedModel {
           filter_width: filterWidth,
           filter_height: filterHeight,
           float_activation_min: float_activation_min,
-          float_activation_max: float_activation_max
+          float_activation_max: float_activation_max,
+          quantized_activation_min: quantized_activation_min,
+          quantized_activation_max: quantized_activation_max
         }
 
         if (op === OperationCode.AVERAGE_POOL_2D) {
-          nn_ops.averagePoolFloat32(poolParams, 
+          if (output.type === OperandCode.TENSOR_FLOAT32) {
+            nn_ops.averagePoolFloat32(poolParams, 
+                                      input.runtimeshape, input.value,
+                                      output.runtimeshape, output.value);
+          } else if (output.type === OperandCode.TENSOR_QUANT8_ASYMM) {
+            nn_ops.averagePoolUint8(poolParams, 
                                     input.runtimeshape, input.value,
                                     output.runtimeshape, output.value);
+          }
         } else if (op === OperationCode.MAX_POOL_2D) {
           nn_ops.maxPoolFloat32(poolParams, 
                                 input.runtimeshape, input.value,
@@ -514,17 +747,37 @@ export default class PreparedModel {
         }
         let output = operands[outputs[0]];
 
+        let inputMultiplier = 0, inputLeftShift = 0, diffMin = 0;
+        if (output.type === OperandCode.TENSOR_QUANT8_ASYMM) {
+          if (output.zeroPoint != 0 || output.scale != 1 / 256) {
+            console.error("incorrect scale / offset for output");
+          }
+          let kScaledDiffIntegerBits = 5;
+          let input_beta_real_multiplier =
+                  Math.min(1.0 * beta * input.scale * (1 << (31 - kScaledDiffIntegerBits)), -(1 << 31) - 1.0);
+          [inputMultiplier, inputLeftShift] = QuantizeMultiplierGreaterThanOne(input_beta_real_multiplier);
+          diffMin = -CalculateInputRadius(kScaledDiffIntegerBits, inputLeftShift);
+        }
+
         // Error check
         OPS_CHECK(input.runtimeshape.DimensionsCount() <= 4);
 
         // init softmaxParams
         let softmaxParams = {
-          beta: beta
+          beta: beta,
+          input_multiplier: inputMultiplier,
+          input_left_shift: inputLeftShift,
+          diff_min: diffMin
         }
-
-        nn_ops.softmaxFloat32(softmaxParams, 
+        if (output.type === OperandCode.TENSOR_FLOAT32) {
+          nn_ops.softmaxFloat32(softmaxParams, 
+                                input.runtimeshape, input.value, 
+                                output.runtimeshape, output.value);
+        } else if (output.type === OperandCode.TENSOR_QUANT8_ASYMM) {
+          nn_ops.softmaxUint8(softmaxParams, 
                               input.runtimeshape, input.value, 
                               output.runtimeshape, output.value);
+        }
       } break;
       case OperationCode.RESHAPE: {
         allParametersPresent(2, 1);
@@ -547,8 +800,13 @@ export default class PreparedModel {
         let numOutputElements = product(outputDims);
         OPS_CHECK(numInputElements === numOutputElements);
 
-        nn_ops.reshapeFloat32(input.runtimeshape, input.value,  
+        if (output.type === OperandCode.TENSOR_FLOAT32) {
+          nn_ops.reshapeFloat32(input.runtimeshape, input.value,  
+                                output.runtimeshape, output.value);
+        } else if (output.type === OperandCode.TENSOR_QUANT8_ASYMM) {
+          nn_ops.reshapeUint8(input.runtimeshape, input.value, 
                               output.runtimeshape, output.value);
+        }
       } break;
       case OperationCode.CONCATENATION: {
         if (outputs.length < 1 || inputs.length < 2) {
@@ -604,8 +862,8 @@ export default class PreparedModel {
         let activation = operands[inputs[3]].value[0];
         let output = operands[outputs[0]];
 
-        let float_activation_min = calculateActivationRangeFloat(activation).activation_min;
-        let float_activation_max = calculateActivationRangeFloat(activation).activation_max;
+        let [float_activation_min, float_activation_max,
+             quantized_activation_min, quantized_activation_max] = calculateActivationRange(activation, output);
 
         // Error check
         OPS_CHECK(weights.runtimeshape.DimensionsCount() === 2);
