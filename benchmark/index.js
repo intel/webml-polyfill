@@ -810,12 +810,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let eagerModeElement = document.getElementById('eagerMode');
   eagerModeElement.addEventListener('change', (e) => {
     eager = e.target.checked;
-    document.querySelectorAll('input[name=supportedOp]').forEach((x) => {
-      x.checked = true;
-      x.disabled = e.target.checked;
-    });
   }, false);
-
 
   let preferSelectElement = document.getElementById('preferSelect');
   preferSelectElement.addEventListener('change', () => {
@@ -845,7 +840,7 @@ document.addEventListener('DOMContentLoaded', () => {
   for (let configuration of configurations) {
     let option = document.createElement('option');
     option.value = JSON.stringify(configuration);
-    option.textContent = `${configuration.framework} (${configuration.backend} ${configuration.framework.indexOf('WebML') < 0 ? 'Hybrid ' : ''}backend)`;
+    option.textContent = `${configuration.framework} (${configuration.backend} backend)`;
     if (['Android', 'Windows', 'Linux'].indexOf(currentOS) !== -1) {
       for (var i=0; i<preferSelectElement.options.length; i++) {
         let preferOp = preferSelectElement.options[i];

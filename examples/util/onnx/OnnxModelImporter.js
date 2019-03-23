@@ -8,6 +8,7 @@ class OnnxModelImporter {
     this._tensorTypes = [];
     this._operations = [];
     this._operands = [];
+    this._requiredOps = new Set();
     this._options = {
       softmax: kwargs.softmax, 
     };
@@ -213,6 +214,7 @@ class OnnxModelImporter {
   _addOperation(opCode, inputs, outputs) {
     // Cache operaion. It depends on operands that have not yet been added
     this._operations.push([opCode, inputs, outputs]);
+    this._requiredOps.add(opCode);
   }
 
   _addNewTensorOperand(name, type, value) {
@@ -876,5 +878,9 @@ class OnnxModelImporter {
       this._model.addOperation(opCode, inputs, outputs);
     }
     return i - 1;
+  }
+
+  async getRequiredOps() {
+    return this._requiredOps;
   }
 }

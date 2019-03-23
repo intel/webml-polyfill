@@ -279,9 +279,14 @@ const updateScenario = async (camera = false) => {
   }
 }
 
+const updateSupportedOps = async (backend, prefer) => {
+  supportedOps = getDefaultSupportedOps(backend, prefer);
+};
+
 const main = async (camera = false) => {
   console.log(`Backend: ${currentBackend}, Prefer: ${currentPrefer}`);
   streaming = false;
+  updateSupportedOps(currentBackend, currentPrefer);
   try { utils.deleteAll(); } catch (e) {}
   try {
     if(camera){

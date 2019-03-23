@@ -25,7 +25,6 @@ const componentToggle = () => {
   // $('#mobile-nav-toggle').slideToggle(100);
   $('footer').slideToggle();
   $('#extra span').toggle();
-  toggleOpsSelect(currentBackend, currentPrefer);
 }
 
 const disableModel = () => {
@@ -47,32 +46,6 @@ const checkedModelStyle = () => {
     $('#l-' + m_t).addClass('checked');
   }
 }
-
-const toggleOpsSelect = (backend, prefer) => {
-  if (ud === '1') {
-    // hide unconditonally if ud is set to 1
-    $('.supported-ops-select').slideUp();
-    return;
-  }
-  if (backend !== 'WebML' && prefer !== 'none') {
-    // hybrid mode
-    supportedOps = getSelectedOps();
-    $('.supported-ops-select').slideDown(300);
-  } else if (backend === 'WebML' && prefer === 'none') {
-    showError('No backend selected', 'Please select a backend to start prediction.');
-    throw new Error('No backend selected');
-  } else {
-    // solo mode
-    supportedOps = new Set();
-    $('.supported-ops-select').slideUp(300);
-  }
-};
-const getSelectedOps = () => {
-  return new Set(
-    Array.from(
-      document.querySelectorAll('input[name=supportedOp]:checked')).map(
-        x => parseInt(x.value)));
-};
 
 $(document).ready(() => {
 
@@ -111,45 +84,50 @@ $(document).ready(() => {
 
   const updateTitle = (backend, prefer, model, modeltype) => {
     model = model.replace(/_/g, ' ');
-    let currentprefertext;
-    if (prefer == 'fast') {
-      currentprefertext = 'FAST_SINGLE_ANSWER';
-    } else if (prefer == 'sustained') {
-      currentprefertext = 'SUSTAINED_SPEED';
-    } else if (prefer == 'low') {
-      currentprefertext = 'LOW_POWER';
-    } else if (prefer == 'none') {
-      currentprefertext = 'None';
+    let currentprefertext = {
+      fast: 'FAST_SINGLE_ANSWER',
+      sustained: 'SUSTAINED_SPEED',
+      low: 'LOW_POWER',
+      none: 'None',
+    }[prefer];
+
+    let backendtext = backend;
+    if (backend !== 'WebML' && prefer !== 'none') {
+      backendtext = backend + ' + WebML';
     }
-    $('#ictitle').html(`Image Classification / ${backend} / ${currentprefertext} / ${model} (${modeltype})`);
+    $('#ictitle').html(`Object Detection / ${backendtext} / ${currentprefertext} / ${model} (${modeltype})`);
   }
   updateTitle(ub, up, um, ut);
 
   $('input:radio[name=bp]').click(() => {
     $('.alert').hide();
     let polyfillId = $('input:radio[name="bp"]:checked').attr('id') || $('input:radio[name="bp"][checked="checked"]').attr('id');
-    $('.b-polyfill input').removeAttr('checked');
-    $('.b-polyfill label').removeClass('checked');
 
     if (polyfillId !== currentBackend) {
+      $('.b-polyfill input').removeAttr('checked');
+      $('.b-polyfill label').removeClass('checked');
       $('#' + polyfillId).attr('checked', 'checked');
       $('#l-' + polyfillId).addClass('checked');
+    } else if (currentPrefer === 'none') {
+      showAlert('Select at least one backend');
+      return;
     } else {
+      $('.b-polyfill input').removeAttr('checked');
+      $('.b-polyfill label').removeClass('checked');
       polyfillId = 'WebML';
     }
-
+  
     currentBackend = polyfillId;
     updateTitle(currentBackend, currentPrefer, `${um}`, `${ut}`);
     strsearch = `?prefer=${currentPrefer}&b=${currentBackend}&m=${um}&t=${ut}&s=${us}&d=${ud}`;
     window.history.pushState(null, null, strsearch);
 
-    toggleOpsSelect(currentBackend, currentPrefer);
-
-    if(um === 'none') {
+    if (um === 'none') {
       showError('No model selected', 'Please select a model to start prediction.');
       return;
     }
     
+    utils.backend = '';
     updateBackend(us === 'camera');
   });
 
@@ -157,12 +135,18 @@ $(document).ready(() => {
     $('.alert').hide();
 
     let webnnId = $('input:radio[name="bw"]:checked').attr('id') || $('input:radio[name="bw"][checked="checked"]').attr('id');
-    $('.b-webnn input').removeAttr('checked');
-    $('.b-webnn label').removeClass('checked');
+
     if (webnnId !== currentPrefer) {
+      $('.b-webnn input').removeAttr('checked');
+      $('.b-webnn label').removeClass('checked');
       $('#' + webnnId).attr('checked', 'checked');
       $('#l-' + webnnId).addClass('checked');
+    } else if (currentBackend === 'WebML') {
+      showAlert('Select at least one backend');
+      return;
     } else {
+      $('.b-webnn input').removeAttr('checked');
+      $('.b-webnn label').removeClass('checked');
       webnnId = 'none';
     }
 
@@ -171,13 +155,12 @@ $(document).ready(() => {
     strsearch = `?prefer=${currentPrefer}&b=${currentBackend}&m=${um}&t=${ut}&s=${us}&d=${ud}`;
     window.history.pushState(null, null, strsearch);
 
-    toggleOpsSelect(currentBackend, currentPrefer);
-
-    if(um === 'none') {
+    if (um === 'none') {
       showError('No model selected', 'Please select a model to start prediction.');
       return;
     }
 
+    utils.backend = '';
     updateBackend(us === 'camera');
   });
 
@@ -207,33 +190,8 @@ $(document).ready(() => {
     main(us === 'camera');
   });
 
-  $('.supported-ops-select label').each((_, e) => {
-    let opName = $(e).find('span').html();
-    $(e).attr('title', `select to offload the ${opName} to the WebNN`);
-  });
-
-  $('.select-supported-ops').click(() => {
-    let support = getDefaultSupportedOps(currentBackend, currentPrefer);
-    document.querySelectorAll('input[name=supportedOp]').forEach((x) => {
-      x.checked = support.has(parseInt(x.value));
-    });
-  });
-
-  $('.uncheck-supported-ops').click(() => {
-    document.querySelectorAll('input[name=supportedOp]').forEach((x) => {
-      x.checked = false;
-    });
-  });
-
-  $('.update-supported-ops').click(() => {
-    $('.alert').hide();
-    supportedOps = getSelectedOps();
-    utils.backend = '';
-    updateBackend(us === 'camera');
-  });
-
   $('#extra').click(() => {
-
+    componentToggle();
     let display;
     if (ud == '0') {
       display = '1';
@@ -242,8 +200,6 @@ $(document).ready(() => {
       display = '0';
       ud = '0';
     }
-
-    componentToggle();
 
     let strsearch;
     if (currentBackend && currentPrefer) {
@@ -267,7 +223,7 @@ $(document).ready(() => {
     strsearch = `?prefer=${up}&b=${ub}&m=${um}&t=${ut}&s=${us}&d=${ud}`;
     window.history.pushState(null, null, strsearch);
     
-    if(um === 'none') {
+    if (um === 'none') {
       showError('No model selected', 'Please select a model to start prediction.');
       return;
     }
@@ -285,7 +241,7 @@ $(document).ready(() => {
     strsearch = `?prefer=${up}&b=${ub}&m=${um}&t=${ut}&s=${us}&d=${ud}`;
     window.history.pushState(null, null, strsearch);
     
-    if(um === 'none') {
+    if (um === 'none') {
       showError('No model selected', 'Please select a model to start prediction.');
       return;
     }
@@ -344,8 +300,7 @@ $(window).load(() => {
     componentToggle();
   }
   disableModel();
-  toggleOpsSelect(currentBackend, currentPrefer);
-  if(um === 'none') {
+  if (um === 'none') {
     showError('No model selected', 'Please select a model to start prediction.');
     return;
   }

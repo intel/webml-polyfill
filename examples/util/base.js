@@ -453,8 +453,12 @@ const getOS = () => {
 }
 
 const currentOS = getOS();
+let eager = false;
+let supportedOps = new Set();
 
 const getNativeAPI = (preferString) => {
+  // if you are going to modify the backend name, please change the
+  // `backendEnums` in the `getDefaultSupportedOps` below
   const apiMapping = {
     'Android': {
       'sustained': 'NN',
@@ -476,6 +480,40 @@ const getNativeAPI = (preferString) => {
   };
   return apiMapping[currentOS][preferString];
 }
+
+const getDefaultSupportedOps = (backend, prefer) => {
+  if (prefer === 'none' && backend !== 'WebML') {
+    // if `prefer` is none, all ops should only run in polyfill
+    return new Set();
+  }
+
+  // backend enums are defined in the `getNativeAPI` above
+  const backendEnums =        { NN: 0,    MPS: 1,  BNNS: 2,  clDNN: 3, mklDNN: 4 };
+  const supportedTable =
+  { ADD:                      [ true,     true,    true,     true,     false ],
+    ATROUS_CONV_2D:           [ false,    false,   false,    true,     true  ],
+    ATROUS_DEPTHWISE_CONV_2D: [ false,    false,   false,    true,     true  ],
+    AVERAGE_POOL_2D:          [ true,     true,    true,     true,     true  ],
+    CONCATENATION:            [ true,     true,    true,     true,     true  ],
+    CONV_2D:                  [ true,     true,    true,     true,     true  ],
+    DEPTHWISE_CONV_2D:        [ true,     true,    false,    true,     true  ],
+    FULLY_CONNECTED:          [ true,     true,    true,     true,     true  ],
+    MAX_POOL_2D:              [ true,     true,    true,     true,     true  ],
+    MUL:                      [ true,     true,    true,     true,     false ],
+    RESHAPE:                  [ true,     true,    true,     true,     true  ],
+    RESIZE_BILINEAR:          [ true,     false,   true,     true,     false ],
+    SOFTMAX:                  [ true,     true,    true,     true,     true  ]};
+
+  const nn = navigator.ml.getNeuralNetworkContext();
+  const supportedOps = new Set();
+  const backendId = backendEnums[getNativeAPI(prefer)];
+  for (const opName in supportedTable) {
+    if (supportedTable[opName][backendId]) {
+      supportedOps.add(nn[opName]);
+    }
+  }
+  return supportedOps;
+};
 
 const getUrlParams = (prop) => {
   var params = {};
@@ -535,42 +573,6 @@ const getPreferCode = (backend, prefer) => {
     preferCode = nn.PREFER_FAST_SINGLE_ANSWER;
   }
   return preferCode;
-};
-
-let eager = false;
-let supportedOps = new Set();
-
-const getDefaultSupportedOps = (backend, prefer) => {
-  const nn = navigator.ml.getNeuralNetworkContext();
-  if (prefer === 'none' && backend !== 'WebML') {
-    // if `prefer` is none, all ops should only run on polyfill
-    return new Set();
-  }
-
-  const backendEnums =        { NN: 0,    MPS: 1,  BNNS: 2,  clDNN: 3, mklDNN: 4 };
-  const supportedTable =
-  { ADD:                      [ true,     true,    true,     true,     false ],
-    ATROUS_CONV_2D:           [ false,    false,   false,    true,     true  ],
-    ATROUS_DEPTHWISE_CONV_2D: [ false,    false,   false,    true,     true  ],
-    AVERAGE_POOL_2D:          [ true,     true,    true,     true,     true  ],
-    CONCATENATION:            [ true,     true,    true,     true,     true  ],
-    CONV_2D:                  [ true,     true,    true,     true,     true  ],
-    DEPTHWISE_CONV_2D:        [ true,     true,    false,    true,     true  ],
-    FULLY_CONNECTED:          [ true,     true,    true,     true,     true  ],
-    MAX_POOL_2D:              [ true,     true,    true,     true,     true  ],
-    MUL:                      [ true,     true,    true,     true,     false ],
-    RESHAPE:                  [ true,     true,    true,     true,     true  ],
-    RESIZE_BILINEAR:          [ true,     false,   true,     true,     false ],
-    SOFTMAX:                  [ true,     true,    true,     true,     true  ]};
-
-  const supportedOps = new Set();
-  const backendId = backendEnums[getNativeAPI(prefer)];
-  for (const opName in supportedTable) {
-    if (supportedTable[opName][backendId]) {
-      supportedOps.add(nn[opName]);
-    }
-  }
-  return supportedOps;
 };
 
 const getSearchParamsPrefer = () => {

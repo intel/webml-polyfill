@@ -18,6 +18,7 @@ class Utils {
     this.prefer = '';
     this.initialized = false;
     this.loaded = false;
+    this.resolveGetRequiredOps = null;
     this.outstandingRequest = null;
   }
 
@@ -95,7 +96,31 @@ class Utils {
     let elapsed = performance.now() - start;
     console.log(`warmup time: ${elapsed.toFixed(2)} ms`);
     this.initialized = true;
+
+    if (this.resolveGetRequiredOps) {
+      this.resolveGetRequiredOps(this.model.getRequiredOps());
+    }
+
     return 'SUCCESS';
+  }
+
+  async getRequiredOps() {
+    if (!this.initialized) {
+      return new Promise(resolve => this.resolveGetRequiredOps = resolve);
+    } else {
+      return this.model.getRequiredOps();
+    }
+  }
+
+  getSubgraphsSummary() {
+    if (this.model._backend !== 'WebML' &&
+        this.model &&
+        this.model._compilation &&
+        this.model._compilation._preparedModel) {
+      return this.model._compilation._preparedModel.getSubgraphsSummary();
+    } else {
+      return [];
+    }
   }
 
   async predict(imageSource) {

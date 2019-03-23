@@ -133,13 +133,17 @@ const updateScenario = async (camera = false) => {
   predictPath(camera);
 }
 
+const updateSupportedOps = async (backend, prefer) => {
+  supportedOps = getDefaultSupportedOps(backend, prefer);
+};
+
 const updateBackend = async (camera = false) => {
   streaming = false;
+  try { utils.deleteAll(); } catch (e) { }
   logConfig();
   await showProgress('Updating Backend ...');
-  // wait for JS animation
-  await new Promise(resolve => setTimeout(resolve, 300));
   try {
+    updateSupportedOps(currentBackend, currentPrefer);
     await utilsInit(currentBackend, currentPrefer);
     predictPath(camera);
   }
@@ -165,6 +169,7 @@ const main = async (camera = false) => {
   logConfig();
   await showProgress('Loading model ...');
   try {
+    updateSupportedOps(currentBackend, currentPrefer);
     let model = imageClassificationModels.filter(f => f.modelFormatName == currentModel);
     await utils.loadModel(model[0]);
     await utilsInit(currentBackend, currentPrefer);
