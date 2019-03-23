@@ -1,8 +1,8 @@
-import {OperationCode, OperandCode, PaddingCode, FuseCode, PreferenceCode} from '../Enums';
-import * as utils from '../utils';
-import { product, findKey } from '../utils';
 import * as tf from '@tensorflow/tfjs-core';
+import { FuseCode, OperandCode, OperationCode, PaddingCode, PreferenceCode } from '../Enums';
 import Graph from '../GraphUtils';
+import * as utils from '../utils';
+import { findKey } from '../utils';
 
 var executeTimes = 0;
 var skipWarmUpRuns = 1;
@@ -20,9 +20,10 @@ export default class WebGLModel {
     this._model = model;
     this._operations = [];
     this._operands = [];
-    this._nnOperands = [];
+    this._nnOperands = [];  // copies of input/output tensors of WebNN subgraph 
     this._preference = PreferenceCode.FAST_SINGLE_ANSWER;
     this._prepared = false;
+    this._subgraphs = [];
 
     if (tf.ENV.backend.floatPrecision() === 16) {
       console.warn(
@@ -33,15 +34,17 @@ export default class WebGLModel {
   /** Called in nn/Compilation.js */
   async prepareModel() {
     const model = this._model;
+    const operations = model._operations;
 
     this._preference = model._preference;
     this._supportedOps = model._supportedOps;
     this._eager = model._eager;
 
-    const graph = new Graph(model._operations.length);
-    model._operations.forEach((op, i) => {
+    const graph = new Graph(operations.length);
+    operations.forEach((op, i) => {
       graph.addNode(i, op.inputs, op.outputs);
       if (!this._supportedOps.has(op.type)) {
+        // mark unsupported ops black
         graph.setBlack(i);
       }
     });
@@ -49,21 +52,38 @@ export default class WebGLModel {
 
     const partitions = graph.partition(this._eager);
 
+    let counter = -1;
     for (const {nodes, inTensors, outTensors} of partitions) {
-      const subgraphName = `Subgraph ${typeof this.subgraphcounter === 'undefined' ? this.subgraphcounter = 0 : ++this.subgraphcounter}\t (${this._supportedOps.has(model._operations[nodes[0]].type) ? 'WebNN' : 'WebGL'}):\t{${Object.entries(nodes.map(opId => findKey(OperationCode, model._operations[opId].type)).reduce((counts, v) => {counts[v]?counts[v]++:counts[v]=1; return counts}, {})).map(n => `${n[0]} x ${n[1]}`).join(', ')}}`;
 
-      if (!this._supportedOps.has(model._operations[nodes[0]].type)) {
+      // Test if the first op in the partition (nodes[0]) is supported natively.
+      // If so, the partition will be constructed as a whole into a WebNN
+      // subgraph and offloaded to the WebNN. Otherwise, the partition will be
+      // broken into singletons and eagerly executed by WebGL.
+      const isSupportedByNN = this._supportedOps.has(operations[nodes[0]].type);
+
+      // summary of the partiton. e.g. "CONV x 5, ADD x 2, MUL x 2"
+      const summary =
+          Object.entries(
+              nodes
+                .map((opId) => findKey(OperationCode, operations[opId].type))
+                .reduce((cnt, v) => {cnt[v] ? cnt[v]++ : cnt[v]=1; return cnt;}, {}))
+            .map(n => `${n[0]} x ${n[1]}`)
+            .join(', ');
+      const backendName = isSupportedByNN ? 'WebNN' : 'WebGL';
+      const subgraphName = `Subgraph ${++counter}\t (${backendName}):\t{${summary}}`;
+      this._subgraphs.push(subgraphName);
+
+      if (!isSupportedByNN) {
 
         // run in polyfil
 
         // break a group of WebGL operaions to singletons
         for (const operationId of nodes) {
-          const operation = model._operations[operationId];
+          const operation = operations[operationId];
           operation.subgraphName = subgraphName;
           this._operations.push(operation);
 
           // allocate WebGL runtime textures
-
           for (const tensorId of [...operation.inputs, ...operation.outputs]) {
             const operand = this._model._operands[tensorId];
             if (utils.isTensor(operand.type)) {
@@ -97,15 +117,27 @@ export default class WebGLModel {
           }
         }
 
-        // build subgraph
+        // create a WebNN model
         const submodel = await this._nnNative.createModel();
+
+        // since tensorId of a subgraph should start from 0, we use it to
+        // maintain a mapping from global tensor Id to local tensor Id
         const globalIdToLocalId = {};
+
+        // counter for local tensor Id
         let operandIndex = 0;
 
         for (const operationId of nodes) {
-          const operation = model._operations[operationId];
+          const operation = operations[operationId];
+
+          // allocate input and output tensors for each operation
           for (const tensorId of [...operation.inputs, ...operation.outputs]) {
             const globalTensorId = parseInt(tensorId);
+
+            // E.g., tensor A -> Node 1 -> tensor B -> Node 2 -> tensor C
+            // At the time of Node 2, its input tensor B may have already been
+            // allocated by the time Node 1 was processed. So we check if the
+            // `globalTensorId` is already in the map.
             if (!globalIdToLocalId.hasOwnProperty(globalTensorId)) {
               const localTensorId = operandIndex++;
               globalIdToLocalId[globalTensorId] = localTensorId;
@@ -123,11 +155,13 @@ export default class WebGLModel {
             }
           }
 
+          // add the operation to the submodel 
           const operationInputs = operation.inputs.map(i => globalIdToLocalId[i]);
           const operationOutputs = operation.outputs.map(i => globalIdToLocalId[i]);
           submodel.addOperation(operation.type, operationInputs, operationOutputs);
         }
 
+        // indentify the input and output tensors of the submodel 
         const submodelInputs = inTensors.map(i => globalIdToLocalId[i]);
         const submodelOutputs = outTensors.map(i => globalIdToLocalId[i]);
         submodel.identifyInputsAndOutputs(submodelInputs, submodelOutputs);
@@ -138,6 +172,8 @@ export default class WebGLModel {
         await compilation.finish();
 
         const execution = await compilation.createExecution();
+
+        // set output tensor buffers at compile time
         outTensors.forEach((tensorId, i) => {
           execution.setOutput(i, this._nnOperands[tensorId]);
         });
@@ -146,8 +182,8 @@ export default class WebGLModel {
           type: OperationCode.WEBNN_SUBGRAPH,
           inputs: inTensors,
           outputs: outTensors,
-          model: submodel,          // keep a ref to avoid GC
-          compilation: compilation, // keep a ref to avoid GC
+          model: submodel,          // avoid GC   intel/webml-polyfill#669
+          compilation: compilation, // avoid GC   intel/webml-polyfill#669
           execution: execution,
           subgraphName: subgraphName,
         });
@@ -198,12 +234,18 @@ export default class WebGLModel {
     for (const [i, operation] of this._operations.entries()) {
 
       if (operation.type === OperationCode.WEBNN_SUBGRAPH) {
+        // As calls to the `_executeGlOperation` are asynchronous, we are unable
+        // to profiling each Gl op. However, several consecutive Gl ops and
+        // WebNN subgraph must be interleaved, so we can record the elapsed time
+        // of a sequence of Gl ops before executing WebNN subgraph op, which
+        // means sync time between CPU and GPU is counted into Gl ops.
         let end = performance.now();
         profiling[i - 1] += end - start;
         start = end;
 
         await this._executeNNOperation(operation);
 
+        // record the WebNN's execution time
         end = performance.now();
         profiling[i] += end - start;
         start = end;
@@ -238,6 +280,7 @@ export default class WebGLModel {
     const nnOperands = this._nnOperands;
     const glOperands = this._operands;
 
+    // workaround for intel/webml-polyfill#674
     inputs.forEach((tensorId, i) => {
       const buffer = nnOperands[tensorId];
       execution.setInput(i, buffer);
@@ -669,6 +712,10 @@ export default class WebGLModel {
     return tf.getBackend() === 'webgl';
   }
 
+  getSubgraphsSummary() {
+    return this._subgraphs;
+  }
+
   dumpProfilingResults() {
     if (executeTimes === 0) {
       console.debug(`Report will be available after at least ${skipWarmUpRuns + 1} executions.`);
@@ -686,7 +733,7 @@ export default class WebGLModel {
       if (!avgTime) {
         continue;
       }
-      console.debug(`${avgTime.toFixed(5)} ms\t- ${op.subgraphName}`);
+      console.debug(`${avgTime.toFixed(5).slice(0, 8)} ms\t- ${op.subgraphName}`);
       if (op.subgraphName.indexOf('WebGL') > 0) {
         webglTime += avgTime;
       } else {

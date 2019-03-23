@@ -17,6 +17,7 @@ export default class PreparedModel {
     this._prepared = false;
     this._nn_ops = null;
     this._model;
+    this._subgraphs = [];
     this._preference = PreferenceCode.FAST_SINGLE_ANSWER;
     this._toDelete = {
       tensorValue: [],
@@ -31,16 +32,18 @@ export default class PreparedModel {
    */
   async prepare(model) {
     this._model = model;
+    const operations = model._operations;
     this._nn_ops = await getNNOpsInstance();
 
     this._preference = model._preference;
     this._supportedOps = model._supportedOps;
     this._eager = model._eager;
 
-    const graph = new Graph(model._operations.length);
-    model._operations.forEach((op, i) => {
+    const graph = new Graph(operations.length);
+    operations.forEach((op, i) => {
       graph.addNode(i, op.inputs, op.outputs);
       if (!this._supportedOps.has(op.type)) {
+        // mark unsupported ops black
         graph.setBlack(i);
       }
     });
@@ -65,17 +68,35 @@ export default class PreparedModel {
       this._operands.push(runtimeOperand);
     }
 
+    let counter = -1;
     for (const {nodes, inTensors, outTensors} of partitions) {
-      const subgraphName = `Subgraph ${typeof this.subgraphcounter === 'undefined' ? this.subgraphcounter = 0 : ++this.subgraphcounter}\t (${this._supportedOps.has(model._operations[nodes[0]].type) ? 'WebNN' : 'WASM'}):\t{${Object.entries(nodes.map(opId => findKey(OperationCode, model._operations[opId].type)).reduce((counts, v) => {counts[v]?counts[v]++:counts[v]=1; return counts}, {})).map(n => `${n[0]} x ${n[1]}`).join(', ')}}`;
 
-      if (!this._supportedOps.has(model._operations[nodes[0]].type)) {
+      // Test if the first op in the partition (nodes[0]) is supported natively.
+      // If so, the partition will be constructed as a whole into a WebNN
+      // subgraph and offloaded to the WebNN. Otherwise, the partition will be
+      // broken into singletons and eagerly executed by WebGL.
+      const isSupportedByNN = this._supportedOps.has(operations[nodes[0]].type);
+
+      // summary of the partiton. e.g. "CONV x 5, ADD x 2, MUL x 2"
+      const summary =
+          Object.entries(
+              nodes
+                .map((opId) => findKey(OperationCode, operations[opId].type))
+                .reduce((cnt, v) => {cnt[v] ? cnt[v]++ : cnt[v]=1; return cnt;}, {}))
+            .map(n => `${n[0]} x ${n[1]}`)
+            .join(', ');
+      const backendName = isSupportedByNN ? 'WebNN' : 'WASM';
+      const subgraphName = `Subgraph ${++counter}\t (${backendName}):\t{${summary}}`;
+      this._subgraphs.push(subgraphName);
+
+      if (!isSupportedByNN) {
 
         // run in polyfil
 
         // break a group of WASM operations to singletons
         for (const operationId of nodes) {
           const operation = model._operations[operationId];
-          operation.subgraphName = `Subgraph ${this.subgraphcounter}\t (WASM):\t{${Object.keys(OperationCode).find(k => OperationCode[k] === operation.type)}}`;
+          operation.subgraphName = `Subgraph ${counter}\t (WASM):\t{${findKey(OperationCode, operation.type)}}`;
           this._operations.push(operation);
         }
 
@@ -83,15 +104,27 @@ export default class PreparedModel {
 
         // run in WebNN
 
-        // build subgraph
+        // create a WebNN model
         const submodel = await this._nnNative.createModel();
+
+        // since tensorId of a subgraph should start from 0, we use it to
+        // maintain a mapping from global tensor Id to local tensor Id
         const globalIdToLocalId = {};
+
+        // counter for local tensor Id
         let operandIndex = 0;
 
         for (const operationId of nodes) {
           const operation = model._operations[operationId];
+
+          // allocate input and output tensors for each operation
           for (const tensorId of [...operation.inputs, ...operation.outputs]) {
             const globalTensorId = parseInt(tensorId);
+
+            // E.g., tensor A -> Node 1 -> tensor B -> Node 2 -> tensor C
+            // At the time of Node 2, its input tensor B may have already been
+            // allocated by the time Node 1 was processed. So we check if the
+            // `globalTensorId` is already in the map.
             if (!globalIdToLocalId.hasOwnProperty(globalTensorId)) {
               const localTensorId = operandIndex++;
               globalIdToLocalId[globalTensorId] = localTensorId;
@@ -109,11 +142,13 @@ export default class PreparedModel {
             }
           }
 
+          // add the operation to the submodel 
           const operationInputs = operation.inputs.map(i => globalIdToLocalId[i]);
           const operationOutputs = operation.outputs.map(i => globalIdToLocalId[i]);
           submodel.addOperation(operation.type, operationInputs, operationOutputs);
         }
 
+        // indentify the input and output tensors of the submodel 
         const submodelInputs = inTensors.map(i => globalIdToLocalId[i]);
         const submodelOutputs = outTensors.map(i => globalIdToLocalId[i]);
         submodel.identifyInputsAndOutputs(submodelInputs, submodelOutputs);
@@ -124,6 +159,8 @@ export default class PreparedModel {
         await compilation.finish();
 
         const execution = await compilation.createExecution();
+
+        // set input and output tensor buffers at compile time
         inTensors.forEach((tensorId, i) => {
           const operand = this._operands[tensorId];
           const length = product(operand.dimensions);
@@ -137,12 +174,13 @@ export default class PreparedModel {
           execution.setOutput(i, view);
         });
 
+        // push the WEBNN_SUBGRAPH pseudo op to the operations list
         this._operations.push({
           type: OperationCode.WEBNN_SUBGRAPH,
           inputs: inTensors,
           outputs: outTensors,
-          model: submodel,          // keep a ref to avoid GC
-          compilation: compilation, // keep a ref to avoid GC
+          model: submodel,          // avoid GC   intel/webml-polyfill#669
+          compilation: compilation, // avoid GC   intel/webml-polyfill#669
           execution: execution,
           subgraphName: subgraphName,
         });
@@ -274,6 +312,7 @@ export default class PreparedModel {
       case OperationCode.WEBNN_SUBGRAPH: {
         const execution = operation.execution;
 
+        // workaround for intel/webml-polyfill#674
         inputs.forEach((tensorId, i) => {
           const operand = this._operands[tensorId];
           const length = product(operand.dimensions);
@@ -303,7 +342,7 @@ export default class PreparedModel {
           float_activation_min: float_activation_min,
           float_activation_max: float_activation_max
         }
-        
+
         let needBroadCast = !sameShape(in1, in2);
         if (needBroadCast) {
           nn_ops.broadCastAddFloat32(arithmeticParams,
@@ -791,7 +830,7 @@ export default class PreparedModel {
         // Error check
         OPS_CHECK(input.runtimeshape.DimensionsCount() <= 4);
         OPS_CHECK(output.runtimeshape.DimensionsCount() <= 4);
-        
+
         nn_ops.resizeBilinearFloat32(resizeBilinearParams, 
                                      input.runtimeshape, input.value, 
                                      outSizeShape, outSizeData,   
@@ -899,6 +938,10 @@ export default class PreparedModel {
     this._model._operands = [];
   }
 
+  getSubgraphsSummary() {
+    return this._subgraphs;
+  }
+
   dumpProfilingResults() {
     if (executeTimes === 0) {
       console.debug(`Report will be available after at least ${skipWarmUpRuns + 1} executions.`);
@@ -914,7 +957,7 @@ export default class PreparedModel {
 
     for (const [i, op] of this._operations.entries()) {
       const avgTime = profiling[i] / executeTimes;
-      console.debug(`${avgTime.toFixed(5)} ms\t- ${op.subgraphName}`);
+      console.debug(`${avgTime.toFixed(5).slice(0, 8)} ms\t- ${op.subgraphName}`);
       if (op.subgraphName.indexOf('WASM') > 0) {
         wasmTime += avgTime;
       } else {
