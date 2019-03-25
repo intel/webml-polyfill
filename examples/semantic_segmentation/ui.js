@@ -14,21 +14,24 @@ const setFullScreenIconPosition = (modelname) => {
   $('#semanticsegmentation #fullscreen i svg').addClass('p513');
 }
 
+let ssmodel = () => {
+  return um.replace('mobilenet', '').replace('v2', '').replace(/_/g, ' ');
+}
+
 $(document).ready(() => {
 
   if (hasUrlParam('m') && hasUrlParam('t')) {
     setFullScreenIconPosition(um);
   }
 
-  let ssmodel = um.replace('mobilenet', '').replace('v2', '').replace(/_/g, ' ');
-  updateTitle('Semantic Segmentation', ub, up, ssmodel, ut);
+  updateTitle('Semantic Segmentation', ub, up, ssmodel(), ut);
 
   $('input:radio[name=bp]').click(() => {
-    updateTitle('Semantic Segmentation', currentBackend, currentPrefer, ssmodel, `${ut}`);
+    updateTitle('Semantic Segmentation', currentBackend, currentPrefer, ssmodel(), `${ut}`);
   });
 
   $('input:radio[name=bw]').click(() => {
-    updateTitle('Semantic Segmentation', currentBackend, currentPrefer, ssmodel, `${ut}`);
+    updateTitle('Semantic Segmentation', currentBackend, currentPrefer, ssmodel(), `${ut}`);
   });
 
   $('input:radio[name=m]').click(() => {
@@ -36,7 +39,7 @@ $(document).ready(() => {
     if(rid) {
       setFullScreenIconPosition(rid);
     }
-    updateTitle('Semantic Segmentation', currentBackend, currentPrefer, ssmodel, `${ut}`);
+    updateTitle('Semantic Segmentation', currentBackend, currentPrefer, ssmodel(), `${ut}`);
   });
  
 });
