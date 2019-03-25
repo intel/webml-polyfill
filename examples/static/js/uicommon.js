@@ -27,7 +27,7 @@ const toggleFullScreen = () => {
   let requestFullScreen = docEl.requestFullscreen || docEl.mozRequestFullScreen || docEl.webkitRequestFullScreen || docEl.msRequestFullscreen;
   let cancelFullScreen = doc.exitFullscreen || doc.mozCancelFullScreen || doc.webkitExitFullscreen || doc.msExitFullscreen;
 
-  if(!doc.fullscreenElement && !doc.mozFullScreenElement && !doc.webkitFullscreenElement && !doc.msFullscreenElement) {
+  if (!doc.fullscreenElement && !doc.mozFullScreenElement && !doc.webkitFullscreenElement && !doc.msFullscreenElement) {
     requestFullScreen.call(docEl);
   }
   else {
@@ -45,7 +45,7 @@ const updateTitle = (name, backend, prefer, model, modeltype) => {
   }[prefer];
 
   let backendtext = backend;
-  if(backendtext == 'WebML') {
+  if (backendtext == 'WebML') {
     backendtext = 'WebNN';
   }
   if (backend !== 'WebML' && prefer !== 'none') {
@@ -145,7 +145,7 @@ let skeletonDetectionPath = location.pathname.toLocaleLowerCase().indexOf('skele
 
 
 if (!location.search) {
-  if(skeletonDetectionPath > -1) {
+  if (skeletonDetectionPath > -1) {
     strsearch = `?prefer=none&b=none&s=image&d=0`;
     currentBackend = 'none';
     let path = location.href;
@@ -221,7 +221,7 @@ $(document).ready(() => {
 });
 
 
-if(skeletonDetectionPath <= -1) {
+if (skeletonDetectionPath <= -1) {
   $(document).ready(() => {
 
     $('input:radio[name=bp]').click(() => {
@@ -250,7 +250,7 @@ if(skeletonDetectionPath <= -1) {
         showError('No model selected', 'Please select a model to start prediction.');
         return;
       }
-      
+
       utils.backend = '';
       updateBackend(us === 'camera');
     });
@@ -290,7 +290,7 @@ if(skeletonDetectionPath <= -1) {
     $('input:radio[name=m]').click(() => {
       $('.alert').hide();
       let rid = $('input:radio[name="m"]:checked').attr('id');
-      if(rid) {
+      if (rid) {
         if (rid.indexOf('_onnx') > -1) {
           um = rid.replace('_onnx', '');
           ut = 'onnx';
@@ -366,7 +366,7 @@ $(document).ready(() => {
   });
 });
 
-if(skeletonDetectionPath <= -1) {
+if (skeletonDetectionPath <= -1) {
   $(document).ready(() => {
     $('#img').click(() => {
       us = 'image';
@@ -393,36 +393,36 @@ if(skeletonDetectionPath <= -1) {
 }
 
 const showProgress = async (text) => {
-$('#progressmodel').show();
-await $('#progressstep').html(text);
-$('.shoulddisplay').hide();
-$('.icdisplay').hide();
-$('#resulterror').hide();
+  $('#progressmodel').show();
+  await $('#progressstep').html(text);
+  $('.shoulddisplay').hide();
+  $('.icdisplay').hide();
+  $('#resulterror').hide();
 }
 
 const showResults = () => {
-$('#progressmodel').hide();
-$('.icdisplay').fadeIn();
-$('.shoulddisplay').fadeIn();
-$('#resulterror').hide();
+  $('#progressmodel').hide();
+  $('.icdisplay').fadeIn();
+  $('.shoulddisplay').fadeIn();
+  $('#resulterror').hide();
 }
 
 const showError = (title, description) => {
-$('#progressmodel').hide();
-$('.icdisplay').hide();
-$('.shoulddisplay').hide();
-$('#resulterror').fadeIn();
-if (title && description) {
-  $('.errortitle').html(title);
-  $('.errordescription').html(description);
-} else {
-  $('.errortitle').html('Prediction Failed');
-  $('.errordescription').html('Please check error log for more details');
-}
+  $('#progressmodel').hide();
+  $('.icdisplay').hide();
+  $('.shoulddisplay').hide();
+  $('#resulterror').fadeIn();
+  if (title && description) {
+    $('.errortitle').html(title);
+    $('.errordescription').html(description);
+  } else {
+    $('.errortitle').html('Prediction Failed');
+    $('.errordescription').html('Please check error log for more details');
+  }
 }
 
 const updateLoading = (loadedSize, totalSize, percentComplete) => {
-$('.loading-page .counter h1').html(`${loadedSize}/${totalSize}MB ${percentComplete}%`);
+  $('.loading-page .counter h1').html(`${loadedSize}/${totalSize}MB ${percentComplete}%`);
 }
 
 $(window).load(() => {
