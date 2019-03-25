@@ -127,7 +127,7 @@ const predictAndDraw = async (source, camera = false) => {
   inferenceTime.innerHTML = `inference time: <span class='ir'>${inferTime.toFixed(2)} ms</span>`;
   renderer.drawOutputs(result.segMap)
   renderer.highlightHoverLabel(hoverPos);
-  showResults();
+  showResultsSS();
 }
 
 const predictPath = (camera) => {
