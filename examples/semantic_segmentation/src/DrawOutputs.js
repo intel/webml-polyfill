@@ -13,7 +13,8 @@ class Renderer {
 
     this._segMap = null;
     this._predictions = null;
-    this._clippedSize = [224, 224];
+    this._fixedSize = 513;
+    this._clippedSize = [this._fixedSize, this._fixedSize];
     this._imageSource = null;
 
     // UI state
@@ -606,6 +607,7 @@ class Renderer {
     if (this._clippedSize[0] !== clippedSize[0] ||
       this._clippedSize[1] !== clippedSize[1]) {
       this._clippedSize = clippedSize;
+      this._zoom = this._fixedSize / this._clippedSize[0];
 
       // all FRAMEBUFFERs should be reconfigured when clippedSize changes 
       this.setup();
@@ -713,12 +715,24 @@ class Renderer {
   }
 
   _showLegends(labelMap) {
-    $('.labels-wrapper').empty();
+    let shownLabelId = new Set();
+
+    $('.seg-label').each((i, e) => {
+      let id = $(e).attr('data-label-id');
+      if (!labelMap.hasOwnProperty(id)) {
+        $(e).remove();
+      } else {
+        shownLabelId.add(id);
+      }
+    });
+
     for (let id in labelMap) {
-      let labelDiv = $(`<div class="col-12 seg-label" data-label-id="${id}"/>`)
-        .append($(`<span style="color:rgb(${labelMap[id][1]})">⬤</span>`))
-        .append(`${labelMap[id][0]}`);
-      $('.labels-wrapper').append(labelDiv);
+      if (!shownLabelId.has(id)) {
+        let labelDiv = $(`<div class="col-12 seg-label" data-label-id="${id}"/>`)
+          .append($(`<span style="color:rgb(${labelMap[id][1]})">⬤</span>`))
+          .append(`${labelMap[id][0]}`);
+        $('.labels-wrapper').append(labelDiv);
+      }
     }
   }
 
@@ -734,15 +748,7 @@ class Renderer {
     }
 
     let outputW = this._clippedSize[0];
-    let actualZoom = this._zoom;
-    const MAX_DISP_WIDTH = 513;
-    const MAX_DISP_HEIGHT = 513;
-
-    if (this._clippedSize[0] * this._zoom > MAX_DISP_WIDTH) {
-      actualZoom = MAX_DISP_WIDTH / this._clippedSize[0];
-    } else if (this._clippedSize[1] * this._zoom > MAX_DISP_HEIGHT) {
-      actualZoom = MAX_DISP_HEIGHT / this._clippedSize[1];
-    }
+    let actualZoom = canvasvideo.clientWidth / this._clippedSize[0];
 
     let x = Math.floor(hoverPos.x / actualZoom);
     let y = Math.floor(hoverPos.y / actualZoom);
