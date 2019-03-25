@@ -7,6 +7,7 @@ class TFliteModelImporter {
     this._tensorIds = [];
     this._operands = [];
     this._operandIndex = 0;
+    this._requiredOps = new Set();
     this._options = {
       softmax: kwargs.softmax,
     };
@@ -23,8 +24,11 @@ class TFliteModelImporter {
   }
 
   async createCompiledModel() {
-    let options = {};
-    options.backend = this._backend;
+    let options = {
+      backend: this._backend,
+      eager: eager || false,
+      supportedOps: supportedOps,
+    };
     this._model = await this._nn.createModel(options);
 
     this._addTensorOperands();
@@ -131,6 +135,11 @@ class TFliteModelImporter {
       type: this._nn.TENSOR_FLOAT32,
       dimensions: dims
     }, new Float32Array(tensor));
+  }
+
+  _addOperation(opType, inputs, outputs) {
+    this._requiredOps.add(opType);
+    this._model.addOperation(opType, inputs, outputs);
   }
 
   async * layerIterator(inputTensors, layerList) {
@@ -363,7 +372,7 @@ class TFliteModelImporter {
 
       if (i === operatorsLength - 1) { 
         if (this._options.softmax && opCode != tflite.BuiltinOperator.SOFTMAX) {
-          this._model.addOperation(opType, inputs, outputs);
+          this._addOperation(opType, inputs, outputs);
           let outputTensor = graph.tensors(outputs[0]);
           // Add inputs
           inputs = [];
@@ -381,8 +390,12 @@ class TFliteModelImporter {
         }
       }
 
-      this._model.addOperation(opType, inputs, outputs);
+      this._addOperation(opType, inputs, outputs);
     }
     return i - 1;
+  }
+
+  getRequiredOps() {
+    return this._requiredOps;
   }
 }

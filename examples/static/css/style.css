@@ -2,7 +2,6 @@ body {
   color: #333 !important;
   font-family: Helvetica, Arial, sans-serif;
 }
-
 .b_bg,
 .b {
   -webkit-font-smoothing: antialiased;
@@ -1006,6 +1005,7 @@ footer {
 
 .g:hover {
   border: 1px solid rgba(255, 111, 97, 0.2);
+  margin: -1px;
 }
 
 .g span {
@@ -1813,6 +1813,8 @@ button.xclose {
   background: transparent;
   height: 0px;
   width: 0px !important;
+  opacity: 1;
+  position: initial;
 }
 
 #posenet ul li .c input[type=checkbox]:hover, #posenet ul li .c input[type=checkbox]:active {

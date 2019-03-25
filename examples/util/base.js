@@ -266,7 +266,7 @@ const objectDetectionModels = [{
   intro: 'SSDLite MobileNet V2 is an upgraded version of SSD MobileNet V2. Compared with SSD Mobilenet V2, SSDLite Mobilenet V2 is much faster, and almost has no loss of the accuracy.',
   paperUrl: 'https://arxiv.org/abs/1801.04381'
 }, {
-  modelName: 'Tiny Yolo v2 COCO(TFlite)',
+  modelName: 'Tiny Yolo v2 COCO (TFLite)',
   modelFormatName: 'tiny_yolov2_coco_tflite',
   modelSize: '44.9MB',
   modelFile: '../object_detection/model/tiny_yolov2_coco.tflite',
@@ -283,7 +283,7 @@ const objectDetectionModels = [{
   intro: 'Tiny YOLO is based off of the Darknet reference network and is much faster but less accurate than the normal YOLO model. And this model is trained by COCO dataset.',
   paperUrl: 'https://arxiv.org/abs/1612.08242'
 }, {
-  modelName: 'Tiny Yolo v2 VOC(TFlite)',
+  modelName: 'Tiny Yolo v2 VOC (TFLite)',
   modelFormatName: 'tiny_yolov2_voc_tflite',
   modelSize: '63.4MB',
   modelFile: '../object_detection/model/tiny_yolov2_voc.tflite',
@@ -323,6 +323,10 @@ const semanticSegmentationModels = [{
     labelsFile: '../semantic_segmentation/model/labels.txt',
     inputSize: [224, 224, 3],
     outputSize: [224, 224, 21],
+    preOptions: {
+      mean: [127.5, 127.5, 127.5],
+      std: [127.5, 127.5, 127.5],
+    },
     intro: 'DeepLab is a state-of-art deep learning model for semantic image segmentation, where the goal is to assign semantic labels (e.g., person, dog, cat and so on) to every pixel in the input image.',
     paperUrl: 'https://arxiv.org/abs/1802.02611'
   }, {
@@ -333,6 +337,10 @@ const semanticSegmentationModels = [{
     labelsFile: '../semantic_segmentation/model/labels.txt',
     inputSize: [224, 224, 3],
     outputSize: [224, 224, 21],
+    preOptions: {
+      mean: [127.5, 127.5, 127.5],
+      std: [127.5, 127.5, 127.5],
+    },
     intro: 'Equivalent to the model above (without dilated suffix) but only available on platforms that natively support atrous convolution.',
     paperUrl: 'https://arxiv.org/abs/1802.02611'
   }, {
@@ -343,6 +351,10 @@ const semanticSegmentationModels = [{
     labelsFile: '../semantic_segmentation/model/labels.txt',
     inputSize: [257, 257, 3],
     outputSize: [257, 257, 21],
+    preOptions: {
+      mean: [127.5, 127.5, 127.5],
+      std: [127.5, 127.5, 127.5],
+    },
     intro: 'DeepLab is a state-of-art deep learning model for semantic image segmentation, where the goal is to assign semantic labels (e.g., person, dog, cat and so on) to every pixel in the input image.',
     paperUrl: 'https://arxiv.org/abs/1802.02611'
   }, {
@@ -353,6 +365,10 @@ const semanticSegmentationModels = [{
     labelsFile: '../semantic_segmentation/model/labels.txt',
     inputSize: [257, 257, 3],
     outputSize: [257, 257, 21],
+    preOptions: {
+      mean: [127.5, 127.5, 127.5],
+      std: [127.5, 127.5, 127.5],
+    },
     intro: 'Equivalent to the model above (without dilated suffix) but only available on platforms that natively support atrous convolution.',
     paperUrl: 'https://arxiv.org/abs/1802.02611'
   }, {
@@ -363,6 +379,10 @@ const semanticSegmentationModels = [{
     labelsFile: '../semantic_segmentation/model/labels.txt',
     inputSize: [321, 321, 3],
     outputSize: [321, 321, 21],
+    preOptions: {
+      mean: [127.5, 127.5, 127.5],
+      std: [127.5, 127.5, 127.5],
+    },
     intro: 'DeepLab is a state-of-art deep learning model for semantic image segmentation, where the goal is to assign semantic labels (e.g., person, dog, cat and so on) to every pixel in the input image.',
     paperUrl: 'https://arxiv.org/abs/1802.02611'
   }, {
@@ -373,6 +393,10 @@ const semanticSegmentationModels = [{
     labelsFile: '../semantic_segmentation/model/labels.txt',
     inputSize: [321, 321, 3],
     outputSize: [321, 321, 21],
+    preOptions: {
+      mean: [127.5, 127.5, 127.5],
+      std: [127.5, 127.5, 127.5],
+    },
     intro: 'Equivalent to the model above (without dilated suffix) but only available on platforms that natively support atrous convolution.',
     paperUrl: 'https://arxiv.org/abs/1802.02611'
   }, {
@@ -383,6 +407,10 @@ const semanticSegmentationModels = [{
     labelsFile: '../semantic_segmentation/model/labels.txt',
     inputSize: [513, 513, 3],
     outputSize: [513, 513, 21],
+    preOptions: {
+      mean: [127.5, 127.5, 127.5],
+      std: [127.5, 127.5, 127.5],
+    },
     intro: 'DeepLab is a state-of-art deep learning model for semantic image segmentation, where the goal is to assign semantic labels (e.g., person, dog, cat and so on) to every pixel in the input image.',
     paperUrl: 'https://arxiv.org/abs/1802.02611'
   }, {
@@ -393,6 +421,10 @@ const semanticSegmentationModels = [{
     labelsFile: '../semantic_segmentation/model/labels.txt',
     inputSize: [513, 513, 3],
     outputSize: [513, 513, 21],
+    preOptions: {
+      mean: [127.5, 127.5, 127.5],
+      std: [127.5, 127.5, 127.5],
+    },
     intro: 'Equivalent to the model above (without dilated suffix) but only available on platforms that natively support atrous convolution.',
     paperUrl: 'https://arxiv.org/abs/1802.02611'
 }];
@@ -480,8 +512,12 @@ const getOS = () => {
 }
 
 const currentOS = getOS();
+let eager = false;
+let supportedOps = new Set();
 
 const getNativeAPI = (preferString) => {
+  // if you are going to modify the backend name, please change the
+  // `backendEnums` in the `getDefaultSupportedOps` below
   const apiMapping = {
     'Android': {
       'sustained': 'NN',
@@ -503,6 +539,40 @@ const getNativeAPI = (preferString) => {
   };
   return apiMapping[currentOS][preferString];
 }
+
+const getDefaultSupportedOps = (backend, prefer) => {
+  if (prefer === 'none' && backend !== 'WebML') {
+    // if `prefer` is none, all ops should only run in polyfill
+    return new Set();
+  }
+
+  // backend enums are defined in the `getNativeAPI` above
+  const backendEnums =        { NN: 0,    MPS: 1,  BNNS: 2,  clDNN: 3, mklDNN: 4 };
+  const supportedTable =
+  { ADD:                      [ true,     true,    true,     true,     false ],
+    ATROUS_CONV_2D:           [ false,    false,   false,    true,     true  ],
+    ATROUS_DEPTHWISE_CONV_2D: [ false,    false,   false,    true,     true  ],
+    AVERAGE_POOL_2D:          [ true,     true,    true,     true,     true  ],
+    CONCATENATION:            [ true,     true,    true,     true,     true  ],
+    CONV_2D:                  [ true,     true,    true,     true,     true  ],
+    DEPTHWISE_CONV_2D:        [ true,     true,    false,    true,     true  ],
+    FULLY_CONNECTED:          [ true,     true,    true,     true,     true  ],
+    MAX_POOL_2D:              [ true,     true,    true,     true,     true  ],
+    MUL:                      [ true,     true,    true,     true,     false ],
+    RESHAPE:                  [ true,     true,    true,     true,     true  ],
+    RESIZE_BILINEAR:          [ true,     false,   true,     true,     false ],
+    SOFTMAX:                  [ true,     true,    true,     true,     true  ]};
+
+  const nn = navigator.ml.getNeuralNetworkContext();
+  const supportedOps = new Set();
+  const backendId = backendEnums[getNativeAPI(prefer)];
+  for (const opName in supportedTable) {
+    if (supportedTable[opName][backendId]) {
+      supportedOps.add(nn[opName]);
+    }
+  }
+  return supportedOps;
+};
 
 const getUrlParams = (prop) => {
   var params = {};
@@ -552,21 +622,17 @@ const getPrefer = (backend) => {
 const getPreferCode = (backend, prefer) => {
   let preferCode;
   let nn = navigator.ml.getNeuralNetworkContext();
-  if (backend === 'WASM') {
-    preferCode = nn.PREFER_FAST_SINGLE_ANSWER;
-  } else if (backend === 'WebGL') {
+  if (prefer === 'sustained') {
     preferCode = nn.PREFER_SUSTAINED_SPEED;
-  } else if (backend === 'WebML') {
-    if (prefer === 'sustained') {
-      preferCode = nn.PREFER_SUSTAINED_SPEED;
-    } else if (prefer === 'fast') {
-      preferCode = nn.PREFER_FAST_SINGLE_ANSWER;
-    } else if (prefer === 'low') {
-      preferCode = nn.PREFER_LOW_POWER;
-    }
+  } else if (prefer === 'fast') {
+    preferCode = nn.PREFER_FAST_SINGLE_ANSWER;
+  } else if (prefer === 'low') {
+    preferCode = nn.PREFER_LOW_POWER;
+  } else {
+    preferCode = nn.PREFER_FAST_SINGLE_ANSWER;
   }
   return preferCode;
-}
+};
 
 const getSearchParamsPrefer = () => {
   let searchParams = new URLSearchParams(location.search);

@@ -162,7 +162,7 @@ function drawBoxes(image, canvas, object_boxes, labels) {
   ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
 
   // drawBox
-  let colors = ['purple', 'orange', 'green', 'yellowgreen', 'red', 'blue'];
+  let colors = ['#17a2b8', '#ffc107', '#00b067', '#704e99', '#ff3860', '#009bea'];
   object_boxes.forEach(box => {
     let label = labels[box[0]];
     let xmin = box[1] * canvas.width;

@@ -26,11 +26,11 @@ export default class Execution {
    */
   setInput(index, buffer) {
     let model = this._model;
-    if (index > model._inputs.length) {
+    if (index >= model._inputs.length) {
       throw new Error(`Invalid index ${index}`);
     }
     let inputIndex = model._inputs[index];
-    if (inputIndex > model._operands.length) {
+    if (inputIndex >= model._operands.length) {
       throw new Error(`Invalid input index ${inputIndex}`);
     }
     let operand = model._operands[inputIndex];
@@ -56,11 +56,11 @@ export default class Execution {
    */
   setOutput(index, buffer) {
     let model = this._model;
-    if (index > model._outputs.length) {
+    if (index >= model._outputs.length) {
       throw new Error(`Invalid index ${index}`);
     }
     let outputIndex = model._outputs[index];
-    if (outputIndex > model._operands.length) {
+    if (outputIndex >= model._operands.length) {
       throw new Error(`Invalid output index ${outputIndex}`);
     }
     let operand = model._operands[outputIndex];

@@ -41,7 +41,7 @@ let streaming = false;
 let stats = new Stats();
 let track;
 
-const util = new Utils();
+const utils = new Utils();
 const canvassingle = document.getElementById('canvas');
 const ctxSingle = canvassingle.getContext('2d');
 const canvasmulti = document.getElementById('canvasmulti');
@@ -107,19 +107,19 @@ useAtrousConv.onFinishChange((useAtrousConv) => {
 
 scoreThreshold.onChange((scoreThreshold) => {
   guiState.scoreThreshold = parseFloat(scoreThreshold);
-  util._minScore = guiState.scoreThreshold;
+  utils._minScore = guiState.scoreThreshold;
   (currentTab === 'camera') ? poseDetectionFrame() : drawResult(false, false);
 });
 
 nmsRadius.onChange((nmsRadius) => {
   guiState.multiPoseDetection.nmsRadius = parseInt(nmsRadius);
-  util._nmsRadius = guiState.multiPoseDetection.nmsRadius;
+  utils._nmsRadius = guiState.multiPoseDetection.nmsRadius;
   (currentTab === 'camera') ? poseDetectionFrame() : drawResult(false, true);
 });
 
 maxDetections.onChange((maxDetections) => {
   guiState.multiPoseDetection.maxDetections = parseInt(maxDetections);
-  util._maxDetection = guiState.multiPoseDetection.maxDetections;
+  utils._maxDetection = guiState.multiPoseDetection.maxDetections;
   (currentTab === 'camera') ? poseDetectionFrame() : drawResult(false, true);
 });
 
@@ -179,18 +179,18 @@ const drawResult = async (predict = true, decode = true) => {
 
     await loadImage(imageUrl, canvassingle);
     let image = await loadImage(imageUrl, canvasmulti);
-    drawImage(image, scaleImage, util.scaleWidth, util.scaleHeight);
+    drawImage(image, scaleImage, utils.scaleWidth, utils.scaleHeight);
     let predictTime = 0, decodeTime = 0;
     if (predict) {
-      await util.predict(scaleImage, 'single');
+      await utils.predict(scaleImage, 'single');
       const start = performance.now();
-      await util.predict(scaleImage, 'multi');
+      await utils.predict(scaleImage, 'multi');
       predictTime = performance.now() - start;
     }
     if (decode) {
-      singlePose = util.decodePose('single');
+      singlePose = utils.decodePose('single');
       const start = performance.now();
-      multiPoses = util.decodePose('multi');
+      multiPoses = utils.decodePose('multi');
       decodeTime = performance.now() - start;
     }
     if (predict && decode) {
@@ -198,8 +198,8 @@ const drawResult = async (predict = true, decode = true) => {
       const inferenceTimeElement = document.getElementById('inferenceTime');
       inferenceTimeElement.innerHTML = `inference: <span class='ir'>${elapsed.toFixed(2)} ms</span> predicting: <span class='ir'>${predictTime.toFixed(2)} ms</span> decoding: <span class='ir'>${decodeTime.toFixed(2)} ms</span>`;
     }
-    util.drawPoses(canvassingle, singlePose);
-    util.drawPoses(canvasmulti, multiPoses);
+    utils.drawPoses(canvassingle, singlePose);
+    utils.drawPoses(canvasmulti, multiPoses);
     showResults();
   }
   catch (e) {
@@ -232,10 +232,10 @@ const predict = async (video) => {
   stats.begin();
   const start = performance.now();
   let type = guiState.algorithm == 'multi-pose' ? 'multi' : 'single';
-  drawVideo(video, scaleCanvas, util.scaleWidth, util.scaleHeight);
-  await util.predict(scaleCanvas, type);
+  drawVideo(video, scaleCanvas, utils.scaleWidth, utils.scaleHeight);
+  await utils.predict(scaleCanvas, type);
   drawVideo(video, canvas, video.videoWidth, video.videoHeight);
-  util.drawPoses(canvas, util.decodePose(type));
+  utils.drawPoses(canvas, utils.decodePose(type));
   const elapsed = performance.now() - start;
   const inferenceTimeElement = document.getElementById('inferenceTime');
   inferenceTimeElement.innerHTML = `inference: <span class='ir'>${elapsed.toFixed(2)} ms</span>`;
@@ -253,7 +253,7 @@ const drawVideo = (video, canvas, w, h) => {
 
 const poseDetectionFrame = async () => {
   if (streaming) {
-    if (util.initialized) {
+    if (utils.initialized) {
       await predict(video);
     }
     setTimeout(poseDetectionFrame, 0);
@@ -261,21 +261,44 @@ const poseDetectionFrame = async () => {
   showResults();
 }
 
+const updateScenario = async (camera = false) => {
+  console.log(`Backend: ${currentBackend}, Prefer: ${currentPrefer}`);
+  streaming = false;
+  try {
+    if(camera){
+      await loadVideo();
+      showProgress('Inferencing ...');
+      poseDetectionFrame();
+    }
+    else {
+      showProgress('Inferencing ...');
+      drawResult();
+    }
+  } catch (e) {
+    errorHandler(e);
+  }
+}
+
+const updateSupportedOps = async (backend, prefer) => {
+  supportedOps = getDefaultSupportedOps(backend, prefer);
+};
+
 const main = async (camera = false) => {
   console.log(`Backend: ${currentBackend}, Prefer: ${currentPrefer}`);
   streaming = false;
+  updateSupportedOps(currentBackend, currentPrefer);
   try { utils.deleteAll(); } catch (e) {}
   try {
     if(camera){
       await loadVideo();
       showProgress('Loading model and initializing ...');
-      await util.init(currentBackend, currentPrefer, inputSize);
+      await utils.init(currentBackend, currentPrefer, inputSize);
       showProgress('Inferencing ...');
       poseDetectionFrame();
     }
     else {
       showProgress('Loading model and initializing...');
-      await util.init(currentBackend, currentPrefer, inputSize);
+      await utils.init(currentBackend, currentPrefer, inputSize);
       showProgress('Inferencing ...');
       drawResult();
     }

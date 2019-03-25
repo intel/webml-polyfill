@@ -63,11 +63,6 @@ $(document).ready(() => {
     $('.prefer label').removeClass('checked');
     $('#' + getUrlParam('prefer')).attr('checked', 'checked');
     $('#l-' + getUrlParam('prefer')).addClass('checked');
-
-    if (ub == 'WASM' || ub == 'WebGL') {
-      $('.ml').removeAttr('checked');
-      $('.lml').removeClass('checked');
-    }
   }
 
   $('#my-gui-container ul li select').after('<div class=\'select__arrow\'></div>');
@@ -79,42 +74,76 @@ $(document).ready(() => {
   optionCompact();
 
   const updateTitle = (backend, prefer) => {
-    let currentprefertext;
-    if (backend == 'WASM' || backend == 'WebGL') {
-      $('#ictitle').html(`Skeleton Detection / ${backend}`);
-    } else if (backend == 'WebML') {
-      if (getUrlParam('p') == 'fast') {
-        prefer = 'FAST_SINGLE_ANSWER';
-      } else if (getUrlParam('p') == 'sustained') {
-        prefer = 'SUSTAINED_SPEED';
-      } else if (getUrlParam('p') == 'low') {
-        prefer = 'LOW_POWER';
-      }
-      $('#ictitle').html(`Skeleton Detection / WebNN / ${prefer}`);
+    let currentprefertext = {
+      fast: 'FAST_SINGLE_ANSWER',
+      sustained: 'SUSTAINED_SPEED',
+      low: 'LOW_POWER',
+      none: 'None',
+    }[prefer];
+
+    let backendtext = backend;
+    if (backend !== 'WebML' && prefer !== 'none') {
+      backendtext = backend + ' + WebML';
     }
+    $('#ictitle').html(`Skeleton Detection / ${backendtext} / ${currentprefertext}`);
   }
   updateTitle(ub, up);
 
-  $('input:radio[name=b]').click(() => {
+  
+  $('input:radio[name=bp]').click(() => {
     $('.alert').hide();
-    let rid = $('input:radio[name="b"]:checked').attr('id');
-    $('.backend input').removeAttr('checked');
-    $('.backend label').removeClass('checked');
-    $('#' + rid).attr('checked', 'checked');
-    $('#l-' + rid).addClass('checked');
+    let polyfillId = $('input:radio[name="bp"]:checked').attr('id') || $('input:radio[name="bp"][checked="checked"]').attr('id');
 
-    if (rid == 'WASM' || rid == 'WebGL') {
-      $('.ml').removeAttr('checked');
-      $('.lml').removeClass('checked');
+    if (polyfillId !== currentBackend) {
+      $('.b-polyfill input').removeAttr('checked');
+      $('.b-polyfill label').removeClass('checked');
+      $('#' + polyfillId).attr('checked', 'checked');
+      $('#l-' + polyfillId).addClass('checked');
+    } else if (currentPrefer === 'none') {
+      showAlert('Select at least one backend');
+      return;
+    } else {
+      $('.b-polyfill input').removeAttr('checked');
+      $('.b-polyfill label').removeClass('checked');
+      polyfillId = 'WebML';
     }
 
-    if (rid == 'WASM' || rid == 'WebGL') {
-      currentBackend = rid;
-      currentPrefer = 'none';
-    } else if (rid == 'fast' || rid == 'sustained' || rid == 'low') {
-      currentBackend = 'WebML';
-      currentPrefer = rid;
+    currentBackend = polyfillId;
+
+    if(currentBackend === 'none' || currentBackend === '') {
+      $('#option').hide();
+    } else {
+      $('#option').show();
+      optionCompact();
     }
+
+    updateTitle(currentBackend, currentPrefer);
+    strsearch = `?prefer=${currentPrefer}&b=${currentBackend}&s=${us}&d=${ud}`;
+    window.history.pushState(null, null, strsearch);
+
+    main(us === 'camera');
+  });
+
+  $('input:radio[name=bw]').click(() => {
+    $('.alert').hide();
+
+    let webnnId = $('input:radio[name="bw"]:checked').attr('id') || $('input:radio[name="bw"][checked="checked"]').attr('id');
+
+    if (webnnId !== currentPrefer) {
+      $('.b-webnn input').removeAttr('checked');
+      $('.b-webnn label').removeClass('checked');
+      $('#' + webnnId).attr('checked', 'checked');
+      $('#l-' + webnnId).addClass('checked');
+    } else if (currentBackend === 'WebML') {
+      showAlert('Select at least one backend');
+      return;
+    } else {
+      $('.b-webnn input').removeAttr('checked');
+      $('.b-webnn label').removeClass('checked');
+      webnnId = 'none';
+    }
+
+    currentPrefer = webnnId;
 
     if(currentBackend === 'none' || currentBackend === '') {
       $('#option').hide();
@@ -168,7 +197,7 @@ $(document).ready(() => {
       return;
     }
     currentTab = 'image';
-    main(false);
+    updateScenario(false);
   });
 
   $('#cam').click(() => {
@@ -186,7 +215,7 @@ $(document).ready(() => {
       return;
     }
     currentTab = 'camera';
-    main(true);
+    updateScenario(true);
   });
 
   $('#fullscreen i svg').click(() => {

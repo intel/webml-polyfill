@@ -1,15 +1,24 @@
 import getNNOpsInstance from './NNOps'
 import { OperationCode, OperandCode, PaddingCode, PreferenceCode, FuseCode, OperandLifetime } from '../Enums'
 import * as utils from '../utils'
-import { product } from '../utils';
+import { product, findKey } from '../utils';
+import Graph from '../GraphUtils';
+
+var executeTimes = 0;
+var skipWarmUpRuns = 1;
+var profiling = [];
 
 export default class PreparedModel {
   constructor() {
+    this._nnNative = navigator.ml.getNeuralNetworkContext();
+    this._supportedOps = new Set([]);
     this._operations = [];
     this._operands = [];
     this._prepared = false;
     this._nn_ops = null;
     this._model;
+    this._subgraphs = [];
+    this._preference = PreferenceCode.FAST_SINGLE_ANSWER;
     this._toDelete = {
       tensorValue: [],
       tensorShape: []
@@ -23,12 +32,31 @@ export default class PreparedModel {
    */
   async prepare(model) {
     this._model = model;
+    const operations = model._operations;
     this._nn_ops = await getNNOpsInstance();
-    this._operations = model._operations;
+
+    this._preference = model._preference;
+    this._supportedOps = model._supportedOps;
+    this._eager = model._eager;
+
+    const graph = new Graph(operations.length);
+    operations.forEach((op, i) => {
+      graph.addNode(i, op.inputs, op.outputs);
+      if (!this._supportedOps.has(op.type)) {
+        // mark unsupported ops black
+        graph.setBlack(i);
+      }
+    });
+    graph.identifyInputOutputTensors(model._inputs, model._outputs);
+
+    const partitions = graph.partition(this._eager);
+
+    // allocate runtime operands
     for (let i = 0; i < model._operands.length; ++i) {
-      let operand = model._operands[i];
-      let runtimeOperand = {};
+      const operand = model._operands[i];
+      const runtimeOperand = {};
       runtimeOperand.type = operand.type;
+      runtimeOperand.dimensions = operand.dimensions;
       if (utils.isTensor(operand.type)) {
         runtimeOperand.value = this._allocateTensor(operand);
         runtimeOperand.runtimeshape = this._allocateRuntimeShape(operand);
@@ -39,6 +67,129 @@ export default class PreparedModel {
       }
       this._operands.push(runtimeOperand);
     }
+
+    let counter = -1;
+    for (const {nodes, inTensors, outTensors} of partitions) {
+
+      // Test if the first op in the partition (nodes[0]) is supported natively.
+      // If so, the partition will be constructed as a whole into a WebNN
+      // subgraph and offloaded to the WebNN. Otherwise, the partition will be
+      // broken into singletons and eagerly executed by WebGL.
+      const isSupportedByNN = this._supportedOps.has(operations[nodes[0]].type);
+
+      // summary of the partiton. e.g. "CONV x 5, ADD x 2, MUL x 2"
+      const summary =
+          Object.entries(
+              nodes
+                .map((opId) => findKey(OperationCode, operations[opId].type))
+                .reduce((cnt, v) => {cnt[v] ? cnt[v]++ : cnt[v]=1; return cnt;}, {}))
+            .map(n => `${n[0]} x ${n[1]}`)
+            .join(', ');
+      const backendName = isSupportedByNN ? 'WebNN' : 'WASM';
+      const subgraphName = `Subgraph ${++counter}\t (${backendName}):\t{${summary}}`;
+      this._subgraphs.push(subgraphName);
+
+      if (!isSupportedByNN) {
+
+        // run in polyfil
+
+        // break a group of WASM operations to singletons
+        for (const operationId of nodes) {
+          const operation = model._operations[operationId];
+          operation.subgraphName = `Subgraph ${counter}\t (WASM):\t{${findKey(OperationCode, operation.type)}}`;
+          this._operations.push(operation);
+        }
+
+      } else {
+
+        // run in WebNN
+
+        // create a WebNN model
+        const submodel = await this._nnNative.createModel();
+
+        // since tensorId of a subgraph should start from 0, we use it to
+        // maintain a mapping from global tensor Id to local tensor Id
+        const globalIdToLocalId = {};
+
+        // counter for local tensor Id
+        let operandIndex = 0;
+
+        for (const operationId of nodes) {
+          const operation = model._operations[operationId];
+
+          // allocate input and output tensors for each operation
+          for (const tensorId of [...operation.inputs, ...operation.outputs]) {
+            const globalTensorId = parseInt(tensorId);
+
+            // E.g., tensor A -> Node 1 -> tensor B -> Node 2 -> tensor C
+            // At the time of Node 2, its input tensor B may have already been
+            // allocated by the time Node 1 was processed. So we check if the
+            // `globalTensorId` is already in the map.
+            if (!globalIdToLocalId.hasOwnProperty(globalTensorId)) {
+              const localTensorId = operandIndex++;
+              globalIdToLocalId[globalTensorId] = localTensorId;
+              const operand = model._operands[globalTensorId];
+              const operandType = {
+                type: operand.type,
+                dimensions: operand.dimensions,
+                scale: operand.scale,
+                zeroPoint: operand.zeroPoint,
+              };
+              submodel.addOperand(operandType);
+              if (operand.value) {
+                submodel.setOperandValue(localTensorId, operand.value);
+              }
+            }
+          }
+
+          // add the operation to the submodel 
+          const operationInputs = operation.inputs.map(i => globalIdToLocalId[i]);
+          const operationOutputs = operation.outputs.map(i => globalIdToLocalId[i]);
+          submodel.addOperation(operation.type, operationInputs, operationOutputs);
+        }
+
+        // indentify the input and output tensors of the submodel 
+        const submodelInputs = inTensors.map(i => globalIdToLocalId[i]);
+        const submodelOutputs = outTensors.map(i => globalIdToLocalId[i]);
+        submodel.identifyInputsAndOutputs(submodelInputs, submodelOutputs);
+        await submodel.finish();
+
+        const compilation = await submodel.createCompilation();
+        compilation.setPreference(this._preference);
+        await compilation.finish();
+
+        const execution = await compilation.createExecution();
+
+        // set input and output tensor buffers at compile time
+        inTensors.forEach((tensorId, i) => {
+          const operand = this._operands[tensorId];
+          const length = product(operand.dimensions);
+          const view = this._getTensorDataView(operand.type, operand.value, length);
+          execution.setInput(i, view);
+        });
+        outTensors.forEach((tensorId, i) => {
+          const operand = this._operands[tensorId];
+          const length = product(operand.dimensions);
+          const view = this._getTensorDataView(operand.type, operand.value, length);
+          execution.setOutput(i, view);
+        });
+
+        // push the WEBNN_SUBGRAPH pseudo op to the operations list
+        this._operations.push({
+          type: OperationCode.WEBNN_SUBGRAPH,
+          inputs: inTensors,
+          outputs: outTensors,
+          model: submodel,          // avoid GC   intel/webml-polyfill#669
+          compilation: compilation, // avoid GC   intel/webml-polyfill#669
+          execution: execution,
+          subgraphName: subgraphName,
+        });
+      }
+
+    }
+
+    profiling = new Array(this._operations.length).fill(0);
+
     this._prepared = true;
   }
 
@@ -53,24 +204,30 @@ export default class PreparedModel {
       throw new Error('Model is not prepared');
     }
 
+    executeTimes++;
+    if (executeTimes === skipWarmUpRuns) {
+      profiling.fill(0);
+    }
+
     inputs.forEach(input => {
-      let operand = this._operands[input.index];
-      let buffer = input.buffer;
-      this._setTensorData(operand.type, operand.value, buffer);
+      const operand = this._operands[input.index];
+      this._setTensorData(operand.type, operand.value, input.buffer);
     });
 
-    this._operations.forEach(operation => {
-      this._executeOperation(operation);
-    });
+    for (const [i, operation] of this._operations.entries()) {
+      const start = performance.now();
+      await this._executeOperation(operation);
+      const end = performance.now();
+      profiling[i] += end - start;
+    }
 
-    outputs.forEach(output => {
-      let operand = this._operands[output.index];
-      let buffer = output.buffer;
-      this._getTensorData(operand.type, operand.value, buffer);
+    outputs.forEach((output) => {
+      const operand = this._operands[output.index];
+      this._getTensorData(operand.type, operand.value, output.buffer);
     });
   }
 
-  _executeOperation(operation) {
+  async _executeOperation(operation) {
     const nn_ops = this._nn_ops;
     let op = operation.type;
     let inputs = operation.inputs;
@@ -152,6 +309,20 @@ export default class PreparedModel {
     }
 
     switch(op) {
+      case OperationCode.WEBNN_SUBGRAPH: {
+        const execution = operation.execution;
+
+        // workaround for intel/webml-polyfill#674
+        inputs.forEach((tensorId, i) => {
+          const operand = this._operands[tensorId];
+          const length = product(operand.dimensions);
+          const view = this._getTensorDataView(operand.type, operand.value, length);
+          execution.setInput(i, view);
+        });
+
+        // execute subgraph
+        await operation.execution.startCompute();
+      } break;
       case OperationCode.ADD: {
         allParametersPresent(3, 1);
         let in1 = operands[inputs[0]];
@@ -171,7 +342,7 @@ export default class PreparedModel {
           float_activation_min: float_activation_min,
           float_activation_max: float_activation_max
         }
-        
+
         let needBroadCast = !sameShape(in1, in2);
         if (needBroadCast) {
           nn_ops.broadCastAddFloat32(arithmeticParams,
@@ -659,7 +830,7 @@ export default class PreparedModel {
         // Error check
         OPS_CHECK(input.runtimeshape.DimensionsCount() <= 4);
         OPS_CHECK(output.runtimeshape.DimensionsCount() <= 4);
-        
+
         nn_ops.resizeBilinearFloat32(resizeBilinearParams, 
                                      input.runtimeshape, input.value, 
                                      outSizeShape, outSizeData,   
@@ -688,9 +859,6 @@ export default class PreparedModel {
                               input2.runtimeshape, input2.value,
                               output.runtimeshape, output.value);
       } break;
-      default: {
-        throw new Error(`Operation ${op} is not supported`);
-      }
     }
   }
 
@@ -722,6 +890,22 @@ export default class PreparedModel {
     buffer.set(view);
   }
 
+  _getTensorDataView(type, ptr, length) {
+    const nn_ops = this._nn_ops;
+    let view;
+    if (type === OperandCode.TENSOR_FLOAT32) {
+      view = new Float32Array(nn_ops.HEAPF32.buffer, ptr, length);
+    } else if (type === OperandCode.TENSOR_INT32) {
+      view = new Int32Array(nn_ops.HEAP32.buffer, ptr, length);
+    } else if (type === OperandCode.TENSOR_QUANT8_ASYMM) {
+      view = new Uint8Array(nn_ops.HEAPU8.buffer, ptr, length);
+    } else {
+      throw new Error(`Operand type ${type} is not supproted`);
+    }
+    return view;
+  }
+
+
   _allocateTensor(operand) {
     const nn_ops = this._nn_ops;
     let byteLength = utils.sizeOfTensorData(operand.type, operand.dimensions);
@@ -749,5 +933,37 @@ export default class PreparedModel {
       tensorShape.delete();
     });
     this._model._operands = [];
+  }
+
+  getSubgraphsSummary() {
+    return this._subgraphs;
+  }
+
+  dumpProfilingResults() {
+    if (executeTimes === 0) {
+      console.debug(`Report will be available after at least ${skipWarmUpRuns + 1} executions.`);
+      return;
+    }
+    executeTimes -= skipWarmUpRuns;
+    let wasmTime = 0;
+    let webnnTime = 0;
+    console.debug(`Execution calls: ${executeTimes} (omitted ${skipWarmUpRuns} warm-up runs)`);
+    console.debug(`Supported Ops: ${Array.from(this._supportedOps).map(op => findKey(OperationCode, op)).join(', ') || 'None'}`);
+    console.debug(`Mode: ${this._eager ? 'Eager' : 'Graph'}`);
+    console.debug(`Note: Successive WASM ops belong to a same subgraph.`);
+
+    for (const [i, op] of this._operations.entries()) {
+      const avgTime = profiling[i] / executeTimes;
+      console.debug(`${avgTime.toFixed(5).slice(0, 8)} ms\t- ${op.subgraphName}`);
+      if (op.subgraphName.indexOf('WASM') > 0) {
+        wasmTime += avgTime;
+      } else {
+        webnnTime += avgTime;
+      }
+    }
+    console.debug(`WASM time: ${wasmTime.toFixed(5)} ms`);
+    console.debug(`WebNN time: ${webnnTime.toFixed(5)} ms`);
+    console.debug(`Sum: ${(wasmTime + webnnTime).toFixed(5)} ms`);
+    executeTimes = 0;
   }
 }

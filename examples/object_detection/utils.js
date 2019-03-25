@@ -22,6 +22,7 @@ class Utils {
     this.canvasShowElement = canvasShow;
     this.updateProgress;
     this.loaded = false;
+    this.resolveGetRequiredOps = null;
     this.initialized = false;
   }
 
@@ -96,7 +97,31 @@ class Utils {
     let elapsed = performance.now() - start;
     console.log(`warmup time: ${elapsed.toFixed(2)} ms`);
     this.initialized = true;
+
+    if (this.resolveGetRequiredOps) {
+      this.resolveGetRequiredOps(this.model.getRequiredOps());
+    }
+
     return 'SUCCESS';
+  }
+
+  async getRequiredOps() {
+    if (!this.initialized) {
+      return new Promise(resolve => this.resolveGetRequiredOps = resolve);
+    } else {
+      return this.model.getRequiredOps();
+    }
+  }
+
+  getSubgraphsSummary() {
+    if (this.model._backend !== 'WebML' &&
+        this.model &&
+        this.model._compilation &&
+        this.model._compilation._preparedModel) {
+      return this.model._compilation._preparedModel.getSubgraphsSummary();
+    } else {
+      return [];
+    }
   }
 
   async predict(imageSource) {
@@ -166,17 +191,22 @@ class Utils {
 
   async loadUrl(url, binary, progress) {
     return new Promise((resolve, reject) => {
+      if (this.outstandingRequest) {
+        this.outstandingRequest.abort();
+      }
       let request = new XMLHttpRequest();
+      this.outstandingRequest = request;
       request.open('GET', url, true);
       if (binary) {
         request.responseType = 'arraybuffer';
       }
       request.onload = function(ev) {
+        this.outstandingRequest = null;
         if (request.readyState === 4) {
           if (request.status === 200) {
-              resolve(request.response);
+            resolve(request.response);
           } else {
-              reject(new Error('Failed to load ' + url + ' status: ' + request.status));
+            reject(new Error('Failed to load ' + url + ' status: ' + request.status));
           }
         }
       };
