@@ -37,3 +37,7 @@ export function validateEnum(enumValue, enumType) {
   }
   return false;
 }
+
+export function findKey(obj, value) {
+  return Object.keys(obj).find(key => obj[key] === value);
+}

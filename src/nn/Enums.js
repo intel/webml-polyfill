@@ -103,6 +103,22 @@ export const PreferenceCode = {
 };
 
 export const OperationCode = {
+
+  /** WebNN API Delegate
+   *
+   * WEBNN_SUBGRAPH is a pseudo op that will be offladed to the WebNN API.
+   * 
+   * This op is experimental and is subject to change. It's only used for the
+   * implementation of the WebNN polyfill and should not be invoked outside.
+   *
+   * Inputs:
+   * * 0 ~ Infinity: Tensors that follow the WebNN API
+   *
+   * Outputs:
+   * * 0 ~ Infinity: Tensors that follow the WebNN API
+   */
+  WEBNN_SUBGRAPH: -1,
+
   /** Adds two tensors, element-wise.
    *
    * Takes two input tensors of identical type and compatible dimensions. The output

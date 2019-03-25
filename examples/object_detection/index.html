@@ -99,20 +99,20 @@
           <tr class='backend'>
             <th class='text-center'>Backend</th>
             <td>
-              <div class='g'>
+              <div class='g b-polyfill'>
                 <span>Polyfill</span>
-                <input type='radio' name='b' class='d-none' id='WASM' value='WASM'>
+                <input type='radio' name='bp' class='d-none' id='WASM' value='WASM'>
                 <label id='l-WASM' for='WASM' title='Compiled Tensorflow Lite C++ kernels to WebAssembly format'>WASM</label>
-                <input type='radio' name='b' class='d-none' id='WebGL' value='WebGL'>
+                <input type='radio' name='bp' class='d-none' id='WebGL' value='WebGL'>
                 <label id='l-WebGL' for='WebGL' title='Tensorflow.js WebGL kernel'>WebGL</label>
               </div>
-              <div class='g'>
+              <div class='g b-webnn'>
                 <span>WebNN</span>
-                <input type='radio' name='b' class='d-none ml' id='fast' value='fast'>
+                <input type='radio' name='bw' class='d-none' id='fast' value='fast'>
                 <label id='l-fast' for='fast' class='lml' title='Returning a single answer as fast as possible, even if this causes more power consumption.'>FAST_SINGLE_ANSWER</label>
-                <input type='radio' name='b' class='d-none ml' id='sustained' value='sustained'>
+                <input type='radio' name='bw' class='d-none' id='sustained' value='sustained'>
                 <label id='l-sustained' for='sustained' class='lml' title='Maximizing the throughput of successive frames, for example when processing successive frames coming from the camera.'>SUSTAINED_SPEED</label>
-                <input type='radio' name='b' class='d-none ml' id='low' value='low'>
+                <input type='radio' name='bw' class='d-none' id='low' value='low'>
                 <label id='l-low' for='low' class='lml' title='Executing in a way that minimizes battery drain.'>LOW_POWER</label>
               </div>
             </td>
@@ -121,7 +121,6 @@
       </table>
     </div>
   </form>
-
   <section class='ic' id='ic'>
     <div class='container' id='container'>
       <a id='extra' href='#' class='mb-1 mt-3'>

@@ -27,8 +27,11 @@ class PoseNet {
     }
   }
   async createCompiledModel() {
-    let options = {};
-    options.backend = this._backend;
+    let options = {
+      backend: this._backend,
+      eager: eager || false,
+      supportedOps: supportedOps,
+    };
     this._model = await this._nn.createModel(options);
     await this._addTensorOperands();
     await this._model.finish();

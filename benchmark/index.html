@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>WebML Benchmark</title>
+    <title>WebNN Benchmark</title>
     <link rel="stylesheet" href="../examples/third_party/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
     <style>
       body {
@@ -30,6 +30,9 @@
         font-size: 12px;
         tab-size: 2;
       }
+      input[type=checkbox] {
+        vertical-align: middle;
+      }
       .prefer-show {
         display: block;
       }
@@ -42,7 +45,7 @@
     <div class="container" id="container">
       <div class="row">
         <div class="col-12">
-          <h1>WebML Benchmark</h1>
+          <h1>WebNN Benchmark</h1>
           <div>
             <h4>Model</h4>
             <select id="modelName">
@@ -79,12 +82,13 @@
             <select id="configurations">
             </select>
           </div>
-          <div id="preferDiv" class="prefer-hidden">
+          <div id="preferDiv" class="prefer-show">
             <h4>Preference</h4>
             <select id="preferSelect">
               <option value="sustained" selected>SUSTAINED_SPEED</option>
               <option value="fast">FAST_SINGLE_ANSWER</option>
               <option value="low">LOW_POWER</option>
+              <option value="none">None</option>
             </select>
           </div>
           <div>
@@ -92,7 +96,37 @@
             1(warming up) + <input type="number" id="iteration" min="1" size="4" value="200"/>
           </div>
           <div class="row top-margin">
-            <div class="col">
+            <div class="col-4" id="supported-ops-select">
+              <label><input id="eagerMode" type="checkbox"> Eager Mode</label>
+              <br><br>
+              <button id="selectAllOps">Select All</button>
+              <button id="uncheckAllOps">Uncheck All</button>
+              <br><br>
+              <label><input type="checkbox" name="supportedOp" value="0"> ADD</label>
+              <br>
+              <label><input type="checkbox" name="supportedOp" value="10003"> ATROUS_CONV_2D</label>
+              <br>
+              <label><input type="checkbox" name="supportedOp" value="10004"> ATROUS_DEPTHWISE_CONV_2D</label>
+              <br>
+              <label><input type="checkbox" name="supportedOp" value="1"> AVERAGE_POOL_2D</label>
+              <br>
+              <label><input type="checkbox" name="supportedOp" value="2"> CONCATENATION</label>
+              <br>
+              <label><input type="checkbox" name="supportedOp" value="3"> CONV_2D</label>
+              <br>
+              <label><input type="checkbox" name="supportedOp" value="4"> DEPTHWISE_CONV_2D</label>
+              <br>
+              <label><input type="checkbox" name="supportedOp" value="9"> FULLY_CONNECTED</label>
+              <br>
+              <label><input type="checkbox" name="supportedOp" value="17"> MAX_POOL_2D</label>
+              <br>
+              <label><input type="checkbox" name="supportedOp" value="18"> MUL</label>
+              <br>
+              <label><input type="checkbox" name="supportedOp" value="22"> RESHAPE</label>
+              <br>
+              <label><input type="checkbox" name="supportedOp" value="23"> RESIZE_BILINEAR</label>
+              <br>
+              <label><input type="checkbox" name="supportedOp" value="25"> SOFTMAX</label>
             </div>
             <div class="col-8" align="center">
               <canvas id="poseCanvas"></canvas>

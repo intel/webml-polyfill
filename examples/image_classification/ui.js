@@ -74,61 +74,87 @@ $(document).ready(() => {
     $('.prefer label').removeClass('checked');
     $('#' + getUrlParam('prefer')).attr('checked', 'checked');
     $('#l-' + getUrlParam('prefer')).addClass('checked');
-
-    if (ub == 'WASM' || ub == 'WebGL') {
-      $('.ml').removeAttr('checked');
-      $('.lml').removeClass('checked');
-    }
   }
 
   const updateTitle = (backend, prefer, model, modeltype) => {
     model = model.replace(/_/g, ' ');
-    let currentprefertext;
-    if (backend == 'WASM' || backend == 'WebGL') {
-      $('#ictitle').html(`Image Classification / ${backend} / ${model} (${modeltype})`);
-    } else if (backend == 'WebML') {
-      if (getUrlParam('p') == 'fast') {
-        prefer = 'FAST_SINGLE_ANSWER';
-      } else if (getUrlParam('p') == 'sustained') {
-        prefer = 'SUSTAINED_SPEED';
-      } else if (getUrlParam('p') == 'low') {
-        prefer = 'LOW_POWER';
-      }
-      $('#ictitle').html(`Image Classification / WebNN / ${prefer} / ${model} (${modeltype})`);
+    let currentprefertext = {
+      fast: 'FAST_SINGLE_ANSWER',
+      sustained: 'SUSTAINED_SPEED',
+      low: 'LOW_POWER',
+      none: 'None',
+    }[prefer];
+
+    let backendtext = backend;
+    if (backend !== 'WebML' && prefer !== 'none') {
+      backendtext = backend + ' + WebML';
     }
+    $('#ictitle').html(`Image Classification / ${backendtext} / ${currentprefertext} / ${model} (${modeltype})`);
   }
   updateTitle(ub, up, um, ut);
 
-  $('input:radio[name=b]').click(() => {
+  $('input:radio[name=bp]').click(() => {
     $('.alert').hide();
-    let rid = $('input:radio[name="b"]:checked').attr('id');
-    $('.backend input').removeAttr('checked');
-    $('.backend label').removeClass('checked');
-    $('#' + rid).attr('checked', 'checked');
-    $('#l-' + rid).addClass('checked');
+    let polyfillId = $('input:radio[name="bp"]:checked').attr('id') || $('input:radio[name="bp"][checked="checked"]').attr('id');
 
-    if (rid == 'WASM' || rid == 'WebGL') {
-      $('.ml').removeAttr('checked');
-      $('.lml').removeClass('checked');
+    if (polyfillId !== currentBackend) {
+      $('.b-polyfill input').removeAttr('checked');
+      $('.b-polyfill label').removeClass('checked');
+      $('#' + polyfillId).attr('checked', 'checked');
+      $('#l-' + polyfillId).addClass('checked');
+    } else if (currentPrefer === 'none') {
+      showAlert('Select at least one backend');
+      return;
+    } else {
+      $('.b-polyfill input').removeAttr('checked');
+      $('.b-polyfill label').removeClass('checked');
+      polyfillId = 'WebML';
     }
 
-    if (rid == 'WASM' || rid == 'WebGL') {
-      currentBackend = rid;
-      currentPrefer = 'none';
-    } else if (rid == 'fast' || rid == 'sustained' || rid == 'low') {
-      currentBackend = 'WebML';
-      currentPrefer = rid;
-    }
-
+    currentBackend = polyfillId;
     updateTitle(currentBackend, currentPrefer, `${um}`, `${ut}`);
     strsearch = `?prefer=${currentPrefer}&b=${currentBackend}&m=${um}&t=${ut}&s=${us}&d=${ud}`;
     window.history.pushState(null, null, strsearch);
 
-    if(um === 'none') {
+    if (um === 'none') {
+      showError('No model selected', 'Please select a model to start prediction.');
+      return;
+    }
+    
+    utils.backend = '';
+    updateBackend(us === 'camera');
+  });
+
+  $('input:radio[name=bw]').click(() => {
+    $('.alert').hide();
+
+    let webnnId = $('input:radio[name="bw"]:checked').attr('id') || $('input:radio[name="bw"][checked="checked"]').attr('id');
+
+    if (webnnId !== currentPrefer) {
+      $('.b-webnn input').removeAttr('checked');
+      $('.b-webnn label').removeClass('checked');
+      $('#' + webnnId).attr('checked', 'checked');
+      $('#l-' + webnnId).addClass('checked');
+    } else if (currentBackend === 'WebML') {
+      showAlert('Select at least one backend');
+      return;
+    } else {
+      $('.b-webnn input').removeAttr('checked');
+      $('.b-webnn label').removeClass('checked');
+      webnnId = 'none';
+    }
+
+    currentPrefer = webnnId;
+    updateTitle(currentBackend, currentPrefer, `${um}`, `${ut}`);
+    strsearch = `?prefer=${currentPrefer}&b=${currentBackend}&m=${um}&t=${ut}&s=${us}&d=${ud}`;
+    window.history.pushState(null, null, strsearch);
+
+    if (um === 'none') {
       showError('No model selected', 'Please select a model to start prediction.');
       return;
     }
 
+    utils.backend = '';
     updateBackend(us === 'camera');
   });
 
@@ -191,7 +217,7 @@ $(document).ready(() => {
     strsearch = `?prefer=${up}&b=${ub}&m=${um}&t=${ut}&s=${us}&d=${ud}`;
     window.history.pushState(null, null, strsearch);
     
-    if(um === 'none') {
+    if (um === 'none') {
       showError('No model selected', 'Please select a model to start prediction.');
       return;
     }
@@ -209,7 +235,7 @@ $(document).ready(() => {
     strsearch = `?prefer=${up}&b=${ub}&m=${um}&t=${ut}&s=${us}&d=${ud}`;
     window.history.pushState(null, null, strsearch);
     
-    if(um === 'none') {
+    if (um === 'none') {
       showError('No model selected', 'Please select a model to start prediction.');
       return;
     }
@@ -268,7 +294,7 @@ $(window).load(() => {
     componentToggle();
   }
   disableModel();
-  if(um === 'none') {
+  if (um === 'none') {
     showError('No model selected', 'Please select a model to start prediction.');
     return;
   }

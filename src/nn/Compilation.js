@@ -13,7 +13,7 @@ export default class Compilation {
   constructor(model) {
     this._model = model;
     this._finished = false;
-    this._preference = PreferenceCode.fast_single_answer;
+    this._preference = PreferenceCode.FAST_SINGLE_ANSWER;
     this._device = new Device;
     this._preparedModel = null;
     this._backend = model._backend;
@@ -45,6 +45,7 @@ export default class Compilation {
       throw new Error(`Invalid preference value ${preference}`);
     }
     this._preference = preference;
+    this._model._preference = preference;
     return ResultCode.NO_ERROR;
   }
 

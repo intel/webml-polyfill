@@ -124,10 +124,17 @@ const updateScenario = async (camera = false) => {
   predictPath(camera);
 }
 
- const updateBackend = async (camera = false) => {
+const updateSupportedOps = async (backend, prefer) => {
+  supportedOps = getDefaultSupportedOps(backend, prefer);
+};
+
+const updateBackend = async (camera = false) => {
   streaming = false;
+  try { utils.deleteAll(); } catch (e) { }
   logConfig();
+  await showProgress('Updating Backend ...');
   try {
+    updateSupportedOps(currentBackend, currentPrefer);
     await utilsInit(currentBackend, currentPrefer);
     predictPath(camera);
   }
@@ -153,6 +160,7 @@ const main = async (camera = false) => {
   logConfig();
   await showProgress('Loading model ...');
   try {
+    updateSupportedOps(currentBackend, currentPrefer);
     let model = objectDetectionModels.filter(f => f.modelFormatName == currentModel);
     await utils.loadModel(model[0]);
     await utilsInit(currentBackend, currentPrefer);
