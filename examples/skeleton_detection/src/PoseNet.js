@@ -376,7 +376,7 @@ class PoseNet {
       let percentComplete = current / length *100;
       percentComplete = percentComplete.toFixed(0);
       progressBar.style = `width: ${percentComplete}%`;
-      updateLoading(loadedSize.toFixed(0), totalSize.toFixed(0), percentComplete);
+      updateLoadingSD(loadedSize.toFixed(0), totalSize.toFixed(0), percentComplete);
     }
   }
 }
