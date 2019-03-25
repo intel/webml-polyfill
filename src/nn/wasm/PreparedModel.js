@@ -1121,6 +1121,9 @@ export default class PreparedModel {
                               input2.runtimeshape, input2.value,
                               output.runtimeshape, output.value);
       } break;
+      default: {	
+        throw new Error(`Operation ${op} is not supported`);	
+      }
     }
   }
 

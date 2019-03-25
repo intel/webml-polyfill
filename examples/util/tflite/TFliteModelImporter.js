@@ -384,8 +384,17 @@ class TFliteModelImporter {
           inputs.push(this._addScalarInt32(newSize[0]));
           inputs.push(this._addScalarInt32(newSize[1]));
           inputs.push(this._addScalarInt32(options.alignCorners() ? 1 : 0));
-
           opType = this._nn.RESIZE_BILINEAR;
+        } break;
+        case tflite.BuiltinOperator.TANH: {
+          opType = this._nn.TANH;
+        } break;
+        case tflite.BuiltinOperator.BATCH_TO_SPACE_ND: {
+          inputs = [inputs[0], inputs[1]];
+          opType = this._nn.BATCH_TO_SPACE_ND;
+        } break;
+        case tflite.BuiltinOperator.TRANSPOSE: {
+          opType = this._nn.TRANSPOSE;
         } break;
         case tflite.BuiltinOperator.MAXIMUM: {
           opType = this._nn.MAXIMUM;

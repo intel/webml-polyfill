@@ -636,6 +636,9 @@ export default class WebGLModel {
         const output = operands[outputs[0]];
         output.assign(tf.maximum(input1, input2));
       } break;
+      default: {	
+        throw new Error(`Operation ${op} is not supported`);	
+      }
     }
 
     outputs.forEach(tensorId => {

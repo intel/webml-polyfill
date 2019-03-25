@@ -1,0 +1,109 @@
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>WebML Super-Resolution Demo</title>
+    <link rel="stylesheet" href="../third_party/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <style>
+      .progress-label {
+        float: left;
+        margin-right: 1em;
+        height: 1rem;
+        font-size: .75rem;
+      }
+      .top-margin {
+        margin-top:10px;
+      }
+      canvas {
+        width: 512px;
+      }
+      @media (max-width: 800px) {
+        canvas {
+          width: 300px;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark" style="width:100%">
+      <span class="navbar-brand mb-0 h1">WebML Super-Resolution Demo</span>
+      <div class="btn-group mr-1">
+        <button id="backend" type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          Setting...
+        </button>
+        <div class="dropdown-menu dropdown-menu-right">
+          <button class="dropdown-item disabled" type="button" id="wasm">WASM</button>
+          <button class="dropdown-item disabled" type="button" id="webgl">WebGL</button>
+          <button class="dropdown-item disabled" type="button" id="webml">WebML</button>
+        </div>
+    </div>
+    <div class="btn-group mr-1 prefer" style="display: none;">
+      <button id="selectPrefer" type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        Setting...
+      </button>
+      <div class="dropdown-menu dropdown-menu-right preference">
+      </div>
+  </div>
+    <div class="btn-group">
+      <button id="selectModel" type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        Setting...
+      </button>
+      <div class="dropdown-menu dropdown-menu-right available-models">
+      </div>
+    </div>
+    </nav>
+
+    <div class="container" id="container">
+
+      <div id="progressContainer">
+        <div class="row">
+          <div class="col"></div>
+          <div class="col-8" align="center">
+              <div class="progress-label">Loading Model:</div>
+              <div class="progress">
+                <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="progressBar">0%</div>
+              </div>
+          </div>
+          <div class="col"></div>
+        </div>
+      </div>
+
+      <div class="row top-margin">
+        <div class="col" align="center">
+            <h4> Low Resolution </h4>
+            <video hidden id="video" autoplay playsinline></video>
+            <canvas id="inputCanvas" width="96" height="96"></canvas>
+        </div>
+        <div class="col" align="center">
+            <h4> High Resolution </h4>
+            <canvas id="outputCanvas" width="384" height="384"></canvas>
+        </div>
+      </div>
+
+      <div class="row">
+        <div id="inferenceTime" class="col" align="center">
+        </div>
+      </div>
+    </div>
+
+    <script src="../static/lib/jquery/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+    <script src="../third_party/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="../third_party/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <script src="../third_party/stats.min.js"></script>
+    <script src="../third_party/protobuf.min.js"></script>
+    <script src="../../dist/webml-polyfill.js"></script>
+    <script src="../util/base.js"></script>
+    <script src="../util/tflite/flatbuffers/js/flatbuffers.js"></script>
+    <script src="../util/tflite/schema/schema_generated.js"></script>
+    <script src="../util/tflite/TfLiteModelUtils.js"></script>
+    <script src="../util/tflite/TFliteModelImporter.js"></script>
+    <script src="utils.js"></script>
+    <script src="main.js"></script>
+    <script>
+      window.onload = function() {
+        main('camera');
+      }
+    </script>
+  </body>
+</html>

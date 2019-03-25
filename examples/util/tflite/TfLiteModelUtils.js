@@ -87,8 +87,10 @@ function printTfLiteModel(model) {
         let options = operator.builtinOptions(new tflite.FullyConnectedOptions());
         console.log(`\t\t\t  builtin_options: {fused_activation_function: ${tflite.ActivationFunctionType[options.fusedActivationFunction()]}}}`);
       } break;
-      case 'RESIZE_BILINEAR': {
-      } break;
+      case 'RESIZE_BILINEAR':
+      case 'TANH':
+      case 'BATCH_TO_SPACE_ND':
+      case 'TRANSPOSE':
       case 'MAXIMUM': {
       } break;
       default: {
