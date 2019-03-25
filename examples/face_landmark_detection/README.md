@@ -1,6 +1,6 @@
-WebML Face Landmark Detection Example
+WebNN API Facial Landmark Detection Example
 ======
-This example loads Face Detection models trained by WIDERFace and Landmark Detection model trained by 300-W(300-VM)、LFPW、HELEN、AFW and IBUG in TensorFlow Lite format, constructs and inferences them by WebML API.
+This example loads Face Detection models(trained by WIDERFace) and Landmark Detection model (trained by 300-W(300-VM)、LFPW、HELEN、AFW and IBUG) in TensorFlow Lite format, constructs and inferences them by WebNN API.
 
 Download Model
 -----------

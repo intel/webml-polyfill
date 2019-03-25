@@ -400,7 +400,7 @@ const semanticSegmentationModels = [{
 const faceDetectionModels = [{
     modelName: 'SSD MobileNetV1(TFlite)',
     type: 'SSD',
-    modelFile: '../face_detection/model/ssd_mobilenetv1_face.tflite',
+    modelFile: '../face_landmark_detection/model/ssd_mobilenetv1_face.tflite',
     box_size: 4,
     num_classes: 2,
     num_boxes: 1083 + 600 + 150 + 54 + 24 + 6,
