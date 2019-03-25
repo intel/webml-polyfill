@@ -18,6 +18,17 @@ function almostEqual(a, b, episilon=1e-6) {
   }
 }
 
+function almostEqualRM(a, b) {
+  let delta = Math.abs(a - b);
+  // refer to https://github.com/onnx/onnx/blob/master/onnx/backend/test/case/model/__init__.py#L49
+  if (delta <= 1e-7 + 1e-3 * Math.abs(b)) {
+    return true;
+  } else {
+    console.warn(`a(${a}) b(${b}) delta(${delta})`);
+    return false;
+  }
+}
+
 function almostEqualCTS(a, b) {
   return almostEqual(a, b, episilonCTS)
 }

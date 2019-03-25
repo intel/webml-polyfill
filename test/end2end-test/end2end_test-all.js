@@ -21,7 +21,7 @@ describe('End2End Test/ONNX Models', function() {
         await model.createCompiledModel();
         await model.compute([inputData], [outputData]);
         for (let i = 0; i < expectData.length; ++i) {
-          assert.isTrue(almostEqualCTS(outputData[i], expectData[i]));
+          assert.isTrue(almostEqualRM(outputData[i], expectData[i]));
         }
       }).timeout(120000);
     }
