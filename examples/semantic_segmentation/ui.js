@@ -25,6 +25,7 @@ $(document).ready(() => {
 
   $('input:radio[name=m]').click(() => {
     updateTitle('Semantic Segmentation', currentBackend, currentPrefer, ssmodel(), `${ut}`);
+    $('.offload').hide();
   });
  
 });

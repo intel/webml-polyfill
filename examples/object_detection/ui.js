@@ -22,6 +22,7 @@ $(document).ready(() => {
 
   $('input:radio[name=m]').click(() => {
     updateTitle('Object Detection', currentBackend, currentPrefer, `${um}`, `${ut}`);
+    $('.offload').hide();
   });
  
 });
