@@ -261,14 +261,14 @@ const main = async (camera = false) => {
       showProgress('Loading model and initializing ...');
       await utils.init(currentBackend, currentPrefer, inputSize);
       showProgress('Inferencing ...');
-      // getOffloadOps(currentBackend, currentPrefer);
+      getOffloadOps(currentBackend, currentPrefer);
       poseDetectionFrame();
     }
     else {
       showProgress('Loading model and initializing...');
       await utils.init(currentBackend, currentPrefer, inputSize);
       showProgress('Inferencing ...');
-      // getOffloadOps(currentBackend, currentPrefer);
+      getOffloadOps(currentBackend, currentPrefer);
       drawResult();
     }
   } catch (e) {
