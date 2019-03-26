@@ -34,12 +34,7 @@ let customContainer = document.getElementById('my-gui-container');
 customContainer.appendChild(gui.domElement);
 guiState.scoreThreshold = 0.15;
 
-let currentBackend = getSearchParamsBackend();
-let currentPrefer = getSearchParamsPrefer();
 let currentTab = 'image';
-let streaming = false;
-let stats = new Stats();
-let track;
 
 const utils = new Utils();
 const canvassingle = document.getElementById('canvas');
@@ -48,8 +43,6 @@ const canvasmulti = document.getElementById('canvasmulti');
 const ctxMulti = canvasmulti.getContext('2d');
 const scaleImage = document.getElementById('scaleimage');
 const scaleCanvas = document.getElementById('scalevideo');
-const inputElement = document.getElementById('input');
-const progressBar = document.getElementById('progressBar');
 const video = document.getElementById('video');
 const canvas = document.getElementById('canvasvideo');
 const inputWidth = 513;
@@ -59,27 +52,6 @@ const videoWidth = 500;
 const videoHeight = 500;
 const algorithm = gui.add(guiState, 'algorithm', ['single-pose', 'multi-pose']);
 let isMultiple = guiState.algorithm;
-
-const showAlert = (error) => {
-  console.error(error);
-  let div = document.createElement('div');
-  // div.setAttribute('id', 'backendAlert');
-  div.setAttribute('class', 'backendAlert alert alert-warning alert-dismissible fade show');
-  div.setAttribute('role', 'alert');
-  div.innerHTML = `<strong>${error}</strong>`;
-  div.innerHTML += `<button type='button' class='close' data-dismiss='alert' aria-label='Close'><span aria-hidden='true'>&times;</span></button>`;
-  let container = document.getElementById('container');
-  container.insertBefore(div, container.firstElementChild);
-}
-
-const logConfig = () => {
-  console.log(`Model: 'Model', Backend: ${currentBackend}, Prefer: ${currentPrefer}`);
-}
-
-const errorHandler = (e) => {
-  showAlert(e);
-  showError(null, null);
-}
 
 inputElement.addEventListener('change', () => {
   drawResult();
@@ -279,14 +251,9 @@ const updateScenario = async (camera = false) => {
   }
 }
 
-const updateSupportedOps = async (backend, prefer) => {
-  supportedOps = getDefaultSupportedOps(backend, prefer);
-};
-
 const main = async (camera = false) => {
   console.log(`Backend: ${currentBackend}, Prefer: ${currentPrefer}`);
   streaming = false;
-  updateSupportedOps(currentBackend, currentPrefer);
   try { utils.deleteAll(); } catch (e) {}
   try {
     if(camera){
@@ -294,12 +261,14 @@ const main = async (camera = false) => {
       showProgress('Loading model and initializing ...');
       await utils.init(currentBackend, currentPrefer, inputSize);
       showProgress('Inferencing ...');
+      // getOffloadOps(currentBackend, currentPrefer);
       poseDetectionFrame();
     }
     else {
       showProgress('Loading model and initializing...');
       await utils.init(currentBackend, currentPrefer, inputSize);
       showProgress('Inferencing ...');
+      // getOffloadOps(currentBackend, currentPrefer);
       drawResult();
     }
   } catch (e) {

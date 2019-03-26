@@ -12,6 +12,7 @@ $(document).ready(() => {
 
   $('input:radio[name=m]').click(() => {
     updateTitle('Image Classification', currentBackend, currentPrefer, `${um}`, `${ut}`);
+    $('.offload').hide();
   });
 
 });

@@ -1,39 +1,5 @@
-const videoElement = document.getElementById('video');
-const imageElement = document.getElementById('image');
-const inputElement = document.getElementById('input');
 const canvasElement = document.getElementById('canvas');
 const canvasShowElement = document.getElementById('canvasshow');
-const progressBar = document.getElementById('progressBar');
-
-let currentBackend = getSearchParamsBackend();
-let currentModel = getSearchParamsModel();
-let currentPrefer = getSearchParamsPrefer();
-let streaming = false;
-let stats = new Stats();
-let track;
-
-const showAlert = (error) => {
-  console.error(error);
-  let div = document.createElement('div');
-  // div.setAttribute('id', 'backendAlert');
-  div.setAttribute('class', 'backendAlert alert alert-warning alert-dismissible fade show');
-  div.setAttribute('role', 'alert');
-  div.innerHTML = `<strong>${error}</strong>`;
-  div.innerHTML += `<button type='button' class='close' data-dismiss='alert' aria-label='Close'><span aria-hidden='true'>&times;</span></button>`;
-  let container = document.getElementById('container');
-  container.insertBefore(div, container.firstElementChild);
-}
-
-const updateProgress = (ev) => {
-  if (ev.lengthComputable) {
-    let totalSize = ev.total / (1000 * 1000);
-    let loadedSize = ev.loaded / (1000 * 1000);
-    let percentComplete = ev.loaded / ev.total * 100;    
-    percentComplete = percentComplete.toFixed(0);
-    progressBar.style = `width: ${percentComplete}%`;
-    updateLoading(loadedSize.toFixed(1), totalSize.toFixed(1), percentComplete);
-  }
-}
 
 let utils = new Utils(canvasElement, canvasShowElement);
 utils.updateProgress = updateProgress;    //register updateProgress function if progressBar element exist
@@ -46,15 +12,6 @@ const updateResult = (result) => {
   } catch(e) {
     console.log(e);
   }
-}
-
-const logConfig = () => {
-  console.log(`Model: ${currentModel}, Backend: ${currentBackend}, Prefer: ${currentPrefer}`);
-}
-
-const errorHandler = (e) => {
-  showAlert(e);
-  showError(null, null);
 }
 
 const startPredictCamera = async () => {
@@ -124,18 +81,14 @@ const updateScenario = async (camera = false) => {
   predictPath(camera);
 }
 
-const updateSupportedOps = async (backend, prefer) => {
-  supportedOps = getDefaultSupportedOps(backend, prefer);
-};
-
 const updateBackend = async (camera = false) => {
   streaming = false;
   try { utils.deleteAll(); } catch (e) { }
   logConfig();
-  await showProgress('Updating Backend ...');
+  await showProgress('Updating backend ...');
   try {
-    updateSupportedOps(currentBackend, currentPrefer);
     await utilsInit(currentBackend, currentPrefer);
+    getOffloadOps(currentBackend, currentPrefer);
     predictPath(camera);
   }
   catch (e) {
@@ -160,10 +113,10 @@ const main = async (camera = false) => {
   logConfig();
   await showProgress('Loading model ...');
   try {
-    updateSupportedOps(currentBackend, currentPrefer);
     let model = objectDetectionModels.filter(f => f.modelFormatName == currentModel);
     await utils.loadModel(model[0]);
     await utilsInit(currentBackend, currentPrefer);
+    getOffloadOps(currentBackend, currentPrefer);
   } catch (e) {
     errorHandler(e);
   }

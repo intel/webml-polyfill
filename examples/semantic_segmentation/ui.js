@@ -8,22 +8,11 @@ const buttonUI = (camera = false) => {
   }
 }
 
-const setFullScreenIconPosition = (modelname) => {
-  let svgstyle = 'p' + modelname.replace('deeplab_mobilenet_v2_', '').replace('_tflite', '').replace(/_/g, '').replace('atrous', '');
-  // $('#semanticsegmentation #fullscreen i svg').removeClass('p224').removeClass('p257').removeClass('p321').removeClass('p513').addClass(svgstyle);
-  $('#semanticsegmentation #fullscreen i svg').addClass('p513');
-}
-
 let ssmodel = () => {
   return um.replace('mobilenet', '').replace('v2', '').replace(/_/g, ' ');
 }
 
 $(document).ready(() => {
-
-  if (hasUrlParam('m') && hasUrlParam('t')) {
-    setFullScreenIconPosition(um);
-  }
-
   updateTitle('Semantic Segmentation', ub, up, ssmodel(), ut);
 
   $('input:radio[name=bp]').click(() => {
@@ -35,10 +24,6 @@ $(document).ready(() => {
   });
 
   $('input:radio[name=m]').click(() => {
-    let rid = $('input:radio[name="m"]:checked').attr('id');
-    if(rid) {
-      setFullScreenIconPosition(rid);
-    }
     updateTitle('Semantic Segmentation', currentBackend, currentPrefer, ssmodel(), `${ut}`);
   });
  

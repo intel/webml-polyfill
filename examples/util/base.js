@@ -570,6 +570,44 @@ const getDefaultSupportedOps = (backend, prefer) => {
   return supportedOps;
 };
 
+const operationTypes = {
+   // Operation types.
+   0: 'ADD',
+   1: 'AVERAGE_POOL_2D',
+   2: 'CONCATENATION',
+   3: 'CONV_2D',
+   4: 'DEPTHWISE_CONV_2D',
+   5: 'DEPTH_TO_SPACE',
+   6: 'DEQUANTIZE',
+   7: 'EMBEDDING_LOOKUP',
+   8: 'FLOOR',
+   9: 'FULLY_CONNECTED',
+   10: 'HASHTABLE_LOOKUP',
+   11: 'L2_NORMALIZATION',
+   12: 'L2_POOL_2D',
+   13: 'LOCAL_RESPONSE_NORMALIZATION',
+   14: 'LOGISTIC',
+   15: 'LSH_PROJECTION',
+   16: 'LSTM',
+   17: 'MAX_POOL_2D',
+   18: 'MUL',
+   19: 'RELU',
+   20: 'RELU1',
+   21: 'RELU6',
+   22: 'RESHAPE',
+   23: 'RESIZE_BILINEAR',
+   24: 'RNN',
+   25: 'SOFTMAX',
+   26: 'SPACE_TO_DEPTH',
+   27: 'SVDF',
+   28: 'TANH',
+   29: 'BATCH_TO_SPACE_ND',
+   37: 'TRANSPOSE',
+   65: 'MAXIMUM',
+   10003: 'ATROUS_CONV_2D',
+   10004: 'ATROUS_DEPTHWISE_CONV_2D'
+} 
+
 const getUrlParams = (prop) => {
   var params = {};
   var search = decodeURIComponent(window.location.href.slice(window.location.href.indexOf('?') + 1));

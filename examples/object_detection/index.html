@@ -117,6 +117,12 @@
               </div>
             </td>
           </tr>
+          <tr class='offload' style='display:none'>
+              <th class='text-center'>Note</th>
+              <td>
+                <div id='offloadops'>Dual backends selected, following ops were offloaded to <span id='nnbackend' class='ols'></span> from <span id='polyfillbackend' class='ols'></span>: </div> 
+              </td>
+            </tr>
         </tbody>
       </table>
     </div>
@@ -298,8 +304,9 @@
   <script src="../util/decoders/SsdDecoder.js"></script>
   <script src="../util/decoders/Yolo2Decoder.js"></script>
   <script src='utils.js'></script>
+  <script src='../static/js/main.common.js'></script>
   <script src='main.js'></script>
-  <script src='../static/js/uicommon.js'></script>
+  <script src='../static/js/ui.common.js'></script>
   <script src='ui.js'></script>
 </body>
 
