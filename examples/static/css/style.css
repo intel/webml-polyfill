@@ -1949,7 +1949,7 @@ button.xclose {
 }
 
 #semanticsegmentation #inference {
-  padding: 0 1rem;
+  margin: 0 2rem;
 }
 
 #semanticsegmentation .tab-content {
@@ -2022,6 +2022,7 @@ button.xclose {
 }
 
 #semanticsegmentation #inference.fullscreen {
+  margin: 0;
   padding: 1rem 2rem;
 }
 
@@ -2137,11 +2138,15 @@ button.xclose {
 }
 
 #semanticsegmentation #canvasvideo {
-  margin: 0 1rem;
+  width: 100%;
   max-width: 1539px;
   max-height: 1539px;
   border: 1px solid rgba(0, 0, 0, 0.1);
   box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.2), inset 0 0 1px 0 rgba(255, 255, 255, 1);
+}
+
+#semanticsegmentation #canvasvideo.fullscreen {
+  width: auto;
 }
 
 #semanticsegmentation #fullscreen {
