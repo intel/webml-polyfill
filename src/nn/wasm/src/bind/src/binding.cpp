@@ -17,23 +17,6 @@ using namespace emscripten;
 using namespace tflite;
 
 namespace binding_utils {
-  // help functions
-  val getPerm(const TransposeParams& op_params) {
-    emscripten::val js_dims = emscripten::val::array();
-    for (int i = 0; i < 4; i++) {
-      js_dims.call<void>("push", op_params.perm[i]);
-    }
-    return js_dims;
-  };
-
-   void setPerm(TransposeParams& op_params, val js_dims) {
-    std::vector<int32_t> tmp = vecFromJSArray<int32_t>(js_dims);
-    for (int i = 0; i < tmp.size(); ++i) {
-      op_params.perm[i] = tmp.at(i);
-    }
-  };
-
-
   // Operation Implements.	
   template<typename T>
   void Maximum(const RuntimeShape& input1_shape, const T* input1_data,
@@ -465,10 +448,16 @@ EMSCRIPTEN_BINDINGS(nn)
     .field("quantized_activation_max", &ArithmeticParams::quantized_activation_max)
     ;
 
-  class_<TransposeParams>("TransposeParams")
-    .constructor<>()
-    .property("perm", &binding_utils::getPerm, &binding_utils::setPerm)
-    .property("perm_count", &TransposeParams::perm_count)
+  value_object<TransposeParams>("TransposeParams")
+    .field("perm", &TransposeParams::perm)
+    .field("perm_count", &TransposeParams::perm_count)
+    ;
+  
+  value_array<std::array<int32_t, 4>>("array_int32_4")
+    .element(emscripten::index<0>())
+    .element(emscripten::index<1>())
+    .element(emscripten::index<2>())
+    .element(emscripten::index<3>())
     ;
 
   register_vector<RuntimeShape*>("VectorShape");

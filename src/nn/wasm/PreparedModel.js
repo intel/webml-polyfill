@@ -1134,7 +1134,7 @@ export default class PreparedModel {
           dimensions: [2, 2],
           numberOfConsumers: 0,
           lifetime: OperandLifetime.CONSTANT_REFERENCE,
-          value: [[0, 0], [0, 0]]
+          value: [0, 0, 0, 0]
         };
         let cropsShape = this._allocateRuntimeShape(operand);
         let cropsData = this._allocateTensor(operand);
@@ -1175,14 +1175,14 @@ export default class PreparedModel {
         OPS_CHECK(output.runtimeshape.DimensionsCount() === perm.length);
 
         // init transposeParams
-        let transposeParams = new nn_ops.TransposeParams;
-        transposeParams.perm_count = perm.length;
-        transposeParams.perm = perm;
+        let transposeParams = {
+          perm: perm,
+          perm_count: perm.length
+        }
 
         nn_ops.transposeFloat32(transposeParams, 
                                 input.runtimeshape, input.value, 
                                 output.runtimeshape, output.value);
-        transposeParams.delete();
       } break;
       default: {
         throw new Error(`Operation ${op} is not supported`);
