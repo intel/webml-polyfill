@@ -1,0 +1,115 @@
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>WebML Facial Landmark Detection Camera Demo</title>
+    <link rel="stylesheet" href="../third_party/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <style>
+      video {
+        display: none;
+        max-height: 360px;
+      }
+      #canvas, #canvas1 {
+        display: none;
+        position: absolute;
+        z-index: -3;
+      }
+      #canvasShow {
+        max-width: 100%;
+        max-height: 513px;
+      }
+      .progress-label {
+        float: left;
+        margin-right: 1em;
+        height: 1rem;
+        font-size: .75rem;
+      }
+      .top-margin {
+        margin-top:10px;
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark" style="width:100%">
+      <span class="navbar-brand mb-0 h1">WebML Facial Landmark Detection Demo</span>
+      <div class="btn-group mr-1">
+          <button id="backend" type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Setting...
+          </button>
+          <div class="dropdown-menu dropdown-menu-right">
+            <button class="dropdown-item disabled" type="button" id="wasm">WASM</button>
+            <button class="dropdown-item disabled" type="button" id="webgl">WebGL</button>
+            <button class="dropdown-item disabled" type="button" id="webml">WebML</button>
+          </div>
+      </div>
+      <div class="btn-group prefer" style="display: none;">
+        <button id="selectPrefer" type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          Setting...
+        </button>
+        <div class="dropdown-menu dropdown-menu-right preference">
+        </div>
+      </div>
+      <div class="btn-group">
+        <button id="faceDetectModel" type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          Setting...
+        </button>
+        <div class="dropdown-menu dropdown-menu-right available-detection-models">
+        </div>
+      </div>
+      <span class="navbar-brand mb-0 h1"> </span>
+      <span class="navbar-brand mb-0 h1">+</span>
+      <div class="btn-group">
+        <button id="landmarkModel" type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          Setting...
+        </button>
+        <div class="dropdown-menu dropdown-menu-right available-landmark-models">
+        </div>
+      </div>
+    </nav>
+    <div class="container" id="container">
+      <div id="progressContainer">
+        <div class="row">
+          <div class="col-lg-8 offset-lg-2" align="center">
+              <div class="progress-label" id="progressLabel">Loading Face Detection Model:</div>
+              <div class="progress">
+                <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="progressBar">0%</div>
+              </div>
+          </div>
+        </div>
+      </div>
+      <div class="row top-margin">
+        <div class="col-12" align="center">
+          <video id="video" autoplay playsinline></video>
+          <canvas id="canvasShow" width=400 height=400></canvas>
+        </div>
+      </div>
+      <div class="row">
+        <div id="inferenceTime" class="col" align="center">
+        </div>
+      </div>
+    </div>
+    <canvas id="canvas" width=300 height=300></canvas>
+    <canvas id="canvas1" width=128 height=128></canvas>
+    <script src="../static/lib/jquery/jquery.min.js"></script>
+    <script src="../third_party/popper.min.js"></script>
+    <script src="../third_party/bootstrap.min.js"></script>
+    <script src="../third_party/stats.min.js"></script>
+    <script src="../../dist/webml-polyfill.js"></script>
+    <script src="../util/base.js"></script>
+    <script src="../util/tflite/flatbuffers/js/flatbuffers.js"></script>
+    <script src="../util/tflite/schema/schema_generated.js"></script>
+    <script src="../util/tflite/TfLiteModelUtils.js"></script>
+    <script src="../util/tflite/TFliteModelImporter.js"></script>
+    <script src="../util/decoders/SsdDecoder.js"></script>
+    <script src="../util/decoders/Yolo2Decoder.js"></script>
+    <script src="../util/faceDetector.js"></script>
+    <script src="DrawOutput.js"></script>
+    <script src="utils.js"></script>
+    <script src="main.js"></script>
+    <script>
+      window.onload = function() {
+        main('camera');
+      }
+    </script>
+  </body>
+</html>
