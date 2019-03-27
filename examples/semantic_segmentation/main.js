@@ -84,7 +84,8 @@ const predictAndDraw = async (source, camera = false) => {
   inferenceTime.innerHTML = `inference time: <span class='ir'>${inferTime.toFixed(2)} ms</span>`;
   renderer.drawOutputs(result.segMap)
   renderer.highlightHoverLabel(hoverPos);
-  showResultsSS();
+  showResults();
+  buttonUI(us === 'camera');
 }
 
 const predictPath = (camera) => {
@@ -103,25 +104,14 @@ const updateBackend = async (camera = false) => {
   logConfig();
   await showProgress('Updating backend ...');
   try {
-    await utils.init(currentBackend, currentPrefer);
     getOffloadOps(currentBackend, currentPrefer);
+    await utils.init(currentBackend, currentPrefer);
     predictPath(camera);
   }
   catch (e) {
     errorHandler(e);
   }
 }
-
-inputElement.addEventListener('change', (e) => {
-  let files = e.target.files;
-  if (files.length > 0) {
-    imageElement.src = URL.createObjectURL(files[0]);
-  }
-}, false);
-
-imageElement.addEventListener('load', () => {
-  predictAndDraw(imageElement, false);
-}, false);
 
 const main = async (camera = false) => {
   if (currentModel === 'none_none') {
@@ -136,8 +126,8 @@ const main = async (camera = false) => {
   try {
     let model = semanticSegmentationModels.filter(f => f.modelFormatName == currentModel);
     await utils.loadModel(model[0]);
-    await utils.init(currentBackend, currentPrefer);
     getOffloadOps(currentBackend, currentPrefer);
+    await utils.init(currentBackend, currentPrefer);
   } catch (e) {
     errorHandler(e);
   }

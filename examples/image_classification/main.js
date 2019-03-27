@@ -96,25 +96,14 @@ const updateBackend = async (camera = false) => {
   logConfig();
   await showProgress('Updating backend ...');
   try {
-    await utilsInit(currentBackend, currentPrefer);
     getOffloadOps(currentBackend, currentPrefer);
+    await utilsInit(currentBackend, currentPrefer);
     predictPath(camera);
   }
   catch (e) {
     errorHandler(e);
   }
 }
-
-inputElement.addEventListener('change', (e) => {
-  let files = e.target.files;
-  if (files.length > 0) {
-    imageElement.src = URL.createObjectURL(files[0]);
-  }
-}, false);
-
-imageElement.addEventListener('load', () => {
-  utilsPredict(imageElement, currentBackend, currentPrefer);
-}, false);
 
 const main = async (camera = false) => {
   streaming = false;
@@ -124,8 +113,8 @@ const main = async (camera = false) => {
   try {
     let model = imageClassificationModels.filter(f => f.modelFormatName == currentModel);
     await utils.loadModel(model[0]);
-    await utilsInit(currentBackend, currentPrefer);
     getOffloadOps(currentBackend, currentPrefer);
+    await utilsInit(currentBackend, currentPrefer);
   } catch (e) {
     errorHandler(e);
   }

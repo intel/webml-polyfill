@@ -52,13 +52,14 @@ const requiredOps = async () => {
 }
 
 const getOffloadOps = async (backend, preder) => {
-  let supportedops = getSupportedOps(backend, preder);
+  // update the global variable `supportedOps` defined in the base.js
+  supportedOps = getSupportedOps(backend, preder);
   let requiredops = await requiredOps();
-  let intersection = new Set([...supportedops].filter(x => requiredops.has(x)));
-  console.log('NN supported: ' + [...supportedops]);
+  let intersection = new Set([...supportedOps].filter(x => requiredops.has(x)));
+  console.log('NN supported: ' + [...supportedOps]);
   console.log('Model required: ' + [...requiredops]);
   console.log('Ops offload: ' + [...intersection]);
-  // Get intersection of supportedops and requiredops
+  // Get intersection of supportedOps and requiredops
   hybridRow(currentBackend, currentPrefer, intersection);
 }
 
