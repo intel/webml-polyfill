@@ -394,10 +394,11 @@ if (skeletonDetectionPath <= -1) {
 
 const showProgress = async (text) => {
   $('#progressmodel').show();
-  await $('#progressstep').html(text);
+  $('#progressstep').html(text);
   $('.shoulddisplay').hide();
   $('.icdisplay').hide();
   $('#resulterror').hide();
+  await new Promise(res => setTimeout(res, 100));
 }
 
 const showResults = () => {

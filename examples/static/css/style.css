@@ -85,6 +85,30 @@ body {
   height: 140px;
 }
 
+.ols {
+  color: rgba(25, 190, 225, 0.9);
+  text-transform: uppercase;
+}
+
+.ol {
+  color: rgba(25, 190, 225, 0.9);
+  margin: 0 4px 2px 0px;
+  padding: 0px 4px 0px 4px;
+  display: inline-block;
+  background-color: rgba(25, 190, 225, 0.05);
+}
+
+.ol:hover {
+  color: rgba(25, 190, 225, 1.0);
+  background-color: rgba(25, 190, 225, 0.15);
+  border-bottom: 1px solid rgba(25, 190, 225, 0.2);
+}
+
+#offloadops {
+  display: block;
+  width: 100%;
+}
+
 .github-corner {
   position: fixed;
   left: 0;
@@ -2154,26 +2178,8 @@ button.xclose {
 }
 
 #semanticsegmentation #fullscreen i svg {
-  left: 80%;
+  left: 89%;
   top: 1.5rem;
-}
-
-#semanticsegmentation #fullscreen i svg.p224 {
-  left: 76%;
-  top: 0.9rem;
-}
-
-#semanticsegmentation #fullscreen i svg.p257 {
-  top: 1.0rem;
-  left: 78%;
-}
-
-#semanticsegmentation #fullscreen i svg.p321 {
-  left: 80%;
-}
-
-#semanticsegmentation #fullscreen i svg.p513 {
-  left: 87%;
 }
 
 #semanticsegmentation #inferencetitle {
@@ -2214,6 +2220,10 @@ button.xclose {
   #semanticsegmentation #canvasvideo {
     max-width: 1539px;
     max-height: 1539px;
+  }
+
+  #semanticsegmentation #fullscreen i svg {
+    left: 85%;
   }
 }
 
