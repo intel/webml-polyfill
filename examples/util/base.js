@@ -31,7 +31,7 @@ const imageClassificationModels = [{
   intro: 'An efficient Convolutional Neural Networks for Mobile Vision Applications.',
   paperUrl: 'https://arxiv.org/pdf/1704.04861.pdf'
 }, {
-  modelName: 'Mobilenet v1 Quant(TFLite)',
+  modelName: 'Mobilenet v1 Quant (TFLite)',
   modelFormatName: 'mobilenet_v1_quant_tflite',
   isQuantized: true,
   modelSize: '4.3MB',
@@ -56,7 +56,7 @@ const imageClassificationModels = [{
   intro: 'MobileNetV2 improves the state of the art performance of mobile models.',
   paperUrl: 'https://arxiv.org/abs/1801.04381'
 }, {
-  modelName: 'Mobilenet v2 Quant(TFLite)',
+  modelName: 'Mobilenet v2 Quant (TFLite)',
   modelFormatName: 'mobilenet_v2_quant_tflite',
   isQuantized: true,
   modelSize: '6.9MB',

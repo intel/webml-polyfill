@@ -16,7 +16,9 @@ This benchmark loads:
     - DenseNet (ONNX)
 -   Object Detection Models
     - SSD MobileNet v1 (TFLite)
+    - SSD MobileNet v1 Quant (TFLite)
     - SSD MobileNet v2 (TFLite)
+    - SSD MobileNet v2 Quant (TFLite)
     - SSDLite MobileNet v2 (TFLite)
     - Tiny Yolo v2 COCO (TFLite)
     - Tiny Yolo v2 VOC (TFLite)

@@ -9,7 +9,9 @@ const tfliteModelArray = [
 
 const ssdModelArray = [
   "ssd_mobilenet_v1_tflite",
+  "ssd_mobilenet_v1_quant_tflite",
   "ssd_mobilenet_v2_tflite",
+  "ssd_mobilenet_v2_quant_tflite",
   "ssdlite_mobilenet_v2_tflite",
   "tiny_yolov2_coco_tflite",
   "tiny_yolov2_voc_tflite"];
@@ -191,6 +193,7 @@ class Benchmark {
       imageElement.src = poseCanvas.toDataURL();
     } else if (ssdModelArray.indexOf(modelName) !== -1) {
       if (this.ssdModelType === 'SSD') {
+        let outputBoxTensor, outputClassScoresTensor;
         for (let i = 0; i < this.configuration.iteration; i++) {
           this.onExecuteSingle(i);
           await new Promise(resolve => requestAnimationFrame(resolve));
@@ -198,14 +201,19 @@ class Benchmark {
           await this.executeSingleAsyncSSDMN();
           let elapsedTime = performance.now() - tStart;
           computeResults.push(elapsedTime);
-
+          if (this.isQuantized) {
+            [outputBoxTensor, outputClassScoresTensor] = this.deQuantizeOutputTensor(this.outputBoxTensor, this.outputClassScoresTensor, this.model._deQuantizeParams);
+          } else {
+            outputBoxTensor = this.outputBoxTensor;
+            outputClassScoresTensor = this.outputClassScoresTensor;
+          }
           let dstart = performance.now();
-          decodeOutputBoxTensor({}, this.outputBoxTensor, this.anchors);
+          decodeOutputBoxTensor({}, outputBoxTensor, this.anchors);
           let decodeTime = performance.now() - dstart;
           console.log("Decode time:" + decodeTime);
           decodeResults.push(decodeTime);
         }
-        let [totalDetections, boxesList, scoresList, classesList] = NMS({}, this.outputBoxTensor, this.outputClassScoresTensor);
+        let [totalDetections, boxesList, scoresList, classesList] = NMS({}, outputBoxTensor, outputClassScoresTensor);
         poseCanvas.setAttribute("width", imageElement.width);
         poseCanvas.setAttribute("height", imageElement.height);
         visualize(poseCanvas, totalDetections, imageElement, boxesList, scoresList, classesList, this.labels);
@@ -336,10 +344,15 @@ class WebMLJSBenchmark extends Benchmark {
     //only for ssd mobilenet
     this.outputBoxTensor = null;
     this.outputClassScoresTensor = null;
+    this.deQuantizedOutputBoxTensor = null;
+    this.deQuantizedOutputClassScoresTensor = null;
+    this.deQuantizeParams = null;
     this.anchors = null;
     this.ssdModelType;
     this.ssdModelMargin;
     this.numClasses;
+
+    this.isQuantized = false;
 
     this.model = null;
     this.labels = null;
@@ -401,18 +414,28 @@ class WebMLJSBenchmark extends Benchmark {
         // reset for rerun with same image
         imageElement.src = bkPoseImageSrc;
       }
-      this.inputTensor = new Float32Array(currentModel.inputSize.reduce((a, b) => a * b));
       this.outputTensor = [];
       this.ssdModelType = currentModel.type;
       this.ssdModelMargin = currentModel.margin;
       this.numClasses = currentModel.num_classes;
+      this.isQuantized = currentModel.isQuantized || false;;
+      let typedArray;
       if (currentModel.type === 'SSD') {
-        this.outputBoxTensor = new Float32Array(currentModel.num_boxes * currentModel.box_size);
-        this.outputClassScoresTensor = new Float32Array(currentModel.num_boxes * currentModel.num_classes);
+        if (this.isQuantized) {
+          typedArray = Uint8Array;
+          this.deQuantizedOutputBoxTensor = new Float32Array(currentModel.num_boxes * currentModel.box_size);
+          this.deQuantizedOutputClassScoresTensor = new Float32Array(currentModel.num_boxes * currentModel.num_classes);
+        } else {
+          typedArray = Float32Array;
+        }
+        this.inputTensor = new typedArray(currentModel.inputSize.reduce((a, b) => a * b));
+        this.outputBoxTensor = new typedArray(currentModel.num_boxes * currentModel.box_size);
+        this.outputClassScoresTensor = new typedArray(currentModel.num_boxes * currentModel.num_classes);
         this.prepareoutputTensor(this.outputBoxTensor, this.outputClassScoresTensor);
         this.anchors = generateAnchors({});
       } else {
         // YOLO
+        this.inputTensor = new Float32Array(currentModel.inputSize.reduce((a, b) => a * b));
         this.anchors = currentModel.anchors;
         this.outputTensor = [new Float32Array(currentModel.outputSize)]
       }
@@ -526,6 +549,37 @@ class WebMLJSBenchmark extends Benchmark {
       boxOffset += boxLen * outH[i];
       classOffset += classLen * outH[i];
     }
+  }
+
+  deQuantizeOutputTensor(outputBoxTensor, outputClassScoresTensor, quantizedParams) {
+    const outH = [1083, 600, 150, 54, 24, 6];
+    const boxLen = 4;
+    const classLen = 91;
+    let boxOffset = 0;
+    let classOffset = 0;
+    let boxTensor, classTensor;
+    let boxScale, boxZeroPoint, classScale, classZeroPoint;
+    let dqBoxOffset = 0;
+    let dqClassOffset = 0;
+    for (let i = 0; i < 6; ++i) {
+      boxTensor = outputBoxTensor.subarray(boxOffset, boxOffset + boxLen * outH[i]);
+      classTensor = outputClassScoresTensor.subarray(classOffset, classOffset + classLen * outH[i]);
+      boxScale = quantizedParams[2 * i].scale;
+      boxZeroPoint = quantizedParams[2 * i].zeroPoint;
+      classScale = quantizedParams[2 * i + 1].scale;
+      classZeroPoint = quantizedParams[2 * i + 1].zeroPoint;
+      for (let j = 0; j < boxTensor.length; ++j) {
+        this.deQuantizedOutputBoxTensor[dqBoxOffset] = boxScale* (boxTensor[j] - boxZeroPoint);
+        ++dqBoxOffset;
+      }
+      for (let j = 0; j < classTensor.length; ++j) {
+        this.deQuantizedOutputClassScoresTensor[dqClassOffset] = classScale * (classTensor[j] - classZeroPoint);
+        ++dqClassOffset;
+      }
+      boxOffset += boxLen * outH[i];
+      classOffset += classLen * outH[i];
+    }
+    return [this.deQuantizedOutputBoxTensor, this.deQuantizedOutputClassScoresTensor];
   }
 
   async setupAsync() {
@@ -645,6 +699,9 @@ class WebMLJSBenchmark extends Benchmark {
     this.offsetTensor  = null;
     this.outputBoxTensor = null;
     this.outputClassScoresTensor = null;
+    this.deQuantizedOutputBoxTensor = null;
+    this.deQuantizedOutputClassScoresTensor = null;
+    this.deQuantizeParams = null;
     this.anchors = null;
     this.model = null;
     this.labels = null;
