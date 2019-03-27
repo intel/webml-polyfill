@@ -484,6 +484,29 @@ const semanticSegmentationModels = [{
     paperUrl: 'https://arxiv.org/abs/1802.02611'
 }];
 
+const superResolutionModels = [
+  {
+    modelName: 'SRGAN 96x4 (TFLite)',
+    modelFormatName: 'srgan_96_4_tflite',
+    inputSize: [96, 96, 3],
+    outputSize: [384, 384, 3],
+    scale: 4,
+    modelFile: '../super_resolution/model/srgan_96_4.tflite',
+    intro: 'Photo-realistic single image Super-Resolution using a generative adversarial network.',
+    paperUrl: 'https://arxiv.org/abs/1609.04802'
+  },
+  {
+    modelName: 'SRGAN 128x4 (TFLite)',
+    modelFormatName: 'srgan_128_4_tflite',
+    inputSize: [128, 128, 3],
+    outputSize: [512, 512, 3],
+    scale: 4,
+    modelFile: '../super_resolution/model/srgan_128_4.tflite',
+    intro: 'Photo-realistic single image Super-Resolution using a generative adversarial network.',
+    paperUrl: 'https://arxiv.org/abs/1609.04802'
+  }
+];
+
 const getOS = () => {
   var userAgent = window.navigator.userAgent,
     platform = window.navigator.platform,
