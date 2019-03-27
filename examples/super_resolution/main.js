@@ -44,7 +44,7 @@ const updateBackend = async (camera = false) => {
   logConfig();
   await showProgress('Updating backend ...');
   try {
-    // getOffloadOps(currentBackend, currentPrefer);
+    getOffloadOps(currentBackend, currentPrefer);
     await utils.init(currentBackend, currentPrefer);
     utilsPredict(imageElement, currentBackend, currentPrefer);
   }
@@ -65,9 +65,9 @@ const main = async (camera = false) => {
   showProgress('Loading model and initializing...');
   try {
     let model = superResolutionModels.filter(f => f.modelFormatName == currentModel);
-    utils.changeModelParam(model[0]);
+    await utils.loadModel(model[0]);
     changeCanvasSize(model[0]);
-    // getOffloadOps(currentBackend, currentPrefer);
+    getOffloadOps(currentBackend, currentPrefer);
     await utils.init(currentBackend, currentPrefer);
     utilsPredict(imageElement, currentBackend, currentPrefer);
   } catch (e) {
