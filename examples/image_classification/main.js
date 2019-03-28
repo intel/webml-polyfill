@@ -90,7 +90,10 @@ const updateScenario = async (camera = false) => {
   predictPath(camera);
 }
 
-const updateBackend = async (camera = false) => {
+const updateBackend = async (camera = false, force = false) => {
+  if (force) {
+    utils.initialized = false;
+  }
   streaming = false;
   try { utils.deleteAll(); } catch (e) { }
   logConfig();

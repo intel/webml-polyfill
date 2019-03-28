@@ -257,10 +257,7 @@ if (skeletonDetectionPath <= -1) {
         return;
       }
 
-      if(facialLandmarkDetectionPath < 0) {
-        utils.backend = '';
-      }
-      updateBackend(us === 'camera');
+      updateBackend(us === 'camera', true);
     });
 
     $('input:radio[name=bw]').click(() => {
@@ -291,10 +288,7 @@ if (skeletonDetectionPath <= -1) {
         return;
       }
 
-      if(facialLandmarkDetectionPath < 0) {
-        utils.backend = '';
-      }
-      updateBackend(us === 'camera');
+      updateBackend(us === 'camera', true);
     });
 
     $('input:radio[name=m]').click(() => {
