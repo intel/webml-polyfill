@@ -117,7 +117,7 @@ const updateBackend = async (camera = false) => {
 const main = async (camera = false) => {
   streaming = false;
   try { 
-    landmarkDetector.deleteAll();
+    // landmarkDetector.deleteAll();
     faceDetector.deleteAll();
   } catch (e) { }
   logConfig();

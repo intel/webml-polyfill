@@ -51,7 +51,12 @@ const updateTitle = (name, backend, prefer, model, modeltype) => {
   if (backend !== 'WebML' && prefer !== 'none') {
     backendtext = backend + ' + WebNN';
   }
-  $('#ictitle').html(`${name} / ${backendtext} / ${currentprefertext} / ${model} (${modeltype})`);
+
+  if(currentprefertext === 'None') {
+    $('#ictitle').html(`${name} / ${backendtext} / ${model} (${modeltype})`);
+  } else {
+    $('#ictitle').html(`${name} / ${backendtext} (${currentprefertext}) / ${model} (${modeltype})`);
+  }
 }
 
 $('#header').sticky({ topSpacing: 0, zIndex: '50' });
