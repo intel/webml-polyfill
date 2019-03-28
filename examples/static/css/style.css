@@ -220,7 +220,7 @@ section {
   padding: 85px 0;
 }
 
-#imageclassification section, #posenet section, #semanticsegmentation section, #objectdetection section {
+#imageclassification section, #posenet section, #semanticsegmentation section, #objectdetection section, #superresolution section {
   padding: 0px 0;
 }
 
@@ -2307,6 +2307,57 @@ button.xclose {
   }
 }
 
+#superresolution #image {
+  display: none;
+}
+
+#superresolution canvas {
+  width: 384px;
+}
+
+#superresolution h4 {
+  font-size: 1rem;
+}
+
+
+#superresolution .row {
+  flex-wrap: inherit;
+}
+
+#superresolution #inference {
+  display: block;
+  width: 100%;
+}
+
+#superresolution #cam {
+  display: none;
+}
+
+@media (max-width: 996px) {
+  #superresolution canvas {
+    width: 60vw;
+  }
+
+  #superresolution .row {
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 768px) {
+  #superresolution canvas {
+    width: 65vw;
+  }
+
+  #superresolution .row {
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 544px) {
+  #superresolution canvas {
+    width: 75vw;
+  }
+}
 
 /* 
   color scheme:
