@@ -1,434 +1,137 @@
-async function main(camera) {
-  const videoElement = document.getElementById('video');
-  const imageElement = document.getElementById('image');
-  const inputElement = document.getElementById('input');
-  const buttonEelement = document.getElementById('button');
-  const backend = document.getElementById('backend');
-  const wasm = document.getElementById('wasm');
-  const webgl = document.getElementById('webgl');
-  const webml = document.getElementById('webml');
-  const canvasElement = document.getElementById('canvas');
-  const canvasElement1 = document.getElementById('canvas1');
-  const canvasShowElement = document.getElementById('canvasShow');
-  const faceDetectModel = document.getElementById('faceDetectModel');
-  const landmarkModel = document.getElementById('landmarkModel');
-  const selectPrefer = document.getElementById('selectPrefer');
-  const progressContainer = document.getElementById('progressContainer');
-  const progressBar = document.getElementById('progressBar');
-  const progressLabel = document.getElementById('progressLabel');
+const canvasElement = document.getElementById('canvas');
+const canvasShowElement = document.getElementById('canvasshow');
+const canvasElement1 = document.getElementById('canvas1');
 
-  let currentBackend = '';
-  let currentDetectionModel;
-  let currentLandmarkModel;
-  let currentPrefer = '';
-  let streaming = false;
+let currentLandmarkModel = 'face_landmark_tflite';
 
-  let landmarkDetector = new Utils(canvasElement1);
-  let faceDetector = new FaceDetecor(canvasElement);
-  faceDetector.updateProgress = updateProgress;
-  landmarkDetector.updateProgress = updateProgress;    //register updateProgress function if progressBar element exist
+let faceDetector = new FaceDetecor(canvasElement);
+let landmarkDetector = new Utils(canvasElement1);
+faceDetector.updateProgress = updateProgress;
+landmarkDetector.updateProgress = updateProgress;    //register updateProgress function if progressBar element exist
 
-  function checkPreferParam() {
-    if (currentOS === 'Mac OS') {
-      let preferValue = getPreferParam();
-      if (preferValue === 'invalid') {
-        console.log("Invalid prefer, prefer should be 'fast' or 'sustained', try to use WASM.");
-        showPreferAlert();
-      }
-    }
-  }
-
-  checkPreferParam();
-
-  function showAlert(backend, models) {
-    let div = document.createElement('div');
-    div.setAttribute('id', 'backendAlert');
-    div.setAttribute('class', 'alert alert-warning alert-dismissible fade show');
-    div.setAttribute('role', 'alert');
-    div.innerHTML = `<strong>Currently ${backend} backend doesn't support ${models[0]} or ${models[1]} Model.</strong>`;
-    div.innerHTML += `<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>`;
-    let container = document.getElementById('container');
-    container.insertBefore(div, container.firstElementChild);
-  }
-
-  function showPreferAlert() {
-    let div = document.createElement('div');
-    div.setAttribute('id', 'preferAlert');
-    div.setAttribute('class', 'alert alert-danger alert-dismissible fade show');
-    div.setAttribute('role', 'alert');
-    div.innerHTML = `<strong>Invalid prefer, prefer should be 'fast' or 'sustained'.</strong>`;
-    div.innerHTML += `<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>`;
-    let container = document.getElementById('container');
-    container.insertBefore(div, container.firstElementChild);
-  }
-
-  function removeAlertElement() {
-    let backendAlertElem =  document.getElementById('backendAlert');
-    if (backendAlertElem !== null) {
-      backendAlertElem.remove();
-    }
-    let preferAlertElem =  document.getElementById('preferAlert');
-    if (preferAlertElem !== null) {
-      preferAlertElem.remove();
-    }
-  }
-
-  function updateBackend() {
-    if (getUrlParams('api_info') === 'true') {
-      backend.innerHTML = currentBackend === 'WebML' ? currentBackend + '/' + getNativeAPI(currentPrefer) : currentBackend;
-    } else {
-      backend.innerHTML = currentBackend;
-    }
-  }
-
-  function changeBackend(newBackend) {
-    if (currentBackend === newBackend) {
-      return;
-    }
-    streaming = false;
-    if (newBackend !== "WebML") {
-      selectPrefer.style.display = 'none';
-    } else {
-      selectPrefer.style.display = 'inline';
-    }
-    landmarkDetector.deleteAll();
-    faceDetector.deleteAll();
-    backend.innerHTML = 'Setting...';
-    setTimeout(async function() {
-      try {
-        await faceDetector.init(newBackend, currentPrefer);
-        await landmarkDetector.init(newBackend, currentPrefer);
-        currentBackend = newBackend;
-        updateBackend();
-        updateModel();
-        updatePrefer();
-        if (!camera) {
-          Predict(imageElement);
-        } else {
-          streaming = true;
-          startPredict();
-        }
-      }
-      catch(e) {
-        console.warn(`Failed to init ${landmarkDetector.model._backend}, try to use WASM`);
-        console.error(e);
-        showAlert(landmarkDetector.model._backend, [currentDetectionModel.modelName, currentLandmarkModel.modelName]);
-        changeBackend('WASM');
-        updatePrefer();
-        backend.innerHTML = 'WASM';
-      };
-    }, 10);
-  }
-
-  function updateModel() {
-    faceDetectModel.innerHTML = currentDetectionModel.modelName;
-    landmarkModel.innerHTML = currentLandmarkModel.modelName;
-  }
-
-  function changeModel(newModel) {
-    if (currentDetectionModel.modelName === newModel.modelName) {
-      return;
-    }
-    streaming = false;
-    faceDetector.deleteAll();
-    removeAlertElement();
-    setTimeout(async function() {
-      try {
-        progressLabel.innerHTML = 'Loading Face Detection Model:';
-        progressContainer.style.display = "inline";
-        faceDetectModel.innerHTML = 'Setting...';
-        await faceDetector.loadModel(newModel);
-        await faceDetector.init(currentBackend, currentPrefer);
-        currentDetectionModel = newModel;
-        updatePrefer();
-        updateModel();
-        updateBackend();
-        if (!camera) {
-          Predict(imageElement);
-        } else {
-          streaming = true;
-          startPredict();
-        }
-      }
-      catch(e) {
-        let backend = currentBackend;
-        if (currentBackend === 'WebML') {
-          backend = 'WebML/' + getNativeAPI(currentPrefer);
-        }
-        console.warn(`Currently ${newModel.modelName} doesn't support ${backend} backend`);
-        console.error(e);
-        showAlert(backend, [newModel.modelName, currentLandmarkModel.modelName]);
-        updateModel();
-        faceDetector.changeModelParam(currentDetectionModel);
-      };
-    }, 10);
-  }
-
-  function updatePrefer() {
-    selectPrefer.innerHTML = preferMap[currentPrefer];
-  }
-
-  function changePrefer(newPrefer, force) {
-    if (currentPrefer === newPrefer && !force) {
-      return;
-    }
-    streaming = false;
-    landmarkDetector.deleteAll();
-    removeAlertElement();
-    selectPrefer.innerHTML = 'Setting...';
-    setTimeout(async function() {
-      try {
-        await faceDetector.init(currentBackend, newPrefer);
-        await landmarkDetector.init(currentBackend, newPrefer);
-        currentPrefer = newPrefer;
-        updatePrefer();
-        updateModel();
-        updateBackend();
-        if (!camera) {
-          Predict(imageElement);
-        } else {
-          streaming = true;
-          startPredict();
-        }
-      }
-      catch(e) {
-        let currentBackend = 'WebML/' + getNativeAPI(currentPrefer);
-        let nextBackend = 'WebML/' + getNativeAPI(newPrefer);
-        console.warn(`Failed to change backend ${nextBackend}, switch back to ${currentBackend}`);
-        console.error(e);
-        changePrefer(currentPrefer, true);
-        showAlert(nextBackend, [currentDetectionModel.modelName, currentLandmarkModel.modelName]);
-        updatePrefer();
-        updateBackend();
-      };
-    }, 10);
-  }
-
-  function fileExists(url) {
-    var exists;
-    $.ajax({
-      url:url,
-      async:false,
-      type:'HEAD',
-      error:function() { exists = 0; },
-      success:function() { exists = 1; }
-    });
-    if (exists === 1) {
-      return true;
-    } else {
-      return false;
-    }
-  }
-
-  function updateProgress(ev) {
-    if (ev.lengthComputable) {
-      let percentComplete = ev.loaded / ev.total * 100;
-      percentComplete = percentComplete.toFixed(0);
-      progressBar.style = `width: ${percentComplete}%`;
-      progressBar.innerHTML = `${percentComplete}%`;
-      if (ev.loaded === ev.total) {
-        progressContainer.style.display = "none";
-        progressBar.style = `width: 0%`;
-        progressBar.innerHTML = `0%`;
-      }
-    }
-  }
-
-  if (nnNative) {
-    webml.setAttribute('class', 'dropdown-item');
-    webml.onclick = function (e) {
-      removeAlertElement();
-      checkPreferParam();
-      changeBackend('WebML');
-    }
-  }
-
-  if (nnPolyfill.supportWebGL) {
-    webgl.setAttribute('class', 'dropdown-item');
-    webgl.onclick = function(e) {
-      removeAlertElement();
-      changeBackend('WebGL');
-    }
-  }
-
-  if (nnPolyfill.supportWasm) {
-    wasm.setAttribute('class', 'dropdown-item');
-    wasm.onclick = function(e) {
-      removeAlertElement();
-      changeBackend('WASM');
-    }
-  }
-
-  if (currentBackend === '') {
-    if (nnNative) {
-      currentBackend = 'WebML';
-    } else {
-      currentBackend = 'WASM';
-    }
-  }
-
-  // register face detection models
-  for (let model of faceDetectionModels) {
-    if (!fileExists(model.modelFile)) {
-      continue;
-    }
-    let dropdownBtn = $('<button class="dropdown-item"/>')
-      .text(model.modelName)
-      .click(_ => changeModel(model));
-    $('.available-detection-models').append(dropdownBtn);
-    if (!currentDetectionModel) {
-      currentDetectionModel = model;
-    }
-  }
-
-  // register landmark detection model
-  for (let model of faceLandmarkDetectionModels) {
-    if (!fileExists(model.modelFile)) {
-      continue;
-    }
-    let dropdownBtn = $('<button class="dropdown-item"/>')
-      .text(model.modelName)
-    $('.available-landmark-models').append(dropdownBtn);
-    if (!currentLandmarkModel) {
-      currentLandmarkModel = model;
-    }
-  }
-
-  // register prefers
-  if (currentBackend === 'WebML') {
-    $('.prefer').css("display","inline");
-    let sustained = $('<button class="dropdown-item"/>')
-      .text('SUSTAINED_SPEED')
-      .click(_ => changePrefer('sustained'));
-    $('.preference').append(sustained);
-    if (currentOS === 'Android') {
-      let fast = $('<button class="dropdown-item"/>')
-        .text('FAST_SINGLE_ANSWER')
-        .click(_ => changePrefer('fast'));
-      $('.preference').append(fast);
-      let low = $('<button class="dropdown-item"/>')
-        .text('LOW_POWER')
-        .click(_ => changePrefer('low'));
-      $('.preference').append(low);
-    } else if (currentOS === 'Windows' || currentOS === 'Linux') {
-      let fast = $('<button class="dropdown-item" disabled />')
-        .text('FAST_SINGLE_ANSWER')
-        .click(_ => changePrefer('fast'));
-      $('.preference').append(fast);
-      let low = $('<button class="dropdown-item" disabled />')
-        .text('LOW_POWER')
-        .click(_ => changePrefer('low'));
-      $('.preference').append(low);
-    } else if (currentOS === 'Mac OS') {
-      let fast = $('<button class="dropdown-item"/>')
-        .text('FAST_SINGLE_ANSWER')
-        .click(_ => changePrefer('fast'));
-      $('.preference').append(fast);
-      let low = $('<button class="dropdown-item" disabled />')
-        .text('LOW_POWER')
-        .click(_ => changePrefer('low'));
-      $('.preference').append(low);
-    }
-    if (!currentPrefer) {
-      currentPrefer = "sustained";
-    }
-  }
-
-  // image or camera
-  if (!camera) {
-    inputElement.addEventListener('change', (e) => {
-      let files = e.target.files;
-      if (files.length > 0) {
-        imageElement.src = URL.createObjectURL(files[0]);
-      }
-    }, false);
-
-    imageElement.onload = function() {
-      Predict(imageElement);
-    }
-
-    try{
-      progressLabel.innerHTML = 'Loading Landmark Detection Model:';
-      await faceDetector.loadModel(currentDetectionModel);
-      progressContainer.style.display = "inline";
-      progressLabel.innerHTML = 'Loading Face Detection Model:';
-      await landmarkDetector.loadModel(currentLandmarkModel);
-
-      await faceDetector.init(currentBackend, currentPrefer);
-      await landmarkDetector.init(currentBackend, currentPrefer);
-      
-      updateBackend();
-      updateModel();
-      updatePrefer();
-      Predict(imageElement);
-      button.setAttribute('class', 'btn btn-primary');
-      input.removeAttribute('disabled');
-    }
-    catch(e) {
-      console.warn(`Failed to init ${currentBackend}, try to use WASM`);
-      console.error(e);
-      showAlert(currentBackend, [currentDetectionModel.modelName, currentLandmarkModel.modelName]);
-      changeBackend('WASM');
-    };
-  } else {
-    let stats = new Stats();
-    stats.dom.style.cssText = 'position:fixed;top:60px;left:10px;cursor:pointer;opacity:0.9;z-index:10000';
-    stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
-    document.body.appendChild(stats.dom);
-
-    navigator.mediaDevices.getUserMedia({audio: false, video: {facingMode: "environment"}}).then(async function (stream) {
-      video.srcObject = stream;
-      try {
-        progressLabel.innerHTML = 'Loading Landmark Detection Model:';
-        await faceDetector.loadModel(currentDetectionModel);
-        progressContainer.style.display = "inline";
-        progressLabel.innerHTML = 'Loading Face Detection Model:';
-        await landmarkDetector.loadModel(currentLandmarkModel);
-
-        await faceDetector.init(currentBackend, currentPrefer);
-        await landmarkDetector.init(currentBackend, currentPrefer);
-
-        updateBackend();
-        updateModel();
-        updatePrefer();
-        streaming = true;
-        startPredict();
-      }
-      catch(e) {
-        console.warn(`Failed to init ${currentBackend}, try to use WASM`);
-        console.error(e);
-        showAlert(currentBackend, [currentDetectionModel.modelName, currentLandmarkModel.modelName]);
-        changeBackend('WASM');
-      };
-    }).catch((error) => {
-      console.log('getUserMedia error: ' + error.name, error);
-    });
-
-    function startPredict() {
-      if (streaming) {
-        videoElement.width = videoElement.videoWidth;
-        videoElement.height = videoElement.videoHeight;
-        stats.begin();
-        Predict(videoElement);
-        stats.end();
-        setTimeout(startPredict, 0);
-      }
-    }
-  }
-
-  async function Predict(imageSource) {
-    let detectResult = await faceDetector.getFaceBoxes(imageSource);
-    let faceBoxes = detectResult.boxes;
-    let time = parseFloat(detectResult.time);
-    let keyPoints = [];
-    for (let i = 0; i < faceBoxes.length; ++i) {
-      let landmarkResult = await landmarkDetector.predict(imageSource, faceBoxes[i]);
-      keyPoints.push(landmarkResult.keyPoints.slice());
-      time += parseFloat(landmarkResult.time);
-    }
-    drawFaceBoxes(imageSource, canvasShowElement, faceBoxes);
-    drawKeyPoints(imageSource, canvasShowElement, keyPoints, faceBoxes);
+const updateResult = (result) => {
+  try {
+    console.log(`Inference time: ${result.toFixed(2)} ms`);
     let inferenceTimeElement = document.getElementById('inferenceTime');
-    inferenceTimeElement.innerHTML = `inference time: <em style="color:green;font-weight:bloder;">${time.toFixed(2)} </em>ms`;
+    inferenceTimeElement.innerHTML = `inference time: <span class='ir'>${result.toFixed(2)} ms</span>`;
+  } catch(e) {
+    console.log(e);
   }
 }
+
+const predict = async(source) => {
+  let detectResult = await faceDetector.getFaceBoxes(source);
+  let faceBoxes = detectResult.boxes;
+  let time = parseFloat(detectResult.time);
+  let keyPoints = [];
+  for (let i = 0; i < faceBoxes.length; ++i) {
+    let landmarkResult = await landmarkDetector.predict(source, faceBoxes[i]);
+    keyPoints.push(landmarkResult.keyPoints.slice());
+    time += parseFloat(landmarkResult.time);
+  }
+  drawFaceBoxes(source, canvasShowElement, faceBoxes);
+  drawKeyPoints(source, canvasShowElement, keyPoints, faceBoxes);
+  updateResult(time);
+}
+
+const utilsPredict = async (source) => {
+  streaming = false;
+  // Stop webcam opened by navigator.getUserMedia if user visits 'LIVE CAMERA' tab before
+  if(track) {
+    track.stop();
+  }
+  try {
+    await showProgress('Image inferencing ...');
+    predict(source);
+    showResults();
+  }
+  catch (e) {
+    errorHandler(e);
+  }
+}
+
+const startPredict = () => {
+  if (streaming) {
+    videoElement.width = videoElement.videoWidth;
+    videoElement.height = videoElement.videoHeight;
+    stats.begin();
+    predict(videoElement);
+    stats.end();
+    setTimeout(startPredict, 0);
+  }
+}
+
+const utilsPredictCamera = async () => {
+  streaming = true;
+  try {
+    let stream = await navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: 'environment' } });
+    video.srcObject = stream;
+    track = stream.getTracks()[0];
+    await showProgress('Camera inferencing ...');
+    startPredict();
+    showResults();
+  }
+  catch (e) {
+    errorHandler(e);
+  }
+}
+
+const predictPath = (camera) => {
+  (!camera) ? utilsPredict(imageElement) : utilsPredictCamera();
+}
+
+const utilsInit = async (backend, prefer) => {
+  // return immediately if model, backend, prefer are all unchanged
+  let init = await faceDetector.init(backend, prefer);
+  let initlandmark = await landmarkDetector.init(backend, prefer);  
+  if (init == 'NOT_LOADED' || initlandmark == 'NOT_LOADED') {
+    return;
+  }
+
+}
+
+const updateScenario = async (camera = false) => {
+  streaming = false;
+  logConfig();
+  predictPath(camera);
+}
+
+const updateBackend = async (camera = false) => {
+  streaming = false;
+  try { 
+    landmarkDetector.deleteAll();
+    faceDetector.deleteAll();
+  } catch (e) { }
+  logConfig();
+  await showProgress('Updating backend ...');
+  try {
+    // getOffloadOps(currentBackend, currentPrefer);
+    utilsInit(currentBackend, currentPrefer);
+    predictPath(camera);
+  }
+  catch (e) {
+    errorHandler(e);
+  }
+}
+
+const main = async (camera = false) => {
+  streaming = false;
+  try { 
+    landmarkDetector.deleteAll();
+    faceDetector.deleteAll();
+  } catch (e) { }
+  logConfig();
+  await showProgress('Loading model ...');
+  try {
+    let model = faceDetectionModels.filter(f => f.modelFormatName == currentModel);
+    await faceDetector.loadModel(model[0]);
+    let landmarkmodel = facialLandmarkDetectionModels.filter(f => f.modelFormatName == currentLandmarkModel);
+    await landmarkDetector.loadModel(landmarkmodel[0]);
+    // getOffloadOps(currentBackend, currentPrefer);
+    utilsInit(currentBackend, currentPrefer);
+    predictPath(camera);
+  } catch (e) {
+    errorHandler(e);
+  }
+}
+

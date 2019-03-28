@@ -142,6 +142,7 @@ let us = getUrlParam('s');
 let ud = getUrlParam('d');
 let strsearch;
 let skeletonDetectionPath = location.pathname.toLocaleLowerCase().indexOf('skeleton_detection');
+let facialLandmarkDetectionPath = location.pathname.toLocaleLowerCase().indexOf('facial_landmark_detection');
 
 
 if (!location.search) {
@@ -251,7 +252,9 @@ if (skeletonDetectionPath <= -1) {
         return;
       }
 
-      utils.backend = '';
+      if(facialLandmarkDetectionPath < 0) {
+        utils.backend = '';
+      }
       updateBackend(us === 'camera');
     });
 
@@ -283,7 +286,9 @@ if (skeletonDetectionPath <= -1) {
         return;
       }
 
-      utils.backend = '';
+      if(facialLandmarkDetectionPath < 0) {
+        utils.backend = '';
+      }
       updateBackend(us === 'camera');
     });
 

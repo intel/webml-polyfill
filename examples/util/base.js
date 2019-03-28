@@ -488,6 +488,7 @@ const superResolutionModels = [
   {
     modelName: 'SRGAN 96x4 (TFLite)',
     modelFormatName: 'srgan_96_4_tflite',
+    modelSize: '6.1MB',
     inputSize: [96, 96, 3],
     outputSize: [384, 384, 3],
     scale: 4,
@@ -498,6 +499,7 @@ const superResolutionModels = [
   {
     modelName: 'SRGAN 128x4 (TFLite)',
     modelFormatName: 'srgan_128_4_tflite',
+    modelSize: '6.1MB',
     inputSize: [128, 128, 3],
     outputSize: [512, 512, 3],
     scale: 4,
@@ -508,7 +510,9 @@ const superResolutionModels = [
 ];
 
 const faceDetectionModels = [{
-    modelName: 'SSD MobileNetV1(TFlite)',
+    modelName: 'SSD MobileNet v1 (TFlite)',
+    modelFormatName: 'ssd_mobilenetv1_face_tflite',
+    modelSize: '22.0MB',
     type: 'SSD',
     modelFile: '../facial_landmark_detection/model/ssd_mobilenetv1_face.tflite',
     box_size: 4,
@@ -519,9 +523,13 @@ const faceDetectionModels = [{
     preOptions: {
       mean: [127.5, 127.5, 127.5],
       std: [127.5, 127.5, 127.5],
-    }
+    },
+    intro: 'SSD Mobilenet V1 Face is based on SSD Mobilenet V1 model structure, and is trained by Tensorflow Object Detection API with WIDER_FACE dataset for face detection task.',
+    paperUrl: 'https://arxiv.org/abs/1803.08225'
   }, {
-    modelName: 'SSD MobileNetV2(TFlite)',
+    modelName: 'SSD MobileNet v2 (TFlite)',
+    modelFormatName: 'ssd_mobilenetv2_face_tflite',
+    modelSize: '18.4MB',
     type: 'SSD',
     modelFile: '../facial_landmark_detection/model/ssd_mobilenetv2_face.tflite',
     box_size: 4,
@@ -532,9 +540,13 @@ const faceDetectionModels = [{
     preOptions: {
       mean: [127.5, 127.5, 127.5],
       std: [127.5, 127.5, 127.5],
-    }
+    },
+    intro: 'SSD Mobilenet V2 Face is based on SSD Mobilenet V2 model structure, and is trained by Tensorflow Object Detection API with WIDER_FACE dataset for face detection task.',
+    paperUrl: 'https://arxiv.org/abs/1801.04381'
   }, {
-    modelName: 'SSDLite MobileNetV2(TFlite)',
+    modelName: 'SSDLite MobileNet v2 (TFlite)',
+    modelFormatName: 'ssdlite_mobilenetv2_face_tflite',
+    modelSize: '12.1MB',
     type: 'SSD',
     modelFile: '../facial_landmark_detection/model/ssdlite_mobilenetv2_face.tflite',
     box_size: 4,
@@ -545,9 +557,13 @@ const faceDetectionModels = [{
     preOptions: {
       mean: [127.5, 127.5, 127.5],
       std: [127.5, 127.5, 127.5],
-    }
+    },
+    intro: 'SSDLite Mobilenet V2 Face is based on SSDLite Mobilenet V2 model structure, and is trained by Tensorflow Object Detection API with WIDER_FACE dataset for face detection task.',
+    paperUrl: 'https://arxiv.org/abs/1801.04381'
   }, {
-    modelName: 'Tiny YoloV2(TFlite)',
+    modelName: 'Tiny Yolo v2 (TFlite)',
+    modelFormatName: 'tiny_yolov2_face_tflite',
+    modelSize: '44.1MB',
     modelFile: '../facial_landmark_detection/model/tiny_yolov2_face.tflite',
     type: 'YOLO',
     margin: [1.15, 1.15, 0.6, 1.15],
@@ -557,13 +573,19 @@ const faceDetectionModels = [{
     preOptions: {
       norm: true,
     },
+    intro: 'Tiny YOLO V2 Face is based off the Darknet reference network and trained with WIDER_FACE dataset for face detection task.',
+    paperUrl: 'https://arxiv.org/abs/1612.08242'
 }];
 
-const faceLandmarkDetectionModels = [{
-  modelName: 'DAN(TFlite)',
+const facialLandmarkDetectionModels = [{
+  modelName: 'DAN (TFlite)',
+  modelFormatName: 'face_landmark_tflite',
+  modelSize: '29.4MB',
   modelFile: '../facial_landmark_detection/model/face_landmark.tflite',
   inputSize: [128, 128, 3],
   outputSize: 136,
+  intro: 'Converted from a pre-trained Deep Alignment Network',
+  paperUrl: 'https://arxiv.org/abs/1612.08242'
 }];
 
 const getOS = () => {

@@ -59,4 +59,6 @@ $(document).ready(function () {
   showModel('#modelcv-sd tbody', humanPoseEstimationModels)
   showModel('#modelcv-ss tbody', semanticSegmentationModels)
   showModel('#modelcv-sr tbody', superResolutionModels)
+  showModel('#modelcv-odf tbody', faceDetectionModels)
+  showModel('#modelcv-fld tbody', facialLandmarkDetectionModels)
 });

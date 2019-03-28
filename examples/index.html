@@ -68,6 +68,7 @@
               <li><a href='object_detection/'>Person/Object Detection</a></li>
               <li><a href='semantic_segmentation/'>Semantic Segmentation</a></li>
               <li><a href='skeleton_detection/'>Skeleton Detection</a></li>
+              <li><a href='facial_landmark_detection/'>Facial Landmark Detection</a></li>
               <li><a href='super_resolution/'>Super Resolution</a></li>
             </ul>
           </li>
@@ -143,12 +144,14 @@
           <div class='card card-block text-center'>
             <div>
               <div class='feature-icon'>
-                <svg aria-hidden='true' data-prefix='fas' data-icon='dog' class='svg-inline--fa fa-dog fa-w-16'
-                  role='img' viewBox='0 0 512 512'>
-                  <path fill='currentColor'
-                    d='M496 96h-64l-7.16-14.31A32 32 0 0 0 396.22 64H342.6l-27.28-27.28C305.23 26.64 288 33.78 288 48.03v149.84l128 45.71V208h32c35.35 0 64-28.65 64-64v-32c0-8.84-7.16-16-16-16zm-112 48c-8.84 0-16-7.16-16-16s7.16-16 16-16 16 7.16 16 16-7.16 16-16 16zM96 224c-17.64 0-32-14.36-32-32 0-17.67-14.33-32-32-32S0 174.33 0 192c0 41.66 26.83 76.85 64 90.1V496c0 8.84 7.16 16 16 16h64c8.84 0 16-7.16 16-16V384h160v112c0 8.84 7.16 16 16 16h64c8.84 0 16-7.16 16-16V277.55L266.05 224H96z'>
-                  </path>
-                </svg>
+                <a href='semantic_segmentation/'>
+                  <svg aria-hidden='true' data-prefix='fas' data-icon='dog' class='svg-inline--fa fa-dog fa-w-16'
+                    role='img' viewBox='0 0 512 512'>
+                    <path fill='currentColor'
+                      d='M496 96h-64l-7.16-14.31A32 32 0 0 0 396.22 64H342.6l-27.28-27.28C305.23 26.64 288 33.78 288 48.03v149.84l128 45.71V208h32c35.35 0 64-28.65 64-64v-32c0-8.84-7.16-16-16-16zm-112 48c-8.84 0-16-7.16-16-16s7.16-16 16-16 16 7.16 16 16-7.16 16-16 16zM96 224c-17.64 0-32-14.36-32-32 0-17.67-14.33-32-32-32S0 174.33 0 192c0 41.66 26.83 76.85 64 90.1V496c0 8.84 7.16 16 16 16h64c8.84 0 16-7.16 16-16V384h160v112c0 8.84 7.16 16 16 16h64c8.84 0 16-7.16 16-16V277.55L266.05 224H96z'>
+                    </path>
+                  </svg>
+                </a>
               </div>
             </div>
             <div>
@@ -223,14 +226,15 @@
           <div class='card card-block text-center'>
             <div>
               <div class='feature-icon disabled'>
-
-                <svg aria-hidden="true" focusable="false" data-prefix="far" data-icon="meh-rolling-eyes"
-                  class="svg-inline--fa fa-meh-rolling-eyes fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 496 512">
-                  <path fill="currentColor"
-                    d="M248 8C111 8 0 119 0 256s111 248 248 248 248-111 248-248S385 8 248 8zm0 448c-110.3 0-200-89.7-200-200S137.7 56 248 56s200 89.7 200 200-89.7 200-200 200zm88-304c-39.8 0-72 32.2-72 72s32.2 72 72 72 72-32.2 72-72-32.2-72-72-72zm0 112c-22.1 0-40-17.9-40-40 0-13.6 7.3-25.1 17.7-32.3-1 2.6-1.7 5.3-1.7 8.3 0 13.3 10.7 24 24 24s24-10.7 24-24c0-2.9-.7-5.7-1.7-8.3 10.4 7.2 17.7 18.7 17.7 32.3 0 22.1-17.9 40-40 40zm-104-40c0-39.8-32.2-72-72-72s-72 32.2-72 72 32.2 72 72 72 72-32.2 72-72zm-112 0c0-13.6 7.3-25.1 17.7-32.3-1 2.6-1.7 5.3-1.7 8.3 0 13.3 10.7 24 24 24s24-10.7 24-24c0-2.9-.7-5.7-1.7-8.3 10.4 7.2 17.7 18.7 17.7 32.3 0 22.1-17.9 40-40 40s-40-17.9-40-40zm192 128H184c-13.2 0-24 10.8-24 24s10.8 24 24 24h128c13.2 0 24-10.8 24-24s-10.8-24-24-24z">
-                  </path>
-                </svg>
+                <a href='facial_landmark_detection/'>
+                  <svg aria-hidden="true" focusable="false" data-prefix="far" data-icon="meh-rolling-eyes"
+                    class="svg-inline--fa fa-meh-rolling-eyes fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 496 512">
+                    <path fill="currentColor"
+                      d="M248 8C111 8 0 119 0 256s111 248 248 248 248-111 248-248S385 8 248 8zm0 448c-110.3 0-200-89.7-200-200S137.7 56 248 56s200 89.7 200 200-89.7 200-200 200zm88-304c-39.8 0-72 32.2-72 72s32.2 72 72 72 72-32.2 72-72-32.2-72-72-72zm0 112c-22.1 0-40-17.9-40-40 0-13.6 7.3-25.1 17.7-32.3-1 2.6-1.7 5.3-1.7 8.3 0 13.3 10.7 24 24 24s24-10.7 24-24c0-2.9-.7-5.7-1.7-8.3 10.4 7.2 17.7 18.7 17.7 32.3 0 22.1-17.9 40-40 40zm-104-40c0-39.8-32.2-72-72-72s-72 32.2-72 72 32.2 72 72 72 72-32.2 72-72zm-112 0c0-13.6 7.3-25.1 17.7-32.3-1 2.6-1.7 5.3-1.7 8.3 0 13.3 10.7 24 24 24s24-10.7 24-24c0-2.9-.7-5.7-1.7-8.3 10.4 7.2 17.7 18.7 17.7 32.3 0 22.1-17.9 40-40 40s-40-17.9-40-40zm192 128H184c-13.2 0-24 10.8-24 24s10.8 24 24 24h128c13.2 0 24-10.8 24-24s-10.8-24-24-24z">
+                    </path>
+                  </svg>
+                </a>
               </div>
             </div>
             <div>
@@ -238,7 +242,7 @@
                 <a href='facial_landmark_detection/index.html'>Facial Landmark Detection</a>
               </h3>
               <p>
-                <span class='wip'>WIP</span> Detecting facial landmarks like eyes, nose, mouth, etc., which can be used
+                Detecting facial landmarks like eyes, nose, mouth, etc., which can be used
                 for web-based try-on
                 simulator of online store.
               </p>
