@@ -3,7 +3,9 @@ WebML Benchmark
 This benchmark loads:
 -   Models trained by ImageNet
     - Mobilenet V1 (TFLite)
+    - Mobilenet V1 Quant (TFLite)
     - Mobilenet V2 (TFLite)
+    - Mobilenet V2 Quant (TFLite)
     - Squeezenet (TFLite)
     - Inception V3 (TFLite)
     - Inception V4 (TFLite)

@@ -1,7 +1,9 @@
 'use strict';
 const tfliteModelArray = [
   "mobilenet_v1_tflite",
+  "mobilenet_v1_quant_tflite",
   "mobilenet_v2_tflite",
+  "mobilenet_v2_quant_tflite",
   "inception_v3_tflite",
   "inception_v4_tflite",
   "squeezenet_tflite",
@@ -157,6 +159,7 @@ class Benchmark {
         await new Promise(resolve => requestAnimationFrame(resolve));
         let tStart = performance.now();
         await this.executeSingleAsync();
+        this.deQuantizeParams = this.model._deQuantizeParams;
         let elapsedTime = performance.now() - tStart;
         this.printPredictResult();
         computeResults.push(elapsedTime);
@@ -390,6 +393,7 @@ class WebMLJSBenchmark extends Benchmark {
   async setInputOutput() {
     const configModelName = this.configuration.modelName;
     const currentModel = getModelDicItem(configModelName);
+
     let width = currentModel.inputSize[1];
     let height = currentModel.inputSize[0];
     let dwidth;
@@ -403,9 +407,18 @@ class WebMLJSBenchmark extends Benchmark {
     const imageChannels = 4; // RGBA
     let drawContent;
 
+    this.isQuantized = currentModel.isQuantized || false;
+    let typedArray;
+
+    if (this.isQuantized) {
+      typedArray = Uint8Array;
+    } else {
+      typedArray = Float32Array;
+    }
+
     if (tfliteModelArray.indexOf(configModelName) !== -1 || onnxModelArray.indexOf(configModelName) !== -1) {
-      this.inputTensor = new Float32Array(currentModel.inputSize.reduce((a, b) => a * b));
-      this.outputTensor = new Float32Array(currentModel.outputSize);
+      this.inputTensor = new typedArray(currentModel.inputSize.reduce((a, b) => a * b));
+      this.outputTensor = new typedArray(currentModel.outputSize);
       drawContent = imageElement;
       dwidth = width;
       dheight = height;
@@ -418,15 +431,10 @@ class WebMLJSBenchmark extends Benchmark {
       this.ssdModelType = currentModel.type;
       this.ssdModelMargin = currentModel.margin;
       this.numClasses = currentModel.num_classes;
-      this.isQuantized = currentModel.isQuantized || false;;
-      let typedArray;
       if (currentModel.type === 'SSD') {
         if (this.isQuantized) {
-          typedArray = Uint8Array;
           this.deQuantizedOutputBoxTensor = new Float32Array(currentModel.num_boxes * currentModel.box_size);
           this.deQuantizedOutputClassScoresTensor = new Float32Array(currentModel.num_boxes * currentModel.num_classes);
-        } else {
-          typedArray = Float32Array;
         }
         this.inputTensor = new typedArray(currentModel.inputSize.reduce((a, b) => a * b));
         this.outputBoxTensor = new typedArray(currentModel.num_boxes * currentModel.box_size);
@@ -435,9 +443,9 @@ class WebMLJSBenchmark extends Benchmark {
         this.anchors = generateAnchors({});
       } else {
         // YOLO
-        this.inputTensor = new Float32Array(currentModel.inputSize.reduce((a, b) => a * b));
+        this.inputTensor = new typedArray(currentModel.inputSize.reduce((a, b) => a * b));
         this.anchors = currentModel.anchors;
-        this.outputTensor = [new Float32Array(currentModel.outputSize)]
+        this.outputTensor = [new typedArray(currentModel.outputSize)]
       }
       drawContent = imageElement;
       dwidth = width;
@@ -447,8 +455,8 @@ class WebMLJSBenchmark extends Benchmark {
         // reset for rerun with same image
         imageElement.src = bkPoseImageSrc;
       }
-      this.inputTensor = new Float32Array(currentModel.inputSize.reduce((a, b) => a * b));
-      this.outputTensor = new Float32Array(currentModel.outputSize.reduce((a, b) => a * b));
+      this.inputTensor = new typedArray(currentModel.inputSize.reduce((a, b) => a * b));
+      this.outputTensor = new typedArray(currentModel.outputSize.reduce((a, b) => a * b));
       this.inputSize = currentModel.inputSize;
       this.outputSize = currentModel.outputSize;
       height = this.inputSize[0];
@@ -478,7 +486,7 @@ class WebMLJSBenchmark extends Benchmark {
 
       this.scaleWidth = getValidResolution(this.scaleFactor, width, this.outputStride);
       this.scaleHeight = getValidResolution(this.scaleFactor, height, this.outputStride);
-      this.inputTensor = new Float32Array(this.scaleWidth * this.scaleHeight * channels);
+      this.inputTensor = new typedArray(this.scaleWidth * this.scaleHeight * channels);
       this.scaleInputSize = [1, this.scaleWidth, this.scaleHeight, channels];
 
       let HEATMAP_TENSOR_SIZE;
@@ -488,8 +496,8 @@ class WebMLJSBenchmark extends Benchmark {
         HEATMAP_TENSOR_SIZE = product(toHeatmapsize(this.scaleInputSize, this.outputStride));
       }
       let OFFSET_TENSOR_SIZE = HEATMAP_TENSOR_SIZE * 2;
-      this.heatmapTensor = new Float32Array(HEATMAP_TENSOR_SIZE);
-      this.offsetTensor = new Float32Array(OFFSET_TENSOR_SIZE);
+      this.heatmapTensor = new typedArray(HEATMAP_TENSOR_SIZE);
+      this.offsetTensor = new typedArray(OFFSET_TENSOR_SIZE);
       // prepare canvas for predict
       let poseCanvasPredict = document.getElementById('poseCanvasPredict');
       drawContent = await this.loadImage(poseCanvasPredict, width, height);
@@ -663,9 +671,13 @@ class WebMLJSBenchmark extends Benchmark {
       return a[0] < b[0] ? -1 : 1;
     });
     sorted.reverse();
-    let classes = [];
+    let prob;
     for (let i = 0; i < 3; ++i) {
-      let prob = sorted[i][0];
+      if (this.isQuantized) {
+        prob = this.deQuantizeParams[0].scale * (sorted[i][0] - this.deQuantizeParams[0].zeroPoint);
+      } else {
+        prob = sorted[i][0];
+      }
       let index = sorted[i][1];
       console.log(`label: ${this.labels[index]}, probability: ${(prob * 100).toFixed(2)}%`);
     }
