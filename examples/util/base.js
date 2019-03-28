@@ -31,7 +31,7 @@ const imageClassificationModels = [{
   intro: 'An efficient Convolutional Neural Networks for Mobile Vision Applications.',
   paperUrl: 'https://arxiv.org/pdf/1704.04861.pdf'
 }, {
-  modelName: 'Mobilenet v1 Quant(TFLite)',
+  modelName: 'Mobilenet v1 Quant (TFLite)',
   modelFormatName: 'mobilenet_v1_quant_tflite',
   isQuantized: true,
   modelSize: '4.3MB',
@@ -56,7 +56,7 @@ const imageClassificationModels = [{
   intro: 'MobileNetV2 improves the state of the art performance of mobile models.',
   paperUrl: 'https://arxiv.org/abs/1801.04381'
 }, {
-  modelName: 'Mobilenet v2 Quant(TFLite)',
+  modelName: 'Mobilenet v2 Quant (TFLite)',
   modelFormatName: 'mobilenet_v2_quant_tflite',
   isQuantized: true,
   modelSize: '6.9MB',
@@ -255,7 +255,7 @@ const objectDetectionModels = [{
   intro: 'SSD (Single Shot MultiBox Detector) is an unified framework for object detection with a single network. Loading SSD MobileNet model (converted from Tensorflow SSD MobileNet model) trained by COCO in TensorFlow Lite format, constructs and inferences it by WebML API.',
   paperUrl: 'https://arxiv.org/abs/1803.08225'
 }, {
-  modelName: 'SSD MobileNet v1 Quant(TFLite)',
+  modelName: 'SSD MobileNet v1 Quant (TFLite)',
   modelFormatName: 'ssd_mobilenet_v1_quant_tflite',
   isQuantized: true,
   modelSize: '6.9MB',
@@ -288,7 +288,7 @@ const objectDetectionModels = [{
   intro: 'SSD MobileNet V2 is slower than SSD Mobilenet V1, but has higher accuracy.',
   paperUrl: 'https://arxiv.org/abs/1801.04381'
 }, {
-  modelName: 'SSD MobileNet v2 Quant(TFLite)',
+  modelName: 'SSD MobileNet v2 Quant (TFLite)',
   modelFormatName: 'ssd_mobilenet_v2_quant_tflite',
   isQuantized: true,
   modelSize: '6.2MB',

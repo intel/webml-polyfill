@@ -3,7 +3,9 @@ WebML Benchmark
 This benchmark loads:
 -   Models trained by ImageNet
     - Mobilenet V1 (TFLite)
+    - Mobilenet V1 Quant (TFLite)
     - Mobilenet V2 (TFLite)
+    - Mobilenet V2 Quant (TFLite)
     - Squeezenet (TFLite)
     - Inception V3 (TFLite)
     - Inception V4 (TFLite)
@@ -16,7 +18,9 @@ This benchmark loads:
     - DenseNet (ONNX)
 -   Object Detection Models
     - SSD MobileNet v1 (TFLite)
+    - SSD MobileNet v1 Quant (TFLite)
     - SSD MobileNet v2 (TFLite)
+    - SSD MobileNet v2 Quant (TFLite)
     - SSDLite MobileNet v2 (TFLite)
     - Tiny Yolo v2 COCO (TFLite)
     - Tiny Yolo v2 VOC (TFLite)
