@@ -43,7 +43,12 @@ $(document).ready(() => {
     if (backend !== 'WebML' && prefer !== 'none') {
       backendtext = backend + ' + WebNN';
     }
-    $('#ictitle').html(`Skeleton Detection / ${backendtext} / ${currentprefertext}`);
+
+    if (currentprefertext === 'None') {
+      $('#ictitle').html(`Skeleton Detection / ${backendtext}`);
+    } else {
+      $('#ictitle').html(`Skeleton Detection / ${backendtext} (${currentprefertext})`);
+    }
   }
   updateTitleSD(ub, up);
 
@@ -103,8 +108,11 @@ $(document).ready(() => {
 
     currentPrefer = webnnId;
 
-    if(currentBackend === 'none' || currentBackend === '') {
+    if (currentBackend === 'none' || currentBackend === '') {
       $('#option').hide();
+      if (currentPrefer !== 'none') {
+        currentBackend = 'WebML';
+      }
     } else {
       $('#option').show();
       optionCompact();
