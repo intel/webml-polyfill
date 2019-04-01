@@ -85,7 +85,7 @@ class TFliteModelImporter {
           typedArray = Uint8Array;
         } break;
         default: {
-          throw new Error(`tensor type ${tensor.type()} is not supproted.`);
+          throw new Error(`tensor type ${tensor.type()} is not supported.`);
         }
       }
       let dims = tensor.shapeArray().length ? Array.from(tensor.shapeArray()) : [1];

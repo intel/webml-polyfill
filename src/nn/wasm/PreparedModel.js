@@ -1136,7 +1136,7 @@ export default class PreparedModel {
     } else if (type === OperandCode.TENSOR_QUANT8_ASYMM) {
       nn_ops.HEAPU8.set(data, ptr);
     } else {
-      throw new Error(`Operand type ${type} is not supproted`);
+      throw new Error(`Operand type ${type} is not supported`);
     }
   }
 
@@ -1150,7 +1150,7 @@ export default class PreparedModel {
     } else if (type === OperandCode.TENSOR_QUANT8_ASYMM) {
       view = new Uint8Array(nn_ops.HEAPU8.buffer, ptr, buffer.length);
     } else {
-      throw new Error(`Operand type ${type} is not supproted`);
+      throw new Error(`Operand type ${type} is not supported`);
     }
     buffer.set(view);
   }
@@ -1165,7 +1165,7 @@ export default class PreparedModel {
     } else if (type === OperandCode.TENSOR_QUANT8_ASYMM) {
       view = new Uint8Array(nn_ops.HEAPU8.buffer, ptr, length);
     } else {
-      throw new Error(`Operand type ${type} is not supproted`);
+      throw new Error(`Operand type ${type} is not supported`);
     }
     return view;
   }

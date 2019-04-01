@@ -658,7 +658,7 @@ export default class WebGLModel {
     } else if (type === OperandCode.TENSOR_INT32) {
       return 'int32';
     } else {
-      throw new Error(`Operand type ${type} is not supproted`);
+      throw new Error(`Operand type ${type} is not supported`);
     }
   }
 
