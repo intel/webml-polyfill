@@ -12,21 +12,21 @@ function drawFaceBoxes(image, canvas, face_boxes) {
       let ymin = box[2] / image.height * canvas.height;
       let ymax = box[3] / image.height * canvas.height;
       let prob = box[4];
-      ctx.strokeStyle = "blue";
-      ctx.fillStyle = "blue";
+      ctx.strokeStyle = "#009bea";
+      ctx.fillStyle = "#009bea";
       ctx.lineWidth = 3;
       ctx.strokeRect(xmin, ymin, xmax-xmin, ymax-ymin);
-      ctx.font = "20px Arial";
+      ctx.font = "18px Arial";
       let text = `${prob.toFixed(2)}`;
       let width = ctx.measureText(text).width;
       if (xmin >= 2 && ymin >= parseInt(ctx.font, 10)) {
         ctx.fillRect(xmin - 2, ymin - parseInt(ctx.font, 10), width + 4, parseInt(ctx.font, 10));
-        ctx.fillStyle = "white";
+        ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
         ctx.textAlign = 'start';
         ctx.fillText(text, xmin, ymin - 3);
       } else {
         ctx.fillRect(xmin + 2, ymin , width + 4,  parseInt(ctx.font, 10));
-        ctx.fillStyle = "white";
+        ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
         ctx.textAlign = 'start';
         ctx.fillText(text, xmin + 2, ymin + 15);
       }
@@ -44,8 +44,8 @@ function drawKeyPoints(image, canvas, Keypoints, boxes) {
       let y = ((box[3] - box[2]) * keypoints[i + 1] + box[2]) / image.height * canvas.height;
       // draw keypoints
       ctx.beginPath();
-      ctx.fillStyle = "blue";
-      ctx.strokeStyle = "blue";
+      ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.8)";
       ctx.arc(x, y, 2, 0, 2 * Math.PI);
       ctx.fill();
       ctx.closePath();

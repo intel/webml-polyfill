@@ -47,7 +47,7 @@ const getSupportedOps = (backend, prefer) => {
   return getDefaultSupportedOps(backend, prefer);
 };
 
-const requiredOps = async () => {
+let requiredOps = async () => {
   return utils.getRequiredOps();
 }
 

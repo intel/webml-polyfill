@@ -51,7 +51,12 @@ const updateTitle = (name, backend, prefer, model, modeltype) => {
   if (backend !== 'WebML' && prefer !== 'none') {
     backendtext = backend + ' + WebNN';
   }
-  $('#ictitle').html(`${name} / ${backendtext} / ${currentprefertext} / ${model} (${modeltype})`);
+
+  if(currentprefertext === 'None') {
+    $('#ictitle').html(`${name} / ${backendtext} / ${model} (${modeltype})`);
+  } else {
+    $('#ictitle').html(`${name} / ${backendtext} (${currentprefertext}) / ${model} (${modeltype})`);
+  }
 }
 
 $('#header').sticky({ topSpacing: 0, zIndex: '50' });
@@ -142,6 +147,7 @@ let us = getUrlParam('s');
 let ud = getUrlParam('d');
 let strsearch;
 let skeletonDetectionPath = location.pathname.toLocaleLowerCase().indexOf('skeleton_detection');
+let facialLandmarkDetectionPath = location.pathname.toLocaleLowerCase().indexOf('facial_landmark_detection');
 
 
 if (!location.search) {
@@ -251,8 +257,7 @@ if (skeletonDetectionPath <= -1) {
         return;
       }
 
-      utils.backend = '';
-      updateBackend(us === 'camera');
+      updateBackend(us === 'camera', true);
     });
 
     $('input:radio[name=bw]').click(() => {
@@ -283,8 +288,7 @@ if (skeletonDetectionPath <= -1) {
         return;
       }
 
-      utils.backend = '';
-      updateBackend(us === 'camera');
+      updateBackend(us === 'camera', true);
     });
 
     $('input:radio[name=m]').click(() => {

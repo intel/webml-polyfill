@@ -39,7 +39,10 @@ const updateScenario = async (camera = false) => {
   // for camera tab when needed
 }
 
-const updateBackend = async (camera = false) => {
+const updateBackend = async (camera = false, force = false) => {
+  if (force) {
+    utils.initialized = false;
+  }
   try { utils.deleteAll(); } catch (e) { }
   logConfig();
   await showProgress('Updating backend ...');

@@ -11,8 +11,12 @@ class Utils {
     this.canvasElement = canvas;
     this.canvasContext = this.canvasElement.getContext('2d');
     this.updateProgress;
-    this.loaded = false;
+    this.backend = '';
+    this.prefer = '';
     this.initialized = false;
+    this.loaded = false;
+    this.resolveGetRequiredOps = null;
+    this.outstandingRequest = null;
   }
 
   async loadModel(newModel) {
@@ -66,7 +70,31 @@ class Utils {
     let elapsed = performance.now() - start;
     console.log(`warmup time: ${elapsed.toFixed(2)} ms`);
     this.initialized = true;
+
+    if (this.resolveGetRequiredOps) {
+      this.resolveGetRequiredOps(this.model.getRequiredOps());
+    }
+
     return 'SUCCESS';
+  }
+
+  async getRequiredOps() {
+    if (!this.initialized) {
+      return new Promise(resolve => this.resolveGetRequiredOps = resolve);
+    } else {
+      return this.model.getRequiredOps();
+    }
+  }
+
+  getSubgraphsSummary() {
+    if (this.model._backend !== 'WebML' &&
+        this.model &&
+        this.model._compilation &&
+        this.model._compilation._preparedModel) {
+      return this.model._compilation._preparedModel.getSubgraphsSummary();
+    } else {
+      return [];
+    }
   }
 
   async predict(imageSource, box) {
@@ -92,12 +120,17 @@ class Utils {
 
   async loadUrl(url, binary, progress) {
     return new Promise((resolve, reject) => {
+      if (this.outstandingRequest) {
+        this.outstandingRequest.abort();
+      }
       let request = new XMLHttpRequest();
+      this.outstandingRequest = request;
       request.open('GET', url, true);
       if (binary) {
         request.responseType = 'arraybuffer';
       }
       request.onload = function(ev) {
+        this.outstandingRequest = null;
         if (request.readyState === 4) {
           if (request.status === 200) {
               resolve(request.response);
