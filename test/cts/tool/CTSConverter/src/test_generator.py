@@ -48,16 +48,22 @@ class Phase(object):
   def __init__(self):
     self.__objects = []
     self.__contents = []
+    self.__contentsjs = []
     self.__dict_of_objects = {}
 
-  def append(self, obj, x):
+  def append(self, obj, x, y):
     self.__objects.append(obj)
     self.__contents.append(x)
+    self.__contentsjs.append(y)
     self.__dict_of_objects[obj.ID()] = obj
 
   def dump(self, filename):
-    for x in self.__contents:
-      print (x, file=filename)
+    if JS_FLAG:
+      for y in self.__contentsjs:
+        print (y, file = filename)
+    else :
+      for x in self.__contents:
+        print ("  " + x + ";", file = filename)
 
   def objects(self):
     return self.__objects
@@ -124,7 +130,7 @@ class TypeLookup:
       "TENSOR_FLOAT32": "float",
       "TENSOR_QUANT8_ASYMM": "uint8_t",
 #     "OEM_SCALAR": this is service-defined.
-#     "TENSOR_OEM_BYTE": "uint8_t",
+      "TENSOR_OEM_BYTE": "uint8_t",
     }
 
   def get_cpptype(nnapi_type):
@@ -173,42 +179,55 @@ class Type(object):
 
   def dump(filename):
     for key, value in sorted(Type.__types.items()):
-      type_string = str(key.split(",")[0])
-      data_string = str(key[len(key.split(",")[0]) + 2:])
+      if JS_FLAG:
+        type_string = str(key.split(",")[0])
+        data_string = str(key[len(key.split(",")[0]) + 2:])
 
-      if type_string in ["FLOAT32", "INT32",  "UINT32"]:
-        print ("    let " + str(value.__name) + " = {type: nn." + type_string + "};", file = filename)
-      else :
-        if len(data_string[1:-1]) == 0:
-          for obj in js_obj:
-            if str(value.__name) == obj.get("type_name"):
-              dimensions_string = str(obj.get("value"))
-
-          print ("    let " + str(value.__name) + " = {type: nn." + type_string + ", dimensions: [" + dimensions_string[1:-1] + "]};", file = filename)
+        if type_string in ["FLOAT32", "INT32", "UINT32"]:
+          print ("    let " + str(value.__name) + " = {type: nn." + type_string + "};", file = filename)
         else :
-          dimensions_string = data_string[0:data_string.find("}") + 1]
-          if len(dimensions_string) == len(data_string):
-            print ("    let " + str(value.__name) + " = {type: nn." + type_string + ", dimensions: [" + dimensions_string[1:-1] + "]};", file = filename)
+          if len(data_string[1:-1]) == 0:
+            for obj in js_obj:
+              if str(value.__name) == obj.get("type_name"):
+                dimensions_string = obj.get("value")
+
+            print ("    let " + str(value.__name) + " = {type: nn." + type_string +\
+                   ", dimensions: [" + str(dimensions_string)[1:-1] + "]};", file = filename)
           else :
-            tmp_string = data_string[len(dimensions_string) + 2:]
-            scale_string = tmp_string.split(",")[0]
+            dimensions_string = data_string[0:data_string.find("}") + 1]
 
-            if len(tmp_string) == len(scale_string):
-              if scale_string.find("f") >= 0:
-                scale_string_tmp = scale_string[:-1]
-              else :
-                scale_string_tmp = scale_string
-
-              print ("    let " + str(value.__name) + " = {type: nn." + type_string + ", dimensions: [" + dimensions_string[1:-1] + "], scale: " + scale_string_tmp + "};", file = filename)
+            if len(dimensions_string) == len(data_string):
+              print ("    let " + str(value.__name) + " = {type: nn." + type_string +\
+                     ", dimensions: [" + dimensions_string[1:-1] + "]};", file = filename)
             else :
-              zeroPoint_string = tmp_string[len(scale_string) + 2:]
-              if scale_string.find("f") >= 0:
-                scale_string_tmp = scale_string[:-1]
-              else :
-                scale_string_tmp = scale_string
-              print ("    let " + str(value.__name) + " = {type: nn." + type_string + ", dimensions: [" + dimensions_string[1:-1] + "], scale: " + scale_string_tmp + ", zeroPoint: " + zeroPoint_string + "};", file = filename)
-        print ("    let " + str(value.__name) + "_length = product(" + str(value.__name) + ".dimensions);", file = filename)
+              tmp_string = data_string[len(dimensions_string) + 2:]
+              scale_string = tmp_string.split(",")[0]
 
+              if len(tmp_string) == len(scale_string):
+                if scale_string.find("f") >= 0:
+                  scale_string_tmp = scale_string[:-1]
+                else :
+                  scale_string_tmp = scale_string
+
+                print ("    let " + str(value.__name) + " = {type: nn." + type_string +\
+                       ", dimensions: [" + dimensions_string[1:-1] +\
+                       "], scale: " + scale_string_tmp + "};", file = filename)
+              else :
+                zeroPoint_string = tmp_string[len(scale_string) + 2:]
+
+                if scale_string.find("f") >= 0:
+                  scale_string_tmp = scale_string[:-1]
+                else :
+                  scale_string_tmp = scale_string
+
+                print ("    let " + str(value.__name) + " = {type: nn." + type_string +\
+                       ", dimensions: [" + dimensions_string[1:-1] +\
+                       "], scale: " + scale_string_tmp +\
+                       ", zeroPoint: " + zeroPoint_string + "};", file = filename)
+
+          print ("    let " + str(value.__name) + "_length = product(" + str(value.__name) + ".dimensions);", file = filename)
+      else :
+        print ("  OperandType " + str(value.__name) + "(Type::" + str(key) + ");", file = filename)
 
   def get_raw_shape(self):
     return self.__shape
@@ -258,9 +277,12 @@ class Operand(Value):
 
   def __init__(self, name, vt):
     Value.__init__(self, name, vt)
+    def_string = (
+        "auto " + self.get_name() + " = "\
+            "model->addOperand(&" + vt.get_name() + ")")
     js_string = ("    let " + self.get_name() +
                  " = operandIndex++;\n    model.addOperand(" + vt.get_name() + ");")
-    Operand.operands.append(self, js_string)
+    Operand.operands.append(self, def_string, js_string)
 
     flag = True
 
@@ -405,33 +427,34 @@ class Parameter(Input):
     self.initializer = initializer
     self.cpptype = TypeLookup.get_cpptype(vt)
     self.isFloat = TypeLookup.is_float(vt)
+    self.vt = vt
 
   def is_internal(self):
     return True
-
   def Definition(self):
     init_name = self.get_name() + "_init"
     initializer = [str(x) for x in self.initializer]
     js_data = initializer
-
     if self.cpptype == "float":
       initializer = [ pretty_print_as_float(x) for x in initializer]
-
     init = self.cpptype + " " + init_name + "[]"
     init = "static " + init + " = {" + ", ".join(initializer) + "};"
     args = [ self.get_name(), init_name,
             "sizeof(" + self.cpptype + ") * " + str(len(self.initializer)) ]
 
-    if self.isFloat:
-      array_str = "new Float32Array"
+    if JS_FLAG:
+      if self.vt in ["INT32", "TENSOR_INT32", "UINT32"]:
+        array_str = "new Int32Array"
+      elif self.vt == "TENSOR_QUANT8_ASYMM":
+        array_str = "new Uint8Array"
+      else :
+        array_str = "new Float32Array"
+      stmt = "  model.setOperandValue(" + self.get_name() + ", " + array_str + "([" + ", ".join(js_data) + "]));"
     else :
-      array_str = "new Int32Array"
-    stmt = "  model.setOperandValue(" + self.get_name() + ", " + array_str + "([" + ", ".join(js_data) + "]));"
+      stmt = "\n  ".join([init, "model->setOperandValue(" + ", ".join(args)+");"])
     return stmt
-
   def is_weight(self):
     return True
-
   def lifetime(self):
     if Configuration.useSHM():
       return "CONSTANT_REFERENCE"
@@ -485,7 +508,11 @@ class Operation(Definitions, Uses, Traversable):
   def Definition(self):
     inputs = Operand.print_operands(self.ins);
     outputs = Operand.print_operands(self.outs);
-    return "  model.addOperation(nn." + self.optype + ", " + "[" + ", ".join(inputs) + "], [" + ", ".join(outputs) + "]);"
+    if JS_FLAG:
+      return "  model.addOperation(nn." + self.optype + ", " + "[" + ", ".join(inputs) + "], [" + ", ".join(outputs) + "]);"
+    else :
+      return "model->addOperation(ANEURALNETWORKS_"+self.optype+", " + \
+          "{"+", ".join(inputs)+"}, {" + ", ".join(outputs) + "});"
 
   # Get Python-ish dump for the op
   def PyDefinition(self):
@@ -677,7 +704,7 @@ class Example():
       elif (ty == "TENSOR_QUANT8_ASYMM"):
         uint8_dict[k] = v
       else:
-        print ("Unhandled type %s" % ty,  file = sys.stderr)
+        print ("Unhandled type %s"%ty,  file = sys.stderr)
         assert 0 and "unsupported example type"
 
     tuple_init = """\
@@ -825,7 +852,7 @@ def js_obj_supplement():
 def js_print_examples(name, value, filename):
   for obj in js_obj:
     if str(name) == obj.get("obj"):
-      print ("    let %s = %s;" % (obj.get("value_name"), value), file = filename)
+      print ("    let %s = %s;"%(obj.get("value_name"), value), file = filename)
 
 def js_print_set_operand_value(obj_inputs, filename):
   if len(obj_inputs) > 1:
@@ -835,15 +862,17 @@ def js_print_set_operand_value(obj_inputs, filename):
       if not obj_input == js_obj_input:
         for obj in js_obj:
           if str(obj_input) == obj.get("obj"):
-            if obj.get("type") == "INT32" or obj.get("type") == "TENSOR_INT32" or obj.get("type") == "UINT32":
+            if obj.get("type") in ["INT32", "TENSOR_INT32", "UINT32"]:
               str_array = "Int32Array"
+            elif obj.get("type") == "TENSOR_QUANT8_ASYMM":
+              str_array = "Uint8Array"
             else :
               str_array = "Float32Array"
 
             obj["input_name"] = obj.get("obj") + "_input"
 
-            print ("    let %s = new %s(%s);" % (obj.get("input_name"), str_array, obj.get("value_name")), file = filename)
-            print ("    model.setOperandValue(%s, %s);\n" % (obj.get("obj"), obj.get("input_name")), file = filename)
+            print ("    let %s = new %s(%s);"%(obj.get("input_name"), str_array, obj.get("value_name")), file = filename)
+            print ("    model.setOperandValue(%s, %s);\n"%(obj.get("obj"), obj.get("input_name")), file = filename)
   else :
     js_obj_input = obj_inputs[0]
 
@@ -854,15 +883,17 @@ def js_print_set_input_value(only_input, filename):
 
   for obj in js_obj:
     if str(only_input) == obj.get("obj"):
-      if obj.get("type") == "INT32" or obj.get("type") == "TENSOR_INT32" or obj.get("type") == "UINT32":
+      if obj.get("type") in ["INT32", "TENSOR_INT32", "UINT32"]:
         str_array = "Int32Array"
+      elif obj.get("type") == "TENSOR_QUANT8_ASYMM":
+        str_array = "Uint8Array"
       else :
         str_array = "Float32Array"
 
       obj["input_name"] = obj.get("obj") + "_input"
 
-      print ("    let %s = new %s(%s);" % (obj.get("input_name"), str_array, obj.get("value_name")), file = filename)
-      print ("    execution.setInput(%s, %s);\n" % (count, obj.get("input_name")), file = filename)
+      print ("    let %s = new %s(%s);"%(obj.get("input_name"), str_array, obj.get("value_name")), file = filename)
+      print ("    execution.setInput(%s, %s);\n"%(count, obj.get("input_name")), file = filename)
 
       count = count + 1
 
@@ -872,15 +903,17 @@ def js_print_set_output_value(obj_outputs, filename):
   for obj_output in obj_outputs:
     for obj in js_obj:
       if str(obj_output) == obj.get("obj"):
-        if obj.get("type") == "INT32" or obj.get("type") == "TENSOR_INT32" or obj.get("type") == "UINT32":
+        if obj.get("type") in ["INT32", "TENSOR_INT32", "UINT32"]:
           str_array = "Int32Array"
+        elif obj.get("type") == "TENSOR_QUANT8_ASYMM":
+          str_array = "Uint8Array"
         else :
           str_array = "Float32Array"
 
         obj["output_name"] = obj.get("obj") + "_output"
 
-        print ("    let %s = new %s(%s);" % (obj.get("output_name"), str_array, obj.get("length")), file = filename)
-        print ("    execution.setOutput(%s, %s);\n" % (count, obj.get("output_name")), file = filename)
+        print ("    let %s = new %s(%s);"%(obj.get("output_name"), str_array, obj.get("length")), file = filename)
+        print ("    execution.setOutput(%s, %s);\n"%(count, obj.get("output_name")), file = filename)
 
         count = count + 1
 
@@ -888,8 +921,8 @@ def js_print_assert(obj_outputs, filename):
   for obj_output in obj_outputs:
     for obj in js_obj:
       if str(obj_output) == obj.get("obj"):
-        print ("    for (let i = 0; i < %s; ++i) {" % obj.get("length"), file = filename)
-        print ("      assert.isTrue(almostEqualCTS(%s[i], %s[i]));" % (obj.get("output_name"), obj.get("value_name")), file = filename)
+        print ("    for (let i = 0; i < %s; ++i) {"%obj.get("length"), file = filename)
+        print ("      assert.isTrue(almostEqualCTS(%s[i], %s[i]));"%(obj.get("output_name"), obj.get("value_name")), file = filename)
         print ("    }", file = filename)
 
 def js_print_model(ex_input, ex_output, count, filename, flag):
@@ -907,21 +940,20 @@ def js_print_model(ex_input, ex_output, count, filename, flag):
 
   if flag:
     if test_index == "":
-      print ("  it('check result for %s example', async function() {" % test_name, file = filename)
+      print ("  it('check result for %s example', async function() {"%test_name, file = filename)
     else:
-      print ("  it('check result for %s example/%s', async function() {" % (test_name, test_index), file = filename)
+      print ("  it('check result for %s example/%s', async function() {"%(test_name, test_index), file = filename)
   else:
     if test_index == "":
-      print ("  it('check result for %s example-%s', async function() {" % (test_name, count), file = filename)
+      print ("  it('check result for %s example-%s', async function() {"%(test_name, count), file = filename)
     else:
-      print ("  it('check result for %s example/%s-%s', async function() {" % (test_name, test_index, count), file = filename)
+      print ("  it('check result for %s example/%s-%s', async function() {"%(test_name, test_index, count), file = filename)
 
   print ("    let model = await nn.createModel(" + args + ");", file = filename)
   print ("    let operandIndex = 0;\n", file = filename)
 
   for name, value in ex_input.items():
     js_print_examples(name, value, filename)
-
   for name, value in ex_output.items():
     js_print_examples(name, value, filename)
 
@@ -975,9 +1007,10 @@ if __name__ == '__main__':
 
   js_obj_supplement()
 
-  print("Input nn spec: %s" % spec, file = sys.stderr)
+  print("Input nn test: %s" % spec, file = sys.stderr)
   print("Output js test: %s \n" % jsTest, file = sys.stderr)
 
+  JS_FLAG = True
   with smart_open(jsTest) as js_file:
     print ("describe('CTS', function() {", file = js_file)
     print ("  const assert = chai.assert;", file = js_file)
@@ -985,13 +1018,16 @@ if __name__ == '__main__':
 
     index_flag = len(Example.get_examples()) == 1
     count = 1
-
     for i, o in Example.get_examples():
       js_print_model(i, o, count, js_file, index_flag)
 
-      with open(alljsTest, "a+") as all_js_Test:
-        js_print_model(i, o, count, all_js_Test, index_flag)
+      if alljsTest != "-":
+        with open(alljsTest, "a+") as all_js_Test:
+          js_print_model(i, o, count, all_js_Test, index_flag)
 
       count = count + 1
 
     print ('});', file = js_file)
+
+#    for obj in js_obj:
+#      print (obj, file = sys.stderr)
