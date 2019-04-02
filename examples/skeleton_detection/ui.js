@@ -73,12 +73,8 @@ $(document).ready(() => {
 
     currentBackend = polyfillId;
 
-    if(currentBackend === 'none' || currentBackend === '') {
-      $('#option').hide();
-    } else {
-      $('#option').show();
-      optionCompact();
-    }
+    $('#option').show();
+    optionCompact();
 
     updateTitleSD(currentBackend, currentPrefer);
     strsearch = `?prefer=${currentPrefer}&b=${currentBackend}&s=${us}&d=${ud}`;
@@ -108,15 +104,11 @@ $(document).ready(() => {
 
     currentPrefer = webnnId;
 
-    if (currentBackend === 'none' || currentBackend === '') {
-      $('#option').hide();
-      if (currentPrefer !== 'none') {
-        currentBackend = 'WebML';
-      }
-    } else {
-      $('#option').show();
-      optionCompact();
+    if (currentPrefer !== 'none' && currentBackend === 'none') {
+      currentBackend = 'WebML';
     }
+    $('#option').show();
+    optionCompact();
 
     updateTitleSD(currentBackend, currentPrefer);
     strsearch = `?prefer=${currentPrefer}&b=${currentBackend}&s=${us}&d=${ud}`;
