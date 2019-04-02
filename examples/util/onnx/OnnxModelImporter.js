@@ -180,7 +180,7 @@ class OnnxModelImporter {
         type = this._nn.TENSOR_INT32;
       } break;
       default: {
-        throw new Error(`tensor type ${tensorType.elemType} is not supproted.`);
+        throw new Error(`tensor type ${tensorType.elemType} is not supported.`);
       }
     }
     dims = dims.length ? Array.from(dims) : [1]; // scalars have shape []

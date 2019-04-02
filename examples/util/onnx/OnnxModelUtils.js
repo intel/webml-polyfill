@@ -86,7 +86,7 @@ function getTensorData(tensor) {
       break;
 
     default: {
-      throw new Error(`tensor type ${tensor.dataType} is not supproted.`);
+      throw new Error(`tensor type ${tensor.dataType} is not supported.`);
     }
   }
 
