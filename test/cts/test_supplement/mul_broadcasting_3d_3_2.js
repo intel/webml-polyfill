@@ -4,10 +4,10 @@ describe('CTS Supplement Test', function() {
 
   it('check result for Mul broadcasting 3D-3D example/2', async function() {
     let model = await nn.createModel(options);
-    const type0 = {type: nn.TENSOR_FLOAT32, dimensions: [3, 2, 2]};
-    const type1 = {type: nn.TENSOR_FLOAT32, dimensions: [3, 1, 2]};
-    const type2 = {type: nn.TENSOR_FLOAT32, dimensions: [3, 2, 2]};
-    const length = product(type2.dimensions);
+    let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [3, 2, 2]};
+    let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [3, 1, 2]};
+    let type2 = {type: nn.TENSOR_FLOAT32, dimensions: [3, 2, 2]};
+    let length = product(type2.dimensions);
 
     let operandIndex = 0;
     let fusedActivationFuncNone = operandIndex++;

@@ -1,7 +1,7 @@
 describe('CTS Supplement Test', function() {
   const assert = chai.assert;
   const nn = navigator.ml.getNeuralNetworkContext();
-  
+
   it('check result for ATROUS_DEPTHWISE_CONV_2D same example-1', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
@@ -13,6 +13,7 @@ describe('CTS Supplement Test', function() {
     let type3 = {type: nn.INT32};
     let type4 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 3, 3, 4]};
     let type4_length = product(type4.dimensions);
+
     let op1 = operandIndex++;
     model.addOperand(type0);
     let op2 = operandIndex++;
@@ -31,6 +32,7 @@ describe('CTS Supplement Test', function() {
     model.addOperand(type3);
     let op3 = operandIndex++;
     model.addOperand(type4);
+
     model.setOperandValue(op2, new Float32Array([0.25, 0, 0.2, 0, 0.25, 0, 0, 0.3, 0.25, 0, 0, 0, 0.25, 0.1, 0, 0]));
     model.setOperandValue(bias, new Float32Array([1, 2, 3, 4]));
     model.setOperandValue(pad, new Int32Array([1]));
@@ -38,18 +40,25 @@ describe('CTS Supplement Test', function() {
     model.setOperandValue(rate_h, new Int32Array([1]));
     model.setOperandValue(mul, new Int32Array([2]));
     model.setOperandValue(act, new Int32Array([0]));
+
     model.addOperation(nn.ATROUS_DEPTHWISE_CONV_2D, [op1, op2, bias, pad, rate_w, rate_h, mul, act], [op3]);
     model.identifyInputsAndOutputs([op1], [op3]);
     await model.finish();
+
     let compilation = await model.createCompilation();
     compilation.setPreference(getPreferenceCode(options.prefer));
     await compilation.finish();
+
     let execution = await compilation.createExecution();
+
     let op1_input = new Float32Array(op1_value);
     execution.setInput(0, op1_input);
+
     let op3_output = new Float32Array(type4_length);
     execution.setOutput(0, op3_output);
+
     await execution.startCompute();
+
     for (let i = 0; i < type4_length; ++i) {
       assert.isTrue(almostEqualCTS(op3_output[i], op3_expect[i]));
     }
