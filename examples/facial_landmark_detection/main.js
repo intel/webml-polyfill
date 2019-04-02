@@ -42,7 +42,7 @@ const utilsPredict = async (source) => {
   }
   try {
     await showProgress('Image inferencing ...');
-    predict(source);
+    await predict(source);
     showResults();
   }
   catch (e) {
@@ -50,12 +50,12 @@ const utilsPredict = async (source) => {
   }
 }
 
-const startPredict = () => {
+const startPredict = async () => {
   if (streaming) {
     videoElement.width = videoElement.videoWidth;
     videoElement.height = videoElement.videoHeight;
     stats.begin();
-    predict(videoElement);
+    await predict(videoElement);
     stats.end();
     setTimeout(startPredict, 0);
   }
@@ -110,7 +110,7 @@ const updateBackend = async (camera = false, force = false) => {
   await showProgress('Updating backend ...');
   try {
     getOffloadOps(currentBackend, currentPrefer);
-    utilsInit(currentBackend, currentPrefer);
+    await utilsInit(currentBackend, currentPrefer);
     predictPath(camera);
   }
   catch (e) {
@@ -141,7 +141,7 @@ const main = async (camera = false) => {
     let landmarkmodel = facialLandmarkDetectionModels.filter(f => f.modelFormatName == currentLandmarkModel);
     await landmarkDetector.loadModel(landmarkmodel[0]);
     getOffloadOps(currentBackend, currentPrefer);
-    utilsInit(currentBackend, currentPrefer);
+    await utilsInit(currentBackend, currentPrefer);
     predictPath(camera);
   } catch (e) {
     errorHandler(e);
