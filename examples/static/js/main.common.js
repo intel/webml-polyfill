@@ -62,20 +62,3 @@ const getOffloadOps = async (backend, preder) => {
   // Get intersection of supportedOps and requiredops
   hybridRow(currentBackend, currentPrefer, intersection);
 }
-
-const hybridRow = (currentBackend, currentPrefer, offloadops) => {
-  if(offloadops && offloadops.size > 0 && currentBackend != 'WebML' && currentPrefer != 'none') {
-    $('.offload').fadeIn();
-    let offloadopsvalue = '';
-    offloadops.forEach((value) => {
-      let t = '<span class="ol">' + operationTypes[value] + '</span>';
-      offloadopsvalue += t;
-    })
-    $(".ol").remove();
-    $("#offloadops").append(offloadopsvalue);
-    $("#nnbackend").html(currentPrefer);
-    $("#polyfillbackend").html(currentBackend);
-  } else {
-    $('.offload').hide();
-  }
-}

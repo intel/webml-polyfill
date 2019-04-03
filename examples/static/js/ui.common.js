@@ -35,6 +35,23 @@ const toggleFullScreen = () => {
   }
 }
 
+const hybridRow = (currentBackend, currentPrefer, offloadops) => {
+  if(offloadops && offloadops.size > 0 && currentBackend != 'WebML' && currentPrefer != 'none') {
+    $('.offload').fadeIn();
+    let offloadopsvalue = '';
+    offloadops.forEach((value) => {
+      let t = '<span class="ol">' + operationTypes[value] + '</span>';
+      offloadopsvalue += t;
+    })
+    $(".ol").remove();
+    $("#offloadops").append(offloadopsvalue);
+    $("#nnbackend").html(currentPrefer);
+    $("#polyfillbackend").html(currentBackend);
+  } else {
+    $('.offload').hide();
+  }
+}
+
 const updateTitle = (name, backend, prefer, model, modeltype) => {
   model = model.replace(/_/g, ' ');
   let currentprefertext = {
@@ -79,6 +96,10 @@ $('.scrolltop, #logo a').click(() => {
 });
 
 $(document).ready(() => {
+  if(navigator.userAgent.toLowerCase().indexOf("edge") > -1) {
+    $('#logo').html('<img src="../static/img/edge_logo.png">')
+  }
+
   $('.nav-menu').superfish({
     animation: { opacity: 'show' },
     speed: 400
@@ -137,6 +158,7 @@ $(document).ready(() => {
     $('#l-WebML').removeClass('dnone');
     $('#webmlstatus').addClass('webml-status-true').html('supported');
   }
+
 });
 
 let up = getUrlParam('prefer');
