@@ -49,6 +49,7 @@ const updateBackend = async (camera = false, force = false) => {
   try {
     getOffloadOps(currentBackend, currentPrefer);
     await utils.init(currentBackend, currentPrefer);
+    showSubGraphsSummary(utils.getSubgraphsSummary());
     utilsPredict(imageElement, currentBackend, currentPrefer);
   }
   catch (e) {
@@ -72,6 +73,7 @@ const main = async (camera = false) => {
     changeCanvasSize(model[0]);
     getOffloadOps(currentBackend, currentPrefer);
     await utils.init(currentBackend, currentPrefer);
+    showSubGraphsSummary(utils.getSubgraphsSummary());
     utilsPredict(imageElement, currentBackend, currentPrefer);
   } catch (e) {
     errorHandler(e);

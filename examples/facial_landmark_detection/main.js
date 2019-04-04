@@ -111,6 +111,7 @@ const updateBackend = async (camera = false, force = false) => {
   try {
     getOffloadOps(currentBackend, currentPrefer);
     await utilsInit(currentBackend, currentPrefer);
+    showSubGraphsSummary(landmarkDetector.getSubgraphsSummary());
     predictPath(camera);
   }
   catch (e) {
@@ -142,6 +143,7 @@ const main = async (camera = false) => {
     await landmarkDetector.loadModel(landmarkmodel[0]);
     getOffloadOps(currentBackend, currentPrefer);
     await utilsInit(currentBackend, currentPrefer);
+    showSubGraphsSummary(landmarkDetector.getSubgraphsSummary());
     predictPath(camera);
   } catch (e) {
     errorHandler(e);

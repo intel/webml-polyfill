@@ -1000,6 +1000,7 @@ footer {
   color: rgb(255, 255, 255);
   background-color: rgba(255, 111, 97, 0.8);
   border: 1px solid rgba(255, 111, 97, 0.9);
+  text-shadow: 0px 1px 0px rgba(0, 0, 0, 0.1);
 }
 
 .checked:hover {
@@ -2410,6 +2411,14 @@ button.xclose {
   background: rgba(255, 255, 255, 1.0);
 }
 
+.modal-body {
+  padding: 0;
+}
+
+.modal-body ul {
+  margin-bottom: 0;
+}
+
 .modal-footer {
   border-top: 1px solid rgba(25, 190, 225, 0.2);
 }
@@ -2432,7 +2441,7 @@ button.xclose {
 
 .timeline {
   list-style: none;
-  padding: 20px 0 20px;
+  padding: 20px;
   position: relative;
 }
 
@@ -2448,7 +2457,7 @@ button.xclose {
 }
 
 .timeline > li {
-  margin-bottom: 20px;
+  margin-bottom: 5px;
   position: relative;
 }
 
@@ -2475,8 +2484,6 @@ button.xclose {
 .timeline > li > .timeline-panel {
   width: 46%;
   float: left;
-  border: 1px solid rgba(25, 190, 225, 0.2);
-  background-color: rgba(25, 190, 225, 1.0);
   color: rgba(255, 255, 255, 1.0);
   border-radius: 2px;
   padding: 4px 10px;
@@ -2485,8 +2492,27 @@ button.xclose {
   box-shadow: 0 1px 6px rgba(0, 0, 0, 0.175);
 }
 
-.timeline > li > .timeline-panel:hover {
-  
+.timeline-panel:hover, .timeline-panel.tp-webnn:hover, .timeline-panel.tp-webgl:hover, .timeline-panel.tp-wasm:hover {
+  background-color: rgba(32, 50, 68, 1.0);
+}
+
+.timeline-panel.tp-webnn {
+  background-color: rgba(10, 160, 200, 1.0);
+  border: 1px solid rgba(10, 160, 200, 0.2);
+}
+
+.timeline-panel.tp-webgl {
+  background-color: rgba(255, 174, 91, 1.0);
+  border: 1px solid rgba(255, 174, 91, 0.2);
+}
+
+.timeline-panel.tp-wasm {
+  background-color: rgba(255, 111, 97, 1.0);
+  border: 1px solid rgba(255, 111, 97, 0.2);
+}
+
+.timeline-badge .glyphicon {
+  background-color: rgba(255, 255, 255, 1.0);
 }
 
 .timeline > li > .timeline-panel:before {
@@ -2495,8 +2521,8 @@ button.xclose {
   right: -7px;
   display: inline-block;
   border-top: 7px solid transparent;
-  border-left: 7px solid rgba(25, 190, 225, 0.2);
-  border-right: 0 solid rgba(255, 255, 2255, 255, 255, 0);
+  border-left: 7px solid rgba(0, 0, 0, 0.03);
+  border-right: 0 solid rgba(255, 255, 255, 0);
   border-bottom: 7px solid transparent;
   content: " ";
 }
@@ -2508,27 +2534,40 @@ button.xclose {
   display: inline-block;
   border-top: 7px solid transparent;
   border-left: 7px solid rgba(255, 255, 255, 0);
-  border-right: 0 solid rgba(25, 190, 225, 0.2);
+  border-right: 0 solid rgba(0, 0, 0, 0.1);
   border-bottom: 7px solid transparent;
   content: " ";
 }
 
+.timeline > li > .timeline-panel.tp-webnn:before {
+  border-left: 7px solid rgba(10, 160, 200, 0.05);
+}
+
+.timeline > li > .timeline-panel.tp-wasm:before {
+  border-left: 7px solid rgba(255, 111, 97, 0.05);
+}
+
+.timeline > li > .timeline-panel.tp-webgl:before {
+  border-left: 7px solid rgba(255, 174, 91, 0.05);
+}
+
+.timeline > li > .timeline-panel:after {
+  border-right: 0 solid rgba(32, 50, 68, 0.05);
+}
+
 .timeline > li > .timeline-badge {
-  color: #fff;
   width: 36px;
-  height: 36px;
-  line-height: 28px;
-  font-size: 0.8em;
   text-align: center;
   position: absolute;
-  top: 16px;
+  top: 5px;
   left: 50%;
-  margin-left: -18px;
+  margin-left: -23px;
   z-index: 100;
   /* border-top-right-radius: 50%;
-  border-top-left-radius: 50%; */
+  border-top-left-radius: 50%; 
   border-bottom-right-radius: 50%;
   border-bottom-left-radius: 50%;
+  */
 }
 
 .timeline > li.timeline-inverted > .timeline-panel {
@@ -2549,16 +2588,20 @@ button.xclose {
   right: auto;
 }
 
-.timeline-badge.webnn {
-  background-color: rgba(25,225,210, 1.0) !important;
+.timeline-badge.tb-webnn {
+  color: rgba(10, 160, 200, 1.0);
 }
 
-.timeline-badge.webgl {
-  background-color: rgba(255, 174, 91, 1.0) !important;
+.timeline-badge.tb-webgl {
+  color: rgba(255, 174, 91, 1.0);
 }
 
-.timeline-badge.wasm {
-  background-color: rgba(255, 111, 97, 1.0) !important;
+.timeline-badge.tb-wasm {
+  color: rgba(255, 111, 97, 1.0);
+}
+
+.tp-webnn .timeline-body > p {
+  text-align: right;
 }
 
 .timeline-title {
@@ -2569,13 +2612,8 @@ button.xclose {
 .timeline-body > p,
 .timeline-body > ul {
   margin-bottom: 0;
-  font-size: 0.75rem;
+  font-size: 0.65rem;
   color: rgba(255, 255, 255, 1.0);
-}
-
-.timeline-body > p:hover,
-.timeline-body > ul:hover {
-  color: #333;
 }
 
 .timeline-body > p + p {
@@ -2584,8 +2622,62 @@ button.xclose {
 
 @media (min-width: 576px) {
   .modal-dialog {
-      max-width: 760px;
-      margin: 1.75rem auto;
+    max-width: 760px;
+    margin: 1.75rem auto;
+  }
+}
+
+[data-tooltip] {
+  position: relative;
+  z-index: 2;
+  cursor: pointer;
+}
+
+[data-tooltip]:before,
+[data-tooltip]:after {
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+[data-tooltip]:before {
+  position: absolute;
+  bottom: 150%;
+  left: 50%;
+  margin-bottom: 5px;
+  margin-left: -80px;
+  padding: 5px 7px;
+  width: 320px;
+  background-color: rgba(32, 50, 68, 1.0);
+  color: #fff;
+  content: attr(data-tooltip);
+  text-align: left;
+}
+
+[data-tooltip]:after {
+  position: absolute;
+  bottom: 150%;
+  left: 50%;
+  margin-left: -5px;
+  width: 0;
+  border-top: 5px solid rgba(32, 50, 68, 1.0);
+  border-right: 5px solid transparent;
+  border-left: 5px solid transparent;
+  content: " ";
+  font-size: 0;
+  line-height: 0;
+}
+
+[data-tooltip]:hover:before,
+[data-tooltip]:hover:after {
+  visibility: visible;
+  opacity: 1;
+}
+
+@media (max-width: 768px) {
+  [data-tooltip] {
+    position: static;
+    display: none;
   }
 }
 

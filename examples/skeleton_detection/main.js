@@ -261,6 +261,7 @@ const main = async (camera = false) => {
       showProgress('Loading model and initializing ...');
       getOffloadOps(currentBackend, currentPrefer);
       await utils.init(currentBackend, currentPrefer, inputSize);
+      showSubGraphsSummary(utils.getSubgraphsSummary());
       showProgress('Inferencing ...');
       poseDetectionFrame();
     }
@@ -268,6 +269,7 @@ const main = async (camera = false) => {
       showProgress('Loading model and initializing...');
       getOffloadOps(currentBackend, currentPrefer);
       await utils.init(currentBackend, currentPrefer, inputSize);
+      showSubGraphsSummary(utils.getSubgraphsSummary());
       showProgress('Inferencing ...');
       drawResult();
     }
