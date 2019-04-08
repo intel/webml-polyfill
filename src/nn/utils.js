@@ -6,7 +6,7 @@ export const operandCodeToTypedArrayMap = new Map([
   [OperandCode.UINT32, Uint32Array],
   [OperandCode.TENSOR_FLOAT32, Float32Array],
   [OperandCode.TENSOR_INT32, Int32Array],
-  [OperandCode.TENSOR_QUANT8_ASYMM, Int8Array]
+  [OperandCode.TENSOR_QUANT8_ASYMM, Uint8Array]
 ]);
 
 export function isTensor(type) {
@@ -36,4 +36,8 @@ export function validateEnum(enumValue, enumType) {
     }
   }
   return false;
+}
+
+export function findKey(obj, value) {
+  return Object.keys(obj).find(key => obj[key] === value);
 }

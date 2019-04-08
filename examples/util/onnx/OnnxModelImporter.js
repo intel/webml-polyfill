@@ -8,12 +8,13 @@ class OnnxModelImporter {
     this._tensorTypes = [];
     this._operations = [];
     this._operands = [];
+    this._requiredOps = new Set();
     this._options = {
-      softmax: kwargs.softmax,
+      softmax: kwargs.softmax, 
     };
     this._operandIndex = 0;
     this._backend = kwargs.backend;
-    this._prefer = kwargs.prefer
+    this._prefer = kwargs.prefer;
     if (this._backend === 'WebML') {
       if (nnNative === null) {
         throw Error('Fails to initialize neural network context');
@@ -25,8 +26,11 @@ class OnnxModelImporter {
   }
 
   async createCompiledModel() {
-    let options = {};
-    options.backend = this._backend;
+    let options = {
+      backend: this._backend,
+      eager: eager || false,
+      supportedOps: supportedOps,
+    };
     this._model = await this._nn.createModel(options);
 
     this._addTensorOperands();
@@ -57,96 +61,6 @@ class OnnxModelImporter {
       return error;
     }
     return 'success';
-  }
-
-  async * layerIterator(inputTensors, layerList) {
-    const graph = this._rawModel.graph;
-    const getLayerOutput = async (lastNode) => {
-      this._tensorIds = [];
-      this._tensorTypes = [];
-      this._operations = [];
-      this._operands = [];
-      this._operandIndex = 0;
-      if (this._backend !== 'WebML' && this._compilation) {
-        this._compilation._preparedModel._deleteAll();
-      }
-
-      this._model = await this._nn.createModel({backend: this._backend});
-      this._addTensorOperands();
-      lastNode = this._addOpsAndParams(lastNode);
-
-      const outputName = graph.node[lastNode].output[0];
-      const inputs = [this._getTensorIdByName(graph.node[0].input[0])];
-      const outputs = [this._getTensorIdByName(outputName)];
-      this._model.identifyInputsAndOutputs(inputs, outputs);
-
-      await this._model.finish();
-      this._compilation = await this._model.createCompilation();
-      this._compilation.setPreference(getPreferCode(this._backend, this._prefer));
-      await this._compilation.finish();
-      this._execution = await this._compilation.createExecution();
-
-      const outputSize = this._getTensorTypeByName(outputName).dimensions.reduce((a, b) => a * b);
-      const outputTensor = new Float32Array(outputSize);
-      await this.compute(inputTensors, [outputTensor]);
-      return {layerId: lastNode, outputName: outputName, tensor: outputTensor};
-    }
-
-    const operatorsLength = graph.node.length;
-    if (typeof layerList === 'undefined') {
-      for (let lastNode = 0; lastNode < operatorsLength;) {
-        const layerOutput = await getLayerOutput(lastNode);
-        yield layerOutput;
-        lastNode = layerOutput.layerId + 1;
-      }
-    } else {
-      for (let layerId of layerList) {
-        if (layerId >= operatorsLength || layerId < 0) {
-          throw new Error(`Illegal layer ${layerId}`);
-        }
-        yield await getLayerOutput(layerId);
-      }
-    }
-  }
-  _getLayerData() {
-    if (typeof getLayerFlag !== 'undefined' && getLayerFlag) {
-      for (let i = 0; i < arguments.length; i++){
-        //first arg must node
-        const node = arguments[0];
-        if (!jsonlist['Case'].hasOwnProperty(node.opType)) jsonlist['Case'][node.opType] = {};
-        switch(node.opType) {
-          case 'Conv': {
-            //node, bias, weight, options
-            // options: inputDims, outputDims, Dims, pads, strides, relu, fuserelu
-            if (!jsonlist['Case'][node.opType].hasOwnProperty(node.name)) {
-              jsonlist['Case'][node.opType][node.name] = {};
-              jsonlist['Case'][node.opType][node.name]['node'] = node;
-              if (!jsonlist['Source'].hasOwnProperty(node.input[1])) {
-                jsonlist['Source'][node.input[1]] = arguments[1];
-              }
-              if (!jsonlist['Source'].hasOwnProperty(node.input[2])){
-                jsonlist['Source'][node.input[2]] = arguments[2];
-              }
-              jsonlist['Case'][node.opType][node.name]['options'] = arguments[3];
-            }
-          } break;
-          case 'Concat':
-            // options: input1Dims, input2Dims, outputDims, axis
-          case 'Reshape':
-            // options: inputDims, outputDims
-          case 'AveragePool':
-            //options: inputDims, outputDims, pads, strides, kernelshape
-          case 'MaxPool': {
-            //options: inputDims, outputDims, pads, strides
-            if (!jsonlist['Case'][node.opType].hasOwnProperty(node.name)) {
-              jsonlist['Case'][node.opType][node.name] = {};
-              jsonlist['Case'][node.opType][node.name]['node'] = node;
-              jsonlist['Case'][node.opType][node.name]['options'] = arguments[1];
-            }
-          } break;
-        }
-      }
-    }
   }
 
   _getOperandValue(id) {
@@ -216,7 +130,7 @@ class OnnxModelImporter {
         type = this._nn.TENSOR_INT32;
       } break;
       default: {
-        throw new Error(`tensor type ${tensorType.elemType} is not supproted.`);
+        throw new Error(`tensor type ${tensorType.elemType} is not supported.`);
       }
     }
     dims = dims.length ? Array.from(dims) : [1]; // scalars have shape []
@@ -243,20 +157,21 @@ class OnnxModelImporter {
     // Cache operand type. It could be modified later: Depthwise Conv
     this._tensorTypes.push(type);
     if (typeof value !== 'undefined')
-      this._setOperandValue(index, value);
+      this._setOperandValue(index, value); 
     return index;
   }
 
   _addOperation(opCode, inputs, outputs) {
     // Cache operaion. It depends on operands that have not yet been added
     this._operations.push([opCode, inputs, outputs]);
+    this._requiredOps.add(opCode);
   }
 
   _addNewTensorOperand(name, type, value) {
     if (this._tensorIds.hasOwnProperty(name)) {
       let index = this._tensorIds[name];
       if (typeof value !== 'undefined') {
-        this._setOperandValue(index, value);
+        this._setOperandValue(index, value); 
       }
       return index;
     }
@@ -443,7 +358,6 @@ class OnnxModelImporter {
           console.log(`  output ${output}: [${outputDims}]`);
 
           opCode = isDepthWiseConv ? this._nn.DEPTHWISE_CONV_2D : this._nn.CONV_2D;
-          this._getLayerData(node, this._getOperandValueByName(node.input[1]), this._getOperandValueByName(node.input[2]), [inputType.dimensions, outputDims, dims, pads, strides, this._nn.FUSED_RELU, nextNode.output[0]]);
         } break;
         case 'BatchNormalization': {
           // Add inputs
@@ -698,7 +612,6 @@ class OnnxModelImporter {
             opCode = this._nn.MAX_POOL_2D;
           else if (node.opType === 'AveragePool')
             opCode = this._nn.AVERAGE_POOL_2D;
-          this._getLayerData(node, [inputType.dimensions, outputDims, pads, strides, kernelShape]);
         } break;
         case 'Concat': {
           console.log(`  inputs: [${node.input}]`);
@@ -727,7 +640,6 @@ class OnnxModelImporter {
           console.log(`  output ${output}: [${outputDims}]`);
 
           opCode = this._nn.CONCATENATION;
-					this._getLayerData(node, [input0Type.dimensions, this._getTensorTypeByName(node.input[1]).dimensions, outputDims, axis]);
         } break;
         case 'Dropout': {
           console.log(`Skip Dropout: ${node.input[0]} -> ${node.output[0]}`);
@@ -774,7 +686,7 @@ class OnnxModelImporter {
           const shapeTensor = getAttributeValue(node, 'value');
           const shapeData = getTensorData(shapeTensor);
           const shapeType = {type: this._nn.TENSOR_INT32, dimensions: Array.from(shapeTensor.dims)};
-          this._addNewTensorOperand(name, shapeType, shapeData);
+          this._addNewTensorOperand(name, shapeType, shapeData);  
         } break;
         case 'Reshape': {
           console.log(`  inputs: [${node.input}]`);
@@ -796,7 +708,7 @@ class OnnxModelImporter {
             const adaptDimIdx = outputDims.indexOf(-1);
             outputDims[adaptDimIdx] = product(inputDims) / product(nonAdaptDim);
           } else if (minusOneCnt !== 0)
-            throw new Error(`Invalid shape ${outputDims}`);
+            throw new Error(`Invalid shape ${outputDims}`); 
           this._setOperandValue(shapeId, outputDims);
 
           // Add outputs
@@ -826,7 +738,7 @@ class OnnxModelImporter {
           const outputDims =  [outputDim1, outputDim2];
 
           const shapeType = {type: this._nn.TENSOR_INT32, dimensions: [2]};
-          const shapeId = this._addNewTensorOperand(`shape_${name}`, shapeType, new Int32Array(outputDims));
+          const shapeId = this._addNewTensorOperand(`shape_${name}`, shapeType, new Int32Array(outputDims)); 
           inputs.push(shapeId);
 
           // Add outputs
@@ -836,7 +748,6 @@ class OnnxModelImporter {
           outputs.push(outputId);
           console.log(`  output ${output}: [${outputDims}]`);
           opCode = this._nn.RESHAPE;
-          this._getLayerData(node, [inputDims, [outputDims[0], outputDims[1]]]);
         } break;
         case 'Unsqueeze': {
           const input = node.input[0];
@@ -875,7 +786,7 @@ class OnnxModelImporter {
       if (typeof opCode === 'undefined')
         continue;
 
-      if (i === graph.node.length - 1) {
+      if (i === graph.node.length - 1) { 
 
         // redirect the output of the last node to the existing tensor bound to
         // the node in the graph, i.e. output tensor given by the user
@@ -903,7 +814,7 @@ class OnnxModelImporter {
         }
       }
 
-      this._addOperation(opCode, inputs, outputs);
+      this._addOperation(opCode, inputs, outputs);   
     }
 
     // Write back all cached operands and operations
@@ -917,5 +828,9 @@ class OnnxModelImporter {
       this._model.addOperation(opCode, inputs, outputs);
     }
     return i - 1;
+  }
+
+  async getRequiredOps() {
+    return this._requiredOps;
   }
 }

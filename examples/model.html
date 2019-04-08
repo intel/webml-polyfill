@@ -34,7 +34,7 @@
   <header id='header'>
     <div class='container'>
       <div id='logo' class='pull-left'>
-        <a href='index.html'>
+        <a href='index.html' id='logo'>
           <svg preserveAspectRatio='xMidYMid meet' viewBox='-1.2596205660195778 -1.002390572390567 185.26504164633673 39.987210231814544'
             width='181.27' height='35.99'>
             <defs>
@@ -58,12 +58,14 @@
 
       <nav id='nav-container'>
         <ul class='nav-menu'>
-          <li class='menu-has-children'><a href='index.html'>Examples</a>
+          <li class='menu-has-children'><a href='./'>Examples</a>
             <ul>
-              <li><a href='image_classification/index.html'>Image Classification</a></li>
-              <li><a href='object_detection/index.html'>Object Detection</a></li>
-              <li><a href='skeleton_detection/index.html'>Skeleton Detection</a></li>
-              <li><a href='semantic_segmentation/index.html'>Semantic Segmentation</a></li>
+              <li><a href='image_classification/'>Image Classification</a></li>
+              <li><a href='object_detection/'>Person/Object Detection</a></li>
+              <li><a href='semantic_segmentation/'>Semantic Segmentation</a></li>
+              <li><a href='skeleton_detection/'>Skeleton Detection</a></li>
+              <li><a href='facial_landmark_detection/'>Facial Landmark Detection</a></li>
+              <li><a href='super_resolution/'>Super Resolution</a></li>
             </ul>
           </li>
           <li><a href='model.html'>Models</a></li>
@@ -78,28 +80,28 @@
       </h2>
 
       <h4 class='text-center'>
-        <a href='image_classification/index.html'>Image Classification</a>
-      </h4>
-      <div class="table-responsive">
-        <table id='modelcv-ic' class='modelcv table table-borderless table-hover'>
-          <caption>Image Classification - Computer Vision based models</caption>
-          <thead>
-            <tr>
-              <th scope='col'>Model</th>
-              <th scope='col'>Format</th>
-              <th scope='col'>Size</th>
-              <th scope='col'>Paper</th>
-              <th scope='col' title='Netron Model Visualizer'>Netron</th>
-              <th scope='col'>Description</th>
-            </tr>
-          </thead>
-          <tbody>
-          </tbody>
-        </table>
-      </div>
+          <a href='image_classification/'>Image Classification</a>
+        </h4>
+        <div class="table-responsive">
+          <table id='modelcv-ic' class='modelcv table table-borderless table-hover'>
+            <caption>Image Classification - Computer Vision based models</caption>
+            <thead>
+              <tr>
+                <th scope='col'>Model</th>
+                <th scope='col'>Format</th>
+                <th scope='col'>Size</th>
+                <th scope='col'>Paper</th>
+                <th scope='col' title='Netron Model Visualizer'>Netron</th>
+                <th scope='col'>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+            </tbody>
+          </table>
+        </div>
 
       <h4 class='text-center'>
-        <a href='object_detection/index.html'>Object Detection</a>
+        <a href='object_detection/'>Object/Person Detection</a>
       </h4>
       <div class="table-responsive">
         <table id='modelcv-od' class='modelcv table table-borderless table-hover'>
@@ -120,10 +122,31 @@
       </div>
 
       <h4 class='text-center'>
-        <a href='skeleton_detection/index.html'>Skeleton Detection</a>
+          <a href='semantic_segmentation/'>Semantic Segmentation</a>
+        </h4>
+        <div class="table-responsive">
+          <table id='modelcv-ss' class='modelcv table table-borderless table-hover'>
+            <caption>Semantic Segmentation - Computer Vision based models</caption>
+            <thead>
+              <tr>
+                <th scope='col'>Model</th>
+                <th scope='col'>Format</th>
+                <th scope='col'>Size</th>
+                <th scope='col'>Paper</th>
+                <th scope='col' title='Netron Model Visualizer'>Netron</th>
+                <th scope='col'>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+            </tbody>
+          </table>
+      </div>
+
+      <h4 class='text-center'>
+        <a href='skeleton_detection/'>Skeleton Detection</a>
       </h4>
       <div class="table-responsive">
-        <table id='modelcv-hpe' class='modelcv table table-borderless table-hover'>
+        <table id='modelcv-sd' class='modelcv table table-borderless table-hover'>
           <caption>Skeleton Detection - Computer Vision based models</caption>
           <thead>
             <tr>
@@ -141,11 +164,47 @@
       </div>
 
       <h4 class='text-center'>
-        <a href='semantic_segmentation/index.html'>Semantic Segmentation</a>
+          <a href='object_detection/'>Facial Landmark Detection</a>
+        </h4>
+        <div class="table-responsive">
+          <table id='modelcv-odf' class='modelcv table table-borderless table-hover'>
+            <caption>Face Detection - Computer Vision based models</caption>
+            <thead>
+              <tr>
+                <th scope='col'>Model</th>
+                <th scope='col'>Format</th>
+                <th scope='col'>Size</th>
+                <th scope='col'>Paper</th>
+                <th scope='col' title='Netron Model Visualizer'>Netron</th>
+                <th scope='col'>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+            </tbody>
+          </table>
+          <table id='modelcv-fld' class='modelcv table table-borderless table-hover'>
+              <caption>Facial Landmark Detection - Computer Vision based models</caption>
+              <thead>
+                <tr>
+                  <th scope='col'>Model</th>
+                  <th scope='col'>Format</th>
+                  <th scope='col'>Size</th>
+                  <th scope='col'>Paper</th>
+                  <th scope='col' title='Netron Model Visualizer'>Netron</th>
+                  <th scope='col'>Description</th>
+                </tr>
+              </thead>
+              <tbody>
+              </tbody>
+            </table>
+        </div>
+
+      <h4 class='text-center'>
+        <a href='super_resolution/'>Super Resolution</a>
       </h4>
       <div class="table-responsive">
-        <table id='modelcv-ss' class='modelcv table table-borderless table-hover'>
-          <caption>Semantic Segmentation - Computer Vision based models</caption>
+        <table id='modelcv-sr' class='modelcv table table-borderless table-hover'>
+          <caption>Super Resolution - Computer Vision based models</caption>
           <thead>
             <tr>
               <th scope='col'>Model</th>
@@ -160,6 +219,7 @@
           </tbody>
         </table>
       </div>
+    </div>
   </section>
 
   <footer>
@@ -178,6 +238,7 @@
           <p>&copy;2019 <a href='index.html'>WebNN API</a></p>
         </div>
       </div>
+    </div>
   </footer>
 
   <a href='https://github.com/intel/webml-polyfill/' class='github-corner' aria-label='View source on GitHub'>
@@ -192,11 +253,12 @@
   </a>
 
   <script src='static/lib/jquery/jquery.min.js'></script>
+  <script src='static/lib/jquery/jquery-migrate-3.0.1.min.js'></script>
   <script src='static/lib/superfish/superfish.min.js'></script>
   <script src='static/lib/stickyjs/sticky.js'></script>
   <script src='../dist/webml-polyfill.js'></script>
   <script src='util/base.js'></script>
-  <script src='util/uicommon.js'></script>
+  <script src='static/js/ui.common.js'></script>
   <script src='static/js/model.js'></script>
 </body>
 

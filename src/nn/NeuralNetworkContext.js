@@ -68,6 +68,9 @@ export default class NeuralNetworkContext {
     this.SPACE_TO_DEPTH = OperationCode.SPACE_TO_DEPTH;
     this.SVDF = OperationCode.SVDF;
     this.TANH = OperationCode.TANH;
+    this.BATCH_TO_SPACE_ND = OperationCode.BATCH_TO_SPACE_ND;
+    this.TRANSPOSE = OperationCode.TRANSPOSE;
+    this.MAXIMUM = OperationCode.MAXIMUM;
     this.ATROUS_CONV_2D = OperationCode.ATROUS_CONV_2D;
     this.ATROUS_DEPTHWISE_CONV_2D = OperationCode.ATROUS_DEPTHWISE_CONV_2D;
   }

@@ -17,6 +17,7 @@ class PoseNet {
     this._cacheMap = cacheMap;
     this._backend = backend;
     this._prefer = prefer;
+    this._requiredOps = new Set();
     if (this._backend === 'WebML') {
       if (nnNative === null) {
         throw Error('Fails to initialize neural network context');
@@ -27,8 +28,11 @@ class PoseNet {
     }
   }
   async createCompiledModel() {
-    let options = {};
-    options.backend = this._backend;
+    let options = {
+      backend: this._backend,
+      eager: eager || false,
+      supportedOps: supportedOps,
+    };
     this._model = await this._nn.createModel(options);
     await this._addTensorOperands();
     await this._model.finish();
@@ -64,6 +68,11 @@ class PoseNet {
       return error;
     }
     return 'success';
+  }
+
+  _addOperation(opType, inputs, outputs) {
+    this._requiredOps.add(opType);
+    this._model.addOperation(opType, inputs, outputs);
   }
 
   async _addTensorOperands() {
@@ -203,7 +212,7 @@ class PoseNet {
           inputs.push(this._addScalarInt32(this._modelArch[i].stride));
           inputs.push(this._addScalarInt32(fuseCode));
           const opType = this._nn.CONV_2D;
-          this._model.addOperation(opType, inputs, [outputs]);
+          this._addOperation(opType, inputs, [outputs]);
         } else if (this._modelArch[i].convType === "separableConv") {
           const paddingCode = this._nn.PADDING_SAME;
           const fuseCode = this._nn.FUSED_RELU6;
@@ -223,7 +232,7 @@ class PoseNet {
             }
             inputs.push(this._addScalarInt32(multiplier));
             inputs.push(this._addScalarInt32(fuseCode));
-            this._model.addOperation(opType, inputs, [outputs]);
+            this._addOperation(opType, inputs, [outputs]);
             inputs = [];
           } else {
             const stride = 1;
@@ -235,7 +244,7 @@ class PoseNet {
             inputs.push(this._addScalarInt32(stride));
             inputs.push(this._addScalarInt32(stride));
             inputs.push(this._addScalarInt32(fuseCode));
-            this._model.addOperation(opType, inputs, [outputs]);
+            this._addOperation(opType, inputs, [outputs]);
           }
         }
       }    
@@ -265,7 +274,7 @@ class PoseNet {
     inputs.push(this._addScalarInt32(stride));
     inputs.push(this._addScalarInt32(this._nn.FUSED_NONE));
     let outputs = this._outputTensorId[0];
-    this._model.addOperation(this._nn.CONV_2D, inputs, [outputs]);
+    this._addOperation(this._nn.CONV_2D, inputs, [outputs]);
 
     // add operands for offset layer
     inputs = [];
@@ -289,7 +298,7 @@ class PoseNet {
     inputs.push(this._addScalarInt32(stride));
     inputs.push(this._addScalarInt32(this._nn.FUSED_NONE));
     outputs = this._outputTensorId[1];
-    this._model.addOperation(this._nn.CONV_2D, inputs, [outputs]);
+    this._addOperation(this._nn.CONV_2D, inputs, [outputs]);
     
     if (this._type === "Multiperson") {  
       inputs = [];
@@ -313,7 +322,7 @@ class PoseNet {
       inputs.push(this._addScalarInt32(stride));
       inputs.push(this._addScalarInt32(this._nn.FUSED_NONE));
       outputs = this._outputTensorId[2];
-      this._model.addOperation(this._nn.CONV_2D, inputs, [outputs]);
+      this._addOperation(this._nn.CONV_2D, inputs, [outputs]);
       
       inputs = [];
       inputs.push(this._outputLayer[this._outputLayer.length-1]);  
@@ -336,7 +345,7 @@ class PoseNet {
       inputs.push(this._addScalarInt32(stride));
       inputs.push(this._addScalarInt32(this._nn.FUSED_NONE));
       outputs = this._outputTensorId[3];
-      this._model.addOperation(this._nn.CONV_2D, inputs, [outputs]);
+      this._addOperation(this._nn.CONV_2D, inputs, [outputs]);
     }
   }
 
@@ -373,8 +382,12 @@ class PoseNet {
       let percentComplete = current / length *100;
       percentComplete = percentComplete.toFixed(0);
       progressBar.style = `width: ${percentComplete}%`;
-      updateLoading(loadedSize.toFixed(0), totalSize.toFixed(0), percentComplete);
+      updateLoadingSD(loadedSize.toFixed(0), totalSize.toFixed(0), percentComplete);
     }
+  }
+
+  getRequiredOps() {
+    return this._requiredOps;
   }
 }
 

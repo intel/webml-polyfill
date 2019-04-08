@@ -9,6 +9,8 @@ This is an automation tool kit to check regression easily for developers when su
 ```sh
    $ npm install
 ```
+   You need modify chromedriver version to '2.45.0' in package.json when you run chromium 70 build. chromedriver 2.46.0 supports chromium >=71.
+ 
    If installing `chromedriver` fails, you can install `chromedriver` with this command:
 
       $ npm install chromedriver --chromedriver_cdnurl=http://cdn.npm.taobao.org/dist/chromedriver

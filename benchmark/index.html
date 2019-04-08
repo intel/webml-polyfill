@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>WebML Benchmark</title>
+    <title>WebNN Benchmark</title>
     <link rel="stylesheet" href="../examples/third_party/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
     <style>
       body {
@@ -30,6 +30,9 @@
         font-size: 12px;
         tab-size: 2;
       }
+      input[type=checkbox] {
+        vertical-align: middle;
+      }
       .prefer-show {
         display: block;
       }
@@ -42,12 +45,14 @@
     <div class="container" id="container">
       <div class="row">
         <div class="col-12">
-          <h1>WebML Benchmark</h1>
+          <h1>WebNN Benchmark</h1>
           <div>
             <h4>Model</h4>
             <select id="modelName">
               <option value="mobilenet_v1_tflite" selected>Mobilenet v1 (TFLite)</option>
+              <option value="mobilenet_v1_quant_tflite">Mobilenet v1 Quant (TFLite)</option>
               <option value="mobilenet_v2_tflite">Mobilenet v2 (TFLite)</option>
+              <option value="mobilenet_v2_quant_tflite">Mobilenet v2 Quant (TFLite)</option>
               <option value="squeezenet_tflite">Squeezenet (TFLite)</option>
               <option value="inception_v3_tflite">Inception v3 (TFLite)</option>
               <option value="inception_v4_tflite">Inception v4 (TFLite)</option>
@@ -59,9 +64,21 @@
               <option value="inception_v2_onnx">Inception v2 (ONNX)</option>
               <option value="densenet_onnx">DenseNet (ONNX)</option>
               <option value="ssd_mobilenet_v1_tflite">SSD MobileNet v1 (TFLite)</option>
+              <option value="ssd_mobilenet_v1_quant_tflite">SSD MobileNet v1 Quant (TFLite)</option>
               <option value="ssd_mobilenet_v2_tflite">SSD MobileNet v2 (TFLite)</option>
+              <option value="ssd_mobilenet_v2_quant_tflite">SSD MobileNet v2 Quant (TFLite)</option>
               <option value="ssdlite_mobilenet_v2_tflite">SSDLite MobileNet v2 (TFLite)</option>
+              <option value="tiny_yolov2_coco_tflite">Tiny Yolo v2 COCO (TFLite)</option>
+              <option value="tiny_yolov2_voc_tflite">Tiny Yolo v2 VOC (TFLite)</option>
               <option value="posenet">PoseNet</option>
+              <option value="deeplab_mobilenet_v2_224_tflite">Deeplab 224 (TFLite)</option>
+              <option value="deeplab_mobilenet_v2_224_atrous_tflite">Deeplab 224 Atrous (TFLite)</option>
+              <option value="deeplab_mobilenet_v2_257_tflite">Deeplab 257 (TFLite)</option>
+              <option value="deeplab_mobilenet_v2_257_atrous_tflite">Deeplab 257 Atrous (TFLite)</option>
+              <option value="deeplab_mobilenet_v2_321_tflite">Deeplab 321 (TFLite)</option>
+              <option value="deeplab_mobilenet_v2_321_atrous_tflite">Deeplab 321 Atrous (TFLite)</option>
+              <option value="deeplab_mobilenet_v2_513_tflite">Deeplab 513 (TFLite)</option>
+              <option value="deeplab_mobilenet_v2_513_atrous_tflite">Deeplab 513 Atrous (TFLite)</option>
             </select>
           </div>
           <div>
@@ -69,12 +86,13 @@
             <select id="configurations">
             </select>
           </div>
-          <div id="preferDiv" class="prefer-hidden">
+          <div id="preferDiv" class="prefer-show">
             <h4>Preference</h4>
             <select id="preferSelect">
               <option value="sustained" selected>SUSTAINED_SPEED</option>
               <option value="fast">FAST_SINGLE_ANSWER</option>
               <option value="low">LOW_POWER</option>
+              <option value="none">None</option>
             </select>
           </div>
           <div>
@@ -82,20 +100,53 @@
             1(warming up) + <input type="number" id="iteration" min="1" size="4" value="200"/>
           </div>
           <div class="row top-margin">
-            <div class="col">
+            <div class="col-4" id="supported-ops-select">
+              <label><input id="eagerMode" type="checkbox"> Eager Mode</label>
+              <br><br>
+              <button id="selectAllOps">Select All</button>
+              <button id="uncheckAllOps">Uncheck All</button>
+              <br><br>
+              <label><input type="checkbox" name="supportedOp" value="0"> ADD</label>
+              <br>
+              <label><input type="checkbox" name="supportedOp" value="10003"> ATROUS_CONV_2D</label>
+              <br>
+              <label><input type="checkbox" name="supportedOp" value="10004"> ATROUS_DEPTHWISE_CONV_2D</label>
+              <br>
+              <label><input type="checkbox" name="supportedOp" value="1"> AVERAGE_POOL_2D</label>
+              <br>
+              <label><input type="checkbox" name="supportedOp" value="2"> CONCATENATION</label>
+              <br>
+              <label><input type="checkbox" name="supportedOp" value="3"> CONV_2D</label>
+              <br>
+              <label><input type="checkbox" name="supportedOp" value="4"> DEPTHWISE_CONV_2D</label>
+              <br>
+              <label><input type="checkbox" name="supportedOp" value="9"> FULLY_CONNECTED</label>
+              <br>
+              <label><input type="checkbox" name="supportedOp" value="17"> MAX_POOL_2D</label>
+              <br>
+              <label><input type="checkbox" name="supportedOp" value="18"> MUL</label>
+              <br>
+              <label><input type="checkbox" name="supportedOp" value="22"> RESHAPE</label>
+              <br>
+              <label><input type="checkbox" name="supportedOp" value="23"> RESIZE_BILINEAR</label>
+              <br>
+              <label><input type="checkbox" name="supportedOp" value="25"> SOFTMAX</label>
             </div>
             <div class="col-8" align="center">
               <canvas id="poseCanvas"></canvas>
               <canvas id="poseCanvasPredict" width="513" height="513"></canvas>
+              <canvas id="segCanvas"></canvas>
               <canvas id="canvas"></canvas>
               <img id="image" crossorigin="anonymous" class="img-fluid" alt="Responsive image" src="../examples/image_classification/img/bee_eater.jpg">
               <img id="imageClassificationImage" hidden crossorigin="anonymous" class="img-fluid" alt="Responsive image" src="../examples/image_classification/img/bee_eater.jpg">
               <img id="poseImage" hidden  crossorigin="anonymous" class="img-fluid" alt="Responsive image" src="../examples/skeleton_detection/img/download.png">
               <img id="ssdMobileImage" hidden crossorigin="anonymous" class="img-fluid" alt="Responsive image" src="../examples/object_detection/img/image1.jpg">
+              <img id='segmentationImage' hidden crossorigin='anonymous' class='img-fluid' alt='Responsive image' src='../examples/semantic_segmentation/img/woman.jpg'>
             </div>
             <div class="col">
             </div>
           </div>
+          <div class='row labels-wrapper' id='labelitem'></div>
           <div class="row top-margin">
             <div class="col">
             </div>
@@ -125,13 +176,19 @@
     <script src="../examples/util/onnx/onnx.js"></script>
     <script src="../examples/util/onnx/OnnxModelUtils.js"></script>
     <script src="../examples/util/onnx/OnnxModelImporter.js"></script>
-
     <script src="../examples/skeleton_detection/src/decodePose.js"></script>
     <script src="../examples/skeleton_detection/src/helperFunc.js"></script>
     <script src="../examples/skeleton_detection/utils.js"></script>
     <script src="../examples/skeleton_detection/src/PoseNet.js"></script>
     <script src="../examples/skeleton_detection/src/DrawOutputs.js"></script>
     <script src="../examples/util/decoders/SsdDecoder.js"></script>
+    <script src="../examples/util/decoders/Yolo2Decoder.js"></script>
+    <script src='../examples/semantic_segmentation/src/WebGLUtils.js'></script>
+    <script src='../examples/semantic_segmentation/src/Shader.js'></script>
+    <script src='../examples/semantic_segmentation/src/GuidedFilter.js'></script>
+    <script src="../examples/semantic_segmentation/src/DrawOutputs.js"></script>
+    <script src='../examples/static/lib/jquery/jquery.min.js'></script>
+
     <script src="index.js"></script>
   </body>
 </html>

@@ -4,18 +4,14 @@
     <title>Onnx Importer Test</title>
   </head>
   <body>
-    <script src="../../../dist/webml-polyfill.js"></script>
-    <script src="../../third_party/protobuf.min.js"></script>
-    <script src="../../util/base.js"></script>
-    <script src="onnx.js"></script>
-    <script src="OnnxModelUtils.js"></script>
-    <script src="OnnxModelImporter.js"></script>
+    <script src="../../../../dist/webml-polyfill.js"></script>
+    <script src="../../../../examples/third_party/protobuf.min.js"></script>
+    <script src="../../../../examples/util/base.js"></script>
+    <script src="../../../../examples/util/onnx/onnx.js"></script>
+    <script src="../../../../examples/util/onnx/OnnxModelUtils.js"></script>
+    <script src="../../../../examples/util/onnx/OnnxModelImporter_test.js"></script>
     <script>
     var getLayerFlag = true;
-    var jsonlist = {};
-    jsonlist['Source'] = {};
-    jsonlist['Case'] = {};
-
      window.onload = async function() {
       async function loadUrl(url) {
         return new Promise(resolve => {
@@ -32,10 +28,10 @@
       
       async function downloadjson(data, filename) {
         if (!data) {
-          console.error("Console.save : No data");
+          console.error("downloadjson: No data");
           return;
         }
-        if (!filename) filename = "layerdata.json";
+        if (!filename) filename = "casePrototypeData.json";
         if (typeof data === "object") {
           data = JSON.stringify(data);
         }
@@ -62,27 +58,39 @@
       }
       
       const modelName = 'squeezenet1.1';
-      const modelFile = `../../../test/realmodel/tool/generate_realmodel/model/${modelName}/${modelName}.onnx`;
-      let input = await loadTensor(`../../../test/realmodel/tool/generate_realmodel/model/${modelName}/test_data_set_1/input_0.pb`);
-      let expect = await loadTensor(`../../../test/realmodel/tool/generate_realmodel/model/${modelName}/test_data_set_1/output_0.pb`);
+      const modelFile = `../../tool/generate_realmodel/model/${modelName}/${modelName}.onnx`;
+      let input = await loadTensor(`../../tool/generate_realmodel/model/${modelName}/test_data_set_1/input_0.pb`);
+      let expect = await loadTensor(`../../tool/generate_realmodel/model/${modelName}/test_data_set_1/output_0.pb`);
       let result = await loadUrl(modelFile);
       if (onnx.ModelProto.verify(result))
         throw new Error(`Invalid model`);
       let onnxModel = onnx.ModelProto.decode(result);
-      let wasmGen = new OnnxModelImporter({rawModel: onnxModel, backend: 'WASM', prefer: 'fast'}).layerIterator([input]); 
+      let model = new OnnxModelImporter({rawModel: onnxModel, backend: 'WASM'});
+      await model.createCompiledModel();
+      let params = model.getModelParams();
+      if (params.hasOwnProperty('tensorIds')) {
+        if(!params.hasOwnProperty('tensorId')) {
+          params.tensorId = {};
+        }
+        Object.keys(params.tensorIds).map(k => {
+          params.tensorId[k] = params.tensorIds[k];
+        })
+      }
+      let wasmGen = new OnnxModelImporter({rawModel: onnxModel, backend: 'WASM', prefer: 'fast'}).layerIterator([input]);
 
       while (true) {
         let wasmnext = await wasmGen.next();
         if (wasmnext.done) {
-          console.log(jsonlist)
+        params.operation['data'] = input;
+        if (params.hasOwnProperty('tensorIds')) delete params.tensorIds
+          await downloadjson(params, `casePrototypeData.json`);
           break;
         }
-        if (getLayerFlag) {
-          jsonlist['Source'][wasmnext.value.outputName] = wasmnext.value.tensor;
-          jsonlist['Source']['data'] = input; 
-        }      
+        if (!params.hasOwnProperty('operation')) {
+          params.operation = {};
+        }
+        params.operation[wasmnext.value.outputName] = wasmnext.value.tensor;
       }
-       if (getLayerFlag) await downloadjson(jsonlist, `${modelName}.json`);
     }
     </script>
   </body>

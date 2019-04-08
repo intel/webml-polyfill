@@ -1,7 +1,9 @@
 'use strict';
 const tfliteModelArray = [
   "mobilenet_v1_tflite",
+  "mobilenet_v1_quant_tflite",
   "mobilenet_v2_tflite",
+  "mobilenet_v2_quant_tflite",
   "inception_v3_tflite",
   "inception_v4_tflite",
   "squeezenet_tflite",
@@ -9,8 +11,12 @@ const tfliteModelArray = [
 
 const ssdModelArray = [
   "ssd_mobilenet_v1_tflite",
+  "ssd_mobilenet_v1_quant_tflite",
   "ssd_mobilenet_v2_tflite",
-  "ssdlite_mobilenet_v2_tflite"];
+  "ssd_mobilenet_v2_quant_tflite",
+  "ssdlite_mobilenet_v2_tflite",
+  "tiny_yolov2_coco_tflite",
+  "tiny_yolov2_voc_tflite"];
 
 const onnxModelArray = [
   "squeezenet_onnx",
@@ -20,14 +26,26 @@ const onnxModelArray = [
   "inception_v2_onnx",
   "densenet_onnx"];
 
+const segmentationModelArray = [
+  'deeplab_mobilenet_v2_224_tflite',
+  'deeplab_mobilenet_v2_224_atrous_tflite',
+  'deeplab_mobilenet_v2_257_tflite',
+  'deeplab_mobilenet_v2_257_atrous_tflite',
+  'deeplab_mobilenet_v2_321_tflite',
+  'deeplab_mobilenet_v2_321_atrous_tflite',
+  'deeplab_mobilenet_v2_513_tflite',
+  'deeplab_mobilenet_v2_513_atrous_tflite',
+];
+
 let supportedModels = [];
-supportedModels = supportedModels.concat(imageClassificationModels, objectDetectionModels, humanPoseEstimationModels);
+supportedModels = supportedModels.concat(imageClassificationModels, objectDetectionModels, humanPoseEstimationModels, semanticSegmentationModels);
 
 let imageElement = null;
 let inputElement = null;
 let pickBtnEelement = null;
 let canvasElement = null;
 let poseCanvas = null;
+let segCanvas = null;
 let bkPoseImageSrc = null;
 let pnConfigDic = null;
 
@@ -42,19 +60,30 @@ function getModelDicItem(modelFormatName) {
   }
 }
 
-function getPreferString(backend) {
-  let prefer;
-  let backendLC = backend.toLowerCase();
+function getPreferString() {
+  return preferSelectElement.options[preferSelectElement.selectedIndex].value;
+}
 
-  if (backendLC === 'wasm') {
-    prefer = 'fast';
-  } else if (backendLC === 'webgl') {
-    prefer = 'sustained';
-  } else if (backendLC === 'webml') {
-    prefer = preferSelectElement.options[preferSelectElement.selectedIndex].value;
+function getSelectedOps() {
+  return getPreferString() === 'none' ? new Set() : new Set(
+    Array.from(
+      document.querySelectorAll('input[name=supportedOp]:checked')).map(
+        x => parseInt(x.value)));
+}
+
+function updateOpsSelect() {
+  const backend = JSON.parse(configurations.value).backend;
+  const prefer = preferSelect.value;
+  if (backend !== 'native' && prefer !== 'none') {
+    // hybrid mode
+    document.getElementById('supported-ops-select').style.visibility = 'visible';
+  } else if (backend === 'WebML' && prefer === 'none') {
+    throw new Error('No backend selected');
+  } else {
+    // solo mode
+    document.getElementById('supported-ops-select').style.visibility = 'hidden';
   }
-
-  return prefer;
+  supportedOps = getSelectedOps();
 }
 
 const util = new Utils();
@@ -130,6 +159,7 @@ class Benchmark {
         await new Promise(resolve => requestAnimationFrame(resolve));
         let tStart = performance.now();
         await this.executeSingleAsync();
+        this.deQuantizeParams = this.model._deQuantizeParams;
         let elapsedTime = performance.now() - tStart;
         this.printPredictResult();
         computeResults.push(elapsedTime);
@@ -165,26 +195,82 @@ class Benchmark {
       bkPoseImageSrc = imageElement.src;
       imageElement.src = poseCanvas.toDataURL();
     } else if (ssdModelArray.indexOf(modelName) !== -1) {
+      if (this.ssdModelType === 'SSD') {
+        let outputBoxTensor, outputClassScoresTensor;
+        for (let i = 0; i < this.configuration.iteration; i++) {
+          this.onExecuteSingle(i);
+          await new Promise(resolve => requestAnimationFrame(resolve));
+          let tStart = performance.now();
+          await this.executeSingleAsyncSSDMN();
+          let elapsedTime = performance.now() - tStart;
+          computeResults.push(elapsedTime);
+          if (this.isQuantized) {
+            [outputBoxTensor, outputClassScoresTensor] = this.deQuantizeOutputTensor(this.outputBoxTensor, this.outputClassScoresTensor, this.model._deQuantizeParams);
+          } else {
+            outputBoxTensor = this.outputBoxTensor;
+            outputClassScoresTensor = this.outputClassScoresTensor;
+          }
+          let dstart = performance.now();
+          decodeOutputBoxTensor({}, outputBoxTensor, this.anchors);
+          let decodeTime = performance.now() - dstart;
+          console.log("Decode time:" + decodeTime);
+          decodeResults.push(decodeTime);
+        }
+        let [totalDetections, boxesList, scoresList, classesList] = NMS({}, outputBoxTensor, outputClassScoresTensor);
+        poseCanvas.setAttribute("width", imageElement.width);
+        poseCanvas.setAttribute("height", imageElement.height);
+        visualize(poseCanvas, totalDetections, imageElement, boxesList, scoresList, classesList, this.labels);
+      } else {
+        let decode_out;
+        for (let i = 0; i < this.configuration.iteration; i++) {
+          this.onExecuteSingle(i);
+          await new Promise(resolve => requestAnimationFrame(resolve));
+          let tStart = performance.now();
+          await this.executeSingleAsyncSSDMN();
+          let elapsedTime = performance.now() - tStart;
+          computeResults.push(elapsedTime);
+
+          let dstart = performance.now();
+          decode_out = decodeYOLOv2({nb_class: this.numClasses}, this.outputTensor[0], this.anchors);
+          let decodeTime = performance.now() - dstart;
+          console.log("Decode time:" + decodeTime);
+          decodeResults.push(decodeTime);
+        }
+        let boxes = getBoxes(decode_out, this.ssdModelMargin);
+        poseCanvas.setAttribute("width", imageElement.width);
+        poseCanvas.setAttribute("height", imageElement.height);
+        drawBoxes(imageElement, poseCanvas, boxes, this.labels);
+      }
+      bkPoseImageSrc = imageElement.src;
+      imageElement.src = poseCanvas.toDataURL();
+    } else if (segmentationModelArray.indexOf(modelName) !== -1) {
       for (let i = 0; i < this.configuration.iteration; i++) {
         this.onExecuteSingle(i);
         await new Promise(resolve => requestAnimationFrame(resolve));
         let tStart = performance.now();
-        await this.executeSingleAsyncSSDMN();
+        await this.executeSingleAsync();
         let elapsedTime = performance.now() - tStart;
         computeResults.push(elapsedTime);
-        let dstart = performance.now();
-        decodeOutputBoxTensor({}, this.outputBoxTensor, this.anchors);
-        let decodeTime = performance.now() - dstart;
-        console.log("Decode time:" + decodeTime);
-        decodeResults.push(decodeTime);
       }
-      let [totalDetections, boxesList, scoresList, classesList] = NMS({}, this.outputBoxTensor, this.outputClassScoresTensor);
-      poseCanvas.setAttribute("width", imageElement.width);
-      poseCanvas.setAttribute("height", imageElement.height);
-      visualize(poseCanvas, totalDetections, imageElement, boxesList, scoresList, classesList, this.labels);
+      let imWidth = imageElement.naturalWidth;
+      let imHeight = imageElement.naturalHeight;
+      let resizeRatio = Math.max(Math.max(imWidth, imHeight) / this.inputSize[0], 1);
+      let scaledWidth = Math.floor(imWidth / resizeRatio);
+      let scaledHeight = Math.floor(imHeight / resizeRatio);
+      let renderer = new Renderer(segCanvas);
+      renderer.zoom = resizeRatio;
+      renderer.setup();
+      renderer.uploadNewTexture(imageElement, [scaledWidth, scaledHeight]);
+      renderer.drawOutputs({
+        data: this.outputTensor,
+        outputShape: this.outputSize,
+        labels: this.labels,
+      });
       bkPoseImageSrc = imageElement.src;
-      imageElement.src = poseCanvas.toDataURL();
+      imageElement.src = segCanvas.toDataURL();
     }
+    if (this.model._backend !== 'WebML')
+      this.model._compilation._preparedModel.dumpProfilingResults();
     return {"computeResults": computeResults, "decodeResults": decodeResults};
   }
   /**
@@ -243,7 +329,9 @@ class WebMLJSBenchmark extends Benchmark {
     super(...arguments);
     this.inputTensor = null;
     // outputTensor only for mobilenet and squeezenet
+    this.inputSize = null;
     this.outputTensor = null;
+    this.outputSize = null;
 
     // only for posenet
     this.modelVersion = null;
@@ -259,7 +347,15 @@ class WebMLJSBenchmark extends Benchmark {
     //only for ssd mobilenet
     this.outputBoxTensor = null;
     this.outputClassScoresTensor = null;
+    this.deQuantizedOutputBoxTensor = null;
+    this.deQuantizedOutputClassScoresTensor = null;
+    this.deQuantizeParams = null;
     this.anchors = null;
+    this.ssdModelType;
+    this.ssdModelMargin;
+    this.numClasses;
+
+    this.isQuantized = false;
 
     this.model = null;
     this.labels = null;
@@ -297,8 +393,11 @@ class WebMLJSBenchmark extends Benchmark {
   async setInputOutput() {
     const configModelName = this.configuration.modelName;
     const currentModel = getModelDicItem(configModelName);
+
     let width = currentModel.inputSize[1];
     let height = currentModel.inputSize[0];
+    let dwidth;
+    let dheight;
     const channels = currentModel.inputSize[2];
     const preOptions = currentModel.preOptions || {};
     const mean = preOptions.mean || [0, 0, 0, 0];
@@ -308,22 +407,67 @@ class WebMLJSBenchmark extends Benchmark {
     const imageChannels = 4; // RGBA
     let drawContent;
 
+    this.isQuantized = currentModel.isQuantized || false;
+    let typedArray;
+
+    if (this.isQuantized) {
+      typedArray = Uint8Array;
+    } else {
+      typedArray = Float32Array;
+    }
+
     if (tfliteModelArray.indexOf(configModelName) !== -1 || onnxModelArray.indexOf(configModelName) !== -1) {
-      this.inputTensor = new Float32Array(currentModel.inputSize.reduce((a, b) => a * b));
-      this.outputTensor = new Float32Array(currentModel.outputSize);
+      this.inputTensor = new typedArray(currentModel.inputSize.reduce((a, b) => a * b));
+      this.outputTensor = new typedArray(currentModel.outputSize);
       drawContent = imageElement;
+      dwidth = width;
+      dheight = height;
     } else if (ssdModelArray.indexOf(configModelName) !== -1) {
       if (bkPoseImageSrc !== null) {
         // reset for rerun with same image
         imageElement.src = bkPoseImageSrc;
       }
-      this.inputTensor = new Float32Array(currentModel.inputSize.reduce((a, b) => a * b));
       this.outputTensor = [];
-      this.outputBoxTensor = new Float32Array(currentModel.num_boxes * currentModel.box_size);
-      this.outputClassScoresTensor = new Float32Array(currentModel.num_boxes * currentModel.num_classes);
-      this.prepareoutputTensor(this.outputBoxTensor, this.outputClassScoresTensor);
-      this.anchors = generateAnchors({});
+      this.ssdModelType = currentModel.type;
+      this.ssdModelMargin = currentModel.margin;
+      this.numClasses = currentModel.num_classes;
+      if (currentModel.type === 'SSD') {
+        if (this.isQuantized) {
+          this.deQuantizedOutputBoxTensor = new Float32Array(currentModel.num_boxes * currentModel.box_size);
+          this.deQuantizedOutputClassScoresTensor = new Float32Array(currentModel.num_boxes * currentModel.num_classes);
+        }
+        this.inputTensor = new typedArray(currentModel.inputSize.reduce((a, b) => a * b));
+        this.outputBoxTensor = new typedArray(currentModel.num_boxes * currentModel.box_size);
+        this.outputClassScoresTensor = new typedArray(currentModel.num_boxes * currentModel.num_classes);
+        this.prepareoutputTensor(this.outputBoxTensor, this.outputClassScoresTensor);
+        this.anchors = generateAnchors({});
+      } else {
+        // YOLO
+        this.inputTensor = new typedArray(currentModel.inputSize.reduce((a, b) => a * b));
+        this.anchors = currentModel.anchors;
+        this.outputTensor = [new typedArray(currentModel.outputSize)]
+      }
       drawContent = imageElement;
+      dwidth = width;
+      dheight = height;
+    } else if (segmentationModelArray.indexOf(configModelName) !== -1) {
+      if (bkPoseImageSrc !== null) {
+        // reset for rerun with same image
+        imageElement.src = bkPoseImageSrc;
+      }
+      this.inputTensor = new typedArray(currentModel.inputSize.reduce((a, b) => a * b));
+      this.outputTensor = new typedArray(currentModel.outputSize.reduce((a, b) => a * b));
+      this.inputSize = currentModel.inputSize;
+      this.outputSize = currentModel.outputSize;
+      height = this.inputSize[0];
+      width = this.inputSize[1];
+      let imWidth = imageElement.naturalWidth;
+      let imHeight = imageElement.naturalHeight;
+      // assume deeplab_out.width == deeplab_out.height
+      let resizeRatio = Math.max(Math.max(imWidth, imHeight) / width, 1);
+      drawContent = imageElement;
+      dwidth = Math.floor(imWidth / resizeRatio);
+      dheight = Math.floor(imHeight / resizeRatio);
     } else if (configModelName === 'posenet') {
       if (bkPoseImageSrc !== null) {
         // reset for rerun with same image
@@ -342,7 +486,7 @@ class WebMLJSBenchmark extends Benchmark {
 
       this.scaleWidth = getValidResolution(this.scaleFactor, width, this.outputStride);
       this.scaleHeight = getValidResolution(this.scaleFactor, height, this.outputStride);
-      this.inputTensor = new Float32Array(this.scaleWidth * this.scaleHeight * channels);
+      this.inputTensor = new typedArray(this.scaleWidth * this.scaleHeight * channels);
       this.scaleInputSize = [1, this.scaleWidth, this.scaleHeight, channels];
 
       let HEATMAP_TENSOR_SIZE;
@@ -352,23 +496,22 @@ class WebMLJSBenchmark extends Benchmark {
         HEATMAP_TENSOR_SIZE = product(toHeatmapsize(this.scaleInputSize, this.outputStride));
       }
       let OFFSET_TENSOR_SIZE = HEATMAP_TENSOR_SIZE * 2;
-      this.heatmapTensor = new Float32Array(HEATMAP_TENSOR_SIZE);
-      this.offsetTensor = new Float32Array(OFFSET_TENSOR_SIZE);
+      this.heatmapTensor = new typedArray(HEATMAP_TENSOR_SIZE);
+      this.offsetTensor = new typedArray(OFFSET_TENSOR_SIZE);
       // prepare canvas for predict
       let poseCanvasPredict = document.getElementById('poseCanvasPredict');
       drawContent = await this.loadImage(poseCanvasPredict, width, height);
       width = this.scaleWidth;
       height = this.scaleHeight;
+      dwidth = width;
+      dheight = height;
     }
 
     canvasElement.setAttribute("width", width);
     canvasElement.setAttribute("height", height);
     let canvasContext = canvasElement.getContext('2d');
-    canvasContext.drawImage(drawContent, 0, 0, width, height);
+    canvasContext.drawImage(drawContent, 0, 0, dwidth, dheight);
     let pixels = canvasContext.getImageData(0, 0, width, height).data;
-    if (canvasElement.width !== width || canvasElement.height !== height) {
-      throw new Error(`canvasElement.width(${canvasElement.width}) is not ${width} or canvasElement.height(${canvasElement.height}) is not ${height}`);
-    }
     if (norm) {
       pixels = new Float32Array(pixels).map(p => p / 255);
     }
@@ -416,6 +559,37 @@ class WebMLJSBenchmark extends Benchmark {
     }
   }
 
+  deQuantizeOutputTensor(outputBoxTensor, outputClassScoresTensor, quantizedParams) {
+    const outH = [1083, 600, 150, 54, 24, 6];
+    const boxLen = 4;
+    const classLen = 91;
+    let boxOffset = 0;
+    let classOffset = 0;
+    let boxTensor, classTensor;
+    let boxScale, boxZeroPoint, classScale, classZeroPoint;
+    let dqBoxOffset = 0;
+    let dqClassOffset = 0;
+    for (let i = 0; i < 6; ++i) {
+      boxTensor = outputBoxTensor.subarray(boxOffset, boxOffset + boxLen * outH[i]);
+      classTensor = outputClassScoresTensor.subarray(classOffset, classOffset + classLen * outH[i]);
+      boxScale = quantizedParams[2 * i].scale;
+      boxZeroPoint = quantizedParams[2 * i].zeroPoint;
+      classScale = quantizedParams[2 * i + 1].scale;
+      classZeroPoint = quantizedParams[2 * i + 1].zeroPoint;
+      for (let j = 0; j < boxTensor.length; ++j) {
+        this.deQuantizedOutputBoxTensor[dqBoxOffset] = boxScale* (boxTensor[j] - boxZeroPoint);
+        ++dqBoxOffset;
+      }
+      for (let j = 0; j < classTensor.length; ++j) {
+        this.deQuantizedOutputClassScoresTensor[dqClassOffset] = classScale * (classTensor[j] - classZeroPoint);
+        ++dqClassOffset;
+      }
+      boxOffset += boxLen * outH[i];
+      classOffset += classLen * outH[i];
+    }
+    return [this.deQuantizedOutputBoxTensor, this.deQuantizedOutputClassScoresTensor];
+  }
+
   async setupAsync() {
     await this.setInputOutput();
     let backend = this.configuration.backend.replace('native', 'WebML');
@@ -430,7 +604,7 @@ class WebMLJSBenchmark extends Benchmark {
       let kwargs = {
         rawModel: rawModel,
         backend: backend,
-        prefer: getPreferString(backend),
+        prefer: getPreferString(),
         softmax: postOptions.softmax || false,
       };
       this.model = new TFliteModelImporter(kwargs);
@@ -448,7 +622,7 @@ class WebMLJSBenchmark extends Benchmark {
       let kwargs = {
         rawModel: rawModel,
         backend: backend,
-        prefer: getPreferString(backend),
+        prefer: getPreferString(),
         softmax: postOptions.softmax || false,
       };
       this.model = new OnnxModelImporter(kwargs);
@@ -461,7 +635,7 @@ class WebMLJSBenchmark extends Benchmark {
       let kwargs = {
         rawModel: rawModel,
         backend: backend,
-        prefer: getPreferString(backend),
+        prefer: getPreferString(),
       };
       this.model = new TFliteModelImporter(kwargs);
     } else if (modelName === 'posenet') {
@@ -470,8 +644,21 @@ class WebMLJSBenchmark extends Benchmark {
       let cacheMap = new Map();
       let useAtrousConv = false; // Default false, NNAPI and BNNS don't support AtrousConv
       this.model = new PoseNet(modelArch, this.modelVersion, useAtrousConv, this.outputStride,
-                               this.scaleInputSize, smType, cacheMap, backend, getPreferString(backend));
+                               this.scaleInputSize, smType, cacheMap, backend, getPreferString());
+    } else if (segmentationModelArray.indexOf(modelName) !== -1) {
+      let model = getModelDicItem(modelName);
+      let resultTflite = await this.loadModelAndLabels(model);
+      this.labels = resultTflite.text.split('\n');
+      let flatBuffer = new flatbuffers.ByteBuffer(resultTflite.bytes);
+      let rawModel = tflite.Model.getRootAsModel(flatBuffer);
+      let kwargs = {
+        rawModel: rawModel,
+        backend: backend,
+        prefer: getPreferString(),
+      };
+      this.model = new TFliteModelImporter(kwargs);
     }
+    supportedOps =  getSelectedOps();
     await this.model.createCompiledModel();
   }
   printPredictResult() {
@@ -484,9 +671,13 @@ class WebMLJSBenchmark extends Benchmark {
       return a[0] < b[0] ? -1 : 1;
     });
     sorted.reverse();
-    let classes = [];
+    let prob;
     for (let i = 0; i < 3; ++i) {
-      let prob = sorted[i][0];
+      if (this.isQuantized) {
+        prob = this.deQuantizeParams[0].scale * (sorted[i][0] - this.deQuantizeParams[0].zeroPoint);
+      } else {
+        prob = sorted[i][0];
+      }
       let index = sorted[i][1];
       console.log(`label: ${this.labels[index]}, probability: ${(prob * 100).toFixed(2)}%`);
     }
@@ -520,6 +711,9 @@ class WebMLJSBenchmark extends Benchmark {
     this.offsetTensor  = null;
     this.outputBoxTensor = null;
     this.outputClassScoresTensor = null;
+    this.deQuantizedOutputBoxTensor = null;
+    this.deQuantizedOutputClassScoresTensor = null;
+    this.deQuantizeParams = null;
     this.anchors = null;
     this.model = null;
     this.labels = null;
@@ -539,6 +733,7 @@ async function run() {
   inputElement.setAttribute('class', 'disabled');
   pickBtnEelement.setAttribute('class', 'btn btn-primary disabled');
   let logger = new Logger(document.querySelector('#log'));
+  window.console.debug = (msg) => logger.log(msg);
   logger.group('Benchmark');
   try {
     let configuration = JSON.parse(document.querySelector('#configurations').selectedOptions[0].value);
@@ -550,9 +745,17 @@ async function run() {
     logger.groupEnd();
     logger.group('Configuration');
     Object.keys(configuration).forEach(key => {
-      if (key === 'backend' && configuration[key] === 'native') {
+      if (key === 'backend') {
         let selectedOpt = preferSelectElement.options[preferSelectElement.selectedIndex];
-        logger.log(`${key.padStart(12)}: ${getNativeAPI(selectedOpt.value)}(${selectedOpt.text})`);
+        let backendName = configuration[key];
+        if (configuration[key].indexOf('native') < 0) {
+          if (getPreferString() !== 'none') {
+            backendName += ` + ${getNativeAPI(selectedOpt.value)}(${selectedOpt.text})`;
+          }
+        } else {
+          backendName = `${getNativeAPI(selectedOpt.value)}(${selectedOpt.text})`;
+        }
+        logger.log(`${key.padStart(12)}: ${backendName}`);
       } else if (key === 'modelName') {
         let model = getModelDicItem(configuration[key]);
         logger.log(`${key.padStart(12)}: ${model.modelName}`);
@@ -583,7 +786,9 @@ document.addEventListener('DOMContentLoaded', () => {
   imageElement = document.getElementById('image');
   canvasElement = document.getElementById('canvas');
   poseCanvas = document.getElementById('poseCanvas');
+  segCanvas = document.getElementById('segCanvas');
   inputElement.addEventListener('change', (e) => {
+    $('.labels-wrapper').empty();
     let files = e.target.files;
     if (files.length > 0) {
       imageElement.src = URL.createObjectURL(files[0]);
@@ -593,6 +798,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let modelElement = document.getElementById('modelName');
   modelElement.addEventListener('change', (e) => {
+    $('.labels-wrapper').empty();
     bkPoseImageSrc = null;
     let modelName = modelElement.options[modelElement.selectedIndex].value;
     let inputFile = document.getElementById('input').files[0];
@@ -603,6 +809,8 @@ document.addEventListener('DOMContentLoaded', () => {
         imageElement.src = document.getElementById('poseImage').src;
       } else if (ssdModelArray.indexOf(modelName) !== -1) {
         imageElement.src = document.getElementById('ssdMobileImage').src;
+      } else if (segmentationModelArray.indexOf(modelName) !== -1) {
+        imageElement.src = document.getElementById('segmentationImage').src;
       } else {
         imageElement.src = document.getElementById('imageClassificationImage').src;
       }
@@ -611,6 +819,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let configurationsElement = document.getElementById('configurations');
   configurationsElement.addEventListener('change', (e) => {
+    $('.labels-wrapper').empty();
     bkPoseImageSrc = null;
     let modelName = modelElement.options[modelElement.selectedIndex].value;
     let inputFile = document.getElementById('input').files[0];
@@ -621,51 +830,78 @@ document.addEventListener('DOMContentLoaded', () => {
         imageElement.src = document.getElementById('poseImage').src;
       } else if (ssdModelArray.indexOf(modelName) !== -1) {
         imageElement.src = document.getElementById('ssdMobileImage').src;
+      } else if (segmentationModelArray.indexOf(modelName) !== -1) {
+        imageElement.src = document.getElementById('segmentationImage').src;
       } else {
         imageElement.src = document.getElementById('imageClassificationImage').src;
       }
     }
-    let currentConfig = configurationsElement.options[configurationsElement.selectedIndex].text;
-    if (currentConfig.indexOf('WebML API') !== -1) {
-      preferDivElement.setAttribute('class', "prefer-show");
-      if (currentOS === 'Mac OS') {
-        for (var i=0; i<preferSelectElement.options.length; i++) {
-          let preferOpt = preferSelectElement.options[i];
-          if (preferOpt.value === 'low') {
-            preferOpt.disabled = true;
-          }
-        }
-      } else if (['Windows', 'Linux'].indexOf(currentOS) !== -1) {
-        for (var i=0; i<preferSelectElement.options.length; i++) {
-          let preferOpt = preferSelectElement.options[i];
-          if (preferOpt.value === 'sustained') {
-            preferOpt.selected = true;
-          } else if (preferOpt.value === 'low') {
-            preferOpt.disabled = true;
-          }
+
+    if (currentOS === 'Mac OS') {
+      for (var i=0; i<preferSelectElement.options.length; i++) {
+        let preferOpt = preferSelectElement.options[i];
+        if (preferOpt.value === 'low') {
+          preferOpt.disabled = true;
         }
       }
-    } else {
-      preferDivElement.setAttribute('class', "prefer-hidden");
+    } else if (['Windows', 'Linux'].indexOf(currentOS) !== -1) {
+      for (var i=0; i<preferSelectElement.options.length; i++) {
+        let preferOpt = preferSelectElement.options[i];
+        if (preferOpt.value === 'sustained') {
+          preferOpt.selected = true;
+        } else if (preferOpt.value === 'low') {
+          preferOpt.disabled = true;
+        }
+      }
     }
+    if (JSON.parse(e.target.value).framework === 'WebML API') {
+      document.querySelector('#preferSelect option[value=none]').disabled = true;
+    } else {
+      document.querySelector('#preferSelect option[value=none]').disabled = false;
+    }
+    updateOpsSelect();
+  }, false);
+
+  let selectAllOpsElement = document.getElementById('selectAllOps');
+  selectAllOpsElement.addEventListener('click', () => {
+    document.querySelectorAll('input[name=supportedOp]').forEach((x) => {
+      x.checked = true;
+    });
+  }, false);
+
+  let uncheckAllOpsElement = document.getElementById('uncheckAllOps');
+  uncheckAllOpsElement.addEventListener('click', () => {
+    document.querySelectorAll('input[name=supportedOp]').forEach((x) => {
+      x.checked = false;
+    });
+  }, false);
+
+  let eagerModeElement = document.getElementById('eagerMode');
+  eagerModeElement.addEventListener('change', (e) => {
+    eager = e.target.checked;
+  }, false);
+
+  let preferSelectElement = document.getElementById('preferSelect');
+  preferSelectElement.addEventListener('change', () => {
+    updateOpsSelect();
   }, false);
 
   let webmljsConfigurations = [{
     framework: 'webml-polyfill.js',
     backend: 'WASM',
-    modelName: 'mobilenet_v1_1.0_224.tflite',
+    modelName: '',
     iteration: 0
   },
   {
     framework: 'webml-polyfill.js',
     backend: 'WebGL',
-    modelName: 'mobilenet_v1_1.0_224.tflite',
+    modelName: '',
     iteration: 0
   }];
   let webmlAPIConfigurations = [{
     framework: 'WebML API',
     backend: 'native',
-    modelName: 'mobilenet_v1_1.0_224.tflite',
+    modelName: '',
     iteration: 0
   }];
   let configurations = [];
@@ -673,19 +909,14 @@ document.addEventListener('DOMContentLoaded', () => {
   for (let configuration of configurations) {
     let option = document.createElement('option');
     option.value = JSON.stringify(configuration);
-    option.textContent = configuration.framework + ' (' + configuration.backend + ' backend)';
-    if (configuration.framework === 'WebML API') {
-      if (navigator.ml.isPolyfill) {
-        option.disabled = true;
-      }
-      if (['Android', 'Windows', 'Linux'].indexOf(currentOS) !== -1) {
-        for (var i=0; i<preferSelectElement.options.length; i++) {
-          let preferOp = preferSelectElement.options[i];
-          if (preferOp.text === 'sustained') {
-            preferOp.selected = true;
-          } else if (preferOp.text === 'fast') {
-            preferOp.disabled = true;
-          }
+    option.textContent = `${configuration.framework} (${configuration.backend} backend)`;
+    if (['Android', 'Windows', 'Linux'].indexOf(currentOS) !== -1) {
+      for (var i=0; i<preferSelectElement.options.length; i++) {
+        let preferOp = preferSelectElement.options[i];
+        if (preferOp.text === 'sustained') {
+          preferOp.selected = true;
+        } else if (preferOp.text === 'fast') {
+          preferOp.disabled = true;
         }
       }
     }

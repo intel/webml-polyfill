@@ -81,8 +81,8 @@ Unit Test/Model Test,setOperandValue API/52,raise error when setting an Uint32Ar
 Unit Test/Model Test,setOperandValue API/53,raise error when setting a Float32Array data for a TENSOR_INT32 tensor,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 Unit Test/Model Test,setOperandValue API/54,raise error when setting a Float64Array data for a TENSOR_INT32 tensor,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 Unit Test/Model Test,setOperandValue API/55,raise error when setting a DataView data for a TENSOR_INT32 tensor,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-Unit Test/Model Test,setOperandValue API/56,raise error when setting an Int8Array data for a TENSOR_QUANT8_ASYMM tensor,Pass,Pass,Fail,Fail,Pass,Fail,Fail,Pass,Pass,Fail,Fail,Pass,Pass,Fail,Fail
-Unit Test/Model Test,setOperandValue API/57,setting an Uint8Array data for a TENSOR_QUANT8_ASYMM tensor is ok,Pass,Pass,Fail,Fail,Pass,Fail,Fail,Pass,Pass,Fail,Fail,Pass,Pass,Fail,Fail
+Unit Test/Model Test,setOperandValue API/56,raise error when setting an Int8Array data for a TENSOR_QUANT8_ASYMM tensor,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+Unit Test/Model Test,setOperandValue API/57,setting an Uint8Array data for a TENSOR_QUANT8_ASYMM tensor is ok,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 Unit Test/Model Test,setOperandValue API/58,raise error when setting an Uint8ClampedArray data for a TENSOR_QUANT8_ASYMM tensor,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 Unit Test/Model Test,setOperandValue API/59,raise error when setting an Int16Array data for a TENSOR_QUANT8_ASYMM tensor,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 Unit Test/Model Test,setOperandValue API/60,raise error when setting an Uint16Array data for a TENSOR_QUANT8_ASYMM tensor,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
@@ -101,7 +101,7 @@ Unit Test/Model Test,addOperation API/6,raise error when passing first parameter
 Unit Test/Model Test,addOperation API/7,"raise error when passing 2nd and 3rd parameters of 'number' type",Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 Unit Test/Model Test,addOperation API/8,"first two input tensors (rank<=4) of compatible dimensions having identical TENSOR_FLOAT32 type as the output tensor with third input tensor of INT32 type having value of 0-3 are ok for ""ADD"" operation",Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 Unit Test/Model Test,addOperation API/9,"first two input tensors (rank<=4) of compatible dimensions having identical TENSOR_FLOAT32 type as the output tensor with third input tensor of INT32 type having value of 0-3 are ok for ""ADD"" operation/2",Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-Unit Test/Model Test,addOperation API/10,"first two input tensors (rank<=4) of compatible dimensions having identical TENSOR_QUANT8_ASYMM type as the output tensor with third input tensor of INT32 type having value of 0-3 are ok for ""ADD"" operation",Pass,Pass,Fail,Fail,Pass,Fail,Fail,Pass,Pass,Fail,Fail,Pass,Pass,Fail,Fail
+Unit Test/Model Test,addOperation API/10,"first two input tensors (rank<=4) of compatible dimensions having identical TENSOR_QUANT8_ASYMM type as the output tensor with third input tensor of INT32 type having value of 0-3 are ok for ""ADD"" operation",Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 Unit Test/Model Test,addOperation API/11,"raise error when one of first two input tensors doesn't have type of TENSOR_FLOAT32 or TENSOR_QUANT8_ASYMM for ""ADD"" operation",Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail
 Unit Test/Model Test,addOperation API/12,"raise error when first two input tensors of compatible dimensions don't have identical type(TENSOR_FLOAT32 or TENSOR_QUANT8_ASYMM) for ""ADD"" operation",Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail
 Unit Test/Model Test,addOperation API/13,"raise error when there is at least one of first two input tensors whose rank > 4 for ""ADD"" operation",Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail,Fail
@@ -434,131 +434,131 @@ Unit Test/Execution Test,startCompute API/2,"check return value is of ""void"" t
 Unit Test/Execution Test,startCompute API/3,raise error when computing without inputs being ready,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 Unit Test/Execution Test,startCompute API/4,raise error when computing without outputs being ready,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 Unit Test/Execution Test,startCompute API/5,raise error when passing a parameter,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS,CTS/1,check result for Add example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Pass,Fail,Pass,Pass
-CTS,CTS/2,check result for Add relu example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Pass,Fail,Pass,Pass
-CTS,CTS/3,check result for Add relu1 example,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Fail,Fail,Pass,Pass,Fail,Fail,Pass,Pass
-CTS,CTS/4,check result for Add relu6 example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Pass,Fail,Pass,Pass
+CTS,CTS/1,check result for Add example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+CTS,CTS/2,check result for Add relu example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+CTS,CTS/3,check result for Add relu1 example,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Pass,Fail,Pass,Pass
+CTS,CTS/4,check result for Add relu6 example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/5,check result for Avg pool float example/1,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/6,check result for Avg pool float relu example/1,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS,CTS/7,check result for Avg pool float relu1 example/1,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Fail,Fail,Pass,Pass,Fail,Fail,Pass,Pass
+CTS,CTS/7,check result for Avg pool float relu1 example/1,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Pass,Fail,Pass,Pass
 CTS,CTS/8,check result for Avg pool float relu6 example/1,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/9,check result for Avg pool float example/2,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Pass,Fail,Pass,Pass,Pass
 CTS,CTS/10,check result for Avg pool float example/3,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/11,check result for Avg pool float example/4,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Pass,Fail,Pass,Pass,Pass
-CTS,CTS/12,check result for Concat float example/1,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Fail,Pass,Pass,Fail,Fail,Pass,Pass
-CTS,CTS/13,check result for Concat float example/2,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Fail,Pass,Pass,Fail,Fail,Pass,Pass
-CTS,CTS/14,check result for Concat float example/3,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Fail,Pass,Pass,Fail,Fail,Pass,Pass
+CTS,CTS/12,check result for Concat float example/1,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Pass,Fail,Pass,Pass,Pass
+CTS,CTS/13,check result for Concat float example/2,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Pass,Fail,Pass,Pass,Pass
+CTS,CTS/14,check result for Concat float example/3,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Pass,Fail,Pass,Pass,Pass
 CTS,CTS/15,check result for Conv 1 h3 w2 same example-1,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/16,check result for Conv 1 h3 w2 same example-2,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/17,check result for Conv 1 h3 w2 same relu example-1,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/18,check result for Conv 1 h3 w2 same relu example-2,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS,CTS/19,check result for Conv 1 h3 w2 same relu1 example-1,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Fail,Fail,Pass,Pass,Fail,Fail,Pass,Pass
-CTS,CTS/20,check result for Conv 1 h3 w2 same relu1 example-2,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Fail,Fail,Pass,Pass,Fail,Fail,Pass,Pass
+CTS,CTS/19,check result for Conv 1 h3 w2 same relu1 example-1,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Pass,Fail,Pass,Pass
+CTS,CTS/20,check result for Conv 1 h3 w2 same relu1 example-2,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Pass,Fail,Pass,Pass
 CTS,CTS/21,check result for Conv 1 h3 w2 same relu6 example-1,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/22,check result for Conv 1 h3 w2 same relu6 example-2,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/23,check result for Conv 1 h3 w2 valid example-1,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/24,check result for Conv 1 h3 w2 valid example-2,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/25,check result for Conv 1 h3 w2 valid relu example-1,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/26,check result for Conv 1 h3 w2 valid relu example-2,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS,CTS/27,check result for Conv 1 h3 w2 valid relu1 example-1,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Fail,Fail,Pass,Pass,Fail,Fail,Pass,Pass
-CTS,CTS/28,check result for Conv 1 h3 w2 valid relu1 example-2,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Fail,Fail,Pass,Pass,Fail,Fail,Pass,Pass
+CTS,CTS/27,check result for Conv 1 h3 w2 valid relu1 example-1,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Pass,Fail,Pass,Pass
+CTS,CTS/28,check result for Conv 1 h3 w2 valid relu1 example-2,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Pass,Fail,Pass,Pass
 CTS,CTS/29,check result for Conv 1 h3 w2 valid relu6 example-1,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/30,check result for Conv 1 h3 w2 valid relu6 example-2,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/31,check result for Conv 3 h3 w2 same example-1,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/32,check result for Conv 3 h3 w2 same example-2,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/33,check result for Conv 3 h3 w2 same relu example-1,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/34,check result for Conv 3 h3 w2 same relu example-2,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS,CTS/35,check result for Conv 3 h3 w2 same relu1 example-1,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Fail,Fail,Pass,Pass,Fail,Fail,Pass,Pass
-CTS,CTS/36,check result for Conv 3 h3 w2 same relu1 example-2,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Fail,Fail,Pass,Pass,Fail,Fail,Pass,Pass
+CTS,CTS/35,check result for Conv 3 h3 w2 same relu1 example-1,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Pass,Fail,Pass,Pass
+CTS,CTS/36,check result for Conv 3 h3 w2 same relu1 example-2,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Pass,Fail,Pass,Pass
 CTS,CTS/37,check result for Conv 3 h3 w2 same relu6 example-1,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/38,check result for Conv 3 h3 w2 same relu6 example-2,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/39,check result for Conv 3 h3 w2 valid example-1,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/40,check result for Conv 3 h3 w2 valid example-2,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/41,check result for Conv 3 h3 w2 valid relu example-1,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/42,check result for Conv 3 h3 w2 valid relu example-2,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS,CTS/43,check result for Conv 3 h3 w2 valid relu1 example-1,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Fail,Fail,Pass,Pass,Fail,Fail,Pass,Pass
-CTS,CTS/44,check result for Conv 3 h3 w2 valid relu1 example-2,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Fail,Fail,Pass,Pass,Fail,Fail,Pass,Pass
+CTS,CTS/43,check result for Conv 3 h3 w2 valid relu1 example-1,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Pass,Fail,Pass,Pass
+CTS,CTS/44,check result for Conv 3 h3 w2 valid relu1 example-2,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Pass,Fail,Pass,Pass
 CTS,CTS/45,check result for Conv 3 h3 w2 valid relu6 example-1,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/46,check result for Conv 3 h3 w2 valid relu6 example-2,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/47,check result for Conv float example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS,CTS/48,check result for Conv float relu example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS,CTS/49,check result for Conv float relu1 example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS,CTS/50,check result for Conv float relu6 example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS,CTS/51,check result for Conv float channels example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS,CTS/52,check result for Conv float channels relu example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS,CTS/53,check result for Conv float channels relu1 example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS,CTS/54,check result for Conv float channels relu6 example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS,CTS/55,check result for Conv float channels weights as inputs example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS,CTS/56,check result for Conv float channels weights as inputs relu example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS,CTS/57,check result for Conv float channels weights as inputs relu1 example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS,CTS/58,check result for Conv float channels weights as inputs relu6 example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS,CTS/59,check result for Conv float large example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS,CTS/60,check result for Conv float large relu example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS,CTS/61,check result for Conv float large relu1 example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS,CTS/62,check result for Conv float large relu6 example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS,CTS/63,check result for Conv float large weights as inputs example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS,CTS/64,check result for Conv float large weights as inputs relu example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS,CTS/65,check result for Conv float large weights as inputs relu1 example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS,CTS/66,check result for Conv float large weights as inputs relu6 example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+CTS,CTS/48,check result for Conv float channels example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+CTS,CTS/49,check result for Conv float channels relu example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+CTS,CTS/50,check result for Conv float channels relu1 example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+CTS,CTS/51,check result for Conv float channels relu6 example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+CTS,CTS/52,check result for Conv float channels weights as inputs example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+CTS,CTS/53,check result for Conv float channels weights as inputs relu example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+CTS,CTS/54,check result for Conv float channels weights as inputs relu1 example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+CTS,CTS/55,check result for Conv float channels weights as inputs relu6 example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+CTS,CTS/56,check result for Conv float large example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+CTS,CTS/57,check result for Conv float large relu example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+CTS,CTS/58,check result for Conv float large relu1 example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+CTS,CTS/59,check result for Conv float large relu6 example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+CTS,CTS/60,check result for Conv float large weights as inputs example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+CTS,CTS/61,check result for Conv float large weights as inputs relu example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+CTS,CTS/62,check result for Conv float large weights as inputs relu1 example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+CTS,CTS/63,check result for Conv float large weights as inputs relu6 example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+CTS,CTS/64,check result for Conv float relu example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+CTS,CTS/65,check result for Conv float relu1 example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+CTS,CTS/66,check result for Conv float relu6 example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/67,check result for Conv float weights as inputs example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/68,check result for Conv float weights as inputs relu example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/69,check result for Conv float weights as inputs relu1 example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/70,check result for Conv float weights as inputs relu6 example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/71,check result for Depthwise conv example-1,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/72,check result for Depthwise conv example-2,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS,CTS/73,check result for Depthwise conv relu example-1,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS,CTS/74,check result for Depthwise conv relu example-2,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS,CTS/75,check result for Depthwise conv relu1 example-1,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Fail,Pass,Pass,Fail,Fail,Pass,Pass
-CTS,CTS/76,check result for Depthwise conv relu1 example-2,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Fail,Pass,Pass,Fail,Fail,Pass,Pass
-CTS,CTS/77,check result for Depthwise conv relu6 example-1,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS,CTS/78,check result for Depthwise conv relu6 example-2,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS,CTS/79,check result for Depthwise conv2d float example,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Fail,Pass,Pass,Fail,Fail,Pass,Pass
-CTS,CTS/80,check result for Depthwise conv2d float relu example,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Fail,Pass,Pass,Fail,Fail,Pass,Pass
-CTS,CTS/81,check result for Depthwise conv2d float relu1 example,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Fail,Pass,Pass,Fail,Fail,Pass,Pass
-CTS,CTS/82,check result for Depthwise conv2d float relu6 example,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Fail,Pass,Pass,Fail,Fail,Pass,Pass
-CTS,CTS/83,check result for Depthwise conv2d float large example,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS,CTS/84,check result for Depthwise conv2d float large relu example,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS,CTS/85,check result for Depthwise conv2d float large relu1 example,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS,CTS/86,check result for Depthwise conv2d float large relu6 example,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS,CTS/87,check result for Depthwise conv2d float large example/2,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS,CTS/88,check result for Depthwise conv2d float large relu example/2,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS,CTS/89,check result for Depthwise conv2d float large relu1 example/2,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS,CTS/90,check result for Depthwise conv2d float large relu6 example/2,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS,CTS/91,check result for Depthwise conv2d float large 2 weights as inputs example,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Fail,Pass,Pass,Fail,Fail,Pass,Pass
-CTS,CTS/92,check result for Depthwise conv2d float large 2 weights as inputs relu example,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Fail,Pass,Pass,Fail,Fail,Pass,Pass
-CTS,CTS/93,check result for Depthwise conv2d float large 2 weights as inputs relu1 example,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Fail,Pass,Pass,Fail,Fail,Pass,Pass
-CTS,CTS/94,check result for Depthwise conv2d float large 2 weights as inputs relu6 example,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Fail,Pass,Pass,Fail,Fail,Pass,Pass
-CTS,CTS/95,check result for Depthwise conv2d float large weights as inputs example,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS,CTS/96,check result for Depthwise conv2d float large weights as inputs relu example,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS,CTS/97,check result for Depthwise conv2d float large weights as inputs relu1 example,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS,CTS/98,check result for Depthwise conv2d float large weights as inputs relu6 example,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS,CTS/99,check result for Depthwise conv2d float weights as inputs example,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Fail,Pass,Pass,Fail,Fail,Pass,Pass
-CTS,CTS/100,check result for Depthwise conv2d float weights as inputs relu example,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Fail,Pass,Pass,Fail,Fail,Pass,Pass
-CTS,CTS/101,check result for Depthwise conv2d float weights as inputs relu1 example,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Fail,Pass,Pass,Fail,Fail,Pass,Pass
-CTS,CTS/102,check result for Depthwise conv2d float weights as inputs relu6 example,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Fail,Pass,Pass,Fail,Fail,Pass,Pass
-CTS,CTS/103,check result for Fully connected float example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Pass,Fail,Pass,Pass
-CTS,CTS/104,check result for Fully connected float relu example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Pass,Fail,Pass,Pass
-CTS,CTS/105,check result for Fully connected float relu1 example,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Fail,Fail,Pass,Pass,Fail,Fail,Pass,Pass
-CTS,CTS/106,check result for Fully connected float relu6 example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Pass,Fail,Pass,Pass
-CTS,CTS/107,check result for Fully connected float example/2,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Pass,Fail,Pass,Pass
-CTS,CTS/108,check result for Fully connected float weights as inputs example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Pass,Fail,Pass,Pass
-CTS,CTS/109,check result for Fully connected float large example,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Pass,Fail,Pass,Pass
-CTS,CTS/110,check result for Fully connected float large weights as inputs example,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Pass,Fail,Pass,Pass
+CTS,CTS/73,check result for Depthwise conv2d float example,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Fail,Pass,Pass,Fail,Fail,Pass,Pass
+CTS,CTS/74,check result for Depthwise conv2d float large example,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+CTS,CTS/75,check result for Depthwise conv2d float large example/2,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+CTS,CTS/76,check result for Depthwise conv2d float large relu example/2,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+CTS,CTS/77,check result for Depthwise conv2d float large relu1 example/2,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+CTS,CTS/78,check result for Depthwise conv2d float large relu6 example/2,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+CTS,CTS/79,check result for Depthwise conv2d float large 2 weights as inputs example,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Fail,Pass,Pass,Fail,Fail,Pass,Pass
+CTS,CTS/80,check result for Depthwise conv2d float large 2 weights as inputs relu example,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Fail,Pass,Pass,Fail,Fail,Pass,Pass
+CTS,CTS/81,check result for Depthwise conv2d float large 2 weights as inputs relu1 example,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Fail,Pass,Pass,Fail,Fail,Pass,Pass
+CTS,CTS/82,check result for Depthwise conv2d float large 2 weights as inputs relu6 example,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Fail,Pass,Pass,Fail,Fail,Pass,Pass
+CTS,CTS/83,check result for Depthwise conv2d float large relu example,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+CTS,CTS/84,check result for Depthwise conv2d float large relu1 example,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+CTS,CTS/85,check result for Depthwise conv2d float large relu6 example,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+CTS,CTS/86,check result for Depthwise conv2d float large weights as inputs example,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+CTS,CTS/87,check result for Depthwise conv2d float large weights as inputs relu example,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+CTS,CTS/88,check result for Depthwise conv2d float large weights as inputs relu1 example,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+CTS,CTS/89,check result for Depthwise conv2d float large weights as inputs relu6 example,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+CTS,CTS/90,check result for Depthwise conv2d float relu example,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Fail,Pass,Pass,Fail,Fail,Pass,Pass
+CTS,CTS/91,check result for Depthwise conv2d float relu1 example,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Fail,Pass,Pass,Fail,Fail,Pass,Pass
+CTS,CTS/92,check result for Depthwise conv2d float relu6 example,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Fail,Pass,Pass,Fail,Fail,Pass,Pass
+CTS,CTS/93,check result for Depthwise conv2d float weights as inputs example,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Fail,Pass,Pass,Fail,Fail,Pass,Pass
+CTS,CTS/94,check result for Depthwise conv2d float weights as inputs relu example,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Fail,Pass,Pass,Fail,Fail,Pass,Pass
+CTS,CTS/95,check result for Depthwise conv2d float weights as inputs relu1 example,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Fail,Pass,Pass,Fail,Fail,Pass,Pass
+CTS,CTS/96,check result for Depthwise conv2d float weights as inputs relu6 example,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Fail,Pass,Pass,Fail,Fail,Pass,Pass
+CTS,CTS/97,check result for Depthwise conv relu example-1,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+CTS,CTS/98,check result for Depthwise conv relu example-2,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+CTS,CTS/99,check result for Depthwise conv relu1 example-1,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Pass,Fail,Pass,Pass
+CTS,CTS/100,check result for Depthwise conv relu1 example-2,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Pass,Fail,Pass,Pass
+CTS,CTS/101,check result for Depthwise conv relu6 example-1,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+CTS,CTS/102,check result for Depthwise conv relu6 example-2,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+CTS,CTS/103,check result for Fully connected float example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+CTS,CTS/104,check result for Fully connected float example/2,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+CTS,CTS/105,check result for Fully connected float large example,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+CTS,CTS/106,check result for Fully connected float large weights as inputs example,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+CTS,CTS/107,check result for Fully connected float relu example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+CTS,CTS/108,check result for Fully connected float relu1 example,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Pass,Fail,Pass,Pass
+CTS,CTS/109,check result for Fully connected float relu6 example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+CTS,CTS/110,check result for Fully connected float weights as inputs example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/111,check result for Max pool float example/1,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/112,check result for Max pool float relu example/1,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS,CTS/113,check result for Max pool float relu1 example/1,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Fail,Fail,Pass,Pass,Fail,Fail,Pass,Pass
+CTS,CTS/113,check result for Max pool float relu1 example/1,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Pass,Fail,Pass,Pass
 CTS,CTS/114,check result for Max pool float relu6 example/1,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/115,check result for Max pool float example/2,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/116,check result for Max pool float example/3,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS,CTS/117,check result for Mul example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Pass,Fail,Pass,Pass
 CTS,CTS/118,check result for Mul relu example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Pass,Fail,Pass,Pass
-CTS,CTS/119,check result for Mul relu1 example,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Fail,Fail,Pass,Pass,Fail,Fail,Pass,Pass
+CTS,CTS/119,check result for Mul relu1 example,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Pass,Fail,Pass,Pass
 CTS,CTS/120,check result for Mul relu6 example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Pass,Fail,Pass,Pass
 CTS,CTS/121,check result for Resize bilinear with inputs (without align_corners) example,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Pass,Fail,Pass,Pass
 CTS,CTS/122,check result for Resize bilinear with inputs (without align_corners) example/2,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Pass,Fail,Pass,Pass
 CTS,CTS/123,check result for Softmax float example/1,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Fail,Pass,Pass,Fail,Fail,Pass,Pass
 CTS,CTS/124,check result for Softmax float example/2,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Pass,Fail,Pass,Pass,Pass
-CTS Supplement Test,CTS Supplement Test/1,check result for Add example,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Pass,Fail,Pass,Pass
+CTS Supplement Test,CTS Supplement Test/1,check result for Add example,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS Supplement Test,CTS Supplement Test/2,check result for Add broadcasting 1D-2D example/1,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Pass,Fail,Pass,Pass
 CTS Supplement Test,CTS Supplement Test/3,check result for Add broadcasting 1D-2D example/2,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Pass,Fail,Pass,Pass
 CTS Supplement Test,CTS Supplement Test/4,check result for Add broadcasting 2D-2D example/1,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Pass,Fail,Pass,Pass
@@ -599,20 +599,20 @@ CTS Supplement Test,CTS Supplement Test/38,check result for Add broadcasting 4D-
 CTS Supplement Test,CTS Supplement Test/39,check result for Add broadcasting 4D-4D example/4,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Pass,Fail,Pass,Pass
 CTS Supplement Test,CTS Supplement Test/40,check result for Add broadcasting 4D-4D example/5,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Pass,Fail,Pass,Pass
 CTS Supplement Test,CTS Supplement Test/41,check result for Add broadcasting 4D-4D example/6,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Fail,Pass,Pass,Fail,Fail,Pass,Pass
-CTS Supplement Test,CTS Supplement Test/42,check result for Concatenation axis 0 example,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Fail,Pass,Pass,Fail,Fail,Pass,Pass
-CTS Supplement Test,CTS Supplement Test/43,check result for Concatenation axis 1 example,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Fail,Pass,Pass,Fail,Fail,Pass,Pass
-CTS Supplement Test,CTS Supplement Test/44,check result for Concatenation axis 2 example,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Fail,Pass,Pass,Fail,Fail,Pass,Pass
-CTS Supplement Test,CTS Supplement Test/45,check result for Concatenation axis 3 example,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Fail,Fail,Pass,Pass,Fail,Fail,Pass,Pass
+CTS Supplement Test,CTS Supplement Test/42,check result for Concatenation axis 0 example,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Pass,Fail,Pass,Pass,Pass
+CTS Supplement Test,CTS Supplement Test/43,check result for Concatenation axis 1 example,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Pass,Fail,Pass,Pass,Pass
+CTS Supplement Test,CTS Supplement Test/44,check result for Concatenation axis 2 example,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Pass,Fail,Pass,Pass,Pass
+CTS Supplement Test,CTS Supplement Test/45,check result for Concatenation axis 3 example,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Pass,Fail,Pass,Pass,Pass
 CTS Supplement Test,CTS Supplement Test/46,check result for Depthwise conv 28x28 input0 5x5 weights example,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Pass,Fail,Pass,Pass,Pass
-CTS Supplement Test,CTS Supplement Test/47,check result for Fully connected float 3D input example,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Pass,Fail,Pass,Pass
-CTS Supplement Test,CTS Supplement Test/48,check result for Fully connected float 3D input example/2,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Pass,Fail,Pass,Pass
-CTS Supplement Test,CTS Supplement Test/49,check result for Fully connected float 3D input example/3,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Fail,Fail,Pass,Pass,Fail,Fail,Pass,Pass
-CTS Supplement Test,CTS Supplement Test/50,check result for Fully connected float 3D input example/4,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Fail,Pass,Pass,Fail,Fail,Pass,Pass
-CTS Supplement Test,CTS Supplement Test/51,check result for Fully connected float 4D input example,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Pass,Fail,Pass,Pass
-CTS Supplement Test,CTS Supplement Test/52,check result for Fully connected float 4D input example/2,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Fail,Pass,Pass,Fail,Fail,Pass,Pass
-CTS Supplement Test,CTS Supplement Test/53,check result for Fully connected float 4D input example/3,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Fail,Pass,Pass,Fail,Fail,Pass,Pass
-CTS Supplement Test,CTS Supplement Test/54,check result for Fully connected float 4D input example/4,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Fail,Pass,Pass,Fail,Fail,Pass,Pass
-CTS Supplement Test,CTS Supplement Test/55,check result for Mul example,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Pass,Fail,Pass,Pass
+CTS Supplement Test,CTS Supplement Test/47,check result for Fully connected float 3D input example,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+CTS Supplement Test,CTS Supplement Test/48,check result for Fully connected float 3D input example/2,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+CTS Supplement Test,CTS Supplement Test/49,check result for Fully connected float 3D input example/3,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Pass,Fail,Pass,Pass,Pass
+CTS Supplement Test,CTS Supplement Test/50,check result for Fully connected float 3D input example/4,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Pass,Fail,Pass,Pass,Pass
+CTS Supplement Test,CTS Supplement Test/51,check result for Fully connected float 4D input example,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+CTS Supplement Test,CTS Supplement Test/52,check result for Fully connected float 4D input example/2,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Pass,Fail,Pass,Pass,Pass
+CTS Supplement Test,CTS Supplement Test/53,check result for Fully connected float 4D input example/3,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Pass,Fail,Pass,Pass,Pass
+CTS Supplement Test,CTS Supplement Test/54,check result for Fully connected float 4D input example/4,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Pass,Fail,Pass,Pass,Pass
+CTS Supplement Test,CTS Supplement Test/55,check result for Mul example,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Pass,Fail,Pass,Pass
 CTS Supplement Test,CTS Supplement Test/56,check result for Mul broadcasting 1D-2D example/1,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Pass,Fail,Pass,Pass
 CTS Supplement Test,CTS Supplement Test/57,check result for Mul broadcasting 1D-2D example/2,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Pass,Fail,Pass,Pass
 CTS Supplement Test,CTS Supplement Test/58,check result for Mul broadcasting 2D-2D example/1,Fail,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Pass,Fail,Pass,Pass
@@ -691,16 +691,16 @@ CTS Supplement Test,CTS Supplement Test/130,check result for Resize bilinear by 
 CTS Supplement Test,CTS Supplement Test/131,check result for Softmax example,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Fail,Pass,Pass,Pass,Fail,Pass,Pass,Pass
 CTS Supplement Test,CTS Supplement Test/132,check result for ATROUS_CONV_2D 1 h3 w2 implicit padding same example-1,Fail,Fail,Pass,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS Supplement Test,CTS Supplement Test/133,check result for ATROUS_CONV_2D 1 h3 w2 implicit padding same example-2,Fail,Fail,Pass,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS Supplement Test,CTS Supplement Test/134,check result for ATROUS_CONV_2D 1 h3 w2 implicit padding same example-3,Fail,Fail,Pass,Pass,Fail,Pass,Pass,Fail,Fail,Pass,Pass,Fail,Fail,Pass,Pass
-CTS Supplement Test,CTS Supplement Test/135,check result for ATROUS_CONV_2D 1 h3 w2 implicit padding same example-4,Fail,Fail,Pass,Pass,Fail,Pass,Pass,Fail,Fail,Pass,Pass,Fail,Fail,Pass,Pass
+CTS Supplement Test,CTS Supplement Test/134,check result for ATROUS_CONV_2D 1 h3 w2 implicit padding same example-3,Fail,Fail,Pass,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+CTS Supplement Test,CTS Supplement Test/135,check result for ATROUS_CONV_2D 1 h3 w2 implicit padding same example-4,Fail,Fail,Pass,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS Supplement Test,CTS Supplement Test/136,check result for ATROUS_CONV_2D 1 h3 w2 implicit padding valid example-1,Fail,Fail,Pass,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS Supplement Test,CTS Supplement Test/137,check result for ATROUS_CONV_2D 1 h3 w2 implicit padding valid example-2,Fail,Fail,Pass,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS Supplement Test,CTS Supplement Test/138,check result for ATROUS_CONV_2D 1 h3 w2 implicit padding valid example-3,Fail,Fail,Pass,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS Supplement Test,CTS Supplement Test/139,check result for ATROUS_CONV_2D 1 h3 w2 implicit padding valid example-4,Fail,Fail,Pass,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS Supplement Test,CTS Supplement Test/140,check result for ATROUS_CONV_2D 3 h3 w2 implicit padding same example-1,Fail,Fail,Pass,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS Supplement Test,CTS Supplement Test/141,check result for ATROUS_CONV_2D 3 h3 w2 implicit padding same example-2,Fail,Fail,Pass,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
-CTS Supplement Test,CTS Supplement Test/142,check result for ATROUS_CONV_2D 3 h3 w2 implicit padding same example-3,Fail,Fail,Pass,Pass,Fail,Pass,Pass,Fail,Fail,Pass,Pass,Fail,Fail,Pass,Pass
-CTS Supplement Test,CTS Supplement Test/143,check result for ATROUS_CONV_2D 3 h3 w2 implicit padding same example-4,Fail,Fail,Pass,Pass,Fail,Pass,Pass,Fail,Fail,Pass,Pass,Fail,Fail,Pass,Pass
+CTS Supplement Test,CTS Supplement Test/142,check result for ATROUS_CONV_2D 3 h3 w2 implicit padding same example-3,Fail,Fail,Pass,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
+CTS Supplement Test,CTS Supplement Test/143,check result for ATROUS_CONV_2D 3 h3 w2 implicit padding same example-4,Fail,Fail,Pass,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS Supplement Test,CTS Supplement Test/144,check result for ATROUS_CONV_2D 3 h3 w2 implicit padding valid example-1,Fail,Fail,Pass,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS Supplement Test,CTS Supplement Test/145,check result for ATROUS_CONV_2D 3 h3 w2 implicit padding valid example-2,Fail,Fail,Pass,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass
 CTS Supplement Test,CTS Supplement Test/146,check result for ATROUS_CONV_2D 3 h3 w2 implicit padding valid example-3,Fail,Fail,Pass,Pass,Fail,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass,Pass

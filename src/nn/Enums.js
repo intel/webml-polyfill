@@ -103,6 +103,22 @@ export const PreferenceCode = {
 };
 
 export const OperationCode = {
+
+  /** WebNN API Delegate
+   *
+   * WEBNN_SUBGRAPH is a pseudo op that will be offladed to the WebNN API.
+   * 
+   * This op is experimental and is subject to change. It's only used for the
+   * implementation of the WebNN polyfill and should not be invoked outside.
+   *
+   * Inputs:
+   * * 0 ~ Infinity: Tensors that follow the WebNN API
+   *
+   * Outputs:
+   * * 0 ~ Infinity: Tensors that follow the WebNN API
+   */
+  WEBNN_SUBGRAPH: -1,
+
   /** Adds two tensors, element-wise.
    *
    * Takes two input tensors of identical type and compatible dimensions. The output
@@ -1177,6 +1193,76 @@ export const OperationCode = {
    * * 0: The output tensor of same shape as input0.
    */
   TANH: 28,
+
+  /**
+   * BatchToSpace for N-dimensional tensors.
+   *
+   * This operation reshapes the batch dimension (dimension 0) into M + 1
+   * dimensions of shape block_shape + [batch], interleaves these blocks back
+   * into the grid defined by the spatial dimensions [1, ..., M], to obtain a
+   * result with the same rank as the input.
+   *
+   * This is the reverse of SpaceToBatch.
+   *
+   * Supported tensor {@link OperandCode}:
+   * * {@link TENSOR_FLOAT32}
+   * * {@link TENSOR_QUANT8_ASYMM}
+   *
+   * Supported tensor rank: 4
+   *
+   * Inputs:
+   * * 0: An n-D tensor, specifying the tensor to be reshaped.
+   * * 1: A 1-D Tensor of {@link TENSOR_INT32}, the block sizes for each 
+   *      spatial dimension of the input tensor. All values must be >= 1.
+   *
+   * Outputs:
+   * * 0: A tensor of the same {@link OperandCode} as input0.
+   */
+  BATCH_TO_SPACE_ND: 29,
+
+  /**
+   * Transposes the input tensor, permuting the dimensions according to the
+   * perm tensor.
+   *
+   * The returned tensor's dimension i corresponds to the input dimension
+   * perm[i]. If perm is not given, it is set to (n-1...0), where n is the
+   * rank of the input tensor. Hence by default, this operation performs a
+   * regular matrix transpose on 2-D input Tensors.
+   *
+   * Supported tensor {@link OperandCode}:
+   * * {@link TENSOR_FLOAT32}
+   * * {@link TENSOR_QUANT8_ASYMM}
+   *
+   * Supported tensor rank: up to 4
+   *
+   * Inputs:
+   * * 0: An n-D tensor, specifying the tensor to be transposed.
+   * * 1: An optional 1-D Tensor of {@link TENSOR_INT32}, the permutation of 
+   *      the dimensions of the input tensor.
+   *
+   * Outputs:
+   * * 0: A tensor of the same {@link OperandCode} as input0.
+   */
+  TRANSPOSE: 37,
+
+  /**
+   * Returns the element-wise maximum of two tensors.
+   *
+   * Supported tensor {@link OperandCode}:
+   * * {@link TENSOR_FLOAT32}
+   * * {@link TENSOR_INT32}
+   * * {@link TENSOR_QUANT8_ASYMM}
+   *
+   * Inputs:
+   * * 0: A tensor.
+   * * 1: A tensor of the same {@link OperandCode} and compatible dimensions
+   *      with input0.
+   *
+   * Outputs:
+   * * 0: The sum, a tensor of the same {@link OperandCode} as input0.
+   *
+   */
+  MAXIMUM: 65,
 
   /** Performs a atrous 2-D convolution operation.
    *

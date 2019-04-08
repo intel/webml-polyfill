@@ -1,18 +1,21 @@
 # Prerequisites
 
-Download the following models to this directory:
-
-- [DeepLab (with Atrous Conv)](https://drive.google.com/file/d/1La9pi75J6RwSkgYcme1d9FLL4LZ3_JnE/view?usp=sharing)
-- [DeepLab](https://drive.google.com/file/d/15l8kxoM0JBXv3Nd-BpyAQ7oZpgJWkKd3/view?usp=sharing)
-
-This directory should contain two files
+Download all [DeepLab models](https://drive.google.com/open?id=1cMhKkGFc3DhJJWCWSPMGPLmfYZ3pVESW) to this directory. It should contain the following files:
 
 ```txt
 deeplab_mobilenetv2_513_dilated.tflite
 deeplab_mobilenetv2_513.tflite
+deeplab_mobilenetv2_321_dilated.tflite
+deeplab_mobilenetv2_321.tflite
+deeplab_mobilenetv2_257_dilated.tflite
+deeplab_mobilenetv2_257.tflite
+deeplab_mobilenetv2_224_dilated.tflite
+deeplab_mobilenetv2_224.tflite
 ```
 
-These two models are equivalent. The latter (without `dilated` suffix) is used for platforms (Android) that do not natively support atrous convolution. They are converted from this [DeepLab checkpoint](http://download.tensorflow.org/models/deeplabv3_mnv2_pascal_trainval_2018_01_29.tar.gz). You can follow the steps below to convert your own model.
+They are all converted from this [frozen graph](http://download.tensorflow.org/models/deeplabv3_mnv2_pascal_trainval_2018_01_29.tar.gz). You can also follow the steps below to convert your own model.
+
+Models without `dilated` suffix is used for platforms that do not natively support atrous convolution. They are equivalent to the suffixed versions in terms of the trained parameters.
 
 ## Convert `.pb` to `.tflite`
 
@@ -95,11 +98,11 @@ bazel-bin/tensorflow/lite/toco/toco \
 --input_shapes=1,513,513,3
 ```
 
-## Use custom models
+## Export custom models
 
-If you consider this model was too slow, you can export a model with smaller input size on your own.
+The default size of DeepLab is 513, which would result in considerably slow performance. You can export a model with a smaller size.
 
-1. Download models
+1. Download Tensorflow official models
 ```sh
 git clone https://github.com/tensorflow/models.git
 cd models/research/deeplab/
@@ -127,34 +130,4 @@ For example, export a model with 321x321 inputs and outputs.
 ./local_test_mobilenetv2.sh
 ```
 
-The exported is located in `datasets/pascal_voc_seg/exp/train_on_trainval_set_mobilenetv2/export/frozen_inference_graph.pb`. You can then convert it to a TFLite Model per instructions above.
-
-4. Enable model
-
-Update the following block (if needed) to the `base.js` under the `util` directory.
-
-```js
-const semanticSegmentationModels = [{
-  modelName: 'deeplab_mobilenet_v2_513_tflite',
-  modelSize: '9.5MB',
-  modelFile: '../semantic_segmentation/model/deeplab_mobilenetv2_513.tflite',
-  labelsFile: '../semantic_segmentation/model/labels.txt',
-  inputSize: [513, 513, 3],
-  outputSize: [513, 513, 21],
-  intro: 'DeepLab is a state-of-art deep learning model for semantic image segmentation, where the goal is to assign semantic labels (e.g., person, dog, cat and so on) to every pixel in the input image.',
-  paperUrl: 'https://arxiv.org/abs/1802.02611'
-}, {
-  modelName: 'deeplab_mobilenet_v2_513_dilated_tflite',
-  modelSize: '8.4MB',
-  modelFile: '../semantic_segmentation/model/deeplab_mobilenetv2_513_dilated.tflite',
-  labelsFile: '../semantic_segmentation/model/labels.txt',
-  inputSize: [513, 513, 3],
-  outputSize: [513, 513, 21],
-  intro: 'Equivalent to the model above (without dilated suffix) but only available on platforms that natively support atrous convolution.',
-  paperUrl: 'https://arxiv.org/abs/1802.02611'
-}];
-```
-
-For your convenience, you can download the 321 model here
-- [DeepLab 321 (with Atrous Conv)](https://drive.google.com/file/d/1J2Wx5lmgsaZZ84Am8gSqRL0ilcJ2Gpvs/view?usp=sharing)
-- [DeepLab 321](https://drive.google.com/file/d/1wEJH6d2x0o1NuWZbMQVeT4ADDV72A8Lz/view?usp=sharing)
+The frozen graph is exported in `datasets/pascal_voc_seg/exp/train_on_trainval_set_mobilenetv2/export/frozen_inference_graph.pb`. You can then convert it to a TFLite Model per instructions above.

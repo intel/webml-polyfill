@@ -1,0 +1,17 @@
+{
+  "name": "realmodel",
+  "version": "0.0.1",
+  "description": "Generate testcase for realmodel",
+  "main": "./download.js",
+  "dependencies": {
+    "download": "^7.1.0",
+    "node-wget": "^0.4.3",
+    "puppeteer": "^1.14.0",
+    "targz": "^1.0.1",
+    "unzip": "^0.1.11"
+  },
+  "scripts": {
+    "aaa": "node ./download.js",
+    "bbb": "node ./tool/generate_realmodel/genreateCase.js"
+  }
+}

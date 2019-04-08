@@ -5,6 +5,18 @@ import Compilation from './Compilation';
 export default class Model {
   /**
    * Create an empty model.
+   * 
+   * @typedef  {'WebGL' | 'WASM'} Backend
+   * 
+   * @typedef  {Object}      ModelOptions  Options for polyfill only
+   * @property {Backend}     backend       Backend selection
+   * @property {boolean}     [eager=false] Eagerly partition
+   * @property {Set<number>} [supportedOps=new Set()] OperationCode to be
+   *                                       offloaded to WebNN. If the given set
+   *                                       is empty or undefined, all ops will
+   *                                       be executed by the polyfill.               
+   * 
+   * @param {ModelOptions}   [options={}]  Configurations for model
    */
   constructor(options = {}) {
     this._completed = false;
@@ -13,6 +25,8 @@ export default class Model {
     this._inputs = null;
     this._outputs = null;
     this._backend = options.backend;
+    this._eager = options.eager || false;
+    this._supportedOps = options.supportedOps || new Set();
   }
 
   /**
@@ -81,7 +95,7 @@ export default class Model {
    * @param {TypedArray} value - The typed array containing data.
    */
   setOperandValue(index, value) {
-    if (index > this._operands.length) {
+    if (index >= this._operands.length) {
       throw new Error(`Invalid index ${index}`);
     }
     let operand = this._operands[index];
@@ -206,7 +220,7 @@ export default class Model {
 
   _validateOperandList(list) {
     let ret = true;
-    list.forEach(index => {if (index >= this._operands) ret = false;})
+    list.forEach(index => {if (index >= this._operands.length) ret = false;})
     return ret;
   }
 
