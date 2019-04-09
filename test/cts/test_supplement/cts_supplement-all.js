@@ -3269,7 +3269,6 @@ describe('CTS', function() {
     execution.setOutput(0, op3_output);
 
     await execution.startCompute();
-    console.log(op3_output);
 
     for (let i = 0; i < type4_length; ++i) {
       assert.isTrue(almostEqualCTS(op3_output[i], op3_expect[i]));
