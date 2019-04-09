@@ -44,7 +44,8 @@ const hybridRow = (currentBackend, currentPrefer, offloadops) => {
       offloadopsvalue += t;
     })
     $(".ol").remove();
-    $("#offloadops").append(offloadopsvalue);
+    $("#offloadops").html(`Dual backends selected, following ops were offloaded to <span id='nnbackend' class='ols'></span> from <span id='polyfillbackend' class='ols'></span>: `);
+    $("#offloadops").append(offloadopsvalue).append(`<span data-toggle="modal" class="subgraph-btn" data-target="#subgraphModal">View Subgraphs</span>`);
     $("#nnbackend").html(currentPrefer);
     $("#polyfillbackend").html(currentBackend);
   } else {
@@ -52,12 +53,47 @@ const hybridRow = (currentBackend, currentPrefer, offloadops) => {
   }
 }
 
+const showSubGraphsSummary = (summary) => {
+  if(summary) {
+    let listhtml = '';
+    for(let i in summary) {
+      let backend = summary[i].split(':')[0].toLowerCase();
+      let subgraphlist = summary[i].split(':')[1].replace(/ /g, '').replace('{', '').replace('}', '').replace(/,/g, ' ');
+      let tmp;
+
+      if(backend.indexOf('webnn') >-1) {
+        tmp = `<li><div class="timeline-badge tb-webnn"><i class="glyphicon">WebNN</i></div><div class="timeline-panel tp-webnn"><div class="timeline-body"><p>${subgraphlist}</p></div></div></li>`;
+      } else if (backend.indexOf('wasm') >-1) {
+        tmp = `<li class="timeline-inverted"><div class="timeline-badge tb-wasm"><i class="glyphicon">WASM</i></div><div class="timeline-panel tp-wasm"><div class="timeline-body"><p>${subgraphlist}</p></div></div></li>`;
+      } else if (backend.indexOf('webgl') >-1) {
+        tmp = `<li class="timeline-inverted"><div class="timeline-badge tb-webgl"><i class="glyphicon">WebGL</i></div><div class="timeline-panel tp-webgl"><div class="timeline-body"><p>${subgraphlist}</p></div></div></li>`;
+      }
+
+      listhtml += tmp;
+    }
+    $('#subgraph').html(listhtml);
+  }
+}
+
+const setPreferenceCodeToolTip = () => {
+  if($('#l-low')) {
+    $('#l-fast').attr('data-tooltip','Prefer returning a single answer as fast as possible, even if this causes more power consumption.');
+    $('#l-sustained').attr('data-tooltip','Prefer maximizing the throughput of successive frames, for example when processing successive frames coming from the camera.');
+    $('#l-low').attr('data-tooltip','Prefer executing in a way that minimizes battery drain. This is desirable for compilations that will be executed often.');
+  }
+  $('#l-WASM').attr('data-tooltip','Compiled Tensorflow Lite C++ kernels to WebAssembly format');
+  $('#l-WebGL').attr('data-tooltip','Tensorflow.js WebGL kernel');
+}
+
 const updateTitle = (name, backend, prefer, model, modeltype) => {
   model = model.replace(/_/g, ' ');
   let currentprefertext = {
-    fast: 'FAST_SINGLE_ANSWER',
-    sustained: 'SUSTAINED_SPEED',
-    low: 'LOW_POWER',
+    // fast: 'FAST_SINGLE_ANSWER',
+    // sustained: 'SUSTAINED_SPEED',
+    // low: 'LOW_POWER',
+    fast: 'FAST',
+    sustained: 'SUSTAINED',
+    low: 'LOW',   
     none: 'None',
   }[prefer];
 
@@ -97,7 +133,7 @@ $('.scrolltop, #logo a').click(() => {
 
 $(document).ready(() => {
   if(navigator.userAgent.toLowerCase().indexOf("edge") > -1) {
-    if(location.pathname.toLocaleLowerCase() === '/examples/' || location.pathname.toLocaleLowerCase().indexOf('/examples/model') >-1) {
+    if(location.pathname.toLocaleLowerCase() === '/examples/' || location.pathname.toLocaleLowerCase().indexOf('/examples/index') >-1 || location.pathname.toLocaleLowerCase().indexOf('/examples/model') >-1) {
       $('#logo').html('<img src="static/img/edge_logo.png">')
     } else {
       $('#logo').html('<img src="../static/img/edge_logo.png">')
@@ -162,6 +198,8 @@ $(document).ready(() => {
     $('#l-WebML').removeClass('dnone');
     $('#webmlstatus').addClass('webml-status-true').html('supported');
   }
+
+  setPreferenceCodeToolTip();
 
 });
 

@@ -109,6 +109,7 @@ const updateBackend = async (camera = false, force = false) => {
   try {
     getOffloadOps(currentBackend, currentPrefer);
     await utils.init(currentBackend, currentPrefer);
+    showSubGraphsSummary(utils.getSubgraphsSummary());
     predictPath(camera);
   }
   catch (e) {
@@ -131,6 +132,7 @@ const main = async (camera = false) => {
     await utils.loadModel(model[0]);
     getOffloadOps(currentBackend, currentPrefer);
     await utils.init(currentBackend, currentPrefer);
+    showSubGraphsSummary(utils.getSubgraphsSummary());
   } catch (e) {
     errorHandler(e);
   }
