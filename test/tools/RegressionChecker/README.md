@@ -10,7 +10,7 @@ This is an automation tool kit to check regression easily for developers when su
    $ npm install
 ```
    You need modify chromedriver version to '2.45.0' in package.json when you run chromium 70 build. chromedriver 2.46.0 supports chromium >=71.
- 
+
    If installing `chromedriver` fails, you can install `chromedriver` with this command:
 
       $ npm install chromedriver --chromedriver_cdnurl=http://cdn.npm.taobao.org/dist/chromedriver
@@ -20,19 +20,28 @@ This is an automation tool kit to check regression easily for developers when su
 ```
    {
      "platform": "Mac",
-     "chromiumPath": "/User/test/Downloads/Chromium.app/Contents/MacOS/Chromium"
+     "chromiumPath": "/User/test/Downloads/Chromium.app/Contents/MacOS/Chromium",
+     "isUseIE": false,
+     "webmlPolyfill": false,
+     "webmlnn": true
    }
 ```
    or
 ```
    {
      "platform": "Windows",
-     "chromiumPath": "C:\\test\\win_x64_SUCCEED\\Chrome-bin\\chrome.exe"
+     "chromiumPath": "C:\\test\\win_x64_SUCCEED\\Chrome-bin\\chrome.exe",
+     "isUseIE": false,
+     "webmlPolyfill": true,
+     "webmlnn": true
    }
 ```
    You need modify these two fields for the different platforms:
-   + **_platform_**: `{string}`, target platform, support **Android**, **Mac**, **Linux** and **Windows**
-   + **_chromiumPath_**: `{string}`,**Mac**/**Linux**/**Windows**: the target chromium path   **Android**: the chrome or chromium path in above Prerequisites to show the final checking results
+   + **_platform_**: `{string}`, target platform, support **Android**, **Mac**, **Linux** and **Windows**.
+   + **_chromiumPath_**: `{string}`, **Mac**/**Linux**/**Windows**: the target chromium path   **Android**: the chrome or chromium path in above Prerequisites to show the final checking results.
+   + **isUseIE**: `{boolean}`, **Linux**: use inference engine with **MKLDNN** backend, support **true** and **false**.
+   + **webmlPolyfill**: `{boolean}`, run RegressionChecker tool with **webmlPolyfill** backends, support **true** and **false**.
+   + **webmlnn**: `{boolean}`, run RegressionChecker tool with **webmlnn** backends, support **true** and **false**.
 
 ## Run Tests
 

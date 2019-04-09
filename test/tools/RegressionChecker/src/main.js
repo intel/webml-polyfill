@@ -50,9 +50,35 @@ var backendModels = [
     "Linux-WebGL"
 ];
 
+function jsonTypeCheck (json, field, expectType) {
+    if (typeof json[field] == expectType) {
+        return true;
+    } else {
+        throw new Error("Type of 'JSON." + field + "' is not '" + expectType + "'");
+    }
+}
+
+var testPlatform, chromiumPath, isUseIE, webmlPolyfill, webmlnn;
 var RCjson = JSON.parse(fs.readFileSync("./config.json"));
-var testPlatform = RCjson.platform;
-var chromiumPath = RCjson.chromiumPath;
+if (jsonTypeCheck(RCjson, "platform", "string")) {
+    testPlatform = RCjson.platform;
+}
+
+if (jsonTypeCheck(RCjson, "chromiumPath", "string")) {
+    chromiumPath = RCjson.chromiumPath;
+}
+
+if (jsonTypeCheck(RCjson, "isUseIE", "boolean")) {
+    isUseIE = RCjson.isUseIE;
+}
+
+if (jsonTypeCheck(RCjson, "webmlPolyfill", "boolean")) {
+    webmlPolyfill = RCjson.webmlPolyfill;
+}
+
+if (jsonTypeCheck(RCjson, "webmlnn", "boolean")) {
+    webmlnn = RCjson.webmlnn;
+}
 
 var baselinejson = JSON.parse(fs.readFileSync("./baseline/baseline.config.json"));
 var versionChromium = baselinejson.Version.chromium;
@@ -725,7 +751,14 @@ var matchFlag = null;
             resultHTMLStream.write(space + "        </th>\n");
 
             for (let backend of newTestCaseData.get("backends").keys()) {
-                resultHTMLStream.write(space + "        <th>" + backend + "\n");
+                let specialBackend;
+                if (backend == "Linux-MKLDNN" && isUseIE) {
+                    specialBackend = "Linux-IE-MKLDNN";
+                } else {
+                    specialBackend = backend;
+                }
+
+                resultHTMLStream.write(space + "        <th>" + specialBackend + "\n");
                 resultHTMLStream.write(space + "        </th>\n");
             }
 
@@ -779,11 +812,18 @@ var matchFlag = null;
                 numberTotal = numberTotal + pageDataTotal.get(testBackend).get("grasp")[0];
             }
 
+            let specialBackend;
+            if (testBackend == "Linux-MKLDNN" && isUseIE) {
+                specialBackend = "Linux-IE-MKLDNN";
+            } else {
+                specialBackend = testBackend;
+            }
+
             if (pageData.get(testBackend).get("pass2fail").length !== 0) {
-                resultHTMLStream.write(space + "    <h4>&emsp; &emsp; &#10148 &emsp; " + testBackend +
+                resultHTMLStream.write(space + "    <h4>&emsp; &emsp; &#10148 &emsp; " + specialBackend +
                                  ": <span class='notsuggest'>Please improve the code</span></h4>\n");
             } else {
-                resultHTMLStream.write(space + "    <h4>&emsp; &emsp; &#10148 &emsp; " + testBackend +
+                resultHTMLStream.write(space + "    <h4>&emsp; &emsp; &#10148 &emsp; " + specialBackend +
                                  ": <span class='suggest'>OK</span></h4>\n");
             }
         }
@@ -814,6 +854,13 @@ var matchFlag = null;
     }
 
     var bodyContainerBoxTableBackend =  function(space, backend, key) {
+        let specialBackend;
+        if (backend == "Linux-MKLDNN" && isUseIE) {
+            specialBackend = "Linux-IE-MKLDNN";
+        } else {
+            specialBackend = backend;
+        }
+
         resultHTMLStream.write(space + "<table>\n");
         resultHTMLStream.write(space + "  <thead>\n");
         resultHTMLStream.write(space + "    <tr>\n");
@@ -823,7 +870,7 @@ var matchFlag = null;
         resultHTMLStream.write(space + "      </th>\n");
         resultHTMLStream.write(space + "      <th>Baseline\n");
         resultHTMLStream.write(space + "      </th>\n");
-        resultHTMLStream.write(space + "      <th>" + backend + "\n");
+        resultHTMLStream.write(space + "      <th>" + specialBackend + "\n");
         resultHTMLStream.write(space + "      </th>\n");
         resultHTMLStream.write(space + "    </tr>\n");
         resultHTMLStream.write(space + "  </thead>\n");
@@ -879,7 +926,14 @@ var matchFlag = null;
         resultHTMLStream.write(space + "        <th rowspan='2'>Summary\n");
         resultHTMLStream.write(space + "        </th>\n");
         for (let i = 0; i < testBackends.length; i++) {
-            resultHTMLStream.write(space + "        <th colspan='2'>" + testBackends[i] + "\n");
+            let specialBackend;
+            if (testBackends[i] == "Linux-MKLDNN" && isUseIE) {
+                specialBackend = "Linux-IE-MKLDNN";
+            } else {
+                specialBackend = testBackends[i];
+            }
+
+            resultHTMLStream.write(space + "        <th colspan='2'>" + specialBackend + "\n");
             resultHTMLStream.write(space + "        </th>\n");
         }
 
@@ -1053,7 +1107,7 @@ var matchFlag = null;
         remoteURL = "https://brucedai.github.io/nt/test/index-local.html";
 
         if (backendModel === "Mac-MPS") {
-            if (testPlatform === "Mac") {
+            if (testPlatform === "Mac" && webmlnn) {
                 testBackends.push("Mac-MPS");
                 remoteURL = remoteURL + "?backend=mps";
                 chromeOption = chromeOption
@@ -1063,7 +1117,7 @@ var matchFlag = null;
                 continue;
             }
         } else if (backendModel === "Mac-BNNS") {
-            if (testPlatform === "Mac") {
+            if (testPlatform === "Mac" && webmlnn) {
                 testBackends.push("Mac-BNNS");
                 remoteURL = remoteURL + "?backend=bnns";
                 chromeOption = chromeOption
@@ -1073,7 +1127,7 @@ var matchFlag = null;
                 continue;
             }
         } else if (backendModel === "Mac-WASM") {
-            if (testPlatform === "Mac") {
+            if (testPlatform === "Mac" && webmlPolyfill) {
                 testBackends.push("Mac-WASM");
                 remoteURL = remoteURL + "?backend=wasm";
                 chromeOption = chromeOption
@@ -1083,7 +1137,7 @@ var matchFlag = null;
                 continue;
             }
         } else if (backendModel === "Mac-WebGL") {
-            if (testPlatform === "Mac") {
+            if (testPlatform === "Mac" && webmlPolyfill) {
                 testBackends.push("Mac-WebGL");
                 remoteURL = remoteURL + "?backend=webgl";
                 chromeOption = chromeOption
@@ -1093,7 +1147,7 @@ var matchFlag = null;
                 continue;
             }
         } else if (backendModel === "Android-NNAPI") {
-            if (testPlatform === "Android") {
+            if (testPlatform === "Android" && webmlnn) {
                 testBackends.push("Android-NNAPI");
                 remoteURL = remoteURL + "?backend=nnapi";
                 chromeOption = chromeOption
@@ -1104,7 +1158,7 @@ var matchFlag = null;
                 continue;
             }
         } else if (backendModel === "Android-WASM") {
-            if (testPlatform === "Android") {
+            if (testPlatform === "Android" && webmlPolyfill) {
                 testBackends.push("Android-WASM");
                 remoteURL = remoteURL + "?backend=wasm";
                 chromeOption = chromeOption
@@ -1115,7 +1169,7 @@ var matchFlag = null;
                 continue;
             }
         } else if (backendModel === "Android-WebGL") {
-            if (testPlatform === "Android") {
+            if (testPlatform === "Android" && webmlPolyfill) {
                 testBackends.push("Android-WebGL");
                 remoteURL = remoteURL + "?backend=webgl";
                 chromeOption = chromeOption
@@ -1126,7 +1180,7 @@ var matchFlag = null;
                 continue;
             }
         } else if (backendModel === "Windows-clDNN") {
-            if (testPlatform === "Windows") {
+            if (testPlatform === "Windows" && webmlnn) {
                 testBackends.push("Windows-clDNN");
                 remoteURL = remoteURL + "?backend=cldnn";
                 chromeOption = chromeOption
@@ -1136,7 +1190,7 @@ var matchFlag = null;
                 continue;
             }
         } else if (backendModel === "Windows-MKLDNN") {
-            if (testPlatform === "Windows") {
+            if (testPlatform === "Windows" && webmlnn) {
                 testBackends.push("Windows-MKLDNN");
                 remoteURL = remoteURL + "?backend=mkldnn";
                 chromeOption = chromeOption
@@ -1146,7 +1200,7 @@ var matchFlag = null;
                 continue;
             }
         } else if (backendModel === "Windows-WASM") {
-            if (testPlatform === "Windows") {
+            if (testPlatform === "Windows" && webmlPolyfill) {
                 testBackends.push("Windows-WASM");
                 remoteURL = remoteURL + "?backend=wasm";
                 chromeOption = chromeOption
@@ -1156,7 +1210,7 @@ var matchFlag = null;
                 continue;
             }
         } else if (backendModel === "Windows-WebGL") {
-            if (testPlatform === "Windows") {
+            if (testPlatform === "Windows" && webmlPolyfill) {
                 testBackends.push("Windows-WebGL");
                 remoteURL = remoteURL + "?backend=webgl";
                 chromeOption = chromeOption
@@ -1166,7 +1220,7 @@ var matchFlag = null;
                 continue;
             }
         } else if (backendModel === "Linux-clDNN") {
-            if (testPlatform === "Linux") {
+            if (testPlatform === "Linux" && webmlnn) {
                 testBackends.push("Linux-clDNN");
                 remoteURL = remoteURL + "?backend=cldnn";
                 chromeOption = chromeOption
@@ -1177,18 +1231,22 @@ var matchFlag = null;
                 continue;
             }
         } else if (backendModel === "Linux-MKLDNN") {
-            if (testPlatform === "Linux") {
+            if (testPlatform === "Linux" && webmlnn) {
                 testBackends.push("Linux-MKLDNN");
                 remoteURL = remoteURL + "?backend=mkldnn";
                 chromeOption = chromeOption
                     .setChromeBinaryPath(chromiumPath)
                     .addArguments("--enable-features=WebML")
                     .addArguments("--no-sandbox");
+
+                if (isUseIE) {
+                    chromeOption = chromeOption.addArguments("--use-inference-engine");
+                }
             } else {
                 continue;
             }
         } else if (backendModel === "Linux-WASM") {
-            if (testPlatform === "Linux") {
+            if (testPlatform === "Linux" && webmlPolyfill) {
                 testBackends.push("Linux-WASM");
                 remoteURL = remoteURL + "?backend=wasm";
                 chromeOption = chromeOption
@@ -1198,7 +1256,7 @@ var matchFlag = null;
                 continue;
             }
         } else if (backendModel === "Linux-WebGL") {
-            if (testPlatform === "Linux") {
+            if (testPlatform === "Linux" && webmlPolyfill) {
                 testBackends.push("Linux-WebGL");
                 remoteURL = remoteURL + "?backend=webgl";
                 chromeOption = chromeOption
@@ -1239,12 +1297,6 @@ var matchFlag = null;
         RClog("time", "mark");
 
         await driver.wait(async function() {
-            await driver.executeScript("return window.mochaFinish;").then(function(flag) {
-                RClog("debug", flag);
-            }).catch(function(err) {
-                throw err;
-            });
-
             return driver.executeScript("return window.mochaFinish;").catch(function(err) {
                 throw err;
             });
