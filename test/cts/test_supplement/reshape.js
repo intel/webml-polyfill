@@ -5,8 +5,8 @@ describe('CTS Supplement Test', function() {
   it('check result for Reshape example', async function() {
     let model = await nn.createModel(options);
 
-    const float32TensorType = {type: nn.TENSOR_FLOAT32, dimensions:[1, 4]};
-    const tensorLength = product(float32TensorType.dimensions);
+    let float32TensorType = {type: nn.TENSOR_FLOAT32, dimensions:[1, 4]};
+    let tensorLength = product(float32TensorType.dimensions);
 
     model.addOperand(float32TensorType);
     model.addOperand({type: nn.TENSOR_INT32, dimensions: [2]});
