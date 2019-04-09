@@ -2,7 +2,6 @@ const fs = require('fs');
 const path = require('path');
 const wget = require('node-wget');
 const targz = require('targz');
-const os = require('os');
 const puppeteer = require('puppeteer');
 
 class getJsonData {
@@ -12,12 +11,12 @@ class getJsonData {
   }
 
   open() {
-    this.json = JSON.parse(fs.readFileSync("./config.json"));
+    this.json = JSON.parse(fs.readFileSync('./config.json'));
   }
 
   getURL() {
     if (this.json.url == null) {
-      throw new Error("url is null");
+      throw new Error('url is null');
     } else {
       if (checkURL(this.json.url)) {
         return this.json.url;
@@ -27,9 +26,17 @@ class getJsonData {
     }
   }
 
+  getlocalURL() {
+    if (this.json.localURL == null) {
+      throw new Error('url is null');
+    } else {
+      return this.json.localURL;
+    }
+  }
+
   getModelPath() {
     if (this.json.modelPath == null) {
-      throw new Error("modelPath is null");
+      throw new Error('modelPath is null');
     } else {
       return this.json.modelPath;
     }
@@ -37,7 +44,7 @@ class getJsonData {
 
   getModelName() {
     if (this.json.modelName == null) {
-      throw new Error("modelName is null");
+      throw new Error('modelName is null');
     } else {
       return this.json.modelName;
     }
@@ -45,7 +52,7 @@ class getJsonData {
 
   getJsonPath() {
     if (this.json.JSONPath == null) {
-      throw new Error("JsonPath is null");
+      throw new Error('JsonPath is null');
     } else {
       return this.json.JSONPath;
     }
@@ -53,7 +60,7 @@ class getJsonData {
 
   getCasePath() {
     if (this.json.casePath == null) {
-      throw new Error("casePath is null");
+      throw new Error('casePath is null');
     } else {
       return this.json.casePath;
     }
@@ -61,7 +68,7 @@ class getJsonData {
 
   getCaseSource() {
     if (this.json.caseSource == null) {
-      throw new Error("caseSource is null");
+      throw new Error('caseSource is null');
     } else {
       return this.json.caseSource;
     }
@@ -95,7 +102,7 @@ async function checkURL(URL) {
 }
 
 async function wgetDownload(URL) {
-  let savePath = path.join(process.cwd(), 'tool', 'generate_realmodel', 'model');
+  let savePath = path.join(process.cwd(), 'tool', 'model');
   await mkdirsSync(savePath);
   let name = path.join(savePath, JSON_DATA.getURL().split('/').pop());
   await wget({
@@ -110,7 +117,7 @@ async function wgetDownload(URL) {
 }
 
 async function Unzip(PATH) {
-  let unzipPath = path.join(process.cwd(), 'tool', 'generate_realmodel', 'model');
+  let unzipPath = path.join(process.cwd(), 'tool', 'model');
   if (!fs.existsSync(PATH)) throw new Error(`${PATH} is not exist`);
   if (!fs.existsSync(unzipPath)) await mkdirsSync(unzipPath);
 
@@ -128,7 +135,7 @@ async function Unzip(PATH) {
 
 async function downloadFile(URL, savePath) {
   const browser = await puppeteer.launch({headless: false});
-  savePath = path.join(process.cwd(), 'tool', 'generate_realmodel');
+  savePath = path.join(process.cwd(), 'tool');
   if (fs.existsSync(path.join(savePath, 'casePrototypeData.json'))) {
     fs.unlinkSync(path.join(savePath, 'casePrototypeData.json'));
   }
@@ -147,6 +154,6 @@ async function downloadFile(URL, savePath) {
 
 (async function() {
   await wgetDownload(JSON_DATA.getURL());
-  await downloadFile('localhost:8080/test/realmodel/tool/generate_realmodel', process.cwd());
-  await Unzip(path.join(process.cwd(), 'tool', 'generate_realmodel', 'model', JSON_DATA.getURL().split('/').pop()));
-})()
+  await downloadFile(JSON_DATA.getlocalURL(), process.cwd());
+  await Unzip(path.join(process.cwd(), 'tool', 'model', JSON_DATA.getURL().split('/').pop()));
+})();

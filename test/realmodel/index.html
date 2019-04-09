@@ -4,12 +4,12 @@
     <title>Onnx Importer Test</title>
   </head>
   <body>
-    <script src="../../../../dist/webml-polyfill.js"></script>
-    <script src="../../../../examples/third_party/protobuf.min.js"></script>
-    <script src="../../../../examples/util/base.js"></script>
-    <script src="../../../../examples/util/onnx/onnx.js"></script>
-    <script src="../../../../examples/util/onnx/OnnxModelUtils.js"></script>
-    <script src="../../../../examples/util/onnx/OnnxModelImporter_test.js"></script>
+    <script src="../../dist/webml-polyfill.js"></script>
+    <script src="../../examples/third_party/protobuf.min.js"></script>
+    <script src="../../examples/util/base.js"></script>
+    <script src="../../examples/util/onnx/onnx.js"></script>
+    <script src="../../examples/util/onnx/OnnxModelUtils.js"></script>
+    <script src="../../examples/util/onnx/OnnxModelImporter_test.js"></script>
     <script>
     var getLayerFlag = true;
      window.onload = async function() {
@@ -58,9 +58,9 @@
       }
       
       const modelName = 'squeezenet1.1';
-      const modelFile = `../../tool/generate_realmodel/model/${modelName}/${modelName}.onnx`;
-      let input = await loadTensor(`../../tool/generate_realmodel/model/${modelName}/test_data_set_1/input_0.pb`);
-      let expect = await loadTensor(`../../tool/generate_realmodel/model/${modelName}/test_data_set_1/output_0.pb`);
+      const modelFile = `./tool/model/${modelName}/${modelName}.onnx`;
+      let input = await loadTensor(`./tool/model/${modelName}/test_data_set_1/input_0.pb`);
+      let expect = await loadTensor(`./tool/model/${modelName}/test_data_set_1/output_0.pb`);
       let result = await loadUrl(modelFile);
       if (onnx.ModelProto.verify(result))
         throw new Error(`Invalid model`);

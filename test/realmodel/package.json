@@ -11,7 +11,7 @@
     "unzip": "^0.1.11"
   },
   "scripts": {
-    "aaa": "node ./download.js",
-    "bbb": "node ./tool/generate_realmodel/genreateCase.js"
+    "download": "node ./download.js",
+    "gentc": "node ./tool/genreateCase.js"
   }
 }

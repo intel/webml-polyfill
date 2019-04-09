@@ -1,108 +1,108 @@
 const fs = require('fs');
 const path = require('path');
-let filePath = path.join(__dirname, 'casePrototypeData.json')
+let filePath = path.join(__dirname, 'casePrototypeData.json');
 let stream = fs.createReadStream(filePath, { flags: 'r', encoding: 'utf-8' });
 let buf = '';
- 
- stream.on('data', function (d) {
-   buf += d.toString();
- });
- stream.on('end', () => {
-   buf = JSON.parse(buf);
-   generateCase(buf);
- });
 
- function mkdirsSync(dirname) {
-   if (fs.existsSync(dirname)) {
-     return true;
-   } else {
-     if (mkdirsSync(path.dirname(dirname))) {
-       fs.mkdirSync(dirname);
-       return true;
-     }
-   }
- }
+stream.on('data', function (d) {
+  buf += d.toString();
+});
+stream.on('end', () => {
+  buf = JSON.parse(buf);
+  generateCase(buf);
+});
 
- async function saveToLocalFile(input) {
-   let output = input;
-   let dataString;
-   if (buf.operation.hasOwnProperty(input)) {
+function mkdirsSync(dirname) {
+  if (fs.existsSync(dirname)) {
+    return true;
+  } else {
+    if (mkdirsSync(path.dirname(dirname))) {
+      fs.mkdirSync(dirname);
+      return true;
+    }
+  }
+}
+
+async function saveToLocalFile(input) {
+  let output = input;
+  let dataString;
+  if (buf.operation.hasOwnProperty(input)) {
     dataString = buf.operation[input];
-   } else if (buf.tensorId.hasOwnProperty(input)) {
+  } else if (buf.tensorId.hasOwnProperty(input)) {
     dataString = buf.operands[buf.tensorId[input]['id']];
-   } else {
-     throw error ('please check input data');
-   }
+  } else {
+    throw error('please check input data');
+  }
 
-   let dataArray = [];
-   for (let key in dataString) {
-     dataArray.push(dataString[key]);
-   }
+  let dataArray = [];
+  for (let key in dataString) {
+    dataArray.push(dataString[key]);
+  }
   let saveFileDirs = path.join(process.cwd(), 'testcase', 'res');
-   mkdirsSync(saveFileDirs);
-   let saveStream = fs.createWriteStream(path.join(saveFileDirs, output), { flags: 'w', encoding: 'utf-8' });
-   saveStream.on('error', (err) => {
-     console.error(err);
-   });
-   if (typeof (dataArray) === 'object') {
-     saveStream.write(JSON.stringify(dataArray));
-   } else {
-     saveStream.write(dataArray);
-   }
-   saveStream.end();
- }
+  mkdirsSync(saveFileDirs);
+  let saveStream = fs.createWriteStream(path.join(saveFileDirs, output), { flags: 'w', encoding: 'utf-8' });
+  saveStream.on('error', (err) => {
+    console.error(err);
+  });
+  if (typeof (dataArray) === 'object') {
+    saveStream.write(JSON.stringify(dataArray));
+  } else {
+    saveStream.write(dataArray);
+  }
+  saveStream.end();
+}
 
- async function saveCaseToLocal(input, output) {
-   let saveFileDirs = path.join(process.cwd(), 'testcase');
-   mkdirsSync(saveFileDirs);
-   let saveStream = fs.createWriteStream(path.join(saveFileDirs, output), { flags: 'w', encoding: 'utf-8' });
-   saveStream.on('error', (err) => {
-     console.error(err);
-   });
-   if (typeof (input) === 'object') {
-     saveStream.write(JSON.stringify(input));
-   } else {
-     saveStream.write(input);
-   }
-   saveStream.end();
- }
+async function saveCaseToLocal(input, output) {
+  let saveFileDirs = path.join(process.cwd(), 'testcase');
+  mkdirsSync(saveFileDirs);
+  let saveStream = fs.createWriteStream(path.join(saveFileDirs, output), { flags: 'w', encoding: 'utf-8' });
+  saveStream.on('error', (err) => {
+    console.error(err);
+  });
+  if (typeof (input) === 'object') {
+    saveStream.write(JSON.stringify(input));
+  } else {
+    saveStream.write(input);
+  }
+  saveStream.end();
+}
 
- async function getTensorString(ids) {
-   let tensorIdString;
-   Object.keys(buf.tensorId).forEach((k) => {
-     if(buf.tensorId[k]['id'] == ids) {
-       tensorIdString = [k, buf.tensorId[k]['type']];
-     }
-   })
-   return tensorIdString;
- }
+async function getTensorString(ids) {
+  let tensorIdString;
+  Object.keys(buf.tensorId).forEach((k) => {
+    if(buf.tensorId[k]['id'] == ids) {
+      tensorIdString = [k, buf.tensorId[k]['type']];
+    }
+  });
+  return tensorIdString;
+}
 
- async function getOperandsValue(data) {
-   // data --> input.operations[i][1][3]
-   return buf.operands[data];
- }
+async function getOperandsValue(data) {
+  // data --> input.operations[i][1][3]
+  return buf.operands[data];
+}
 
- async function splitContext(context) {
-   // context --> input.operations[i];
-   let inputName = (await getTensorString(context[1][0]))[0];
-   let inputDims = (await getTensorString(context[1][0]))[1].dimensions;
-   let outputName = (await getTensorString(context[2][0]))[0];
-   let outputDims = (await getTensorString(context[2][0]))[1].dimensions;
-   await saveToLocalFile(inputName);
-   await saveToLocalFile(outputName);
-   switch(context[0]) {
-     case 1: 
-     case 17:{
-       let padding = (await getOperandsValue(context[1][1]))[0];
-       let padding1 = (await getOperandsValue(context[1][2]))[0];
-       let padding2 = (await getOperandsValue(context[1][3]))[0];
-       let padding3 = (await getOperandsValue(context[1][4]))[0];
-       let stride = (await getOperandsValue(context[1][5]))[0];
-       let stride1 = (await getOperandsValue(context[1][6]))[0];
-       let filter = (await getOperandsValue(context[1][7]))[0];
-       let filter1 = (await getOperandsValue(context[1][8]))[0];
-       let activation = (await getOperandsValue(context[1][9]))[0];
-      let caseSample = `
+async function splitContext(context) {
+  // context --> input.operations[i];
+  let inputName = (await getTensorString(context[1][0]))[0];
+  let inputDims = (await getTensorString(context[1][0]))[1].dimensions;
+  let outputName = (await getTensorString(context[2][0]))[0];
+  let outputDims = (await getTensorString(context[2][0]))[1].dimensions;
+  await saveToLocalFile(inputName);
+  await saveToLocalFile(outputName);
+  switch(context[0]) {
+  case 1:
+  case 17:{
+    let padding = (await getOperandsValue(context[1][1]))[0];
+    // let padding1 = (await getOperandsValue(context[1][2]))[0];
+    // let padding2 = (await getOperandsValue(context[1][3]))[0];
+    // let padding3 = (await getOperandsValue(context[1][4]))[0];
+    let stride = (await getOperandsValue(context[1][5]))[0];
+    // let stride1 = (await getOperandsValue(context[1][6]))[0];
+    let filter = (await getOperandsValue(context[1][7]))[0];
+    // let filter1 = (await getOperandsValue(context[1][8]))[0];
+    let activation = (await getOperandsValue(context[1][9]))[0];
+    let caseSample = `
       describe('CTS Real Model Test', function() {
        const assert = chai.assert;
        const nn = navigator.ml.getNeuralNetworkContext();
@@ -171,14 +171,14 @@ let buf = '';
        });
      });
       `;
-      await saveCaseToLocal(caseSample, `average-max${inputName}.js`)
-     } break;
-     case 2: {
-      let input1Name = (await getTensorString(context[1][1]))[0];
-      let input1Dims = (await getTensorString(context[1][1]))[1].dimensions;
-      let axis = (await getOperandsValue(context[1][2]))[0];
-      await saveToLocalFile(input1Name);
-      let caseSample = `
+    await saveCaseToLocal(caseSample, `average-max${inputName}.js`);
+  } break;
+  case 2: {
+    let input1Name = (await getTensorString(context[1][1]))[0];
+    let input1Dims = (await getTensorString(context[1][1]))[1].dimensions;
+    let axis = (await getOperandsValue(context[1][2]))[0];
+    await saveToLocalFile(input1Name);
+    let caseSample = `
          describe('CTS Real Model Test', function() {
           const assert = chai.assert;
           const nn = navigator.ml.getNeuralNetworkContext();
@@ -254,23 +254,23 @@ let buf = '';
               });
           });
          `;
-         await saveCaseToLocal(caseSample, `concat${inputName}.js`)
-     } break;
-     case 3: {
-       let weightFile = (await getTensorString(context[1][1]))[0];            //  squeezenet0_conv0_weight
-       let biasFile = (await getTensorString(context[1][2]))[0];              //  squeezenet0_conv0_bias
-       let weight = (await getTensorString(context[1][1]))[1].dimensions;     //  [ 64, 3, 3, 3 ]
-       let bias = (await getTensorString(context[1][2]))[1].dimensions;       //  [ 64 ]
-       let pad = (await getOperandsValue(context[1][3]))[0];                  //  0
-       let pad1 = (await getOperandsValue(context[1][4]))[0];
-       let pad2 = (await getOperandsValue(context[1][5]))[0];
-       let pad3 = (await getOperandsValue(context[1][6]))[0];
-       let stride = (await getOperandsValue(context[1][7]))[0];               // 2
-       let stride1 = (await getOperandsValue(context[1][8]))[0];
-       let act = (await getOperandsValue(context[1][9]))[0];                  // 1
-       await saveToLocalFile(weightFile);
-       await saveToLocalFile(biasFile);
-      let caseSample = `
+    await saveCaseToLocal(caseSample, `concat${inputName}.js`);
+  } break;
+  case 3: {
+    let weightFile = (await getTensorString(context[1][1]))[0];
+    let biasFile = (await getTensorString(context[1][2]))[0];
+    let weight = (await getTensorString(context[1][1]))[1].dimensions;
+    let bias = (await getTensorString(context[1][2]))[1].dimensions;
+    let pad = (await getOperandsValue(context[1][3]))[0];
+    // let pad1 = (await getOperandsValue(context[1][4]))[0];
+    // let pad2 = (await getOperandsValue(context[1][5]))[0];
+    // let pad3 = (await getOperandsValue(context[1][6]))[0];
+    let stride = (await getOperandsValue(context[1][7]))[0];
+    // let stride1 = (await getOperandsValue(context[1][8]))[0];
+    let act = (await getOperandsValue(context[1][9]))[0];
+    await saveToLocalFile(weightFile);
+    await saveToLocalFile(biasFile);
+    let caseSample = `
          describe('CTS Real Model Test', function() {
           const assert = chai.assert;
           const nn = navigator.ml.getNeuralNetworkContext();
@@ -367,12 +367,12 @@ let buf = '';
           });
         });
          `;
-         await saveCaseToLocal(caseSample, `conv${weightFile}.js`)
-     } break;
-     case 22: {
-      let shape = (await getOperandsValue(context[1][1]))[1];
-      let shape1 = (await getOperandsValue(context[1][1]))[0];
-      let caseSample = `
+    await saveCaseToLocal(caseSample, `conv${weightFile}.js`);
+  } break;
+  case 22: {
+    let shape = (await getOperandsValue(context[1][1]))[1];
+    // let shape1 = (await getOperandsValue(context[1][1]))[0];
+    let caseSample = `
          describe('CTS Real Model Test', function() {
           const assert = chai.assert;
           const nn = navigator.ml.getNeuralNetworkContext();
@@ -433,16 +433,15 @@ let buf = '';
           });
           });
          `;
-      await saveCaseToLocal(caseSample, `reshape${inputName}.js`)
-     }break
-   }
- }
+    await saveCaseToLocal(caseSample, `reshape${inputName}.js`);
+  }break;
+  }
+}
 
- async function generateCase(input) {
-   if (input.hasOwnProperty('operations')) {
-     for (let i = 0; i < input.operations.length; i++) {
-       let caseType = input.operations[i][0];
-       splitContext(input.operations[i]);
-     }
-   }
- }
+async function generateCase(input) {
+  if (input.hasOwnProperty('operations')) {
+    for (let i = 0; i < input.operations.length; i++) {
+      splitContext(input.operations[i]);
+    }
+  }
+}
