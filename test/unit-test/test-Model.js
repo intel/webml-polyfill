@@ -802,11 +802,11 @@ describe('Unit Test/Model Test', function() {
       });
     });
 
-    it('raise error when setting an Uint8Array data for a TENSOR_QUANT8_ASYMM tensor', function() {
+    it('raise error when setting an Int8Array data for a TENSOR_QUANT8_ASYMM tensor', function() {
       return nn.createModel(options).then((model)=>{
         let op = {type: nn.TENSOR_QUANT8_ASYMM, dimensions: TENSOR_DIMENSIONS, scale: 0.8, zeroPoint: 1};
         model.addOperand(op);
-        let data = new Uint8Array(product(op.dimensions));
+        let data = new Int8Array(product(op.dimensions));
         data.fill(0);
         assert.throws(() => {
           model.setOperandValue(0, data);
@@ -814,11 +814,11 @@ describe('Unit Test/Model Test', function() {
       });
     });
 
-    it('setting an Int8Array data for a TENSOR_QUANT8_ASYMM tensor is ok', function() {
+    it('setting an Uint8Array data for a TENSOR_QUANT8_ASYMM tensor is ok', function() {
       return nn.createModel(options).then((model)=>{
         let op = {type: nn.TENSOR_QUANT8_ASYMM, dimensions: TENSOR_DIMENSIONS, scale: 0.8, zeroPoint: 1};
         model.addOperand(op);
-        let data = new Int8Array(product(op.dimensions));
+        let data = new Uint8Array(product(op.dimensions));
         data.fill(0);
         assert.doesNotThrow(() => {
           model.setOperandValue(0, data);
@@ -1050,7 +1050,7 @@ describe('Unit Test/Model Test', function() {
         model.addOperand(input0Opertions);
         let input1Opertions = {type: nn.TENSOR_QUANT8_ASYMM, dimensions: [5, 4, 3, 1], scale: 0.5, zeroPoint: 1};
         model.addOperand(input1Opertions);
-        let data = new Int8Array(product(input1Opertions.dimensions));
+        let data = new Uint8Array(product(input1Opertions.dimensions));
         data.fill(0);
         model.setOperandValue(1, data);
         model.addOperand({type: nn.INT32});
@@ -1086,7 +1086,7 @@ describe('Unit Test/Model Test', function() {
         model.addOperand(input0Options);
         let op = {type: nn.TENSOR_QUANT8_ASYMM, dimensions: TENSOR_DIMENSIONS, scale: 0.8, zeroPoint: 0};
         model.addOperand(op);
-        let data = new Int8Array(product(op.dimensions));
+        let data = new Uint8Array(product(op.dimensions));
         data.fill(0);
         model.setOperandValue(1, data);
         model.addOperand({type: nn.INT32});
@@ -1105,7 +1105,7 @@ describe('Unit Test/Model Test', function() {
         model.addOperand(optionsRank5);
         let optionsRank4 = {type: nn.TENSOR_QUANT8_ASYMM, dimensions: TENSOR_DIMENSIONS, scale: 0.8, zeroPoint: 0};
         model.addOperand(optionsRank4);
-        let data = new Int8Array(product(optionsRank4.dimensions));
+        let data = new Uint8Array(product(optionsRank4.dimensions));
         data.fill(0);
         model.setOperandValue(1, data);
         model.addOperand({type: nn.INT32});
@@ -1123,7 +1123,7 @@ describe('Unit Test/Model Test', function() {
         model.addOperand(options0);
         let options1 = {type: nn.TENSOR_QUANT8_ASYMM, dimensions: [5, 4, 3, 1], scale: 0.8, zeroPoint: 0};
         model.addOperand(options1);
-        let data = new int8Array(product(options1.dimensions));
+        let data = new Uint8Array(product(options1.dimensions));
         data.fill(0);
         model.setOperandValue(1, data);
         model.addOperand({type: nn.INT32});
@@ -8577,7 +8577,7 @@ describe('Unit Test/Model Test', function() {
     });
 
 
-    it('raise error bais being not of TENSOR_FLOAT32 type when input0 as TENSOR_QUANT8_ASYMM tensor for "CONV_2D" operation', async function() {
+    it('raise error bais being not of TENSOR_INT32 type when input0 as TENSOR_QUANT8_ASYMM tensor for "CONV_2D" operation', async function() {
       let model = await nn.createModel(options);
         let input_scale = 0.5;
         let filter_scale = 0.2;
@@ -8625,7 +8625,7 @@ describe('Unit Test/Model Test', function() {
         });
     });
 
-    it('raise error bais being not of TENSOR_FLOAT32 type when input0 as TENSOR_QUANT8_ASYMM tensor for "DEPTHWISE_CONV_2D" operation', async function() {
+    it('raise error bais being not of TENSOR_INT32 type when input0 as TENSOR_QUANT8_ASYMM tensor for "DEPTHWISE_CONV_2D" operation', async function() {
       let model = await nn.createModel(options);
         let input_scale = 0.5;
         let filter_scale = 0.2;
