@@ -58,7 +58,7 @@ function jsonTypeCheck (json, field, expectType) {
     }
 }
 
-var testPlatform, chromiumPath, isUseIE, webmlPolyfill, webmlnn;
+var testPlatform, chromiumPath, isUseIE, webmlPolyfill, webnn;
 var RCjson = JSON.parse(fs.readFileSync("./config.json"));
 if (jsonTypeCheck(RCjson, "platform", "string")) {
     testPlatform = RCjson.platform;
@@ -76,8 +76,8 @@ if (jsonTypeCheck(RCjson, "webmlPolyfill", "boolean")) {
     webmlPolyfill = RCjson.webmlPolyfill;
 }
 
-if (jsonTypeCheck(RCjson, "webmlnn", "boolean")) {
-    webmlnn = RCjson.webmlnn;
+if (jsonTypeCheck(RCjson, "webnn", "boolean")) {
+    webnn = RCjson.webnn;
 }
 
 var baselinejson = JSON.parse(fs.readFileSync("./baseline/baseline.config.json"));
@@ -1107,7 +1107,7 @@ var matchFlag = null;
         remoteURL = "https://brucedai.github.io/nt/test/index-local.html";
 
         if (backendModel === "Mac-MPS") {
-            if (testPlatform === "Mac" && webmlnn) {
+            if (testPlatform === "Mac" && webnn) {
                 testBackends.push("Mac-MPS");
                 remoteURL = remoteURL + "?backend=mps";
                 chromeOption = chromeOption
@@ -1117,7 +1117,7 @@ var matchFlag = null;
                 continue;
             }
         } else if (backendModel === "Mac-BNNS") {
-            if (testPlatform === "Mac" && webmlnn) {
+            if (testPlatform === "Mac" && webnn) {
                 testBackends.push("Mac-BNNS");
                 remoteURL = remoteURL + "?backend=bnns";
                 chromeOption = chromeOption
@@ -1147,7 +1147,7 @@ var matchFlag = null;
                 continue;
             }
         } else if (backendModel === "Android-NNAPI") {
-            if (testPlatform === "Android" && webmlnn) {
+            if (testPlatform === "Android" && webnn) {
                 testBackends.push("Android-NNAPI");
                 remoteURL = remoteURL + "?backend=nnapi";
                 chromeOption = chromeOption
@@ -1180,7 +1180,7 @@ var matchFlag = null;
                 continue;
             }
         } else if (backendModel === "Windows-clDNN") {
-            if (testPlatform === "Windows" && webmlnn) {
+            if (testPlatform === "Windows" && webnn) {
                 testBackends.push("Windows-clDNN");
                 remoteURL = remoteURL + "?backend=cldnn";
                 chromeOption = chromeOption
@@ -1190,7 +1190,7 @@ var matchFlag = null;
                 continue;
             }
         } else if (backendModel === "Windows-MKLDNN") {
-            if (testPlatform === "Windows" && webmlnn) {
+            if (testPlatform === "Windows" && webnn) {
                 testBackends.push("Windows-MKLDNN");
                 remoteURL = remoteURL + "?backend=mkldnn";
                 chromeOption = chromeOption
@@ -1220,7 +1220,7 @@ var matchFlag = null;
                 continue;
             }
         } else if (backendModel === "Linux-clDNN") {
-            if (testPlatform === "Linux" && webmlnn) {
+            if (testPlatform === "Linux" && webnn) {
                 testBackends.push("Linux-clDNN");
                 remoteURL = remoteURL + "?backend=cldnn";
                 chromeOption = chromeOption
@@ -1231,7 +1231,7 @@ var matchFlag = null;
                 continue;
             }
         } else if (backendModel === "Linux-MKLDNN") {
-            if (testPlatform === "Linux" && webmlnn) {
+            if (testPlatform === "Linux" && webnn) {
                 testBackends.push("Linux-MKLDNN");
                 remoteURL = remoteURL + "?backend=mkldnn";
                 chromeOption = chromeOption

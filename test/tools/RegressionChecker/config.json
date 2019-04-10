@@ -2,6 +2,6 @@
     "platform": "Linux",
     "chromiumPath": "/usr/bin/chromium-browser-unstable",
     "isUseIE": true,
-    "webmlPolyfill": false,
-    "webmlnn": true
+    "webmlPolyfill": true,
+    "webnn": true
 }
