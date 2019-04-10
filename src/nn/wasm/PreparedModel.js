@@ -39,18 +39,6 @@ export default class PreparedModel {
     this._supportedOps = model._supportedOps;
     this._eager = model._eager;
 
-    const graph = new Graph(operations.length);
-    operations.forEach((op, i) => {
-      graph.addNode(i, op.inputs, op.outputs);
-      if (!this._supportedOps.has(op.type)) {
-        // mark unsupported ops black
-        graph.setBlack(i);
-      }
-    });
-    graph.identifyInputOutputTensors(model._inputs, model._outputs);
-
-    const partitions = graph.partition(this._eager);
-
     // allocate runtime operands
     for (let i = 0; i < model._operands.length; ++i) {
       const operand = model._operands[i];
@@ -70,6 +58,17 @@ export default class PreparedModel {
       this._operands.push(runtimeOperand);
     }
 
+    const graph = new Graph(operations.length);
+    operations.forEach((op, i) => {
+      graph.addNode(i, op.inputs, op.outputs);
+      if (!this._supportedOps.has(op.type)) {
+        // mark unsupported ops black
+        graph.setBlack(i);
+      }
+    });
+    graph.identifyInputOutputTensors(model._inputs, model._outputs);
+    const partitions = graph.partition(this._eager);
+
     let counter = -1;
     for (const {nodes, inTensors, outTensors} of partitions) {
 
@@ -80,20 +79,13 @@ export default class PreparedModel {
       const isSupportedByNN = this._supportedOps.has(operations[nodes[0]].type);
 
       // summary of the partiton. e.g. "CONV x 5, ADD x 2, MUL x 2"
-      const summary =
-          Object.entries(
-              nodes
-                .map((opId) => findKey(OperationCode, operations[opId].type))
-                .reduce((cnt, v) => {cnt[v] ? cnt[v]++ : cnt[v]=1; return cnt;}, {}))
-            .map(n => `${n[0]} x ${n[1]}`)
-            .join(', ');
+      const summary = utils.stringifySubgraphCompact(model, nodes);
       const backendName = isSupportedByNN ? 'WebNN' : 'WASM';
-      const subgraphName = `Subgraph ${++counter}\t (${backendName}):\t{${summary}}`;
+      const subgraphName =
+          `Subgraph ${++counter}\t (${backendName}):\t{${summary}}`;
       this._subgraphs.push(subgraphName);
 
       if (!isSupportedByNN) {
-
-        // run in polyfil
 
         // break a group of WASM operations to singletons
         for (const operationId of nodes) {
@@ -104,90 +96,21 @@ export default class PreparedModel {
 
       } else {
 
-        // run in WebNN
+        // create WebNN model
+        const {model, compilation, execution} =
+            await this._createSubModel(nodes, inTensors, outTensors);
 
-        // create a WebNN model
-        const submodel = await this._nnNative.createModel();
-
-        // since tensorId of a subgraph should start from 0, we use it to
-        // maintain a mapping from global tensor Id to local tensor Id
-        const globalIdToLocalId = {};
-
-        // counter for local tensor Id
-        let operandIndex = 0;
-
-        for (const operationId of nodes) {
-          const operation = model._operations[operationId];
-
-          // allocate input and output tensors for each operation
-          for (const tensorId of [...operation.inputs, ...operation.outputs]) {
-            const globalTensorId = parseInt(tensorId);
-
-            // E.g., tensor A -> Node 1 -> tensor B -> Node 2 -> tensor C
-            // At the time of Node 2, its input tensor B may have already been
-            // allocated by the time Node 1 was processed. So we check if the
-            // `globalTensorId` is already in the map.
-            if (!globalIdToLocalId.hasOwnProperty(globalTensorId)) {
-              const localTensorId = operandIndex++;
-              globalIdToLocalId[globalTensorId] = localTensorId;
-              const operand = model._operands[globalTensorId];
-              const operandType = {
-                type: operand.type,
-                dimensions: operand.dimensions,
-                scale: operand.scale,
-                zeroPoint: operand.zeroPoint,
-              };
-              submodel.addOperand(operandType);
-              if (operand.value) {
-                submodel.setOperandValue(localTensorId, operand.value);
-              }
-            }
-          }
-
-          // add the operation to the submodel 
-          const operationInputs = operation.inputs.map(i => globalIdToLocalId[i]);
-          const operationOutputs = operation.outputs.map(i => globalIdToLocalId[i]);
-          submodel.addOperation(operation.type, operationInputs, operationOutputs);
-        }
-
-        // indentify the input and output tensors of the submodel 
-        const submodelInputs = inTensors.map(i => globalIdToLocalId[i]);
-        const submodelOutputs = outTensors.map(i => globalIdToLocalId[i]);
-        submodel.identifyInputsAndOutputs(submodelInputs, submodelOutputs);
-        await submodel.finish();
-
-        const compilation = await submodel.createCompilation();
-        compilation.setPreference(this._preference);
-        await compilation.finish();
-
-        const execution = await compilation.createExecution();
-
-        // set input and output tensor buffers at compile time
-        inTensors.forEach((tensorId, i) => {
-          const operand = this._operands[tensorId];
-          const length = product(operand.dimensions);
-          const view = this._getTensorDataView(operand.type, operand.value, length);
-          execution.setInput(i, view);
-        });
-        outTensors.forEach((tensorId, i) => {
-          const operand = this._operands[tensorId];
-          const length = product(operand.dimensions);
-          const view = this._getTensorDataView(operand.type, operand.value, length);
-          execution.setOutput(i, view);
-        });
-
-        // push the WEBNN_SUBGRAPH pseudo op to the operations list
+        // add the WEBNN_SUBGRAPH pseudo op
         this._operations.push({
           type: OperationCode.WEBNN_SUBGRAPH,
           inputs: inTensors,
           outputs: outTensors,
-          model: submodel,          // avoid GC   intel/webml-polyfill#669
+          model: model,             // avoid GC   intel/webml-polyfill#669
           compilation: compilation, // avoid GC   intel/webml-polyfill#669
           execution: execution,
           subgraphName: subgraphName,
         });
       }
-
     }
 
     profiling = new Array(this._operations.length).fill(0);
@@ -219,14 +142,89 @@ export default class PreparedModel {
     for (const [i, operation] of this._operations.entries()) {
       const start = performance.now();
       await this._executeOperation(operation);
-      const end = performance.now();
       profiling[i] += end - start;
+      const end = performance.now();
     }
 
     outputs.forEach((output) => {
       const operand = this._operands[output.index];
       this._getTensorData(operand.type, operand.value, output.buffer);
     });
+  }
+
+  async _createSubModel(nodes, inTensors, outTensors) {
+
+    // create a WebNN model
+    const submodel = await this._nnNative.createModel();
+
+    // since tensorId of a subgraph should start from 0, we use it to
+    // maintain a mapping from global tensor Id to local tensor Id
+    const globalIdToLocalId = {};
+
+    // counter for local tensor Id
+    let operandIndex = 0;
+
+    for (const operationId of nodes) {
+      const operation = this._model._operations[operationId];
+
+      // allocate input and output tensors for each operation
+      for (const tensorId of [...operation.inputs, ...operation.outputs]) {
+        const globalTensorId = parseInt(tensorId);
+
+        // E.g., tensor A -> Node 1 -> tensor B -> Node 2 -> tensor C
+        // At the time of Node 2, its input tensor B may have already been
+        // allocated by the time Node 1 was processed. So we check if the
+        // `globalTensorId` is already in the map.
+        if (!globalIdToLocalId.hasOwnProperty(globalTensorId)) {
+          const localTensorId = operandIndex++;
+          globalIdToLocalId[globalTensorId] = localTensorId;
+          const operand = this._model._operands[globalTensorId];
+          const operandType = {
+            type: operand.type,
+            dimensions: operand.dimensions,
+            scale: operand.scale,
+            zeroPoint: operand.zeroPoint,
+          };
+          submodel.addOperand(operandType);
+          if (operand.value) {
+            submodel.setOperandValue(localTensorId, operand.value);
+          }
+        }
+      }
+
+      // add the operation to the submodel 
+      const operationInputs = operation.inputs.map(i => globalIdToLocalId[i]);
+      const operationOutputs = operation.outputs.map(i => globalIdToLocalId[i]);
+      submodel.addOperation(operation.type, operationInputs, operationOutputs);
+    }
+
+    // indentify the input and output tensors of the submodel 
+    const submodelInputs = inTensors.map(i => globalIdToLocalId[i]);
+    const submodelOutputs = outTensors.map(i => globalIdToLocalId[i]);
+    submodel.identifyInputsAndOutputs(submodelInputs, submodelOutputs);
+    await submodel.finish();
+
+    const compilation = await submodel.createCompilation();
+    compilation.setPreference(this._preference);
+    await compilation.finish();
+
+    const execution = await compilation.createExecution();
+
+    // bind input and output tensor buffers at compile time
+    inTensors.forEach((tensorId, i) => {
+      const operand = this._operands[tensorId];
+      const length = product(operand.dimensions);
+      const view = this._getTensorDataView(operand.type, operand.value, length);
+      execution.setInput(i, view);
+    });
+    outTensors.forEach((tensorId, i) => {
+      const operand = this._operands[tensorId];
+      const length = product(operand.dimensions);
+      const view = this._getTensorDataView(operand.type, operand.value, length);
+      execution.setOutput(i, view);
+    });
+
+    return {model: submodel, compilation: compilation, execution: execution};
   }
 
   async _executeOperation(operation) {
