@@ -45,6 +45,7 @@ var backendModels = [
     "Windows-WASM",
     "Windows-WebGL",
     "Linux-clDNN",
+    "Linux-IE-MKLDNN",
     "Linux-MKLDNN",
     "Linux-WASM",
     "Linux-WebGL"
@@ -102,6 +103,7 @@ var versionPolyfill = baselinejson.Version.polyfill;
  *         "Windows-WASM": value,
  *         "Windows-WebGL": value,
  *         "Linux-clDNN": value,
+ *         "Linux-IE-MKLDNN": value,
  *         "Linux-MKLDNN": value,
  *         "Linux-WASM": value,
  *         "Linux-WebGL": value
@@ -198,9 +200,10 @@ csv.fromPath("./baseline/unitTestsBaseline.csv").on("data", function(data){
             ["Windows-WASM", data[12]],
             ["Windows-WebGL", data[13]],
             ["Linux-clDNN", data[14]],
-            ["Linux-MKLDNN", data[15]],
-            ["Linux-WASM", data[16]],
-            ["Linux-WebGL", data[17]]
+            ["Linux-IE-MKLDNN", data[15]],
+            ["Linux-MKLDNN", data[16]],
+            ["Linux-WASM", data[17]],
+            ["Linux-WebGL", data[18]]
         ]
     ));
 
@@ -229,9 +232,10 @@ csv.fromPath("./baseline/unitTestsBaseline.csv").on("data", function(data){
             ["Windows-WASM", data[12]],
             ["Windows-WebGL", data[13]],
             ["Linux-clDNN", data[14]],
-            ["Linux-MKLDNN", data[15]],
-            ["Linux-WASM", data[16]],
-            ["Linux-WebGL", data[17]]
+            ["Linux-IE-MKLDNN", data[15]],
+            ["Linux-MKLDNN", data[16]],
+            ["Linux-WASM", data[17]],
+            ["Linux-WebGL", data[18]]
         ]
     ));
 
@@ -751,14 +755,7 @@ var matchFlag = null;
             resultHTMLStream.write(space + "        </th>\n");
 
             for (let backend of newTestCaseData.get("backends").keys()) {
-                let specialBackend;
-                if (backend == "Linux-MKLDNN" && isUseIE) {
-                    specialBackend = "Linux-IE-MKLDNN";
-                } else {
-                    specialBackend = backend;
-                }
-
-                resultHTMLStream.write(space + "        <th>" + specialBackend + "\n");
+                resultHTMLStream.write(space + "        <th>" + backend + "\n");
                 resultHTMLStream.write(space + "        </th>\n");
             }
 
@@ -812,18 +809,11 @@ var matchFlag = null;
                 numberTotal = numberTotal + pageDataTotal.get(testBackend).get("grasp")[0];
             }
 
-            let specialBackend;
-            if (testBackend == "Linux-MKLDNN" && isUseIE) {
-                specialBackend = "Linux-IE-MKLDNN";
-            } else {
-                specialBackend = testBackend;
-            }
-
             if (pageData.get(testBackend).get("pass2fail").length !== 0) {
-                resultHTMLStream.write(space + "    <h4>&emsp; &emsp; &#10148 &emsp; " + specialBackend +
+                resultHTMLStream.write(space + "    <h4>&emsp; &emsp; &#10148 &emsp; " + testBackend +
                                  ": <span class='notsuggest'>Please improve the code</span></h4>\n");
             } else {
-                resultHTMLStream.write(space + "    <h4>&emsp; &emsp; &#10148 &emsp; " + specialBackend +
+                resultHTMLStream.write(space + "    <h4>&emsp; &emsp; &#10148 &emsp; " + testBackend +
                                  ": <span class='suggest'>OK</span></h4>\n");
             }
         }
@@ -844,8 +834,13 @@ var matchFlag = null;
         resultHTMLStream.write(space + "    <ul>\n");
 
         for (let backend of testBackends) {
-            resultHTMLStream.write(space + "      <li id='box-menu-" + backend + "' data-info='" + backend +
-                             "' onclick='javascript:click_box_menu(this)'>log-" + backend.split("-")[1] + "</li>\n");
+            if (backend == "Linux-IE-MKLDNN") {
+                resultHTMLStream.write(space + "      <li id='box-menu-" + backend + "' data-info='" + backend +
+                    "' onclick='javascript:click_box_menu(this)'>log-" + backend.split("-")[1] + "-" + backend.split("-")[2] + "</li>\n");
+            } else {
+                resultHTMLStream.write(space + "      <li id='box-menu-" + backend + "' data-info='" + backend +
+                    "' onclick='javascript:click_box_menu(this)'>log-" + backend.split("-")[1] + "</li>\n");
+            }
         }
 
         resultHTMLStream.write(space + "    </ul>\n");
@@ -854,13 +849,6 @@ var matchFlag = null;
     }
 
     var bodyContainerBoxTableBackend =  function(space, backend, key) {
-        let specialBackend;
-        if (backend == "Linux-MKLDNN" && isUseIE) {
-            specialBackend = "Linux-IE-MKLDNN";
-        } else {
-            specialBackend = backend;
-        }
-
         resultHTMLStream.write(space + "<table>\n");
         resultHTMLStream.write(space + "  <thead>\n");
         resultHTMLStream.write(space + "    <tr>\n");
@@ -870,7 +858,7 @@ var matchFlag = null;
         resultHTMLStream.write(space + "      </th>\n");
         resultHTMLStream.write(space + "      <th>Baseline\n");
         resultHTMLStream.write(space + "      </th>\n");
-        resultHTMLStream.write(space + "      <th>" + specialBackend + "\n");
+        resultHTMLStream.write(space + "      <th>" + backend + "\n");
         resultHTMLStream.write(space + "      </th>\n");
         resultHTMLStream.write(space + "    </tr>\n");
         resultHTMLStream.write(space + "  </thead>\n");
@@ -926,14 +914,7 @@ var matchFlag = null;
         resultHTMLStream.write(space + "        <th rowspan='2'>Summary\n");
         resultHTMLStream.write(space + "        </th>\n");
         for (let i = 0; i < testBackends.length; i++) {
-            let specialBackend;
-            if (testBackends[i] == "Linux-MKLDNN" && isUseIE) {
-                specialBackend = "Linux-IE-MKLDNN";
-            } else {
-                specialBackend = testBackends[i];
-            }
-
-            resultHTMLStream.write(space + "        <th colspan='2'>" + specialBackend + "\n");
+            resultHTMLStream.write(space + "        <th colspan='2'>" + testBackends[i] + "\n");
             resultHTMLStream.write(space + "        </th>\n");
         }
 
@@ -1230,6 +1211,18 @@ var matchFlag = null;
             } else {
                 continue;
             }
+        } else if (backendModel === "Linux-IE-MKLDNN") {
+            if (testPlatform === "Linux" && webnn && isUseIE) {
+                testBackends.push("Linux-IE-MKLDNN");
+                remoteURL = remoteURL + "?backend=mkldnn";
+                chromeOption = chromeOption
+                    .setChromeBinaryPath(chromiumPath)
+                    .addArguments("--enable-features=WebML")
+                    .addArguments("--no-sandbox")
+                    .addArguments("--use-inference-engine");
+            } else {
+                continue;
+            }
         } else if (backendModel === "Linux-MKLDNN") {
             if (testPlatform === "Linux" && webnn) {
                 testBackends.push("Linux-MKLDNN");
@@ -1238,10 +1231,6 @@ var matchFlag = null;
                     .setChromeBinaryPath(chromiumPath)
                     .addArguments("--enable-features=WebML")
                     .addArguments("--no-sandbox");
-
-                if (isUseIE) {
-                    chromeOption = chromeOption.addArguments("--use-inference-engine");
-                }
             } else {
                 continue;
             }

@@ -16,7 +16,7 @@ This is an automation tool kit to check regression easily for developers when su
       $ npm install chromedriver --chromedriver_cdnurl=http://cdn.npm.taobao.org/dist/chromedriver
 
 ## Set Configurations
-   There are two fields in the config.json, for example:
+   There are five fields in the config.json, for example:
 ```
    {
      "platform": "Mac",
@@ -36,7 +36,7 @@ This is an automation tool kit to check regression easily for developers when su
      "webnn": true
    }
 ```
-   You need modify these two fields for the different platforms:
+   You need modify these five fields for the different platforms:
    + **_platform_**: `{string}`, target platform, support **Android**, **Mac**, **Linux** and **Windows**.
    + **_chromiumPath_**: `{string}`, **Mac**/**Linux**/**Windows**: the target chromium path   **Android**: the chrome or chromium path in above Prerequisites to show the final checking results.
    + **_isUseIE_**: `{boolean}`, **Linux**: use inference engine with **MKLDNN** backend, support **true** and **false**.
