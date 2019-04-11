@@ -11,7 +11,6 @@
     <script src="../../examples/util/onnx/OnnxModelUtils.js"></script>
     <script src="../../examples/util/onnx/OnnxModelImporter_test.js"></script>
     <script>
-    var getLayerFlag = true;
      window.onload = async function() {
       async function loadUrl(url) {
         return new Promise(resolve => {
@@ -57,39 +56,35 @@
         return Math.abs(a - b) < episilon;
       }
       
-      const modelName = 'squeezenet1.1';
-      const modelFile = `./tool/model/${modelName}/${modelName}.onnx`;
-      let input = await loadTensor(`./tool/model/${modelName}/test_data_set_1/input_0.pb`);
-      let expect = await loadTensor(`./tool/model/${modelName}/test_data_set_1/output_0.pb`);
+      let modelName;
+      let Backend;
+      await fetch('./config.json').then((res) => {
+        return res.json();
+      }).then((text) => {
+        modelName = text.modelName;
+        Backend = text.backend;
+      });
+      const modelFile = `./model/${modelName}/${modelName}.onnx`;
+      let input = await loadTensor(`./model/${modelName}/test_data_set_1/input_0.pb`);
+      let expect = await loadTensor(`./model/${modelName}/test_data_set_1/output_0.pb`);
       let result = await loadUrl(modelFile);
       if (onnx.ModelProto.verify(result))
         throw new Error(`Invalid model`);
       let onnxModel = onnx.ModelProto.decode(result);
-      let model = new OnnxModelImporter({rawModel: onnxModel, backend: 'WASM'});
+      let model = new OnnxModelImporter({rawModel: onnxModel, backend: Backend});
       await model.createCompiledModel();
       let params = model.getModelParams();
-      if (params.hasOwnProperty('tensorIds')) {
-        if(!params.hasOwnProperty('tensorId')) {
-          params.tensorId = {};
-        }
-        Object.keys(params.tensorIds).map(k => {
-          params.tensorId[k] = params.tensorIds[k];
-        })
-      }
-      let wasmGen = new OnnxModelImporter({rawModel: onnxModel, backend: 'WASM', prefer: 'fast'}).layerIterator([input]);
+      let wasmGen = new OnnxModelImporter({rawModel: onnxModel, backend: Backend, prefer: 'fast'}).layerIterator([input]);
 
       while (true) {
         let wasmnext = await wasmGen.next();
         if (wasmnext.done) {
-        params.operation['data'] = input;
-        if (params.hasOwnProperty('tensorIds')) delete params.tensorIds
-          await downloadjson(params, `casePrototypeData.json`);
+          params.operation['0'] = input;
+          await downloadjson(params, `${modelName}.json`);
           break;
         }
-        if (!params.hasOwnProperty('operation')) {
-          params.operation = {};
-        }
-        params.operation[wasmnext.value.outputName] = wasmnext.value.tensor;
+        if (!params.hasOwnProperty('operation')) params.operation = {};
+        params.operation[wasmnext.value.outputIds] = wasmnext.value.tensor;
       }
     }
     </script>

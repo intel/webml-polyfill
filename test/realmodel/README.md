@@ -8,14 +8,29 @@
 $ npm install
 ```
 
-### Download
+### All
 ```sh
-$ npm run download
+$ npm run all
+```
+
+### Download Model
+```sh
+$ npm run downloadModel
+```
+
+### Unzip Model
+```sh
+$ npm run unzipModel
+```
+
+### Get case origin data
+```sh
+$ npm run getCaseOriginData
 ```
 
 ### Generate case
 ```sh
-$ npm run gentc
+$ npm run generateCase
 ```
 
 ## Set config.json file
@@ -23,8 +38,9 @@ $ npm run gentc
 * `modelName`: model name.
 * `url`: download model file url.
 * `localURL`: url for local index.html.
+* `backend`: backend value.
 
 ## Output
 * `./testcase`: auto generated folder for saving testcase files.
 * `./testcase/res`: auto generated folder for resource files.
-* `./tool/model`: auto generated folder for saving model files.
+* `./model`: auto generated folder for saving model files.

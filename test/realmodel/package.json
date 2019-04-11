@@ -11,7 +11,10 @@
     "unzip": "^0.1.11"
   },
   "scripts": {
-    "download": "node ./download.js",
-    "gentc": "node ./tool/genreateCase.js"
+    "all": "node ./src/main.js",
+    "downloadModel": "node ./src/downloadModelFile.js",
+    "unzipModel": "node ./src/unzipModel.js",
+    "getCaseOriginData": "node ./src/getCaseOriginData.js",
+    "generateCase": "node ./src/generateCase.js"
   }
 }
