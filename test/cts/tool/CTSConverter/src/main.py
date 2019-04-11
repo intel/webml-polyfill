@@ -70,9 +70,9 @@ def transfer(ipath, opath, names):
           os.system(cmd)
 
 # create all test case file
-def create(opath, file_dict, file_list):
+def create(opath, file_dict, file_list, describe):
   with open(opath, "w") as all_jsTest_file:
-    all_jsTest_file.write("describe('CTS', function() {\n")
+    all_jsTest_file.write("describe('" + describe + "', function() {\n")
     all_jsTest_file.write("  const assert = chai.assert;\n")
     all_jsTest_file.write("  const nn = navigator.ml.getNeuralNetworkContext();\n")
     all_jsTest_file.write("\n")
@@ -102,6 +102,8 @@ if __name__ == "__main__":
 
   output_file_all = os.path.join(output_path_root, args_all)
 
+  describeString = "CTS"
+
   file_dict_all = dict()
 
   if not args_transfer == "-":
@@ -127,6 +129,9 @@ if __name__ == "__main__":
 
   if not args_supplement == "-":
     print ("scan test supplement directory....\n")
+
+    describeString = "CTS Supplement Test"
+
     supplement_file_dict = get_file_names(args_supplement, ".js")
     file_dict_all.update(supplement_file_dict)
 
@@ -140,6 +145,6 @@ if __name__ == "__main__":
     file_list = sorted(file_dict_all.keys())
 
     print ("create all test case file....\n")
-    create(output_file_all, file_dict_all, file_list)
+    create(output_file_all, file_dict_all, file_list, describeString)
 
   print ("transfer and create all files are completed")

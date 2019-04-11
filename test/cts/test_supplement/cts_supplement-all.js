@@ -1,4 +1,4 @@
-describe('CTS', function() {
+describe('CTS Supplement Test', function() {
   const assert = chai.assert;
   const nn = navigator.ml.getNeuralNetworkContext();
 
