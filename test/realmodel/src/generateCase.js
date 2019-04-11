@@ -40,7 +40,7 @@ async function saveToLocalFile(input) {
   for (let key in dataString) {
     dataArray.push(dataString[key]);
   }
-  let saveFileDirs = path.join(__dirname, '..', 'testcase', 'res');
+  let saveFileDirs = path.join(__dirname, '..', 'testcase', 'res', `${JSON_DATA.getModelName()}`);
   mkdirsSync(saveFileDirs);
   let saveStream = fs.createWriteStream(path.join(saveFileDirs, output), { flags: 'w', encoding: 'utf-8' });
   saveStream.on('error', (err) => {
@@ -110,7 +110,7 @@ async function splitContext(context) {
          let operandIndex = 0;
          let i0_value;
          let output_expect;
-         await fetch('./realmodel/testcase/res/${inputFile}').then((res) => {
+         await fetch('./realmodel/testcase/res/${JSON_DATA.getModelName()}/${inputFile}').then((res) => {
            return res.json();
          }).then((text) => {
            let file_data = new Float32Array(text.length);
@@ -120,7 +120,7 @@ async function splitContext(context) {
            }
            i0_value = file_data;
          });
-         await fetch('./realmodel/testcase/res/${outputFile}').then((res) => {
+         await fetch('./realmodel/testcase/res/${JSON_DATA.getModelName()}/${outputFile}').then((res) => {
            return res.json();
          }).then((text) => {
            let file_data = new Float32Array(text.length);
@@ -191,7 +191,7 @@ async function splitContext(context) {
          let operandIndex = 0;
          let i0_value;
          let output_expect;
-         await fetch('./realmodel/testcase/res/${inputFile}').then((res) => {
+         await fetch('./realmodel/testcase/res/${JSON_DATA.getModelName()}/${inputFile}').then((res) => {
            return res.json();
          }).then((text) => {
            let file_data = new Float32Array(text.length);
@@ -201,7 +201,7 @@ async function splitContext(context) {
            }
            i0_value = file_data;
          });
-         await fetch('./realmodel/testcase/res/${outputFile}').then((res) => {
+         await fetch('./realmodel/testcase/res/${JSON_DATA.getModelName()}/${outputFile}').then((res) => {
            return res.json();
          }).then((text) => {
            let file_data = new Float32Array(text.length);
@@ -268,7 +268,7 @@ async function splitContext(context) {
             let input1_value;
             let input2_value;
             let output_expect;
-            await fetch('./realmodel/testcase/res/${inputFile}').then((res) => {
+            await fetch('./realmodel/testcase/res/${JSON_DATA.getModelName()}/${inputFile}').then((res) => {
               return res.json();
             }).then((text) => {
               let file_data = new Float32Array(text.length);
@@ -277,7 +277,7 @@ async function splitContext(context) {
               }
               input1_value = file_data;
             });
-            await fetch('./realmodel/testcase/res/${inputFile1}').then((res) => {
+            await fetch('./realmodel/testcase/res/${JSON_DATA.getModelName()}/${inputFile1}').then((res) => {
               return res.json();
             }).then((text) => {
               let file_data = new Float32Array(text.length);
@@ -287,7 +287,7 @@ async function splitContext(context) {
               }
               input2_value = file_data;
             });
-            await fetch('./realmodel/testcase/res/${outputFile}').then((res) => {
+            await fetch('./realmodel/testcase/res/${JSON_DATA.getModelName()}/${outputFile}').then((res) => {
               return res.json();
             }).then((text) => {
               let file_data = new Float32Array(text.length);
@@ -359,7 +359,7 @@ async function splitContext(context) {
             let operandIndex = 0;
             let op1_value;
             let op4_expect;
-            await fetch('./realmodel/testcase/res/${inputFile}').then((res) => {
+            await fetch('./realmodel/testcase/res/${JSON_DATA.getModelName()}/${inputFile}').then((res) => {
               return res.json();
             }).then((text) => {
               let file_data = new Float32Array(text.length);
@@ -369,7 +369,7 @@ async function splitContext(context) {
               }
               op1_value = file_data;
             });
-            await fetch('./realmodel/testcase/res/${outputFile}').then((res) => {
+            await fetch('./realmodel/testcase/res/${JSON_DATA.getModelName()}/${outputFile}').then((res) => {
               return res.json();
             }).then((text) => {
               let file_data = new Float32Array(text.length);
@@ -402,7 +402,7 @@ async function splitContext(context) {
             let op4 = operandIndex++;
             model.addOperand(type1);
             let op2value;
-            await fetch('./realmodel/testcase/res/${weightFile}').then((res) => {
+            await fetch('./realmodel/testcase/res/${JSON_DATA.getModelName()}/${weightFile}').then((res) => {
               return res.json();
             }).then((text) => {
               let file_data = new Float32Array(text.length);
@@ -413,7 +413,7 @@ async function splitContext(context) {
               op2value = file_data;
             });
             let op3value;
-            await fetch('./realmodel/testcase/res/${biasFile}').then((res) => {
+            await fetch('./realmodel/testcase/res/${JSON_DATA.getModelName()}/${biasFile}').then((res) => {
               return res.json();
             }).then((text) => {
               let file_data = new Float32Array(text.length);
@@ -460,7 +460,7 @@ async function splitContext(context) {
             let operandIndex = 0;
             let op1_value;
             let op3_expect;
-            await fetch('./realmodel/testcase/res/${inputFile}').then((res) => {
+            await fetch('./realmodel/testcase/res/${JSON_DATA.getModelName()}/${inputFile}').then((res) => {
               return res.json();
             }).then((text) => {
               let file_data = new Float32Array(text.length);
@@ -470,7 +470,7 @@ async function splitContext(context) {
               }
               op1_value = file_data;
             });
-            await fetch('./realmodel/testcase/res/${outputFile}').then((res) => {
+            await fetch('./realmodel/testcase/res/${JSON_DATA.getModelName()}/${outputFile}').then((res) => {
               return res.json();
             }).then((text) => {
               let file_data = new Float32Array(text.length);

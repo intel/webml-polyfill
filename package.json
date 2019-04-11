@@ -44,8 +44,5 @@
     "globby": "^8.0.1",
     "rimraf": "^2.6.2",
     "@tensorflow/tfjs-core": "0.15.4"
-  },
-  "dependencies": {
-    "puppeteer": "^1.14.0"
   }
 }

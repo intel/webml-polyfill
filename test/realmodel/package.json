@@ -2,7 +2,7 @@
   "name": "realmodel",
   "version": "0.0.1",
   "description": "Generate testcase for realmodel",
-  "main": "./download.js",
+  "main": "./src/main.js",
   "dependencies": {
     "download": "^7.1.0",
     "node-wget": "^0.4.3",
