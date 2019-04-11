@@ -258,7 +258,6 @@ class Benchmark {
       let scaledWidth = Math.floor(imWidth / resizeRatio);
       let scaledHeight = Math.floor(imHeight / resizeRatio);
       let renderer = new Renderer(segCanvas);
-      renderer.zoom = resizeRatio;
       renderer.setup();
       renderer.uploadNewTexture(imageElement, [scaledWidth, scaledHeight]);
       renderer.drawOutputs({
