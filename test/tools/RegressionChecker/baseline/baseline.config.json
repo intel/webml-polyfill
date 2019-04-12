@@ -1,7 +1,7 @@
 {
     "Version": {
-        "chromium": "c623981",
-        "polyfill": "e0e52f0"
+        "chromium": "ef9d267",
+        "polyfill": "475aff9"
     },
     "Android-NNAPI": {
         "total": 714,
@@ -27,6 +27,12 @@
         "fail": 301,
         "block": 0
     },
+    "Linux-IE-MKLDNN": {
+        "total": 714,
+        "pass": 311,
+        "fail": 403,
+        "block": 0
+    },
     "Linux-MKLDNN": {
         "total": 714,
         "pass": 323,
@@ -47,14 +53,14 @@
     },
     "Mac-BNNS": {
         "total": 714,
-        "pass": 287,
-        "fail": 427,
+        "pass": 196,
+        "fail": 518,
         "block": 0
     },
     "Mac-MPS": {
         "total": 714,
-        "pass": 288,
-        "fail": 426,
+        "pass": 291,
+        "fail": 423,
         "block": 0
     },
     "Mac-WASM": {
