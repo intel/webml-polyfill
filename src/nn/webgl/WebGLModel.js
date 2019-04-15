@@ -2,10 +2,9 @@ import * as tf from '@tensorflow/tfjs-core';
 import { FuseCode, OperandCode, OperationCode, PaddingCode, PreferenceCode } from '../Enums';
 import Graph from '../GraphUtils';
 import * as utils from '../utils';
+import CyclicProfiler from '../instrument';
 
-var executeTimes = 0;
-var skipWarmUpRuns = 1;
-var profiling = [];
+var warmUpRuns = 1;
 
 export default class WebGLModel {
   /**
@@ -112,7 +111,7 @@ export default class WebGLModel {
       }
     }
 
-    profiling = new Array(this._operations.length).fill(0);
+    this._profiler = new CyclicProfiler(partitions.length, warmUpRuns);
     this._changeWeightsFormat();
     this._prepared = true;
   }
@@ -138,24 +137,20 @@ export default class WebGLModel {
       inputTensor.dispose();
     });
 
-    for (const [i, operation] of this._operations.entries()) {
+    for (const operation of this._operations) {
 
       if (operation.type === OperationCode.WEBNN_SUBGRAPH) {
         // As calls to the `_executeGlOperation` are asynchronous, we are unable
         // to profiling each Gl op. However, several consecutive Gl ops and
         // WebNN subgraph must be interleaved, so we can record the elapsed time
-        // of a sequence of Gl ops before executing WebNN subgraph op, which
-        // means sync time between CPU and GPU is counted into Gl ops.
-        let end = performance.now();
-        profiling[i - 1] += end - start;
-        start = end;
+        // of a sequence of Gl ops before executing WebNN subgraph op.
+        this._profiler.endEvent();
 
+        this._profiler.startEvent();
         await this._executeNNOperation(operation);
+        this._profiler.endEvent();
 
-        // record the WebNN's execution time
-        end = performance.now();
-        profiling[i] += end - start;
-        start = end;
+        this._profiler.startEvent();
       } else {
         tf.tidy(() => this._executeGlOperation(operation));
       }
@@ -659,33 +654,28 @@ export default class WebGLModel {
   }
 
   dumpProfilingResults() {
-    if (executeTimes === 0) {
-      console.debug(`Report will be available after at least ${skipWarmUpRuns + 1} executions.`);
+    const res = this._profiler.flush();
+    if (res.epochs <= 0) {
+      console.debug(`Report will be available after at least ${warmUpRuns + 1} executions.`);
       return;
     }
-    executeTimes -= skipWarmUpRuns;
     let webglTime = 0;
     let webnnTime = 0;
-    console.debug(`Execution calls: ${executeTimes} (omitted ${skipWarmUpRuns} warm-up runs)`);
+    console.debug(`Execution calls: ${res.epochs} (omitted ${warmUpRuns} warm-up runs)`);
     console.debug(`Supported Ops: ${Array.from(this._supportedOps).map(op => utils.findKey(OperationCode, op)).join(', ') || 'None'}`);
     console.debug(`Mode: ${this._eager ? 'Eager' : 'Graph'}`);
-    console.debug(`Note: Sync time is included in WebGL op.`);
-    for (const [i, op] of this._operations.entries()) {
-      const avgTime = profiling[i] / executeTimes;
-      if (!avgTime) {
-        continue;
-      }
-      console.debug(`${avgTime.toFixed(5).slice(0, 8)} ms\t- ${op.subgraphName}`);
-      if (op.subgraphName.indexOf('WebGL') > 0) {
-        webglTime += avgTime;
+    for (const [i, subgraphName] of this._subgraphs.entries()) {
+      const t = res.elpased[i];
+      console.debug(`${t.toFixed(5).slice(0, 8)} ms\t- ${subgraphName}`);
+      if (subgraphName.indexOf('WebGL') > 0) {
+        webglTime += t;
       } else {
-        webnnTime += avgTime;
+        webnnTime += t;
       }
     }
     console.debug(`WebGL time: ${webglTime.toFixed(5)} ms`);
     console.debug(`WebNN time: ${webnnTime.toFixed(5)} ms`);
     console.debug(`Sum: ${(webglTime + webnnTime).toFixed(5)} ms`);
-    executeTimes = 0;
   }
 }
 

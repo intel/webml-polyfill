@@ -3,10 +3,9 @@ import { OperationCode, OperandCode, PaddingCode, PreferenceCode, FuseCode, Oper
 import * as utils from '../utils'
 import { product, findKey } from '../utils';
 import Graph from '../GraphUtils';
+import CyclicProfiler from '../instrument';
 
-var executeTimes = 0;
-var skipWarmUpRuns = 1;
-var profiling = [];
+var warmUpRuns = 1;
 
 export default class PreparedModel {
   constructor() {
@@ -23,6 +22,7 @@ export default class PreparedModel {
       tensorValue: [],
       tensorShape: []
     };
+    this._profiler = null;
   }
 
   /**
@@ -113,8 +113,7 @@ export default class PreparedModel {
       }
     }
 
-    profiling = new Array(this._operations.length).fill(0);
-
+    this._profiler = new CyclicProfiler(this._operations.length, warmUpRuns);
     this._prepared = true;
   }
 
@@ -129,21 +128,15 @@ export default class PreparedModel {
       throw new Error('Model is not prepared');
     }
 
-    executeTimes++;
-    if (executeTimes === skipWarmUpRuns) {
-      profiling.fill(0);
-    }
-
     inputs.forEach(input => {
       const operand = this._operands[input.index];
       this._setTensorData(operand.type, operand.value, input.buffer);
     });
 
-    for (const [i, operation] of this._operations.entries()) {
-      const start = performance.now();
+    for (const operation of this._operations) {
+      this._profiler.startEvent();
       await this._executeOperation(operation);
-      profiling[i] += end - start;
-      const end = performance.now();
+      this._profiler.endEvent();
     }
 
     outputs.forEach((output) => {
@@ -1203,30 +1196,28 @@ export default class PreparedModel {
   }
 
   dumpProfilingResults() {
-    if (executeTimes === 0) {
-      console.debug(`Report will be available after at least ${skipWarmUpRuns + 1} executions.`);
+    const res = this._profiler.flush();
+    if (res.epochs <= 0) {
+      console.debug(`Report will be available after at least ${warmUpRuns + 1} executions.`);
       return;
     }
-    executeTimes -= skipWarmUpRuns;
     let wasmTime = 0;
     let webnnTime = 0;
-    console.debug(`Execution calls: ${executeTimes} (omitted ${skipWarmUpRuns} warm-up runs)`);
+    console.debug(`Execution calls: ${res.epochs} (omitted ${warmUpRuns} warm-up runs)`);
     console.debug(`Supported Ops: ${Array.from(this._supportedOps).map(op => findKey(OperationCode, op)).join(', ') || 'None'}`);
     console.debug(`Mode: ${this._eager ? 'Eager' : 'Graph'}`);
     console.debug(`Note: Successive WASM ops belong to a same subgraph.`);
-
     for (const [i, op] of this._operations.entries()) {
-      const avgTime = profiling[i] / executeTimes;
-      console.debug(`${avgTime.toFixed(5).slice(0, 8)} ms\t- ${op.subgraphName}`);
+      const t = res.elpased[i];
+      console.debug(`${t.toFixed(5).slice(0, 8)} ms\t- ${op.subgraphName}`);
       if (op.subgraphName.indexOf('WASM') > 0) {
-        wasmTime += avgTime;
+        wasmTime += t;
       } else {
-        webnnTime += avgTime;
+        webnnTime += t;
       }
     }
     console.debug(`WASM time: ${wasmTime.toFixed(5)} ms`);
     console.debug(`WebNN time: ${webnnTime.toFixed(5)} ms`);
     console.debug(`Sum: ${(wasmTime + webnnTime).toFixed(5)} ms`);
-    executeTimes = 0;
   }
 }
