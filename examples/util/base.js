@@ -84,6 +84,20 @@ const imageClassificationModels = [{
   intro: 'Inception-v3 is trained for the ImageNet Large Visual Recognition Challenge.',
   paperUrl: 'http://arxiv.org/abs/1512.00567'
 }, {
+  modelName: 'Inception v3 Quant (TFLite)',
+  modelFormatName: 'inception_v3_quant_tflite',
+  isQuantized: true,
+  modelSize: '23.9MB',
+  inputSize: [299, 299, 3],
+  outputSize: 1001,
+  modelFile: '../image_classification/model/inception_v3_quant.tflite',
+  labelsFile: '../image_classification/model/labels1001.txt',
+  postOptions: {
+    softmax: true,
+  },
+  intro: 'Quantized version of Inception v3.',
+  paperUrl: 'https://arxiv.org/abs/1806.08342'
+}, {
   modelName: 'Inception v4 (TFLite)',
   modelFormatName: 'inception_v4_tflite',
   modelSize: '170.7MB',
@@ -96,6 +110,17 @@ const imageClassificationModels = [{
     std: [127.5, 127.5, 127.5],
   },
   intro: 'Inception architecture that has been shown to achieve very good performance at relatively low computational cost.',
+  paperUrl: 'https://arxiv.org/abs/1602.07261'
+}, {
+  modelName: 'Inception v4 Quant (TFLite)',
+  modelFormatName: 'inception_v4_quant_tflite',
+  isQuantized: true,
+  modelSize: '42.9MB',
+  inputSize: [299, 299, 3],
+  outputSize: 1001,
+  modelFile: '../image_classification/model/inception_v4_299_quant.tflite',
+  labelsFile: '../image_classification/model/labels1001.txt',
+  intro: 'Quantized version of Inception v4.',
   paperUrl: 'https://arxiv.org/abs/1602.07261'
 }, {
   modelName: 'Squeezenet (TFLite)',

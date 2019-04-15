@@ -127,7 +127,8 @@ namespace binding_utils {
                                  const RuntimeShape& biasShape, 
                                  const intptr_t biasData, 
                                  const RuntimeShape& outputShape, 
-                                 intptr_t outputData) {
+                                 intptr_t outputData,
+                                 gemmlowp::GemmContext* gemm_context) {
     optimized_ops::DepthwiseConv(op_params,
                                  inputShape, (const uint8_t*)inputData, 
                                  filterShape, (const uint8_t*)filterData, 
@@ -164,15 +165,14 @@ namespace binding_utils {
                         const RuntimeShape& outputShape, 
                         intptr_t outputData,
                         const RuntimeShape& im2colShape, 
-                        intptr_t im2colData) {
-    static gemmlowp::GemmContext gemm_context; // the default num_threads is 1
-    // gemm_context.set_max_num_threads(0);
+                        intptr_t im2colData,
+                        gemmlowp::GemmContext* gemm_context) {
     optimized_ops::Conv(op_params, 
                         inputShape, (const uint8_t*)inputData, 
                         filterShape, (const uint8_t*)filterData, 
                         biasShape, (const int32_t*)biasData, 
                         outputShape, (uint8_t*)outputData, 
-                        im2colShape, (uint8_t*)im2colData, &gemm_context);
+                        im2colShape, (uint8_t*)im2colData, gemm_context);
   }
 
   void averagePoolFloat32Wrapper(const PoolParams op_params,
@@ -203,6 +203,16 @@ namespace binding_utils {
     optimized_ops::MaxPool(op_params,
                            inputShape, (const float*)inputData,
                            outputShape, (float*)outputData);
+  }
+
+  void maxPoolUint8Wrapper(const PoolParams op_params,
+                           const RuntimeShape& inputShape, 
+                           const intptr_t inputData, 
+                           const RuntimeShape& outputShape, 
+                           intptr_t outputData) {
+    optimized_ops::MaxPool(op_params,
+                           inputShape, (const uint8_t*)inputData,
+                           outputShape, (uint8_t*)outputData);
   }
 
   void softmaxFloat32Wrapper(const SoftmaxParams op_params,
@@ -252,6 +262,21 @@ namespace binding_utils {
                                         outputShape, (float*)outputData);
   }
 
+  void concatenationUint8Wrapper(ConcatenationParams op_params, 
+                                 const std::vector<RuntimeShape*> inputShapes, 
+                                 const std::vector<intptr_t>& inputDataPtrs,
+                                 const std::vector<float>& inputScalePtrs,
+                                 const std::vector<int32_t>& inputZeroPointPtrs,
+                                 const RuntimeShape& outputShape, 
+                                 intptr_t outputData) {
+    op_params.input_scale = (inputScalePtrs).data();
+    op_params.input_zeropoint = (inputZeroPointPtrs).data();
+    optimized_ops::ConcatenationWithScaling(op_params,
+                                          inputShapes.data(),
+                                          ((const std::vector<const uint8_t*>&)inputDataPtrs).data(), 
+                                          outputShape, (uint8_t*)outputData);
+  }
+
   void fullyConnectedFloat32Wrapper(const FullyConnectedParams op_params,
                                     const RuntimeShape& inputShape, 
                                     const intptr_t inputData, 
@@ -266,6 +291,23 @@ namespace binding_utils {
                                   weightsShape, (const float*)weightsData, 
                                   biasShape, (const float*)biasData,
                                   outputShape, (float*)outputData);
+  }
+
+  void fullyConnectedUint8Wrapper(const FullyConnectedParams op_params,
+                                  const RuntimeShape& inputShape, 
+                                  const intptr_t inputData, 
+                                  const RuntimeShape& weightsShape, 
+                                  const intptr_t weightsData, 
+                                  const RuntimeShape& biasShape, 
+                                  const intptr_t biasData, 
+                                  const RuntimeShape& outputShape, 
+                                  intptr_t outputData,
+                                  gemmlowp::GemmContext* gemm_context) {
+    optimized_ops::FullyConnected(op_params, 
+                                  inputShape, (const uint8_t*)inputData, 
+                                  weightsShape, (const uint8_t*)weightsData, 
+                                  biasShape, (const int32_t*)biasData,
+                                  outputShape, (uint8_t*)outputData, gemm_context);
   }
 
   void resizeBilinearFloat32Wrapper(const ResizeBilinearParams op_params,
@@ -345,6 +387,23 @@ EMSCRIPTEN_BINDINGS(nn)
     .function("SetDim", &RuntimeShape::SetDim)
     ;
 
+  class_<gemmlowp::SingleThreadGemmContext>("SingleThreadGemmContext")
+    .constructor<>()
+    ;
+
+  class_<gemmlowp::MultiThreadGemmContextBase, base<gemmlowp::SingleThreadGemmContext>>("MultiThreadGemmContextBase")
+    .constructor<>()
+    .function("set_max_num_threads", &gemmlowp::MultiThreadGemmContextBase::set_max_num_threads)
+    ;
+
+  class_<gemmlowp::MultiThreadGemmContext, base<gemmlowp::MultiThreadGemmContextBase>>("MultiThreadGemmContext")
+    .constructor<>()
+    ;
+
+  class_<gemmlowp::GemmContext, base<gemmlowp::MultiThreadGemmContext>>("GemmContext")
+    .constructor<>()
+    ;
+
   value_object<PaddingValues>("PaddingValues")
     .field("width", &PaddingValues::width)
     .field("height", &PaddingValues::height)
@@ -420,11 +479,23 @@ EMSCRIPTEN_BINDINGS(nn)
   value_object<ConcatenationParams>("ConcatenationParams")
     .field("axis", &ConcatenationParams::axis)
     .field("inputs_count", &ConcatenationParams::inputs_count)
+    .field("output_scale", &ConcatenationParams::output_scale)
+    .field("output_zeropoint", &ConcatenationParams::output_zeropoint)
     ;
 
   value_object<FullyConnectedParams>("FullyConnectedParams")
+    // float activation params.
     .field("float_activation_min", &FullyConnectedParams::float_activation_min)
     .field("float_activation_max", &FullyConnectedParams::float_activation_max)
+    // uint8 inference params.
+    .field("input_offset", &FullyConnectedParams::input_offset)
+    .field("weights_offset", &FullyConnectedParams::weights_offset)
+    .field("output_offset", &FullyConnectedParams::output_offset)
+    .field("output_multiplier", &FullyConnectedParams::output_multiplier)
+    .field("output_shift", &FullyConnectedParams::output_shift)
+    // uint8, etc, activation params.
+    .field("quantized_activation_min", &FullyConnectedParams::quantized_activation_min)
+    .field("quantized_activation_max", &FullyConnectedParams::quantized_activation_max)
     ;
 
   value_object<ArithmeticParams>("ArithmeticParams")
@@ -462,6 +533,8 @@ EMSCRIPTEN_BINDINGS(nn)
 
   register_vector<RuntimeShape*>("VectorShape");
   register_vector<intptr_t>("VectorPtr");
+  register_vector<float>("floatVector");
+  register_vector<int32_t>("int32Vector");
 
 
   // Operations.
@@ -482,8 +555,11 @@ EMSCRIPTEN_BINDINGS(nn)
   function("reshapeFloat32", &binding_utils::reshapeFloat32Wrapper, allow_raw_pointers());
   function("reshapeUint8", &binding_utils::reshapeUint8Wrapper, allow_raw_pointers());
   function("maxPoolFloat32", &binding_utils::maxPoolFloat32Wrapper, allow_raw_pointers());
+  function("maxPoolUint8", &binding_utils::maxPoolUint8Wrapper, allow_raw_pointers());
   function("concatenationFloat32", &binding_utils::concatenationFloat32Wrapper, allow_raw_pointers());
+  function("concatenationUint8", &binding_utils::concatenationUint8Wrapper, allow_raw_pointers());
   function("fullyConnectedFloat32", &binding_utils::fullyConnectedFloat32Wrapper, allow_raw_pointers());
+  function("fullyConnectedUint8", &binding_utils::fullyConnectedUint8Wrapper, allow_raw_pointers());
   function("resizeBilinearFloat32", &binding_utils::resizeBilinearFloat32Wrapper, allow_raw_pointers());
   function("tanhFloat32", &binding_utils::tanhFloat32Wrapper, allow_raw_pointers());
   function("maximumFloat32", &binding_utils::maximumFloat32Wrapper, allow_raw_pointers());
