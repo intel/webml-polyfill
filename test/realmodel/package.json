@@ -1,0 +1,21 @@
+{
+  "name": "realmodel",
+  "version": "0.0.1",
+  "description": "Generate testcase for realmodel",
+  "main": "./src/main.js",
+  "dependencies": {
+    "download": "^7.1.0",
+    "node-wget": "^0.4.3",
+    "puppeteer": "^1.14.0",
+    "targz": "^1.0.1",
+    "unzip": "^0.1.11"
+  },
+  "scripts": {
+    "all": "node ./src/main.js",
+    "downloadModel": "node ./src/downloadModelFile.js",
+    "unzipTar": "node ./src/unzipModel.js",
+    "getTCRes": "node ./src/getCaseOriginData.js",
+    "genTC": "node ./src/generateCase.js",
+    "genHtml": "node ./src/genhtml.js"
+  }
+}

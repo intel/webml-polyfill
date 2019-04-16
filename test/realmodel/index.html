@@ -1,0 +1,92 @@
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Onnx Importer Test</title>
+  </head>
+  <body>
+    <script src="../../dist/webml-polyfill.js"></script>
+    <script src="../../examples/third_party/protobuf.min.js"></script>
+    <script src="../../examples/util/base.js"></script>
+    <script src="../../examples/util/onnx/onnx.js"></script>
+    <script src="../../examples/util/onnx/OnnxModelUtils.js"></script>
+    <script src="../../examples/util/onnx/OnnxModelImporter_test.js"></script>
+    <script>
+     window.onload = async function() {
+      async function loadUrl(url) {
+        return new Promise(resolve => {
+          let request = new XMLHttpRequest();
+          request.open('GET', url, true);
+          request.responseType = 'arraybuffer';
+          request.onload = _ => {
+            if (request.readyState === 4 && request.status === 200)
+              resolve(new Uint8Array(request.response));
+          };
+          request.send();
+        });
+      }
+      
+      async function downloadjson(data, filename) {
+        if (!data) {
+          console.error("downloadjson: No data");
+          return;
+        }
+        if (!filename) filename = "casePrototypeData.json";
+        if (typeof data === "object") {
+          data = JSON.stringify(data);
+        }
+        var blob = new Blob([data], {type: 'text/json'}),
+            e = document.createEvent('MouseEvents'),
+            a = document.createElement('a');
+        a.download = filename;
+        a.href = window.URL.createObjectURL(blob);
+        a.dataset.downloadurl = ['text/json', a.download, a.href].join(':');
+        e.initMouseEvent('click', true, false, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
+        a.dispatchEvent(e)
+      }
+
+      async function loadTensor(tensorFile) {
+        let result = await loadUrl(tensorFile);
+        if (onnx.TensorProto.verify(result))
+          throw new Error(`Invalid tensor`);
+        let tensor = onnx.TensorProto.decode(result);
+        return getTensorData(tensor);
+      }
+
+      function almostEqual(a, b, episilon=1e-5) {
+        return Math.abs(a - b) < episilon;
+      }
+      
+      let modelName;
+      let Backend;
+      await fetch('./config.json').then((res) => {
+        return res.json();
+      }).then((text) => {
+        modelName = text.modelName;
+        Backend = text.backend;
+      });
+      const modelFile = `./model/${modelName}/${modelName}.onnx`;
+      let input = await loadTensor(`./model/${modelName}/test_data_set_1/input_0.pb`);
+      let expect = await loadTensor(`./model/${modelName}/test_data_set_1/output_0.pb`);
+      let result = await loadUrl(modelFile);
+      if (onnx.ModelProto.verify(result))
+        throw new Error(`Invalid model`);
+      let onnxModel = onnx.ModelProto.decode(result);
+      let model = new OnnxModelImporter({rawModel: onnxModel, backend: Backend});
+      await model.createCompiledModel();
+      let params = model.getModelParams();
+      let wasmGen = new OnnxModelImporter({rawModel: onnxModel, backend: Backend, prefer: 'fast'}).layerIterator([input]);
+
+      while (true) {
+        let wasmnext = await wasmGen.next();
+        if (wasmnext.done) {
+          params.operation['0'] = input;
+          await downloadjson(params, `${modelName}.json`);
+          break;
+        }
+        if (!params.hasOwnProperty('operation')) params.operation = {};
+        params.operation[wasmnext.value.outputIds] = wasmnext.value.tensor;
+      }
+    }
+    </script>
+  </body>
+</html>

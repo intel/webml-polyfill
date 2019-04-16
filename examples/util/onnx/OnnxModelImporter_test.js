@@ -10,7 +10,7 @@ class OnnxModelImporter {
     this._operands = [];
     this._requiredOps = new Set();
     this._options = {
-      softmax: kwargs.softmax, 
+      softmax: kwargs.softmax,
     };
     this._operandIndex = 0;
     this._backend = kwargs.backend;
@@ -46,6 +46,15 @@ class OnnxModelImporter {
     this._execution = await this._compilation.createExecution();
     let elapsed = performance.now() - start;
     console.log(`compilation time: ${elapsed.toFixed(2)} ms`);
+  }
+
+  getModelParams() {
+    return {
+      tensorTypes: this._tensorTypes,
+      operations: this._operations,
+      tensorIds: this._tensorIds,
+      operands: this._operands
+    }
   }
 
   async compute(inputTensors, outputTensors) {
@@ -91,9 +100,9 @@ class OnnxModelImporter {
       this._execution = await this._compilation.createExecution();
 
       const outputSize = this._getTensorTypeByName(outputName).dimensions.reduce((a, b) => a * b);
-      const outputTensor = new Float32Array(outputSize);  
+      const outputTensor = new Float32Array(outputSize);
       await this.compute(inputTensors, [outputTensor]);
-      return {layerId: lastNode, outputName: outputName, tensor: outputTensor};
+      return {layerId: lastNode, outputName: outputName, tensor: outputTensor, outputIds: outputs, inputIds: inputs};
     }
 
     const operatorsLength = graph.node.length;
@@ -207,7 +216,7 @@ class OnnxModelImporter {
     // Cache operand type. It could be modified later: Depthwise Conv
     this._tensorTypes.push(type);
     if (typeof value !== 'undefined')
-      this._setOperandValue(index, value); 
+      this._setOperandValue(index, value);
     return index;
   }
 
@@ -221,7 +230,7 @@ class OnnxModelImporter {
     if (this._tensorIds.hasOwnProperty(name)) {
       let index = this._tensorIds[name];
       if (typeof value !== 'undefined') {
-        this._setOperandValue(index, value); 
+        this._setOperandValue(index, value);
       }
       return index;
     }
@@ -736,7 +745,7 @@ class OnnxModelImporter {
           const shapeTensor = getAttributeValue(node, 'value');
           const shapeData = getTensorData(shapeTensor);
           const shapeType = {type: this._nn.TENSOR_INT32, dimensions: Array.from(shapeTensor.dims)};
-          this._addNewTensorOperand(name, shapeType, shapeData);  
+          this._addNewTensorOperand(name, shapeType, shapeData);
         } break;
         case 'Reshape': {
           console.log(`  inputs: [${node.input}]`);
@@ -758,7 +767,7 @@ class OnnxModelImporter {
             const adaptDimIdx = outputDims.indexOf(-1);
             outputDims[adaptDimIdx] = product(inputDims) / product(nonAdaptDim);
           } else if (minusOneCnt !== 0)
-            throw new Error(`Invalid shape ${outputDims}`); 
+            throw new Error(`Invalid shape ${outputDims}`);
           this._setOperandValue(shapeId, outputDims);
 
           // Add outputs
@@ -788,7 +797,7 @@ class OnnxModelImporter {
           const outputDims =  [outputDim1, outputDim2];
 
           const shapeType = {type: this._nn.TENSOR_INT32, dimensions: [2]};
-          const shapeId = this._addNewTensorOperand(`shape_${name}`, shapeType, new Int32Array(outputDims)); 
+          const shapeId = this._addNewTensorOperand(`shape_${name}`, shapeType, new Int32Array(outputDims));
           inputs.push(shapeId);
 
           // Add outputs
@@ -836,7 +845,7 @@ class OnnxModelImporter {
       if (typeof opCode === 'undefined')
         continue;
 
-      if (i === graph.node.length - 1) { 
+      if (i === graph.node.length - 1) {
 
         // redirect the output of the last node to the existing tensor bound to
         // the node in the graph, i.e. output tensor given by the user
@@ -864,7 +873,7 @@ class OnnxModelImporter {
         }
       }
 
-      this._addOperation(opCode, inputs, outputs);   
+      this._addOperation(opCode, inputs, outputs);
     }
 
     // Write back all cached operands and operations

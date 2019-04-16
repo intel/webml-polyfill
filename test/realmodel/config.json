@@ -1,0 +1,6 @@
+{
+  "modelName": "squeezenet1.1",
+  "url": "https://s3.amazonaws.com/onnx-model-zoo/squeezenet/squeezenet1.1/squeezenet1.1.tar.gz",
+  "localURL": "localhost:8080/test/realmodel/index.html",
+  "backend": "WASM"
+}
