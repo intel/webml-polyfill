@@ -13,8 +13,9 @@
   "scripts": {
     "all": "node ./src/main.js",
     "downloadModel": "node ./src/downloadModelFile.js",
-    "unzipModel": "node ./src/unzipModel.js",
-    "getCaseOriginData": "node ./src/getCaseOriginData.js",
-    "generateCase": "node ./src/generateCase.js"
+    "unzipTar": "node ./src/unzipModel.js",
+    "getTCRes": "node ./src/getCaseOriginData.js",
+    "genTC": "node ./src/generateCase.js",
+    "genHtml": "node ./src/genhtml.js"
   }
 }

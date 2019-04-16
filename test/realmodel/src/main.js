@@ -43,6 +43,16 @@ console.log('Begin Test...');
     console.log(geterateCaseProcess.stderr.toString());
     process.exit(1);
   }
+
+  let getHtmlProcess = await childProcess.spawnSync(
+    'node',
+    [path.join(__dirname, 'genHtml.js')],
+    {stdio: [process.stdin, process.stdout, 'pipe']}
+  );
+  if (geterateCaseProcess.stderr.toString() != '') {
+    console.log(geterateCaseProcess.stderr.toString());
+    process.exit(1);
+  }
 })().then(() => {
   console.log('Test case generate finished');
 }).catch((err) => {
