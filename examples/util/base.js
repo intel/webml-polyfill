@@ -578,14 +578,14 @@ const faceDetectionModels = [{
 }];
 
 const facialLandmarkDetectionModels = [{
-  modelName: 'DAN (TFlite)',
+  modelName: 'SimpleCNN (TFlite)',
   modelFormatName: 'face_landmark_tflite',
   modelSize: '29.4MB',
   modelFile: '../facial_landmark_detection/model/face_landmark.tflite',
   inputSize: [128, 128, 3],
   outputSize: 136,
-  intro: 'Converted from a pre-trained Deep Alignment Network',
-  paperUrl: 'https://arxiv.org/abs/1612.08242'
+  intro: 'Converted from a pre-trained Simple CNN model',
+  paperUrl: 'https://www.sciencedirect.com/science/article/pii/S0262885615001341'
 }];
 
 const getOS = () => {

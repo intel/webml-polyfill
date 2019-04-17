@@ -70,12 +70,12 @@ tflite_convert \
 
 Check out [yinguobing/cnn-facial-landmark](https://github.com/yinguobing/cnn-facial-landmark) for more details about this model.
 
-This model is converted from a pre-trained [Deep Alignment Network](https://drive.google.com/file/d/1Nvzu5A9CjP70sDhiRbMzuIwFLnrq2Qpw/view?usp=sharing). You can use the following commands to convert your own model.
+This model is converted from a pre-trained [Simple CNN](https://drive.google.com/file/d/1Nvzu5A9CjP70sDhiRbMzuIwFLnrq2Qpw/view?usp=sharing) model. You can use the following commands to convert your own model.
 
 ```sh
 tflite_convert \
 --output_file=${out_dir}/face_landmark.tflite \
---graph_def_file=${download_model_dir}/DAN.pb \
+--graph_def_file=${download_model_dir}/SimpleCNN.pb \
 --input_arrays=input_to_float \
 --output_arrays=logits/BiasAdd
 ```
