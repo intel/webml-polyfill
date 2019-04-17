@@ -229,15 +229,22 @@ export default class WebGLModel {
       inTensors.forEach((tensorId, i) => {
         const operand = this._operands[tensorId];
         const texture = tf.ENV.backend.getTexture(operand.dataId);
+        if (this._isPackedTexture(operand.dataId)) {
+          throw new Error('Packed texture is not supported.');
+        }
         execution.setInput(i, glContext, texture);
       });
       outTensors.forEach((tensorId, i) => {
         const operand = this._operands[tensorId];
         const texture = tf.ENV.backend.getTexture(operand.dataId);
+        if (this._isPackedTexture(operand.dataId)) {
+          throw new Error('Packed texture is not supported.');
+        }
         execution.setOutput(i, glContext, texture);
       });
     } catch(e) {
-      throw Error('WebGL is unable to offload ops to the current WebNN backend');
+      throw new Error(
+        'WebGL failed to offload ops to the current WebNN backend:\n' + e.message);
     }
 
     return {model: submodel, compilation: compilation, execution: execution};
@@ -636,6 +643,10 @@ export default class WebGLModel {
   _isPaddingEqual(left, right, top, bottom) {
     return (left === right) && (left === top) && (left === bottom);
  }
+
+  _isPackedTexture(dataId) {
+    return tf.ENV.backend.texData.get(dataId).isPacked === true;
+  }
 
   _deleteAll() {
     this._operands.forEach(operand => {
