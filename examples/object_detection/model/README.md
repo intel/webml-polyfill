@@ -1,5 +1,6 @@
 ## How to Download
-Download [ssd_mobilenet_v1](https://drive.google.com/file/d/1JlAXwCQztZ-ySmIQ8rZtJ0pncaPhCDm5/view?usp=sharing), [ssd_mobilenet_v1_quant](https://drive.google.com/file/d/1NfvbEokyb2zTzICnqxNhXvJq_Av2BTUa/view?usp=sharing), [ssd_mobilenet_v2](https://drive.google.com/file/d/1JTotD3hmFL9ObHc-q-PlhBxYe3IqlQXH/view?usp=sharing), [ssd_mobilenet_v2_quant](https://drive.google.com/file/d/122FSeXPmcL-yt-0TAHPdjWYDV4Lme0oQ/view?usp=sharing), [ssdlite_mobilenet_v2](https://drive.google.com/file/d/1YWDKpyUnMG6L4ddmt4wGGvOjx17e-9Fg/view?usp=sharing), [tiny_yolov2_coco](https://drive.google.com/file/d/1hosLKiVNiaDGV8QUGRwvrRC37oXKnLAr/view?usp=sharing), [tiny_yolov2_voc](https://drive.google.com/file/d/1fXksVZeVYsRyf_UnLDJf8-nkbCQmhW9J/view?usp=sharing), and put them here.
+
+Download [ssd_mobilenet_v1](https://drive.google.com/file/d/1JlAXwCQztZ-ySmIQ8rZtJ0pncaPhCDm5/view?usp=sharing), [ssd_mobilenet_v1_quant](https://drive.google.com/file/d/1NfvbEokyb2zTzICnqxNhXvJq_Av2BTUa/view?usp=sharing), [ssd_mobilenet_v2](https://drive.google.com/file/d/1JTotD3hmFL9ObHc-q-PlhBxYe3IqlQXH/view?usp=sharing), [ssd_mobilenet_v2_quant](https://drive.google.com/file/d/122FSeXPmcL-yt-0TAHPdjWYDV4Lme0oQ/view?usp=sharing), [ssdlite_mobilenet_v2](https://drive.google.com/file/d/1YWDKpyUnMG6L4ddmt4wGGvOjx17e-9Fg/view?usp=sharing), [tiny_yolov2_coco](https://drive.google.com/file/d/15xySV60owfc5tc8Z8IxRIELC4rT_16wt/view?usp=sharing), [tiny_yolov2_voc](https://drive.google.com/file/d/1fXksVZeVYsRyf_UnLDJf8-nkbCQmhW9J/view?usp=sharing), and put them here.
 
 The model files are:
 
@@ -73,28 +74,24 @@ Please remember to rename the output model name to `ssd_mobilenet_v1/ssd_mobilen
 
 Current WebML API doesn't support "Squeeze" operation. "Squeeze", "Reshape" and "Concatenation" operations are removed from graph because they are reduntant for inference. Use 6 box predictors and 6 class predictors from 6 feature maps for inference. [See tensorflow ssd_mobilenet_v1_feature_extractor for details.](https://github.com/tensorflow/models/blob/master/research/object_detection/models/ssd_mobilenet_v1_feature_extractor.py)
 
-### For Tiny-Yolo Models
+### For Tiny Yolo Models
 
-#### Tiny-Yolo-COCO
-Check out [kaka-lin/object-detection](https://github.com/kaka-lin/object-detection) for details.
+#### Tiny Yolo COCO/VOC
 
-This model is converted from [Tiny Yolo V2](https://drive.google.com/file/d/14-5ZojD1HSgMKnv6_E3WUcBPxaVm52X2/view?usp=sharing). You can use the following commands to convert your own model.
+This tflite model is converted from a keras model, which is converted from Darknet by [YAD2K](https://github.com/Wenzhao-Xiang/YAD2K).
 
-```sh
-tflite_convert \
---keras_model_file=${download_model_dir}/tiny-yolo.h5 \
---output_file=${out_dir}/tiny_yolov2_coco.tflite
-```
-
-#### Tiny-Yolo-VOC
-This tflite model is converted from a keras model, which is converted from Darknet by [YAD2K](https://github.com/allanzelener/YAD2K). 
-
-For keras model generating, you can go [here](https://pjreddie.com/darknet/yolov2/) to download tiny-yolo-voc weight and cfg file, and then follow the step of [YAD2K](https://github.com/allanzelener/YAD2K) to convert them to a keras model.
+For keras model generating, you can go [here](https://pjreddie.com/darknet/yolov2/) to download tiny yolo coco/voc weights and cfg file, and then follow the step of [YAD2K](https://github.com/Wenzhao-Xiang/YAD2K) to convert them to a keras model.
 
 After get a keras model, you can then use the following commands to convert your own tflite model.
 
 ```sh
 tflite_convert \
---keras_model_file=${model_dir}/tiny-yolov2-voc.h5 \
---output_file=${out_dir}/tiny_yolov2_voc.tflite
+--keras_model_file=${model_dir}/${keras_model_name}.h5 \
+--output_file=${out_dir}/${model_name}.tflite
 ```
+
+Please remember to rename the output model name to `tiny_yolov2_coco/tiny_yolov2_voc.tflite` for example use.
+
+## Note
+
+The label files "coco_classes_part.txt" and "pascal.classes.txt" are both from [YAD2K](https://github.com/allanzelener/YAD2K), which are under `MIT LICENSE`.
