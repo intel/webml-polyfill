@@ -38,7 +38,7 @@ function drawKeyPoints(image, canvas, Keypoints, boxes) {
   ctx = canvas.getContext('2d');
   boxes.forEach((box, n) => {
     keypoints = Keypoints[n];
-    for (let i = 0; i < 128; i = i + 2) {
+    for (let i = 0; i < 136; i = i + 2) {
       // decode keypoints
       let x = ((box[1] - box[0]) * keypoints[i] + box[0]) / image.height * canvas.height;
       let y = ((box[3] - box[2]) * keypoints[i + 1] + box[2]) / image.height * canvas.height;
