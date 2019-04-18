@@ -427,7 +427,9 @@ async function splitContext(context) {
     await saveCaseToLocal(caseSample, `${JSON_DATA.getModelName()}-conv2d-${weightFile}.js`);
   } break;
   case 22: {
-    let shape = (await getOperands(context[1][1]))[1];
+    let shapeDic = await getOperands(context[1][1]);
+    let shapeLen = Object.keys(shapeDic).length;
+    let shapeValues = Object.values(shapeDic);
     let caseSample = `describe('CTS Real Model Test', function() {
   const assert = chai.assert;
   const nn = navigator.ml.getNeuralNetworkContext();
@@ -461,7 +463,7 @@ async function splitContext(context) {
     let type0_length = product(type0.dimensions);
     let type2 = {type: nn.TENSOR_FLOAT32, dimensions: [${outputDims}]};
     let type2_length = product(type2.dimensions);
-    let type1 = {type: nn.TENSOR_INT32, dimensions: [${shape}]};
+    let type1 = {type: nn.TENSOR_INT32, dimensions: [${shapeLen}]};
     let type1_length = product(type1.dimensions);
     let op1 = operandIndex++;
     model.addOperand(type0);
@@ -469,7 +471,7 @@ async function splitContext(context) {
     model.addOperand(type1);
     let op3 = operandIndex++;
     model.addOperand(type2);
-    model.setOperandValue(op2, new Int32Array([1000]));
+    model.setOperandValue(op2, new Int32Array([${shapeValues}]));
     model.addOperation(nn.RESHAPE, [op1, op2], [op3]);
     model.identifyInputsAndOutputs([op1], [op3]);
     await model.finish();
