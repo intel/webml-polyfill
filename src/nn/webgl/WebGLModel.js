@@ -2,11 +2,9 @@ import * as tf from '@tensorflow/tfjs-core';
 import { FuseCode, OperandCode, OperationCode, PaddingCode, PreferenceCode } from '../Enums';
 import Graph from '../GraphUtils';
 import * as utils from '../utils';
-import { findKey } from '../utils';
+import CyclicProfiler from '../instrument';
 
-var executeTimes = 0;
-var skipWarmUpRuns = 1;
-var profiling = [];
+var warmUpRuns = 1;
 
 export default class WebGLModel {
   /**
@@ -18,12 +16,12 @@ export default class WebGLModel {
     this._nnNative = navigator.ml.getNeuralNetworkContext();
     this._supportedOps = new Set([]);
     this._model = model;
-    this._operations = [];
+    this._subgraphs = [];
     this._operands = [];
     this._nnOperands = [];  // copies of input/output tensors of WebNN subgraph 
     this._preference = PreferenceCode.FAST_SINGLE_ANSWER;
     this._prepared = false;
-    this._subgraphs = [];
+    this._profiler = null;
 
     if (tf.ENV.backend.floatPrecision() === 16) {
       console.warn(
@@ -49,41 +47,26 @@ export default class WebGLModel {
       }
     });
     graph.identifyInputOutputTensors(model._inputs, model._outputs);
-
     const partitions = graph.partition(this._eager);
 
-    let counter = -1;
-    for (const {nodes, inTensors, outTensors} of partitions) {
+    for (const [i, {nodes, inTensors, outTensors}] of partitions.entries()) {
 
-      // Test if the first op in the partition (nodes[0]) is supported natively.
-      // If so, the partition will be constructed as a whole into a WebNN
-      // subgraph and offloaded to the WebNN. Otherwise, the partition will be
-      // broken into singletons and eagerly executed by WebGL.
+      // Test if the first op in the partition (nodes[0]) is supported natively
       const isSupportedByNN = this._supportedOps.has(operations[nodes[0]].type);
 
       // summary of the partiton. e.g. "CONV x 5, ADD x 2, MUL x 2"
-      const summary =
-          Object.entries(
-              nodes
-                .map((opId) => findKey(OperationCode, operations[opId].type))
-                .reduce((cnt, v) => {cnt[v] ? cnt[v]++ : cnt[v]=1; return cnt;}, {}))
-            .map(n => `${n[0]} x ${n[1]}`)
-            .join(', ');
+      const summary = utils.stringifySubgraphCompact(model, nodes);
       const backendName = isSupportedByNN ? 'WebNN' : 'WebGL';
-      const subgraphName = `Subgraph ${++counter}\t (${backendName}):\t{${summary}}`;
-      this._subgraphs.push(subgraphName);
+      const subgraphName = `Subgraph ${i}\t (${backendName}):\t{${summary}}`;
 
       if (!isSupportedByNN) {
 
-        // run in polyfil
+        // run in WebGL
 
-        // break a group of WebGL operaions to singletons
-        for (const operationId of nodes) {
-          const operation = operations[operationId];
-          operation.subgraphName = subgraphName;
-          this._operations.push(operation);
+        const ops = nodes.map((opId) => operations[opId]);
 
-          // allocate WebGL runtime textures
+        // allocate WebGL runtime textures
+        for (const operation of ops) {
           for (const tensorId of [...operation.inputs, ...operation.outputs]) {
             const operand = this._model._operands[tensorId];
             if (utils.isTensor(operand.type)) {
@@ -102,97 +85,59 @@ export default class WebGLModel {
               this._operands[tensorId] = operand;   
             }
           }
+          this._changeWeightsFormat(operation);
         }
+
+        // allocate JS buffers for model outputs
+        // outputs of the last WebGL partition are also model outputs
+        if (i === partitions.length - 1) {
+          for (const tensorId of outTensors) {
+            if (!this._nnOperands.hasOwnProperty(tensorId)) {
+              const tensor = this._model._operands[tensorId];
+              const typedArray = utils.operandCodeToTypedArrayMap.get(tensor.type);
+              this._nnOperands[tensorId] = new typedArray(utils.product(tensor.dimensions));
+            }
+          }
+        }
+
+        this._subgraphs.push({
+          backend: backendName,
+          inputs: inTensors,
+          outputs: outTensors,
+          operations: ops,
+          name: subgraphName,
+        });
 
       } else {
 
         // run in WebNN
 
-        // allocate placeholders for WebNN operands copies
+        // allocate placeholders for WebNN operands copies.
         for (const tensorId of [...inTensors, ...outTensors]) {
           if (!this._nnOperands.hasOwnProperty(tensorId)) {
-            const tensor = model._operands[tensorId];
+            const tensor = this._model._operands[tensorId];
             const typedArray = utils.operandCodeToTypedArrayMap.get(tensor.type);
             this._nnOperands[tensorId] = new typedArray(utils.product(tensor.dimensions));
           }
         }
 
-        // create a WebNN model
-        const submodel = await this._nnNative.createModel();
+        // create WebNN model
+        const {model, compilation, execution} =
+            await this._createSubModel(nodes, inTensors, outTensors);
 
-        // since tensorId of a subgraph should start from 0, we use it to
-        // maintain a mapping from global tensor Id to local tensor Id
-        const globalIdToLocalId = {};
-
-        // counter for local tensor Id
-        let operandIndex = 0;
-
-        for (const operationId of nodes) {
-          const operation = operations[operationId];
-
-          // allocate input and output tensors for each operation
-          for (const tensorId of [...operation.inputs, ...operation.outputs]) {
-            const globalTensorId = parseInt(tensorId);
-
-            // E.g., tensor A -> Node 1 -> tensor B -> Node 2 -> tensor C
-            // At the time of Node 2, its input tensor B may have already been
-            // allocated by the time Node 1 was processed. So we check if the
-            // `globalTensorId` is already in the map.
-            if (!globalIdToLocalId.hasOwnProperty(globalTensorId)) {
-              const localTensorId = operandIndex++;
-              globalIdToLocalId[globalTensorId] = localTensorId;
-              const operand = model._operands[globalTensorId];
-              const operandType = {
-                type: operand.type,
-                dimensions: operand.dimensions,
-                scale: operand.scale,
-                zeroPoint: operand.operand,
-              };
-              submodel.addOperand(operandType);
-              if (operand.value) {
-                submodel.setOperandValue(localTensorId, operand.value);
-              }
-            }
-          }
-
-          // add the operation to the submodel 
-          const operationInputs = operation.inputs.map(i => globalIdToLocalId[i]);
-          const operationOutputs = operation.outputs.map(i => globalIdToLocalId[i]);
-          submodel.addOperation(operation.type, operationInputs, operationOutputs);
-        }
-
-        // indentify the input and output tensors of the submodel 
-        const submodelInputs = inTensors.map(i => globalIdToLocalId[i]);
-        const submodelOutputs = outTensors.map(i => globalIdToLocalId[i]);
-        submodel.identifyInputsAndOutputs(submodelInputs, submodelOutputs);
-        await submodel.finish();
-
-        const compilation = await submodel.createCompilation();
-        compilation.setPreference(this._preference);
-        await compilation.finish();
-
-        const execution = await compilation.createExecution();
-
-        // set output tensor buffers at compile time
-        outTensors.forEach((tensorId, i) => {
-          execution.setOutput(i, this._nnOperands[tensorId]);
-        });
-
-        this._operations.push({
-          type: OperationCode.WEBNN_SUBGRAPH,
+        this._subgraphs.push({
+          backend: backendName,
           inputs: inTensors,
           outputs: outTensors,
-          model: submodel,          // avoid GC   intel/webml-polyfill#669
+          model: model,             // avoid GC   intel/webml-polyfill#669
           compilation: compilation, // avoid GC   intel/webml-polyfill#669
           execution: execution,
-          subgraphName: subgraphName,
+          name: subgraphName,
         });
       }
-
     }
 
-    profiling = new Array(this._operations.length).fill(0);
-    this._changeWeightsFormat();
+    this._profiler = new CyclicProfiler(this._subgraphs.length, warmUpRuns);
     this._prepared = true;
   }
 
@@ -207,21 +152,13 @@ export default class WebGLModel {
       throw new Error('Model is not prepared');
     }
 
-    executeTimes++;
-    if (executeTimes === skipWarmUpRuns) {
-      profiling.fill(0);
-    }
-
     // wire up WebNN input tensors
     inputs.forEach((input) => {
       this._nnOperands[input.index] = input.buffer;
     });
 
-    let start = performance.now();
-
-    const firstOp = this._operations[0];
-    if (firstOp.type !== OperationCode.WEBNN_SUBGRAPH) {
-      // copy to WebGL texture
+    if (this._subgraphs[0].backend === 'WebGL') {
+      // upload inputs to WebGL textures
       inputs.forEach(input => {
         const operand = this._operands[input.index];
         const inputTensor =
@@ -231,52 +168,93 @@ export default class WebGLModel {
       });
     }
 
-    for (const [i, operation] of this._operations.entries()) {
-
-      if (operation.type === OperationCode.WEBNN_SUBGRAPH) {
-        // As calls to the `_executeGlOperation` are asynchronous, we are unable
-        // to profiling each Gl op. However, several consecutive Gl ops and
-        // WebNN subgraph must be interleaved, so we can record the elapsed time
-        // of a sequence of Gl ops before executing WebNN subgraph op, which
-        // means sync time between CPU and GPU is counted into Gl ops.
-        let end = performance.now();
-        profiling[i - 1] += end - start;
-        start = end;
-
-        await this._executeNNOperation(operation);
-
-        // record the WebNN's execution time
-        end = performance.now();
-        profiling[i] += end - start;
-        start = end;
+    for (const subgraph of this._subgraphs) {
+      this._profiler.startEvent();
+      if (subgraph.backend === 'WebNN') {
+        await this._executeNNSubgraph(subgraph);
       } else {
-        tf.tidy(() => this._executeGlOperation(operation));
+        await this._executeGlSubgraph(subgraph);
       }
-
+      this._profiler.endEvent();
     }
 
-    const lastOp = this._operations[this._operations.length - 1];
-    if (lastOp.type !== OperationCode.WEBNN_SUBGRAPH) {
-      // copy from WebGL texture
-      outputs.forEach(output => {
-        const operand = this._operands[output.index];  
-        output.buffer.set(operand.dataSync());
-      });
-
-      const end = performance.now();
-      profiling[this._operations.length - 1] += end - start;
-    } else {
-      outputs.forEach((output) => {
-        const operand = this._nnOperands[output.index];  
-        output.buffer.set(operand);
-      });
-    }
+    // fill output tensors
+    outputs.forEach((output) => {
+      const operand = this._nnOperands[output.index];  
+      output.buffer.set(operand);
+    });
   }
 
-  async _executeNNOperation(operation) {
-    const inputs = operation.inputs;
-    const outputs = operation.outputs;
-    const execution = operation.execution;
+  async _createSubModel(nodes, inTensors, outTensors) {
+
+    // create a WebNN model
+    const submodel = await this._nnNative.createModel();
+
+    // since tensorId of a subgraph should start from 0, we use it to
+    // maintain a mapping from global tensor Id to local tensor Id
+    const globalIdToLocalId = {};
+
+    // counter for local tensor Id
+    let operandIndex = 0;
+
+    for (const operationId of nodes) {
+      const operation = this._model._operations[operationId];
+
+      // allocate input and output tensors for each operation
+      for (const tensorId of [...operation.inputs, ...operation.outputs]) {
+        const globalTensorId = parseInt(tensorId);
+
+        // E.g., tensor A -> Node 1 -> tensor B -> Node 2 -> tensor C
+        // At the time of Node 2, its input tensor B may have already been
+        // allocated by the time Node 1 was processed. So we check if the
+        // `globalTensorId` is already in the map.
+        if (!globalIdToLocalId.hasOwnProperty(globalTensorId)) {
+          const localTensorId = operandIndex++;
+          globalIdToLocalId[globalTensorId] = localTensorId;
+          const operand = this._model._operands[globalTensorId];
+          const operandType = {
+            type: operand.type,
+            dimensions: operand.dimensions,
+            scale: operand.scale,
+            zeroPoint: operand.operand,
+          };
+          submodel.addOperand(operandType);
+          if (operand.value) {
+            submodel.setOperandValue(localTensorId, operand.value);
+          }
+        }
+      }
+
+      // add the operation to the submodel 
+      const operationInputs = operation.inputs.map(i => globalIdToLocalId[i]);
+      const operationOutputs = operation.outputs.map(i => globalIdToLocalId[i]);
+      submodel.addOperation(operation.type, operationInputs, operationOutputs);
+    }
+
+    // indentify the input and output tensors of the submodel 
+    const submodelInputs = inTensors.map(i => globalIdToLocalId[i]);
+    const submodelOutputs = outTensors.map(i => globalIdToLocalId[i]);
+    submodel.identifyInputsAndOutputs(submodelInputs, submodelOutputs);
+    await submodel.finish();
+
+    const compilation = await submodel.createCompilation();
+    compilation.setPreference(this._preference);
+    await compilation.finish();
+
+    const execution = await compilation.createExecution();
+
+    // set output tensor buffers at compile time
+    outTensors.forEach((tensorId, i) => {
+      execution.setOutput(i, this._nnOperands[tensorId]);
+    });
+
+    return {model: submodel, compilation: compilation, execution: execution};
+  }
+
+  async _executeNNSubgraph(subgraph) {
+    const inputs = subgraph.inputs;
+    const outputs = subgraph.outputs;
+    const execution = subgraph.execution;
     const nnOperands = this._nnOperands;
     const glOperands = this._operands;
 
@@ -301,12 +279,28 @@ export default class WebGLModel {
     });
   }
 
+  async _executeGlSubgraph(subgraph) {
+    for (const operation of subgraph.operations) {
+      tf.tidy(() => this._executeGlOperation(operation));
+    }
+
+    // fence
+    // const queue = [];
+    for (const tensorId of subgraph.outputs) {
+      const buffer = this._nnOperands[tensorId];
+      const operand = this._operands[tensorId];
+      buffer.set(operand.dataSync());
+      // const promise = operand.data().then((data) => buffer.set(data));
+      // queue.push(promise);
+    }
+    // await Promise.all(queue);
+  }
+
   _executeGlOperation(operation) {
     const op = operation.type;
     const inputs = operation.inputs;
     const outputs = operation.outputs;
     const operands = this._operands;
-    const nnOperands = this._nnOperands;
 
     const FuseFunctionMap = new Map([
       [FuseCode.NONE, x => x],
@@ -640,15 +634,6 @@ export default class WebGLModel {
         throw new Error(`Operation ${op} is not supported`);	
       }
     }
-
-    outputs.forEach(tensorId => {
-      // sync data to webnn if needed
-      if (nnOperands.hasOwnProperty(tensorId)) {
-        const buffer = nnOperands[tensorId];
-        const operand = operands[tensorId];
-        buffer.set(operand.dataSync());
-      }
-    });
   }
 
   /** Types supported in tfjs: float32, int32, bool, complex64 */
@@ -663,37 +648,34 @@ export default class WebGLModel {
   }
 
   /** Change (depthwise) conv2d weights format. */
-  _changeWeightsFormat() {
-    this._operations.forEach(operation => {
-      const op = operation.type;
-      switch(op) {
-        case OperationCode.CONV_2D:
-        case OperationCode.ATROUS_CONV_2D: {
-          // [outChannels, filterH, filterW, inChannels]
-          // => [filterH, filterW, inChannels, outChannels]
-          // https://js.tensorflow.org/api/0.14.1/#conv2d
-          const inputs = operation.inputs;
-          const filter = this._operands[inputs[1]];
-          this._operands[inputs[1]] = filter.transpose([1, 2, 3, 0]);
-          filter.dispose();
-        } break;
-        case OperationCode.DEPTHWISE_CONV_2D:
-        case OperationCode.ATROUS_DEPTHWISE_CONV_2D: {
-          // [1, filterH, filterW, outChannels]
-          // => [filterH, filterW, inChannels, depthMultipler]
-          // https://js.tensorflow.org/api/0.14.1/#depthwiseConv2d
-          const inputs = operation.inputs;
-          const filter = this._operands[inputs[1]];
-          const filterH = filter.shape[1];
-          const filterW = filter.shape[2];
-          const depthMultipler =
-              this._operands[inputs[inputs.length - 2]].value[0];
-          this._operands[inputs[1]] =
-              filter.reshape([filterH, filterW, -1, depthMultipler]);
-          filter.dispose();
-        } break;
-      }
-    });
+  _changeWeightsFormat(operation) {
+    switch(operation.type) {
+      case OperationCode.CONV_2D:
+      case OperationCode.ATROUS_CONV_2D: {
+        // [outChannels, filterH, filterW, inChannels]
+        // => [filterH, filterW, inChannels, outChannels]
+        // https://js.tensorflow.org/api/0.14.1/#conv2d
+        const inputs = operation.inputs;
+        const filter = this._operands[inputs[1]];
+        this._operands[inputs[1]] = filter.transpose([1, 2, 3, 0]);
+        filter.dispose();
+      } break;
+      case OperationCode.DEPTHWISE_CONV_2D:
+      case OperationCode.ATROUS_DEPTHWISE_CONV_2D: {
+        // [1, filterH, filterW, outChannels]
+        // => [filterH, filterW, inChannels, depthMultipler]
+        // https://js.tensorflow.org/api/0.14.1/#depthwiseConv2d
+        const inputs = operation.inputs;
+        const filter = this._operands[inputs[1]];
+        const filterH = filter.shape[1];
+        const filterW = filter.shape[2];
+        const depthMultipler =
+            this._operands[inputs[inputs.length - 2]].value[0];
+        this._operands[inputs[1]] =
+            filter.reshape([filterH, filterW, -1, depthMultipler]);
+        filter.dispose();
+      } break;
+    }
   }
 
   _isPaddingEqual(left, right, top, bottom) {
@@ -713,37 +695,34 @@ export default class WebGLModel {
   }
 
   getSubgraphsSummary() {
-    return this._subgraphs;
+    return this._subgraphs.map((graph) => graph.name);
   }
 
   dumpProfilingResults() {
-    if (executeTimes === 0) {
-      console.debug(`Report will be available after at least ${skipWarmUpRuns + 1} executions.`);
+    const res = this._profiler.flush();
+    if (res.epochs <= 0) {
+      console.debug(`Report will be available after at least ${warmUpRuns + 1} executions.`);
       return;
     }
-    executeTimes -= skipWarmUpRuns;
+
     let webglTime = 0;
     let webnnTime = 0;
-    console.debug(`Execution calls: ${executeTimes} (omitted ${skipWarmUpRuns} warm-up runs)`);
-    console.debug(`Supported Ops: ${Array.from(this._supportedOps).map(op => findKey(OperationCode, op)).join(', ') || 'None'}`);
+    console.debug(`Execution calls: ${res.epochs} (omitted ${warmUpRuns} warm-up runs)`);
+    console.debug(`Supported Ops: ${Array.from(this._supportedOps).map(op => utils.findKey(OperationCode, op)).join(', ') || 'None'}`);
     console.debug(`Mode: ${this._eager ? 'Eager' : 'Graph'}`);
     console.debug(`Note: Sync time is included in WebGL op.`);
-    for (const [i, op] of this._operations.entries()) {
-      const avgTime = profiling[i] / executeTimes;
-      if (!avgTime) {
-        continue;
-      }
-      console.debug(`${avgTime.toFixed(5).slice(0, 8)} ms\t- ${op.subgraphName}`);
-      if (op.subgraphName.indexOf('WebGL') > 0) {
-        webglTime += avgTime;
+    for (const [i, {backend, name}] of this._subgraphs.entries()) {
+      const t = res.elpased[i];
+      console.debug(`${t.toFixed(5).slice(0, 8)} ms\t- ${name}`);
+      if (backend === 'WebGL') {
+        webglTime += t;
       } else {
-        webnnTime += avgTime;
+        webnnTime += t;
       }
     }
     console.debug(`WebGL time: ${webglTime.toFixed(5)} ms`);
     console.debug(`WebNN time: ${webnnTime.toFixed(5)} ms`);
     console.debug(`Sum: ${(webglTime + webnnTime).toFixed(5)} ms`);
-    executeTimes = 0;
   }
 }
 
