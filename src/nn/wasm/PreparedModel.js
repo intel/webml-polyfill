@@ -7,7 +7,6 @@ import Graph from '../GraphUtils';
 var executeTimes = 0;
 var skipWarmUpRuns = 1;
 var profiling = [];
-var gemm_context = null;
 
 export default class PreparedModel {
   constructor() {
@@ -41,10 +40,8 @@ export default class PreparedModel {
     this._supportedOps = model._supportedOps;
     this._eager = model._eager;
 
-    if (gemm_context === null && 
-      model._operands[modelInputs[0]].type === OperandCode.TENSOR_QUANT8_ASYMM) {
-        gemm_context = new this._nn_ops.GemmContext;
-        gemm_context.set_max_num_threads(1);
+    if (model._operands[modelInputs[0]].type === OperandCode.TENSOR_QUANT8_ASYMM) {
+        this._nn_ops.set_gemm_context_threads_num(1);
     }
 
     const graph = new Graph(operations.length);
@@ -737,7 +734,7 @@ export default class PreparedModel {
                            filter.runtimeshape, filter.value, 
                            bias.runtimeshape, bias.value, 
                            output.runtimeshape, output.value,
-                           im2colShape, im2colData, gemm_context);
+                           im2colShape, im2colData);
         }
         im2colShape.delete();
         nn_ops._free(im2colData);
@@ -858,7 +855,7 @@ export default class PreparedModel {
                                     input.runtimeshape, input.value, 
                                     filter.runtimeshape, filter.value, 
                                     bias.runtimeshape, bias.value, 
-                                    output.runtimeshape, output.value, gemm_context);
+                                    output.runtimeshape, output.value);
         }
       } break;
       case OperationCode.AVERAGE_POOL_2D:
@@ -1033,10 +1030,14 @@ export default class PreparedModel {
         let output = operands[outputs[0]];
         let inputShapes = new nn_ops.VectorShape;
         let inputValues = new nn_ops.VectorPtr;
+        let inputScale = [];
+        let inputZeroPint = [];
         for (let i = 0; i < numInputTensors; ++i) {
           let input = operands[inputs[i]];
           inputShapes.push_back(input.runtimeshape);
           inputValues.push_back(input.value);
+          inputScale.push(input.scale);
+          inputZeroPint.push(input.zeroPoint);
         }
 
         // Error check
@@ -1065,18 +1066,9 @@ export default class PreparedModel {
           nn_ops.concatenationFloat32(concatenationParams, inputShapes, inputValues, 
                                       output.runtimeshape, output.value);
         } else if (output.type === OperandCode.TENSOR_QUANT8_ASYMM) {
-          let inputScale = new nn_ops.floatVector;
-          let inputZeroPint = new nn_ops.int32Vector;
-          for (let i = 0; i < numInputTensors; ++i) {
-            let input = operands[inputs[i]];
-            inputScale.push_back(input.scale);
-            inputZeroPint.push_back(input.zeroPoint);
-          }
           nn_ops.concatenationUint8(concatenationParams, inputShapes, inputValues, 
                                     inputScale, inputZeroPint,
                                     output.runtimeshape, output.value);
-          inputScale.delete();
-          inputZeroPint.delete();
         }
         inputShapes.delete();
         inputValues.delete();
@@ -1126,7 +1118,7 @@ export default class PreparedModel {
                                      input.runtimeshape, input.value, 
                                      weights.runtimeshape, weights.value, 
                                      bias.runtimeshape, bias.value, 
-                                     output.runtimeshape, output.value, gemm_context);
+                                     output.runtimeshape, output.value);
         }
       } break;
       case OperationCode.RESIZE_BILINEAR: {

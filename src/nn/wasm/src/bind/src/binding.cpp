@@ -17,6 +17,13 @@ using namespace emscripten;
 using namespace tflite;
 
 namespace binding_utils {
+  static gemmlowp::GemmContext gemm_context;
+  
+  // help functions
+  void set_gemm_context_threads_num(int threads_num) {
+    gemm_context.set_max_num_threads(threads_num);
+  }
+
   // Operation Implements.	
   template<typename T>
   void Maximum(const RuntimeShape& input1_shape, const T* input1_data,
@@ -127,8 +134,7 @@ namespace binding_utils {
                                  const RuntimeShape& biasShape, 
                                  const intptr_t biasData, 
                                  const RuntimeShape& outputShape, 
-                                 intptr_t outputData,
-                                 gemmlowp::GemmContext* gemm_context) {
+                                 intptr_t outputData) {
     optimized_ops::DepthwiseConv(op_params,
                                  inputShape, (const uint8_t*)inputData, 
                                  filterShape, (const uint8_t*)filterData, 
@@ -165,14 +171,13 @@ namespace binding_utils {
                         const RuntimeShape& outputShape, 
                         intptr_t outputData,
                         const RuntimeShape& im2colShape, 
-                        intptr_t im2colData,
-                        gemmlowp::GemmContext* gemm_context) {
+                        intptr_t im2colData) {
     optimized_ops::Conv(op_params, 
                         inputShape, (const uint8_t*)inputData, 
                         filterShape, (const uint8_t*)filterData, 
                         biasShape, (const int32_t*)biasData, 
                         outputShape, (uint8_t*)outputData, 
-                        im2colShape, (uint8_t*)im2colData, gemm_context);
+                        im2colShape, (uint8_t*)im2colData, &gemm_context);
   }
 
   void averagePoolFloat32Wrapper(const PoolParams op_params,
@@ -251,7 +256,7 @@ namespace binding_utils {
     memcpy((uint8_t*)outputData, (const uint8_t*)inputData, size_count);
   }
 
-  void concatenationFloat32Wrapper(const ConcatenationParams op_params,  
+  void concatenationFloat32Wrapper(const ConcatenationParams& op_params, 
                                    const std::vector<RuntimeShape*> inputShapes, 
                                    const std::vector<intptr_t>& inputDataPtrs,
                                    const RuntimeShape& outputShape, 
@@ -262,19 +267,21 @@ namespace binding_utils {
                                         outputShape, (float*)outputData);
   }
 
-  void concatenationUint8Wrapper(ConcatenationParams op_params, 
+  void concatenationUint8Wrapper(ConcatenationParams& op_params, 
                                  const std::vector<RuntimeShape*> inputShapes, 
                                  const std::vector<intptr_t>& inputDataPtrs,
-                                 const std::vector<float>& inputScalePtrs,
-                                 const std::vector<int32_t>& inputZeroPointPtrs,
+                                 val inputScales,
+                                 val inputZeroPoints,
                                  const RuntimeShape& outputShape, 
                                  intptr_t outputData) {
-    op_params.input_scale = (inputScalePtrs).data();
-    op_params.input_zeropoint = (inputZeroPointPtrs).data();
+    const std::vector<float>& inputScaleRef = vecFromJSArray<float>(inputScales);
+    const std::vector<int32_t>& inputZeroPointRef = vecFromJSArray<int32_t>(inputZeroPoints);
+    op_params.input_scale = inputScaleRef.data();
+    op_params.input_zeropoint = inputZeroPointRef.data();
     optimized_ops::ConcatenationWithScaling(op_params,
-                                          inputShapes.data(),
-                                          ((const std::vector<const uint8_t*>&)inputDataPtrs).data(), 
-                                          outputShape, (uint8_t*)outputData);
+                                            inputShapes.data(),
+                                            ((const std::vector<const uint8_t*>&)inputDataPtrs).data(), 
+                                            outputShape, (uint8_t*)outputData);
   }
 
   void fullyConnectedFloat32Wrapper(const FullyConnectedParams op_params,
@@ -301,13 +308,12 @@ namespace binding_utils {
                                   const RuntimeShape& biasShape, 
                                   const intptr_t biasData, 
                                   const RuntimeShape& outputShape, 
-                                  intptr_t outputData,
-                                  gemmlowp::GemmContext* gemm_context) {
+                                  intptr_t outputData) {
     optimized_ops::FullyConnected(op_params, 
                                   inputShape, (const uint8_t*)inputData, 
                                   weightsShape, (const uint8_t*)weightsData, 
                                   biasShape, (const int32_t*)biasData,
-                                  outputShape, (uint8_t*)outputData, gemm_context);
+                                  outputShape, (uint8_t*)outputData, &gemm_context);
   }
 
   void resizeBilinearFloat32Wrapper(const ResizeBilinearParams op_params,
@@ -385,23 +391,6 @@ EMSCRIPTEN_BINDINGS(nn)
     .function("DimensionsCount", &RuntimeShape::DimensionsCount)
     .function("Dims", &RuntimeShape::Dims)
     .function("SetDim", &RuntimeShape::SetDim)
-    ;
-
-  class_<gemmlowp::SingleThreadGemmContext>("SingleThreadGemmContext")
-    .constructor<>()
-    ;
-
-  class_<gemmlowp::MultiThreadGemmContextBase, base<gemmlowp::SingleThreadGemmContext>>("MultiThreadGemmContextBase")
-    .constructor<>()
-    .function("set_max_num_threads", &gemmlowp::MultiThreadGemmContextBase::set_max_num_threads)
-    ;
-
-  class_<gemmlowp::MultiThreadGemmContext, base<gemmlowp::MultiThreadGemmContextBase>>("MultiThreadGemmContext")
-    .constructor<>()
-    ;
-
-  class_<gemmlowp::GemmContext, base<gemmlowp::MultiThreadGemmContext>>("GemmContext")
-    .constructor<>()
     ;
 
   value_object<PaddingValues>("PaddingValues")
@@ -533,9 +522,9 @@ EMSCRIPTEN_BINDINGS(nn)
 
   register_vector<RuntimeShape*>("VectorShape");
   register_vector<intptr_t>("VectorPtr");
-  register_vector<float>("floatVector");
-  register_vector<int32_t>("int32Vector");
 
+  // help functions
+  function("set_gemm_context_threads_num", &binding_utils::set_gemm_context_threads_num);
 
   // Operations.
   function("addFloat32", &binding_utils::addFloat32Wrapper, allow_raw_pointers());
