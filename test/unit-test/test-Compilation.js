@@ -33,25 +33,22 @@ describe('Unit Test/Compilation Test', function() {
       });
     });
 
-    it('check return value is of "void" type', function() {
-      return nn.createModel(options).then((model)=>{
-        let op = {type: nn.TENSOR_FLOAT32, dimensions: TENSOR_DIMENSIONS};
-        model.addOperand(op);
-        model.addOperand(op);
-        let data = new Float32Array(product(op.dimensions));
-        data.fill(0);
-        model.setOperandValue(1, data);
-        model.addOperand({type: nn.INT32});
-        model.setOperandValue(2, new Int32Array([nn.FUSED_NONE]));
-        model.addOperand(op);
-        model.addOperation(nn.ADD, [0, 1, 2], [3]);
-        model.identifyInputsAndOutputs([0], [3]);
-        model.finish().then((result)=>{
-          model.createCompilation().then((compilation)=>{
-            assert.equal(compilation.setPreference(nn.PREFER_LOW_POWER), undefined);
-          });
-        });
-      });
+    it('check return value is of "void" type', async function() {
+      let model = await nn.createModel(options);
+      let op = {type: nn.TENSOR_FLOAT32, dimensions: TENSOR_DIMENSIONS};
+      model.addOperand(op);
+      model.addOperand(op);
+      let data = new Float32Array(product(op.dimensions));
+      data.fill(0);
+      model.setOperandValue(1, data);
+      model.addOperand({type: nn.INT32});
+      model.setOperandValue(2, new Int32Array([nn.FUSED_NONE]));
+      model.addOperand(op);
+      model.addOperation(nn.ADD, [0, 1, 2], [3]);
+      model.identifyInputsAndOutputs([0], [3]);
+      await model.finish();
+      let compilation = await model.createCompilation();
+      assert.equal(compilation.setPreference(nn.PREFER_LOW_POWER), undefined);
     });
 
     it('passing a parameter with value being in 0-2 is ok', function() {
@@ -123,26 +120,23 @@ describe('Unit Test/Compilation Test', function() {
       });
     });
 
-    it('raise error when passing two parameters with values both being in 0-2', function() {
-      return nn.createModel(options).then((model)=>{
-        let op = {type: nn.TENSOR_FLOAT32, dimensions: TENSOR_DIMENSIONS};
-        model.addOperand(op);
-        model.addOperand(op);
-        let data = new Float32Array(product(op.dimensions));
-        data.fill(0);
-        model.setOperandValue(1, data);
-        model.addOperand({type: nn.INT32});
-        model.setOperandValue(2, new Int32Array([nn.FUSED_NONE]));
-        model.addOperand(op);
-        model.addOperation(nn.ADD, [0, 1, 2], [3]);
-        model.identifyInputsAndOutputs([0], [3]);
-        model.finish().then((result)=>{
-          model.createCompilation().then((compilation)=>{
-            assert.throws(() => {
-              compilation.setPreference(nn.PREFER_LOW_POWER, nn.PREFER_LOW_POWER);
-            });
-          });
-        });
+    it('raise error when passing two parameters with values both being in 0-2', async function() {
+      let model = await nn.createModel(options);
+      let op = {type: nn.TENSOR_FLOAT32, dimensions: TENSOR_DIMENSIONS};
+      model.addOperand(op);
+      model.addOperand(op);
+      let data = new Float32Array(product(op.dimensions));
+      data.fill(0);
+      model.setOperandValue(1, data);
+      model.addOperand({type: nn.INT32});
+      model.setOperandValue(2, new Int32Array([nn.FUSED_NONE]));
+      model.addOperand(op);
+      model.addOperation(nn.ADD, [0, 1, 2], [3]);
+      model.identifyInputsAndOutputs([0], [3]);
+      await model.finish();
+      let compilation = await model.createCompilation();
+      assert.throws(() => {
+        compilation.setPreference(nn.PREFER_LOW_POWER, nn.PREFER_LOW_POWER);
       });
     });
 
@@ -212,7 +206,6 @@ describe('Unit Test/Compilation Test', function() {
             compilation.setPreference(nn.PREFER_LOW_POWER);
             assert.doesNotThrow(()=>{
               compilation.finish().then((result)=>{
-                console.log(result)
                 assert.strictEqual(result, 0);
               });
             });
@@ -221,27 +214,24 @@ describe('Unit Test/Compilation Test', function() {
       });
     });
 
-    it('raise error when passing a parameter', function() {
-      return nn.createModel(options).then((model)=>{
-        let op = {type: nn.TENSOR_FLOAT32, dimensions: TENSOR_DIMENSIONS};
-        model.addOperand(op);
-        model.addOperand(op);
-        let data = new Float32Array(product(op.dimensions));
-        data.fill(0);
-        model.setOperandValue(1, data);
-        model.addOperand({type: nn.INT32});
-        model.setOperandValue(2, new Int32Array([nn.FUSED_NONE]));
-        model.addOperand(op);
-        model.addOperation(nn.ADD, [0, 1, 2], [3]);
-        model.identifyInputsAndOutputs([0], [3]);
-        model.finish().then((result)=>{
-          model.createCompilation().then((compilation)=>{
-            compilation.setPreference(nn.PREFER_LOW_POWER);
-            assert.throws(()=>{
-              compilation.finish(undefined);
-            });
-          });
-        });
+    it('raise error when passing a parameter', async function() {
+      let model = await nn.createModel(options);
+      let op = {type: nn.TENSOR_FLOAT32, dimensions: TENSOR_DIMENSIONS};
+      model.addOperand(op);
+      model.addOperand(op);
+      let data = new Float32Array(product(op.dimensions));
+      data.fill(0);
+      model.setOperandValue(1, data);
+      model.addOperand({type: nn.INT32});
+      model.setOperandValue(2, new Int32Array([nn.FUSED_NONE]));
+      model.addOperand(op);
+      model.addOperation(nn.ADD, [0, 1, 2], [3]);
+      model.identifyInputsAndOutputs([0], [3]);
+      await model.finish();
+      let compilation = await model.createCompilation();
+      compilation.setPreference(nn.PREFER_LOW_POWER);
+      await assertThrowsAsync(async() => {
+        await compilation.finish(undefined);
       });
     });
 
@@ -300,53 +290,46 @@ describe('Unit Test/Compilation Test', function() {
       });
     });
 
-    it('raise error when passing a parameter', function() {
-      return nn.createModel(options).then((model)=>{
-        let op = {type: nn.TENSOR_FLOAT32, dimensions: TENSOR_DIMENSIONS};
-        model.addOperand(op);
-        model.addOperand(op);
-        let data = new Float32Array(product(op.dimensions));
-        data.fill(0);
-        model.setOperandValue(1, data);
-        model.addOperand({type: nn.INT32});
-        model.setOperandValue(2, new Int32Array([nn.FUSED_NONE]));
-        model.addOperand(op);
-        model.addOperation(nn.ADD, [0, 1, 2], [3]);
-        model.identifyInputsAndOutputs([0], [3]);
-        model.finish().then(()=>{
-          model.createCompilation().then((compilation)=>{
-            compilation.setPreference(nn.PREFER_LOW_POWER);
-            compilation.finish().then(()=>{
-              assert.throws(()=>{
-                compilation.createExecution(undefined);
-              });
-            });
-          });
-        });
+    it('raise error when passing a parameter', async function() {
+      let model = await nn.createModel(options);
+      let op = {type: nn.TENSOR_FLOAT32, dimensions: TENSOR_DIMENSIONS};
+      model.addOperand(op);
+      model.addOperand(op);
+      let data = new Float32Array(product(op.dimensions));
+      data.fill(0);
+      model.setOperandValue(1, data);
+      model.addOperand({type: nn.INT32});
+      model.setOperandValue(2, new Int32Array([nn.FUSED_NONE]));
+      model.addOperand(op);
+      model.addOperation(nn.ADD, [0, 1, 2], [3]);
+      model.identifyInputsAndOutputs([0], [3]);
+      await model.finish();
+      let compilation = await model.createCompilation();
+      compilation.setPreference(nn.PREFER_LOW_POWER);
+      await compilation.finish();
+      await assertThrowsAsync(async() => {
+        await compilation.createExecution(undefined);
       });
     });
 
-    it('raise error when calling this function with compilation not being finished', function() {
-      return nn.createModel(options).then((model)=>{
-        let op = {type: nn.TENSOR_FLOAT32, dimensions: TENSOR_DIMENSIONS};
-        model.addOperand(op);
-        model.addOperand(op);
-        let data = new Float32Array(product(op.dimensions));
-        data.fill(0);
-        model.setOperandValue(1, data);
-        model.addOperand({type: nn.INT32});
-        model.setOperandValue(2, new Int32Array([nn.FUSED_NONE]));
-        model.addOperand(op);
-        model.addOperation(nn.ADD, [0, 1, 2], [3]);
-        model.identifyInputsAndOutputs([0], [3]);
-        model.finish().then(()=>{
-          model.createCompilation().then((compilation)=>{
-            compilation.setPreference(nn.PREFER_LOW_POWER);
-            assert.throws(()=>{
-              compilation.createExecution();
-            });
-          });
-        });
+    it('raise error when calling this function with compilation not being finished', async function() {
+      let model = await nn.createModel(options);
+      let op = {type: nn.TENSOR_FLOAT32, dimensions: TENSOR_DIMENSIONS};
+      model.addOperand(op);
+      model.addOperand(op);
+      let data = new Float32Array(product(op.dimensions));
+      data.fill(0);
+      model.setOperandValue(1, data);
+      model.addOperand({type: nn.INT32});
+      model.setOperandValue(2, new Int32Array([nn.FUSED_NONE]));
+      model.addOperand(op);
+      model.addOperation(nn.ADD, [0, 1, 2], [3]);
+      model.identifyInputsAndOutputs([0], [3]);
+      await model.finish();
+      let compilation = await model.createCompilation();
+      compilation.setPreference(nn.PREFER_LOW_POWER);
+      await assertThrowsAsync(async() => {
+        await compilation.createExecution();
       });
     });
   });
