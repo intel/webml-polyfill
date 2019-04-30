@@ -16,12 +16,13 @@ This is an automation tool kit to check regression easily for developers when su
       $ npm install chromedriver --chromedriver_cdnurl=http://cdn.npm.taobao.org/dist/chromedriver
 
 ## Set Configurations
-   There are five fields in the config.json, for example:
+   There are six fields in the config.json, for example:
 ```
    {
      "platform": "Mac",
      "chromiumPath": "/User/test/Downloads/Chromium.app/Contents/MacOS/Chromium",
-     "isUseIE": false,
+     "IEMYRIAD": false,
+     "supportSwitch": false,
      "webmlPolyfill": true,
      "webnn": true
    }
@@ -31,15 +32,17 @@ This is an automation tool kit to check regression easily for developers when su
    {
      "platform": "Windows",
      "chromiumPath": "C:\\test\\win_x64_SUCCEED\\Chrome-bin\\chrome.exe",
-     "isUseIE": false,
+     "IEMYRIAD": false,
+     "supportSwitch": false,
      "webmlPolyfill": true,
      "webnn": true
    }
 ```
-   You need modify these five fields for the different platforms:
+   You need modify these six fields for the different platforms:
    + **_platform_**: `{string}`, target platform, support **Android**, **Mac**, **Linux** and **Windows**.
    + **_chromiumPath_**: `{string}`, **Mac**/**Linux**/**Windows**: the target chromium path   **Android**: the chrome or chromium path in above Prerequisites to show the final checking results.
-   + **_isUseIE_**: `{boolean}`, **Linux**: use inference engine with **MKLDNN** backend, support **true** and **false**.
+   + **_IEMYRIAD_**: `{boolean}`, support `IE-MYRIAD` on **Linux**, support **true** and **false**.
+   + **_supportSwitch_**: `{boolean}`, **Mac**: `--use-mkldnn`, **Linux**: `--use-inference-engine`, **Windows**: `--use-dml`, support **true** and **false**.
    + **_webmlPolyfill_**: `{boolean}`, run RegressionChecker tool with **webmlPolyfill** backends, support **true** and **false**.
    + **_webnn_**: `{boolean}`, run RegressionChecker tool with **webnn** backends, support **true** and **false**.
 
