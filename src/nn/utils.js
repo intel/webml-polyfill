@@ -41,3 +41,14 @@ export function validateEnum(enumValue, enumType) {
 export function findKey(obj, value) {
   return Object.keys(obj).find(key => obj[key] === value);
 }
+
+export function stringifySubgraphCompact(model, ops) {
+  return Object.entries(ops
+      .map((opId) => findKey(OperationCode, model._operations[opId].type))
+      .reduce((cnt, v) => {
+        cnt[v] ? cnt[v]++ : cnt[v] = 1;
+        return cnt;
+      }, {}))
+    .map(n => `${n[0]} x ${n[1]}`)
+    .join(', ');
+}
