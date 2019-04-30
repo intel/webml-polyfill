@@ -1,4 +1,5 @@
 const nn = navigator.ml.getNeuralNetworkContext();
+const assert = chai.assert;
 let options = {};
 const EPISILON = 1e-5;
 const EPISILON5ULP = 5.0 * 0.0009765625;
@@ -34,57 +35,51 @@ function almostEqualCTS(a, b) {
 }
 
 function setOptions() {
-  // visit URL(http://domain-name/test/index.html?backend=webgl) to test Unit Tests by WebGL backend
+  // visit URL(http://domain-name/test/index.html?prefer=fast/sustained/low)
   var parameterStr = window.location.search.substr(1);
-  var reg = new RegExp("(^|&)backend=([^&]*)(&|$)", "i");
+  var reg = new RegExp("(^|&)prefer=([^&]*)(&|$)", "i");
   var r = parameterStr.match(reg);
+  var macosPlatforms = ['Macintosh', 'MacIntel', 'MacPPC', 'Mac68K'];
   if (r != null) {
-    var backend = unescape(r[2]).toLowerCase();
-    if (backend === "wasm") {
-      options = {
-        "backend": 'WASM',
-        "prefer": 'fast'
-      };
-    } else if (backend === "webgl") {
-      options = {
-        "backend": 'WebGL',
-        "prefer": 'sustained'
-      };
-    } else if (backend === "cldnn") {
-      // use PREFER_SUSTAINED_SPEED for Linux/Windows clDNN backend
-      prefer = nn.PREFER_SUSTAINED_SPEED;
-      options = {
-        "backend": 'WebML',
-        "prefer": 'sustained'
-      };
-    } else if (backend === "mkldnn") {
-      // use PREFER_FAST_SINGLE_ANSWER for Linux/Windows mkldnn backend
-      prefer = nn.PREFER_FAST_SINGLE_ANSWER;
-      options = {
-        "backend": 'WebML',
-        "prefer": 'fast'
-      };
-    } else if (backend === "nnapi") {
-      // use PREFER_SUSTAINED_SPEED for Android NNAPI backend
-      prefer = nn.PREFER_SUSTAINED_SPEED;
-      options = {
-        "backend": 'WebML',
-        "prefer": 'sustained'
-      };
-    } else if (backend === "bnns") {
-      // use PREFER_FAST_SINGLE_ANSWER for MacOS BNNS backend
-      options = {
-        "backend": 'WebML',
-        "prefer": 'fast'
-      };
-    } else if (backend === "mps") {
-      // use PREFER_SUSTAINED_SPEED for MacOS MPS backend
-      options = {
-        "backend": 'WebML',
-        "prefer": 'sustained'
-      };
-      // As MPS computes on FP16, use 5ULP of FP16 range
-      episilonCTS = EPISILON5ULP;
+    var prefer = unescape(r[2]).toLowerCase();
+    if(navigator.ml.isPolyfill) {
+      if (prefer === "fast") {
+        options = {
+          "backend": 'WASM',
+          "prefer": 'fast'
+        };
+      } else if (prefer === "sustained") {
+        options = {
+          "backend": 'WebGL',
+          "prefer": 'sustained'
+        };
+      }
+    } else {
+      if (prefer === "sustained") {
+        // use PREFER_SUSTAINED_SPEED for Linux/Windows clDNN backend
+        prefer = nn.PREFER_SUSTAINED_SPEED;
+        options = {
+          "backend": 'WebML',
+          "prefer": 'sustained'
+        };
+        // As MPS computes on FP16, use 5ULP of FP16 range
+        if (macosPlatforms.indexOf(navigator.platform) !== -1) {
+          episilonCTS = EPISILON5ULP;
+        }
+      } else if (prefer === "fast") {
+        // use PREFER_FAST_SINGLE_ANSWER for Linux/Windows mkldnn backend
+        prefer = nn.PREFER_FAST_SINGLE_ANSWER;
+        options = {
+          "backend": 'WebML',
+          "prefer": 'fast'
+        };
+      } else if (prefer === "low") {
+        prefer = nn.PREFER_LOW_POWER;
+        options = {
+          "backend": 'WebML',
+          "prefer": 'low'
+        };
+      }
     }
   }
 }
@@ -95,7 +90,9 @@ function getPreferenceCode(preferenceStr) {
     prefer = nn.PREFER_SUSTAINED_SPEED;
   } else if (preferenceStr === 'fast') {
     prefer = nn.PREFER_FAST_SINGLE_ANSWER;
-  } else {
+  } else if (preferenceStr === 'low') {
+    prefer = nn.PREFER_LOW_POWER;
+  }else {
     console.error('Invalid preference string.');
   }
   return prefer;
@@ -122,4 +119,26 @@ async function loadTensor(tensorFile) {
     throw new Error(`Invalid tensor`);
   let tensor = onnx.TensorProto.decode(result);
   return getTensorData(tensor);
+}
+
+async function assertThrowsAsync(fn, regExp) {
+  let f = () => {};
+  try {
+    await fn();
+  } catch(e) {
+    f = () => {throw e};
+  } finally {
+    assert.throws(f, regExp);
+  }
+}
+
+async function assertDoesNotThrowAsync(fn, regExp) {
+  let f = () => {};
+  try {
+    await fn();
+  } catch(e) {
+    f = () => {throw e};
+  } finally {
+    assert.doesNotThrow(f, regExp);
+  }
 }
