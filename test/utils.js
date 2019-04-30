@@ -1,4 +1,5 @@
 const nn = navigator.ml.getNeuralNetworkContext();
+const assert = chai.assert;
 let options = {};
 const EPISILON = 1e-5;
 const EPISILON5ULP = 5.0 * 0.0009765625;
@@ -122,4 +123,26 @@ async function loadTensor(tensorFile) {
     throw new Error(`Invalid tensor`);
   let tensor = onnx.TensorProto.decode(result);
   return getTensorData(tensor);
+}
+
+async function assertThrowsAsync(fn, regExp) {
+  let f = () => {};
+  try {
+    await fn();
+  } catch(e) {
+    f = () => {throw e};
+  } finally {
+    assert.throws(f, regExp);
+  }
+}
+
+async function assertDoesNotThrowAsync(fn, regExp) {
+  let f = () => {};
+  try {
+    await fn();
+  } catch(e) {
+    f = () => {throw e};
+  } finally {
+    assert.doesNotThrow(f, regExp);
+  }
 }
