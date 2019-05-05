@@ -20,6 +20,30 @@ const isWebML = () => {
   }
 }
 
+let up = getUrlParam('prefer');
+let ub = getUrlParam('b');
+let um = getUrlParam('m');
+let ut = getUrlParam('t');
+let us = getUrlParam('s');
+let ud = getUrlParam('d');
+let strsearch;
+let skeletonDetectionPath = location.pathname.toLocaleLowerCase().indexOf('skeleton_detection');
+let facialLandmarkDetectionPath = location.pathname.toLocaleLowerCase().indexOf('facial_landmark_detection');
+
+
+if (!location.search) {
+  if (skeletonDetectionPath > -1) {
+    strsearch = `?prefer=none&b=none&s=image&d=0`;
+    currentBackend = 'none';
+    let path = location.href;
+    location.href = path + strsearch;
+  } else {
+    strsearch = `?prefer=none&b=WASM&m=none&t=none&s=image&d=0`;
+    let path = location.href;
+    location.href = path + strsearch;
+  }
+}
+
 const toggleFullScreen = () => {
   let doc = window.document;
   let docEl = doc.documentElement;
@@ -44,7 +68,7 @@ const hybridRow = (currentBackend, currentPrefer, offloadops) => {
       offloadopsvalue += t;
     })
     $(".ol").remove();
-    $("#offloadops").html(`Dual backends selected, following ops were offloaded to <span id='nnbackend' class='ols'></span> from <span id='polyfillbackend' class='ols'></span>: `);
+    $("#offloadops").html(`Following ops were offloaded to <span id='nnbackend' class='ols'></span> from <span id='polyfillbackend' class='ols'></span>: `);
     $("#offloadops").append(offloadopsvalue).append(`<span data-toggle="modal" class="subgraph-btn" data-target="#subgraphModal">View Subgraphs</span>`);
     $("#nnbackend").html(currentPrefer);
     $("#polyfillbackend").html(currentBackend);
@@ -76,13 +100,27 @@ const showSubGraphsSummary = (summary) => {
 }
 
 const setPreferenceCodeToolTip = () => {
-  if($('#l-low')) {
-    $('#l-fast').attr('data-tooltip','Prefer returning a single answer as fast as possible, even if this causes more power consumption.');
-    $('#l-sustained').attr('data-tooltip','Prefer maximizing the throughput of successive frames, for example when processing successive frames coming from the camera.');
-    $('#l-low').attr('data-tooltip','Prefer executing in a way that minimizes battery drain. This is desirable for compilations that will be executed often.');
+  if($('#backendpolyfilltitle')) {
+    $('#backendpolyfilltitle').attr('data-html', 'true')
+    .attr('data-placement', 'bottom')
+    .attr('data-toggle', 'tooltip')
+    .attr('title',
+      `<div class="backendtooltip">WASM: Compiled Tensorflow Lite C++ kernels to WebAssembly format.<br>
+      WebGL: Tensorflow.js WebGL kernel.</div>`
+    );
+    $('#backendpolyfilltitle').tooltip();
   }
-  $('#l-WASM').attr('data-tooltip','Compiled Tensorflow Lite C++ kernels to WebAssembly format');
-  $('#l-WebGL').attr('data-tooltip','Tensorflow.js WebGL kernel');
+  if($('#backendwebnntitle')) {
+    $('#backendwebnntitle').attr('data-html', 'true')
+    .attr('data-placement', 'bottom')
+    .attr('data-toggle', 'tooltip')
+    .attr('title',
+      `<div class="backendtooltip">FAST_SINGLE_ANSWER: Prefer returning a single answer as fast as possible, even if this causes more power consumption.<br>
+      SUSTAINED_SPEED: Prefer maximizing the throughput of successive frames, for example when processing successive frames coming from the camera.<br>
+      LOW_POWER: Prefer executing in a way that minimizes battery drain. This is desirable for compilations that will be executed often.</div>`
+    );
+    $('#backendwebnntitle').tooltip();
+  }
 }
 
 const updateTitle = (name, backend, prefer, model, modeltype) => {
@@ -203,30 +241,6 @@ $(document).ready(() => {
 
 });
 
-let up = getUrlParam('prefer');
-let ub = getUrlParam('b');
-let um = getUrlParam('m');
-let ut = getUrlParam('t');
-let us = getUrlParam('s');
-let ud = getUrlParam('d');
-let strsearch;
-let skeletonDetectionPath = location.pathname.toLocaleLowerCase().indexOf('skeleton_detection');
-let facialLandmarkDetectionPath = location.pathname.toLocaleLowerCase().indexOf('facial_landmark_detection');
-
-
-if (!location.search) {
-  if (skeletonDetectionPath > -1) {
-    strsearch = `?prefer=none&b=none&s=image&d=0`;
-    currentBackend = 'none';
-    let path = location.href;
-    location.href = path + strsearch;
-  } else {
-    strsearch = `?prefer=none&b=WASM&m=none&t=none&s=image&d=0`;
-    let path = location.href;
-    location.href = path + strsearch;
-  }
-}
-
 const componentToggle = () => {
   $('#header-sticky-wrapper').slideToggle();
   $('#query').slideToggle();
@@ -253,6 +267,26 @@ const checkedModelStyle = () => {
     let m_t = `${um}` + '_' + `${ut}`;
     $('#' + m_t).attr('checked', 'checked');
     $('#l-' + m_t).addClass('checked');
+  }
+}
+
+const updateBackendRadioUI = (backend, prefer) => {
+  let polyfillId = $('input:radio[name="bp"]:checked').attr('id') || $('input:radio[name="bp"][checked="checked"]').attr('id');
+  let webnnId = $('input:radio[name="bw"]:checked').attr('id') || $('input:radio[name="bw"][checked="checked"]').attr('id');
+
+  if (backend !== 'none' && prefer !== 'none') {
+    if (backend.toLocaleLowerCase() !== 'webml') {
+      $('.backend label').removeClass('x');
+      $('#l-' + polyfillId).addClass('x');
+      $('#l-' + webnnId).addClass('x');
+      $('.backendtitle').html('Dual Backends');
+    } else {
+      $('.backend label').removeClass('x');
+      $('.backendtitle').html('Backend');
+    }
+  } else {
+    $('.backend label').removeClass('x');
+    $('.backendtitle').html('Backend');
   }
 }
 
@@ -288,6 +322,8 @@ $(document).ready(() => {
     $('#' + getUrlParam('prefer')).attr('checked', 'checked');
     $('#l-' + getUrlParam('prefer')).addClass('checked');
   }
+
+  updateBackendRadioUI(ub, up);
 });
 
 
@@ -304,7 +340,7 @@ if (skeletonDetectionPath <= -1) {
         $('#' + polyfillId).attr('checked', 'checked');
         $('#l-' + polyfillId).addClass('checked');
       } else if (currentPrefer === 'none') {
-        showAlert('Select at least one backend');
+        showAlert('At least one backend is required, please select other backends if needed.');
         return;
       } else {
         $('.b-polyfill input').removeAttr('checked');
@@ -321,6 +357,8 @@ if (skeletonDetectionPath <= -1) {
         return;
       }
 
+      updateBackendRadioUI(currentBackend, currentPrefer);
+
       updateBackend(us === 'camera', true);
     });
 
@@ -335,7 +373,7 @@ if (skeletonDetectionPath <= -1) {
         $('#' + webnnId).attr('checked', 'checked');
         $('#l-' + webnnId).addClass('checked');
       } else if (currentBackend === 'WebML') {
-        showAlert('Select at least one backend');
+        showAlert('At least one backend is required, please select other backends if needed.');
         return;
       } else {
         $('.b-webnn input').removeAttr('checked');
@@ -351,6 +389,8 @@ if (skeletonDetectionPath <= -1) {
         showError('No model selected', 'Please select a model to start prediction.');
         return;
       }
+
+      updateBackendRadioUI(currentBackend, currentPrefer);
 
       updateBackend(us === 'camera', true);
     });
