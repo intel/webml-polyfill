@@ -55,6 +55,8 @@ $(document).ready(() => {
   
   $('input:radio[name=bp]').click(() => {
     $('.alert').hide();
+    $('.offload').hide();
+
     let polyfillId = $('input:radio[name="bp"]:checked').attr('id') || $('input:radio[name="bp"][checked="checked"]').attr('id');
 
     if (polyfillId !== currentBackend) {
@@ -62,9 +64,6 @@ $(document).ready(() => {
       $('.b-polyfill label').removeClass('checked');
       $('#' + polyfillId).attr('checked', 'checked');
       $('#l-' + polyfillId).addClass('checked');
-    } else if (currentPrefer === 'none') {
-      showAlert('Select at least one backend');
-      return;
     } else {
       $('.b-polyfill input').removeAttr('checked');
       $('.b-polyfill label').removeClass('checked');
@@ -80,11 +79,16 @@ $(document).ready(() => {
     strsearch = `?prefer=${currentPrefer}&b=${currentBackend}&s=${us}&d=${ud}`;
     window.history.pushState(null, null, strsearch);
 
+    if (!assertBackendSelected()) {
+      return;
+    }
+
     main(us === 'camera');
   });
 
   $('input:radio[name=bw]').click(() => {
     $('.alert').hide();
+    $('.offload').hide();
 
     let webnnId = $('input:radio[name="bw"]:checked').attr('id') || $('input:radio[name="bw"][checked="checked"]').attr('id');
 
@@ -93,9 +97,6 @@ $(document).ready(() => {
       $('.b-webnn label').removeClass('checked');
       $('#' + webnnId).attr('checked', 'checked');
       $('#l-' + webnnId).addClass('checked');
-    } else if (currentBackend === 'WebML') {
-      showAlert('Select at least one backend');
-      return;
     } else {
       $('.b-webnn input').removeAttr('checked');
       $('.b-webnn label').removeClass('checked');
@@ -113,6 +114,10 @@ $(document).ready(() => {
     updateTitleSD(currentBackend, currentPrefer);
     strsearch = `?prefer=${currentPrefer}&b=${currentBackend}&s=${us}&d=${ud}`;
     window.history.pushState(null, null, strsearch);
+
+    if (!assertBackendSelected()) {
+      return;
+    }
 
     main(us === 'camera');
   });
@@ -177,8 +182,7 @@ const updateLoadingSD = (loadedSize, totalSize, percentComplete) => {
 }
 
 $(window).load(() => {
-  if(currentBackend === 'none' || currentBackend === '') {
-    showError('No backend selected', 'Please select a backend to start prediction.');
+  if (!assertBackendSelected()) {
     $('#option').hide();
     return;
   } else {

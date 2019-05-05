@@ -296,6 +296,8 @@ if (skeletonDetectionPath <= -1) {
 
     $('input:radio[name=bp]').click(() => {
       $('.alert').hide();
+      $('.offload').hide();
+
       let polyfillId = $('input:radio[name="bp"]:checked').attr('id') || $('input:radio[name="bp"][checked="checked"]').attr('id');
 
       if (polyfillId !== currentBackend) {
@@ -303,9 +305,6 @@ if (skeletonDetectionPath <= -1) {
         $('.b-polyfill label').removeClass('checked');
         $('#' + polyfillId).attr('checked', 'checked');
         $('#l-' + polyfillId).addClass('checked');
-      } else if (currentPrefer === 'none') {
-        showAlert('Select at least one backend');
-        return;
       } else {
         $('.b-polyfill input').removeAttr('checked');
         $('.b-polyfill label').removeClass('checked');
@@ -316,8 +315,7 @@ if (skeletonDetectionPath <= -1) {
       strsearch = `?prefer=${currentPrefer}&b=${currentBackend}&m=${um}&t=${ut}&s=${us}&d=${ud}`;
       window.history.pushState(null, null, strsearch);
 
-      if (um === 'none') {
-        showError('No model selected', 'Please select a model to start prediction.');
+      if (!assertBackendSelected() || !assertModelSelected()) {
         return;
       }
 
@@ -326,6 +324,7 @@ if (skeletonDetectionPath <= -1) {
 
     $('input:radio[name=bw]').click(() => {
       $('.alert').hide();
+      $('.offload').hide();
 
       let webnnId = $('input:radio[name="bw"]:checked').attr('id') || $('input:radio[name="bw"][checked="checked"]').attr('id');
 
@@ -334,9 +333,6 @@ if (skeletonDetectionPath <= -1) {
         $('.b-webnn label').removeClass('checked');
         $('#' + webnnId).attr('checked', 'checked');
         $('#l-' + webnnId).addClass('checked');
-      } else if (currentBackend === 'WebML') {
-        showAlert('Select at least one backend');
-        return;
       } else {
         $('.b-webnn input').removeAttr('checked');
         $('.b-webnn label').removeClass('checked');
@@ -347,8 +343,7 @@ if (skeletonDetectionPath <= -1) {
       strsearch = `?prefer=${currentPrefer}&b=${currentBackend}&m=${um}&t=${ut}&s=${us}&d=${ud}`;
       window.history.pushState(null, null, strsearch);
 
-      if (um === 'none') {
-        showError('No model selected', 'Please select a model to start prediction.');
+      if (!assertBackendSelected() || !assertModelSelected()) {
         return;
       }
 
@@ -379,6 +374,10 @@ if (skeletonDetectionPath <= -1) {
       checkedModelStyle();
       disableModel();
       currentModel = `${um}_${ut}`;
+
+      if (!assertBackendSelected()) {
+        return;
+      }
       main(us === 'camera');
     });
 
@@ -440,10 +439,11 @@ if (skeletonDetectionPath <= -1) {
       us = 'image';
       strsearch = `?prefer=${up}&b=${ub}&m=${um}&t=${ut}&s=${us}&d=${ud}`;
       window.history.pushState(null, null, strsearch);
-      if (um === 'none') {
-        showError('No model selected', 'Please select a model to start prediction.');
+
+      if (!assertBackendSelected() || !assertModelSelected()) {
         return;
       }
+
       updateScenario();
     });
 
@@ -451,13 +451,32 @@ if (skeletonDetectionPath <= -1) {
       us = 'camera';
       strsearch = `?prefer=${up}&b=${ub}&m=${um}&t=${ut}&s=${us}&d=${ud}`;
       window.history.pushState(null, null, strsearch);
-      if (um === 'none') {
-        showError('No model selected', 'Please select a model to start prediction.');
+
+      if (!assertBackendSelected() || !assertModelSelected()) {
         return;
       }
+      
       updateScenario(true);
     });
   });
+}
+
+const assertBackendSelected = () => {
+  if (currentBackend === 'WebML' && currentPrefer === 'none') {
+    showError('No backend selected', 'Please select a backend to start prediction.');
+    return false;
+  } else {
+    return true;
+  }
+}
+
+const assertModelSelected = () => {
+  if (um === 'none') {
+    showError('No model selected', 'Please select a model to start prediction.');
+    return false;
+  } else {
+    return true;
+  }
 }
 
 const showProgress = async (text) => {

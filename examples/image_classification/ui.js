@@ -28,8 +28,7 @@ $(document).ready(() => {
 });
 
 $(window).load(() => {
-  if (um === 'none') {
-    showError('No model selected', 'Please select a model to start prediction.');
+  if (!assertBackendSelected() || !assertModelSelected()) {
     return;
   }
   main(us === 'camera');
