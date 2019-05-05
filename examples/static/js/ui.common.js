@@ -274,16 +274,11 @@ const updateBackendRadioUI = (backend, prefer) => {
   let polyfillId = $('input:radio[name="bp"]:checked').attr('id') || $('input:radio[name="bp"][checked="checked"]').attr('id');
   let webnnId = $('input:radio[name="bw"]:checked').attr('id') || $('input:radio[name="bw"][checked="checked"]').attr('id');
 
-  if (backend !== 'none' && prefer !== 'none') {
-    if (backend.toLocaleLowerCase() !== 'webml') {
-      $('.backend label').removeClass('x');
-      $('#l-' + polyfillId).addClass('x');
-      $('#l-' + webnnId).addClass('x');
-      $('.backendtitle').html('Dual Backends');
-    } else {
-      $('.backend label').removeClass('x');
-      $('.backendtitle').html('Backend');
-    }
+  if (backend !== 'none' && backend.toLocaleLowerCase() !== 'webml' && prefer !== 'none') {
+    $('.backend label').removeClass('x');
+    $('#l-' + polyfillId).addClass('x');
+    $('#l-' + webnnId).addClass('x');
+    $('.backendtitle').html('Dual Backends');
   } else {
     $('.backend label').removeClass('x');
     $('.backendtitle').html('Backend');
