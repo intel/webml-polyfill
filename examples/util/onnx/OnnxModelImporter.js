@@ -807,6 +807,22 @@ class OnnxModelImporter {
           this._tensorIds[output] = this._tensorIds[input];
           console.log(`Skip Unsqueeze: ${input} -> ${output}`);
         } break;
+        case 'Neg': {
+          console.log(`  inputs: [${node.input}]`);
+          const input = node.input[0];
+          inputs.push(this._getTensorIdByName(input));
+          inputs.push(this._addTensorFloat32([-1], [1]));
+          inputs.push(this._addScalarInt32(this._nn.FUSED_NONE));
+
+          // Add outputs
+          const output = node.output[0];
+          const outputDims =  this._getTensorTypeByName(input).dimensions;
+          const outputType = {type: this._nn.TENSOR_FLOAT32, dimensions: Array.from(outputDims)};
+          const outputId = this._addNewTensorOperand(output, outputType);
+          outputs.push(outputId);
+          console.log(`  output ${output}: [${outputDims}]`);
+          opCode = this._nn.MUL;
+        } break;
         case 'Softmax': {
           console.log(`  inputs: [${node.input}]`);
           const input = node.input[0];
