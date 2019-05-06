@@ -1104,6 +1104,7 @@ footer {
 #inferenceresult th,
 #inferenceresult td {
   font-weight: 200;
+  min-width: 80px;
 }
 
 .prefer label {
@@ -2647,3 +2648,4 @@ button.xclose {
 .backendtooltip {
   text-align: left;
 }
+
