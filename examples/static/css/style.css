@@ -364,7 +364,7 @@ a:hover {
     height: 50px;
   }
   #header #logo {
-    margin: 5px 0 0 0;
+    margin: 2px 0 0 0;
   }
   #header #logo h1 {
     padding: 2px 0;
@@ -976,7 +976,7 @@ footer {
 }
 
 .t-filter th {
-  width: 8vw;
+  width: 8.8vw;
   font-weight: 200;
 }
 
@@ -1018,6 +1018,15 @@ footer {
 
 .t-filter input[type=radio] {
   display: none;
+}
+
+.x {
+  visibility: visible;
+}
+
+.x::after {
+  content: " ×" !important;
+  color: white;
 }
 
 #input {
@@ -2627,60 +2636,6 @@ button.xclose {
   }
 }
 
-[data-tooltip] {
-  position: relative;
-  z-index: 2;
-  cursor: pointer;
-}
-
-[data-tooltip]:before,
-[data-tooltip]:after {
-  visibility: hidden;
-  opacity: 0;
-  pointer-events: none;
-}
-
-[data-tooltip]:before {
-  position: absolute;
-  bottom: 150%;
-  left: 50%;
-  margin-bottom: 5px;
-  margin-left: -80px;
-  padding: 5px 7px;
-  width: 320px;
-  background-color: rgba(32, 50, 68, 1.0);
-  color: #fff;
-  content: attr(data-tooltip);
-  text-align: left;
-}
-
-[data-tooltip]:after {
-  position: absolute;
-  bottom: 150%;
-  left: 50%;
-  margin-left: -5px;
-  width: 0;
-  border-top: 5px solid rgba(32, 50, 68, 1.0);
-  border-right: 5px solid transparent;
-  border-left: 5px solid transparent;
-  content: " ";
-  font-size: 0;
-  line-height: 0;
-}
-
-[data-tooltip]:hover:before,
-[data-tooltip]:hover:after {
-  visibility: visible;
-  opacity: 1;
-}
-
-@media (max-width: 768px) {
-  [data-tooltip] {
-    position: static;
-    display: none;
-  }
-}
-
 /* 
   color scheme:
   rgba(255, 111, 97, 1.0);
@@ -2688,3 +2643,7 @@ button.xclose {
   rgba(25, 190, 225, 1.0)
   rgba(255, 174, 91, 1.0)
 */
+
+.backendtooltip {
+  text-align: left;
+}

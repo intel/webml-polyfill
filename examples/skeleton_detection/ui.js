@@ -63,7 +63,7 @@ $(document).ready(() => {
       $('#' + polyfillId).attr('checked', 'checked');
       $('#l-' + polyfillId).addClass('checked');
     } else if (currentPrefer === 'none') {
-      showAlert('Select at least one backend');
+      showAlert('At least one backend required, please select other backends if needed.');
       return;
     } else {
       $('.b-polyfill input').removeAttr('checked');
@@ -79,7 +79,8 @@ $(document).ready(() => {
     updateTitleSD(currentBackend, currentPrefer);
     strsearch = `?prefer=${currentPrefer}&b=${currentBackend}&s=${us}&d=${ud}`;
     window.history.pushState(null, null, strsearch);
-
+    
+    updateBackendRadioUI(currentBackend, currentPrefer);
     main(us === 'camera');
   });
 
@@ -94,7 +95,7 @@ $(document).ready(() => {
       $('#' + webnnId).attr('checked', 'checked');
       $('#l-' + webnnId).addClass('checked');
     } else if (currentBackend === 'WebML') {
-      showAlert('Select at least one backend');
+      showAlert('At least one backend required, please select other backends if needed.');
       return;
     } else {
       $('.b-webnn input').removeAttr('checked');
@@ -114,6 +115,7 @@ $(document).ready(() => {
     strsearch = `?prefer=${currentPrefer}&b=${currentBackend}&s=${us}&d=${ud}`;
     window.history.pushState(null, null, strsearch);
 
+    updateBackendRadioUI(currentBackend, currentPrefer);
     main(us === 'camera');
   });
 
