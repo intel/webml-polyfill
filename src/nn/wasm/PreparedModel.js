@@ -74,26 +74,24 @@ export default class PreparedModel {
     graph.identifyInputOutputTensors(model._inputs, model._outputs);
     const partitions = graph.partition(this._eager);
 
-    for (const [i, {nodes, inTensors, outTensors}] of partitions.entries()) {
+    for (const {nodes, inTensors, outTensors} of partitions) {
 
-      // Test if the first op in the partition (nodes[0]) is supported natively.
-      // If so, the partition will be constructed as a whole into a WebNN
-      // subgraph and offloaded to the WebNN. Otherwise, the partition will be
-      // broken into singletons and eagerly executed by WASM.
+      // Test if the first op in the partition (nodes[0]) is supported natively
       const isSupportedByNN = this._supportedOps.has(operations[nodes[0]].type);
 
       // summary of the partiton. e.g. "CONV x 5, ADD x 2, MUL x 2"
       const summary = utils.stringifySubgraphCompact(model, nodes);
       const backendName = isSupportedByNN ? 'WebNN' : 'WASM';
-      const subgraphName = `Subgraph ${i}\t (${backendName}):\t{${summary}}`;
-      this._subgraphs.push(subgraphName);
+      this._subgraphs.push({
+        backend: backendName,
+        summary: summary,
+      });
 
       if (!isSupportedByNN) {
 
-        // break a group of WASM operations to singletons
+        // break up a group of WASM ops to be eagerly execueted
         for (const operationId of nodes) {
           const operation = model._operations[operationId];
-          operation.subgraphName = `Subgraph ${i}\t (WASM):\t{${findKey(OperationCode, operation.type)}}`;
           this._operations.push(operation);
         }
 
@@ -106,12 +104,12 @@ export default class PreparedModel {
         // add the WEBNN_SUBGRAPH pseudo op
         this._operations.push({
           type: OperationCode.WEBNN_SUBGRAPH,
+          summary: summary,
           inputs: inTensors,
           outputs: outTensors,
           model: model,             // avoid GC   intel/webml-polyfill#669
           compilation: compilation, // avoid GC   intel/webml-polyfill#669
           execution: execution,
-          subgraphName: subgraphName,
         });
       }
     }
@@ -1318,32 +1316,44 @@ export default class PreparedModel {
   }
 
   getSubgraphsSummary() {
-    return this._subgraphs;
+    return this._subgraphs.map((graph, i) => 
+        `Subgraph ${i}\t (${graph.backend}):\t{${graph.summary}}`);
   }
 
   dumpProfilingResults() {
     const res = this._profiler.flush();
+    const timings = [];
+    const supportedOps = Array.from(this._supportedOps)
+        .map(op => findKey(OperationCode, op));
+    const mode = this._eager ? 'Eager' : 'Graph';
+
     if (res.epochs <= 0) {
-      console.debug(`Report will be available after at least ${warmUpRuns + 1} executions.`);
-      return;
-    }
-    let wasmTime = 0;
-    let webnnTime = 0;
-    console.debug(`Execution calls: ${res.epochs} (omitted ${warmUpRuns} warm-up runs)`);
-    console.debug(`Supported Ops: ${Array.from(this._supportedOps).map(op => findKey(OperationCode, op)).join(', ') || 'None'}`);
-    console.debug(`Mode: ${this._eager ? 'Eager' : 'Graph'}`);
-    console.debug(`Note: Successive WASM ops belong to a same subgraph.`);
-    for (const [i, op] of this._operations.entries()) {
-      const t = res.elpased[i];
-      console.debug(`${t.toFixed(5).slice(0, 8)} ms\t- ${op.subgraphName}`);
-      if (op.subgraphName.indexOf('WASM') > 0) {
-        wasmTime += t;
-      } else {
-        webnnTime += t;
+      console.warn(`Report will be available after at least ${warmUpRuns + 1} executions.`);
+    } else {
+      for (const [i, op] of this._operations.entries()) {
+        const opTime = res.elpased[i];
+        if (op.type !== OperationCode.WEBNN_SUBGRAPH) {
+          timings.push({
+            backend: 'WASM',
+            summary: findKey(OperationCode, op.type) + ' x 1',
+            elpased: opTime
+          });
+        } else {
+          timings.push({
+            backend: 'WebNN',
+            summary: op.summary,
+            elpased: opTime
+          });
+        }
       }
     }
-    console.debug(`WASM time: ${wasmTime.toFixed(5)} ms`);
-    console.debug(`WebNN time: ${webnnTime.toFixed(5)} ms`);
-    console.debug(`Sum: ${(wasmTime + webnnTime).toFixed(5)} ms`);
+
+    return {
+      mode: mode,
+      warmUpRuns: warmUpRuns,
+      epochs: res.epochs,
+      supportedOps: supportedOps,
+      timings: timings
+    };
   }
 }
