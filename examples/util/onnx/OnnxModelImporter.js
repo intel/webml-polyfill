@@ -195,6 +195,13 @@ class OnnxModelImporter {
     }, new Float32Array(tensor));
   }
 
+  _addTensorInt32(tensor, dims) {
+    return this._addOperand({
+      type: this._nn.TENSOR_INT32,
+      dimensions: dims
+    }, new Int32Array(tensor));
+  }
+
   _getTensorIdByName(name) {
     let info = this._tensorIds[name];
     if (typeof info === 'undefined')
@@ -729,6 +736,32 @@ class OnnxModelImporter {
           outputs.push(outputId);
           console.log(`  output ${output}: [${outputDims}]`);
           opCode = this._nn.RESHAPE;
+        } break;
+        case 'Transpose': {
+          console.log(`  inputs: [${node.input}]`);
+          const input = node.input[0];
+          const inputDims = this._getTensorTypeByName(input).dimensions;
+          const perm = getAttributeValue(node, 'perm', []);
+          if (!perm.length) {
+            for (let i = inputDims.length - 1; i >= 0; i--) {
+              perm.push(i);
+            }
+          }
+
+          inputs.push(this._getTensorIdByName(input));
+          inputs.push(this._addTensorInt32(perm, [perm.length]));
+
+          // Add outputs
+          const output = node.output[0];
+          const outputDims = [];
+          for (const axis of perm) {
+            outputDims.push(inputDims[axis]);
+          }
+          const outputType = {type: this._nn.TENSOR_FLOAT32, dimensions: outputDims};
+          const outputId = this._addNewTensorOperand(output, outputType);
+          outputs.push(outputId);
+          console.log(`  output ${output}: [${outputDims}]`);
+          opCode = this._nn.TRANSPOSE;
         } break;
         case 'Flatten': {
           console.log(`  inputs: [${node.input}]`);
