@@ -121,7 +121,8 @@ class Benchmark {
     let results = await this.executeAsync();
     await this.finalizeAsync();
     return {"computeResults": this.summarize(results.computeResults),
-            "decodeResults": this.summarize(results.decodeResults)};
+            "decodeResults": this.summarize(results.decodeResults),
+            "profilingResults": this.summarizeProf(results.profilingResults)};
   }
   /**
    * Setup model
@@ -268,9 +269,14 @@ class Benchmark {
       bkPoseImageSrc = imageElement.src;
       imageElement.src = segCanvas.toDataURL();
     }
-    if (this.model._backend !== 'WebML')
-      this.model._compilation._preparedModel.dumpProfilingResults();
-    return {"computeResults": computeResults, "decodeResults": decodeResults};
+    const profilingResults = this.model._backend === 'WebML' ?
+        null :
+        this.model._compilation._preparedModel.dumpProfilingResults();
+    return {
+      "computeResults": computeResults,
+      "decodeResults": decodeResults,
+      "profilingResults": profilingResults,
+    };
   }
   /**
    * Execute model
@@ -320,6 +326,30 @@ class Benchmark {
     } else {
       return null;
     }
+  }
+  summarizeProf(results) {
+    const lines = [];
+    if (!results) {
+      return lines;
+    }
+    lines.push(`Execution calls: ${results.epochs} (omitted ${results.warmUpRuns} warm-up runs)`);
+    lines.push(`Supported Ops: ${results.supportedOps.join(', ') || 'None'}`);
+    lines.push(`Mode: ${results.mode}`);
+
+    let polyfillTime = 0;
+    let webnnTime = 0;
+    for (const t of results.timings) {
+      lines.push(`${t.elpased.toFixed(8).slice(0, 7)} ms\t- (${t.backend}) ${t.summary}`);
+      if (t.backend === 'WebNN') {
+        webnnTime += t.elpased;
+      } else {
+        polyfillTime += t.elpased;
+      }
+    }
+    lines.push(`Polyfill time: ${polyfillTime.toFixed(5)} ms`);
+    lines.push(`WebNN time: ${webnnTime.toFixed(5)} ms`);
+    lines.push(`Sum: ${(polyfillTime + webnnTime).toFixed(5)} ms`);
+    return lines;
   }
   onExecuteSingle(iteration) {}
 }
@@ -732,7 +762,6 @@ async function run() {
   inputElement.setAttribute('class', 'disabled');
   pickBtnEelement.setAttribute('class', 'btn btn-primary disabled');
   let logger = new Logger(document.querySelector('#log'));
-  window.console.debug = (msg) => logger.log(msg);
   logger.group('Benchmark');
   try {
     let configuration = JSON.parse(document.querySelector('#configurations').selectedOptions[0].value);
@@ -768,6 +797,11 @@ async function run() {
     benchmark.onExecuteSingle = (i => logger.log(`Iteration: ${i + 1} / ${configuration.iteration}`));
     let summary = await benchmark.runAsync(configuration);
     logger.groupEnd();
+    if (summary.profilingResults.length) {
+      logger.group('Profiling');
+      summary.profilingResults.forEach((line) => logger.log(line));
+      logger.groupEnd();
+    }
     logger.group('Result');
     logger.log(`Inference Time: <em style="color:green;font-weight:bolder;">${summary.computeResults.mean.toFixed(2)}+-${summary.computeResults.std.toFixed(2)}</em> [ms]`);
     if (summary.decodeResults !== null) {

@@ -55,15 +55,13 @@ export default class WebGLModel {
       const isSupportedByNN = this._supportedOps.has(operations[nodes[0]].type);
 
       // summary of the partiton. e.g. "CONV x 5, ADD x 2, MUL x 2"
+      const ops = nodes.map((opId) => operations[opId]);
       const summary = utils.stringifySubgraphCompact(model, nodes);
       const backendName = isSupportedByNN ? 'WebNN' : 'WebGL';
-      const subgraphName = `Subgraph ${i}\t (${backendName}):\t{${summary}}`;
 
       if (!isSupportedByNN) {
 
         // run in WebGL
-
-        const ops = nodes.map((opId) => operations[opId]);
 
         // allocate WebGL runtime textures
         for (const operation of ops) {
@@ -105,7 +103,7 @@ export default class WebGLModel {
           inputs: inTensors,
           outputs: outTensors,
           operations: ops,
-          name: subgraphName,
+          summary: summary,
         });
 
       } else {
@@ -127,12 +125,12 @@ export default class WebGLModel {
 
         this._subgraphs.push({
           backend: backendName,
+          summary: summary,
           inputs: inTensors,
           outputs: outTensors,
           model: model,             // avoid GC   intel/webml-polyfill#669
           compilation: compilation, // avoid GC   intel/webml-polyfill#669
           execution: execution,
-          name: subgraphName,
         });
       }
     }
@@ -695,34 +693,37 @@ export default class WebGLModel {
   }
 
   getSubgraphsSummary() {
-    return this._subgraphs.map((graph) => graph.name);
+    return this._subgraphs.map((graph, i) => 
+        `Subgraph ${i}\t (${graph.backend}):\t{${graph.summary}}`);
   }
 
   dumpProfilingResults() {
     const res = this._profiler.flush();
-    if (res.epochs <= 0) {
-      console.debug(`Report will be available after at least ${warmUpRuns + 1} executions.`);
-      return;
-    }
+    const timings = [];
+    const supportedOps = Array.from(this._supportedOps)
+        .map(op => utils.findKey(OperationCode, op));
+    const mode = this._eager ? 'Eager' : 'Graph';
 
-    let webglTime = 0;
-    let webnnTime = 0;
-    console.debug(`Execution calls: ${res.epochs} (omitted ${warmUpRuns} warm-up runs)`);
-    console.debug(`Supported Ops: ${Array.from(this._supportedOps).map(op => utils.findKey(OperationCode, op)).join(', ') || 'None'}`);
-    console.debug(`Mode: ${this._eager ? 'Eager' : 'Graph'}`);
-    console.debug(`Note: Sync time is included in WebGL op.`);
-    for (const [i, {backend, name}] of this._subgraphs.entries()) {
-      const t = res.elpased[i];
-      console.debug(`${t.toFixed(5).slice(0, 8)} ms\t- ${name}`);
-      if (backend === 'WebGL') {
-        webglTime += t;
-      } else {
-        webnnTime += t;
+    if (res.epochs <= 0) {
+      console.warn(`Report will be available after at least ${warmUpRuns + 1} executions.`);
+    } else {
+      for (const [i, {backend, summary}] of this._subgraphs.entries()) {
+        const opTime = res.elpased[i];
+        timings.push({
+          backend: backend,
+          summary: summary,
+          elpased: opTime
+        });
       }
     }
-    console.debug(`WebGL time: ${webglTime.toFixed(5)} ms`);
-    console.debug(`WebNN time: ${webnnTime.toFixed(5)} ms`);
-    console.debug(`Sum: ${(webglTime + webnnTime).toFixed(5)} ms`);
+
+    return {
+      mode: mode,
+      warmUpRuns: warmUpRuns,
+      epochs: res.epochs,
+      supportedOps: supportedOps,
+      timings: timings
+    };
   }
 }
 
