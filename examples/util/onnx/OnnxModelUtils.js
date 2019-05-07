@@ -15,10 +15,12 @@ function getObjectByName(array, name) {
 
 function getTensorData(tensor) {
   let data;
+  let ctor;
   switch (tensor.dataType) {
     case onnx.TensorProto.DataType.FLOAT:
+      ctor = Float32Array;
       if (tensor.floatData && tensor.floatData.length > 0) {
-        data = new Float32Array(tensor.floatData);
+        data = tensor.floatData;
       } else if (tensor.rawData && tensor.rawData.length > 0) {
         let dataView = new DataView(tensor.rawData.buffer, tensor.rawData.byteOffset, tensor.rawData.byteLength);
         let length = tensor.dims.length ? product(tensor.dims) : 1;
@@ -31,8 +33,9 @@ function getTensorData(tensor) {
 
     case onnx.TensorProto.DataType.DOUBLE:
       console.info(`Tensor ${tensor.name} has Double data. Cast to a Float array.`);
+      ctor = Float32Array;
       if (tensor.doubleData && tensor.doubleData.length > 0) {
-        data = new Float32Array(tensor.doubleData);
+        data = tensor.doubleData;
       } else if (tensor.rawData && tensor.rawData.length > 0) {
         let dataView = new DataView(tensor.rawData.buffer, tensor.rawData.byteOffset, tensor.rawData.byteLength);
         let length = tensor.dims.length ? product(tensor.dims) : 1;
@@ -47,8 +50,9 @@ function getTensorData(tensor) {
     case onnx.TensorProto.DataType.INT16:
     case onnx.TensorProto.DataType.UINT16:
     case onnx.TensorProto.DataType.INT32:
+      ctor = Int32Array;
       if (tensor.int32Data && tensor.int32Data.length > 0) {
-        data = new Int32Array(tensor.int32Data);
+        data = tensor.int32Data;
       } else if (tensor.rawData && tensor.rawData.length > 0) {
         let dataView = new DataView(tensor.rawData.buffer, tensor.rawData.byteOffset, tensor.rawData.byteLength);
         let length = tensor.dims.length ? product(tensor.dims) : 1;
@@ -60,8 +64,9 @@ function getTensorData(tensor) {
 
     case onnx.TensorProto.DataType.INT64:
       console.warn(`Tensor ${tensor.name} has Int64 data. Cast to a Int32 array.`);
+      ctor = Int32Array;
       if (tensor.int64Data && tensor.int64Data.length > 0) {
-        data = new Int32Array(tensor.int64Data);
+        data = tensor.int64Data;
       } else if (tensor.rawData && tensor.rawData.length > 0) {
         let dataView = new DataView(tensor.rawData.buffer, tensor.rawData.byteOffset, tensor.rawData.byteLength);
         let length = tensor.dims.length ? product(tensor.dims) : 1;
@@ -74,8 +79,9 @@ function getTensorData(tensor) {
     case onnx.TensorProto.DataType.UINT32:
     case onnx.TensorProto.DataType.UINT64:
       console.warn(`Tensor ${tensor.name} has Uint32/64 data. Cast to a Int32 array.`);
+      ctor = Int32Array;
       if (tensor.uint64Data && tensor.uint64Data.length > 0) {
-        data = new Int32Array(tensor.uint64Data);
+        data = tensor.uint64Data;
       } else if (tensor.rawData && tensor.rawData.length > 0) {
         let dataView = new DataView(tensor.rawData.buffer, tensor.rawData.byteOffset, tensor.rawData.byteLength);
         let length = tensor.dims.length ? product(tensor.dims) : 1;
@@ -90,9 +96,11 @@ function getTensorData(tensor) {
     }
   }
 
-  if (tensor.dims.length === 4) {
+  if (tensor.dims.length !== 4) {
+    return new ctor(data);
+  } else {
     // NCHW -> NHWC
-    let nhwcData = new data.constructor(data.length);
+    let nhwcData = new ctor(data.length);
     const N = tensor.dims[0];
     const C = tensor.dims[1];
     const H = tensor.dims[2];
@@ -106,9 +114,8 @@ function getTensorData(tensor) {
         }
       }
     }
-    data = nhwcData;
+    return nhwcData;
   }
-  return data;
 }
 
 function getAttributeValue(operator, name, defaultValue) {
@@ -223,7 +230,7 @@ function printOnnxModel(model) {
   }
   function printTensor(tensor) {
     console.log(`    {name: ${tensor.name}, dataType: ${tensor.dataType}, dims: [${tensor.dims}]}`);
-    let data = getTensorData(tensor);
+    // let data = getTensorData(tensor);
     // console.log(`    data(${data.length}): [${data}]`);
   }
   function printGraph(graph) {
