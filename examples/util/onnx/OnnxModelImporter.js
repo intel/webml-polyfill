@@ -195,6 +195,13 @@ class OnnxModelImporter {
     }, new Float32Array(tensor));
   }
 
+  _addTensorInt32(tensor, dims) {
+    return this._addOperand({
+      type: this._nn.TENSOR_INT32,
+      dimensions: dims
+    }, new Int32Array(tensor));
+  }
+
   _getTensorIdByName(name) {
     let info = this._tensorIds[name];
     if (typeof info === 'undefined')
@@ -619,17 +626,28 @@ class OnnxModelImporter {
             inputs.push(this._getTensorIdByName(node.input[i]));
           }
           const axis = getAttributeValue(node, 'axis');
-          if (axis && axis !== 1)
+          if (axis && (axis > 3 || axis < 0)) {
             throw new Error(`Invalid axis ${axis}`);
-          console.log(`  axis: [${axis}]`);
-          // C axis is 3 in NHWC layout
-          const concatAxis = 3;
+          }
+
+          const input0Type = this._getTensorTypeByName(node.input[0]);
+          const inputDims = input0Type.dimensions;
+          let concatAxis = axis;
+          if (inputDims.length === 4) {
+            // NCHW -> NHWC
+            concatAxis = {
+              0: 0,
+              1: 3,
+              2: 1,
+              3: 2,
+            }[axis];
+          }
           inputs.push(this._addScalarInt32(concatAxis));
+          console.log(`  concatAxis: ${concatAxis}`);
 
           // Add output
           const output = node.output[0];
-          const input0Type = this._getTensorTypeByName(node.input[0]);
-          let outputDims = Array.from(input0Type.dimensions);
+          let outputDims = Array.from(inputDims);
           for (let i = 1; i < node.input.length; ++i) {
             const inputType = this._getTensorTypeByName(node.input[i]);
             outputDims[concatAxis] += inputType.dimensions[concatAxis];
@@ -719,6 +737,32 @@ class OnnxModelImporter {
           console.log(`  output ${output}: [${outputDims}]`);
           opCode = this._nn.RESHAPE;
         } break;
+        case 'Transpose': {
+          console.log(`  inputs: [${node.input}]`);
+          const input = node.input[0];
+          const inputDims = this._getTensorTypeByName(input).dimensions;
+          const perm = getAttributeValue(node, 'perm', []);
+          if (!perm.length) {
+            for (let i = inputDims.length - 1; i >= 0; i--) {
+              perm.push(i);
+            }
+          }
+
+          inputs.push(this._getTensorIdByName(input));
+          inputs.push(this._addTensorInt32(perm, [perm.length]));
+
+          // Add outputs
+          const output = node.output[0];
+          const outputDims = [];
+          for (const axis of perm) {
+            outputDims.push(inputDims[axis]);
+          }
+          const outputType = {type: this._nn.TENSOR_FLOAT32, dimensions: outputDims};
+          const outputId = this._addNewTensorOperand(output, outputType);
+          outputs.push(outputId);
+          console.log(`  output ${output}: [${outputDims}]`);
+          opCode = this._nn.TRANSPOSE;
+        } break;
         case 'Flatten': {
           console.log(`  inputs: [${node.input}]`);
           const input = node.input[0];
@@ -762,6 +806,22 @@ class OnnxModelImporter {
           const output = node.output[0];
           this._tensorIds[output] = this._tensorIds[input];
           console.log(`Skip Unsqueeze: ${input} -> ${output}`);
+        } break;
+        case 'Neg': {
+          console.log(`  inputs: [${node.input}]`);
+          const input = node.input[0];
+          inputs.push(this._getTensorIdByName(input));
+          inputs.push(this._addTensorFloat32([-1], [1]));
+          inputs.push(this._addScalarInt32(this._nn.FUSED_NONE));
+
+          // Add outputs
+          const output = node.output[0];
+          const outputDims =  this._getTensorTypeByName(input).dimensions;
+          const outputType = {type: this._nn.TENSOR_FLOAT32, dimensions: Array.from(outputDims)};
+          const outputId = this._addNewTensorOperand(output, outputType);
+          outputs.push(outputId);
+          console.log(`  output ${output}: [${outputDims}]`);
+          opCode = this._nn.MUL;
         } break;
         case 'Softmax': {
           console.log(`  inputs: [${node.input}]`);
