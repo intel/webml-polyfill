@@ -332,12 +332,13 @@ if (skeletonDetectionPath <= -1) {
       $('.alert').hide();
       let polyfillId = $('input:radio[name="bp"]:checked').attr('id') || $('input:radio[name="bp"][checked="checked"]').attr('id');
       let webnnId = $('input:radio[name="bw"]:checked').attr('id') || $('input:radio[name="bw"][checked="checked"]').attr('id');
+      $('.b-polyfill input').removeAttr('checked');
+      $('.b-polyfill label').removeClass('checked');
+      $('.b-webnn input').removeAttr('checked');
+      $('.b-webnn label').removeClass('checked');
+
       if(!isBackendSwitch()) {
         $('.backendtitle').html('Backend');
-        $('.b-polyfill input').removeAttr('checked');
-        $('.b-polyfill label').removeClass('checked');
-        $('.b-webnn input').removeAttr('checked');
-        $('.b-webnn label').removeClass('checked');
         if (polyfillId) {
           $('#' + polyfillId).attr('checked', 'checked');
           $('#l-' + polyfillId).addClass('checked');
@@ -349,24 +350,54 @@ if (skeletonDetectionPath <= -1) {
           currentBackend = 'WebML';
           currentPrefer = webnnId;
         } else {
-          currentBackend = 'WASM';
           $('#WASM').attr('checked', 'checked');
           $('#l-WASM').addClass('checked');
+          currentBackend = 'WASM';
           currentPrefer = 'none';
         }
-        updateBackendRadioUI(currentBackend, currentPrefer);
-        strsearch = `?prefer=${currentPrefer}&b=${currentBackend}&m=${um}&t=${ut}&s=${us}&d=${ud}`;
-        window.history.pushState(null, null, strsearch);
-        updateTitle('Single Backend', currentBackend, currentPrefer, `${um}`, `${ut}`);
-        if (um === 'none') {
-          showError('No model selected', 'Please select a model to start prediction.');
-          return;
-        }
-        updateBackend(us === 'camera', true);
+        updateTitle('Sole Backend', currentBackend, currentPrefer, `${um}`, `${ut}`);
       } else {
         $('.backendtitle').html('Backends');
-        updateTitle('Pending Backend', currentBackend, currentPrefer, `${um}`, `${ut}`);
+        if (polyfillId && webnnId) {
+          $('#' + polyfillId).attr('checked', 'checked');
+          $('#l-' + polyfillId).addClass('checked');
+          $('#' + webnnId).attr('checked', 'checked');
+          $('#l-' + webnnId).addClass('checked');
+          currentBackend = polyfillId;
+          currentPrefer = webnnId;
+        } else if (polyfillId) {
+          $('#' + polyfillId).attr('checked', 'checked');
+          $('#l-' + polyfillId).addClass('checked');
+          $('#fast').attr('checked', 'checked');
+          $('#l-fast').addClass('checked');
+          currentBackend = polyfillId;
+          currentPrefer = 'fast';
+        } else if (webnnId) {
+          $('#WASM').attr('checked', 'checked');
+          $('#l-WASM').addClass('checked');
+          $('#' + webnnId).attr('checked', 'checked');
+          $('#l-' + webnnId).addClass('checked');
+          currentBackend = 'WASM';
+          currentPrefer = webnnId;
+        } else {
+          $('#WASM').attr('checked', 'checked');
+          $('#l-WASM').addClass('checked');
+          $('#fast').attr('checked', 'checked');
+          $('#l-fast').addClass('checked');
+          currentBackend = 'WASM';
+          currentPrefer = 'fast';
+        }
+        updateTitle('Dual Backends', currentBackend, currentPrefer, `${um}`, `${ut}`);
       }
+
+      updateBackendRadioUI(currentBackend, currentPrefer);
+      strsearch = `?prefer=${currentPrefer}&b=${currentBackend}&m=${um}&t=${ut}&s=${us}&d=${ud}`;
+      window.history.pushState(null, null, strsearch);
+      if (um === 'none') {
+        showError('No model selected', 'Please select a model to start prediction.');
+        return;
+      }
+      updateBackend(us === 'camera', true);
     })
 
     $('input:radio[name=bp]').click(() => {
@@ -398,6 +429,7 @@ if (skeletonDetectionPath <= -1) {
         currentBackend = polyfillId;
         currentPrefer = 'none';
       }
+
       strsearch = `?prefer=${currentPrefer}&b=${currentBackend}&m=${um}&t=${ut}&s=${us}&d=${ud}`;
       window.history.pushState(null, null, strsearch);
       if (um === 'none') {
