@@ -619,17 +619,28 @@ class OnnxModelImporter {
             inputs.push(this._getTensorIdByName(node.input[i]));
           }
           const axis = getAttributeValue(node, 'axis');
-          if (axis && axis !== 1)
+          if (axis && (axis > 3 || axis < 0)) {
             throw new Error(`Invalid axis ${axis}`);
-          console.log(`  axis: [${axis}]`);
-          // C axis is 3 in NHWC layout
-          const concatAxis = 3;
+          }
+
+          const input0Type = this._getTensorTypeByName(node.input[0]);
+          const inputDims = input0Type.dimensions;
+          let concatAxis = axis;
+          if (inputDims.length === 4) {
+            // NCHW -> NHWC
+            concatAxis = {
+              0: 0,
+              1: 3,
+              2: 1,
+              3: 2,
+            }[axis];
+          }
           inputs.push(this._addScalarInt32(concatAxis));
+          console.log(`  concatAxis: ${concatAxis}`);
 
           // Add output
           const output = node.output[0];
-          const input0Type = this._getTensorTypeByName(node.input[0]);
-          let outputDims = Array.from(input0Type.dimensions);
+          let outputDims = Array.from(inputDims);
           for (let i = 1; i < node.input.length; ++i) {
             const inputType = this._getTensorTypeByName(node.input[i]);
             outputDims[concatAxis] += inputType.dimensions[concatAxis];
