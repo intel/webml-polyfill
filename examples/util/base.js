@@ -613,6 +613,18 @@ const facialLandmarkDetectionModels = [{
   paperUrl: 'https://www.sciencedirect.com/science/article/pii/S0262885615001341'
 }];
 
+const emotionAnalysisModels = [{
+  modelName: 'Simple CNN 7(TFlite)',
+  modelFile: '../emotion_analysis/model/emotion_classification_7.tflite',
+  labels: ['anger', 'disgust', 'fear', 'happy', 'sad', 'surprise', 'neutral'],
+  inputSize: [48, 48, 1],
+  outputSize: 7,
+  preOptions: {
+    norm: true,
+  },
+  intro: 'Converted from a pre-trained Simple CNN model',
+}];
+
 const getOS = () => {
   var userAgent = window.navigator.userAgent,
     platform = window.navigator.platform,
