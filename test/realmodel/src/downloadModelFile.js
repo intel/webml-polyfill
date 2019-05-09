@@ -20,7 +20,7 @@ const mods = require('../lib/jsonOperation.js');
   }
   await wgetDownload(JSON_DATA.getURL());
 })().then(() => {
-  console.log('Downloading Module File...');
+  console.log(`Downloading Module File ${JSON_DATA.getModelName()}.tar.gz`);
 }).catch((err) => {
   throw err;
 });
