@@ -2652,3 +2652,25 @@ button.xclose {
   text-align: left;
 }
 
+.custom-control {
+  display: inline-block;
+  min-height: auto;
+}
+
+.custom-switch {
+  
+}
+
+.custom-control-label::before {
+  top: .05rem;
+}
+
+.custom-switch .custom-control-label::after {
+  top: calc(.05rem + 2px);
+}
+
+.custom-control-input:checked~.custom-control-label::before {
+  border-color: rgba(255, 111, 97, 1.0);
+  background-color: rgba(255, 111, 97, 1.0);
+}
+

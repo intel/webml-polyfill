@@ -126,6 +126,10 @@
           <tr class='backend'>
             <th class='text-center backendtitle'>Backend</th>
             <td>
+              <div class='custom-control custom-switch'>
+                  <input type='checkbox' class='custom-control-input' id='backendswitch'>
+                  <label class='custom-control-label' for='backendswitch'>Dual</label>
+              </div>
               <div class='g b-polyfill'>
                 <span id='backendpolyfilltitle'>Polyfill</span>
                 <input type='radio' name='bp' class='d-none' id='WASM' value='WASM'>
@@ -377,21 +381,21 @@
     </svg>
   </a>
 
-  <div class="modal fade" id="subgraphModal" tabindex="-1" role="dialog" aria-labelledby="subgraphModalTitle"
-    aria-hidden="true">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="modaltitle">Subgraphs Summary</h5>
+  <div class='modal fade' id='subgraphModal' tabindex='-1' role='dialog' aria-labelledby='subgraphModalTitle'
+    aria-hidden='true'>
+    <div class='modal-dialog' role='document'>
+      <div class='modal-content'>
+        <div class='modal-header'>
+          <h5 class='modal-title' id='modaltitle'>Subgraphs Summary</h5>
         </div>
-        <div class="modal-body">
-          <div id="timeline">
-            <ul class="timeline" id="subgraph">
+        <div class='modal-body'>
+          <div id='timeline'>
+            <ul class='timeline' id='subgraph'>
             </ul>
           </div>
         </div>
-        <div class="modal-footer">
-          <button type="button" class="modal-btn" data-dismiss="modal">Close</button>
+        <div class='modal-footer'>
+          <button type='button' class='modal-btn' data-dismiss='modal'>Close</button>
         </div>
       </div>
     </div>

@@ -119,6 +119,10 @@
           <tr class='backend'>
             <th class='text-center backendtitle'>Backend</th>
             <td>
+              <div class='custom-control custom-switch'>
+                  <input type='checkbox' class='custom-control-input' id='backendswitch'>
+                  <label class='custom-control-label' for='backendswitch'>Dual</label>
+              </div>
               <div class='g b-polyfill'>
                 <span id='backendpolyfilltitle'>Polyfill</span>
                 <input type='radio' name='bp' class='d-none' id='WASM' value='WASM'>
@@ -226,7 +230,7 @@
         <div class='text-center'>
           <figure class='item shoulddisplay' style='display: none;'>
             <div class='inner'>
-              <canvas id="canvasshow" width='640' height='480'></canvas>
+              <canvas id='canvasshow' width='640' height='480'></canvas>
             </div>
           </figure>
         </div>
@@ -324,21 +328,21 @@
     </svg>
   </a>
 
-  <div class="modal fade" id="subgraphModal" tabindex="-1" role="dialog" aria-labelledby="subgraphModalTitle"
-    aria-hidden="true">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="modaltitle">Subgraphs Summary</h5>
+  <div class='modal fade' id='subgraphModal' tabindex='-1' role='dialog' aria-labelledby='subgraphModalTitle'
+    aria-hidden='true'>
+    <div class='modal-dialog' role='document'>
+      <div class='modal-content'>
+        <div class='modal-header'>
+          <h5 class='modal-title' id='modaltitle'>Subgraphs Summary</h5>
         </div>
-        <div class="modal-body">
-          <div id="timeline">
-            <ul class="timeline" id="subgraph">
+        <div class='modal-body'>
+          <div id='timeline'>
+            <ul class='timeline' id='subgraph'>
             </ul>
           </div>
         </div>
-        <div class="modal-footer">
-          <button type="button" class="modal-btn" data-dismiss="modal">Close</button>
+        <div class='modal-footer'>
+          <button type='button' class='modal-btn' data-dismiss='modal'>Close</button>
         </div>
       </div>
     </div>
@@ -355,12 +359,12 @@
   <script src='../third_party/protobuf.min.js'></script>
   <script src='../../dist/webml-polyfill.js'></script>
   <script src='../util/base.js'></script>
-  <script src="../util/tflite/flatbuffers/js/flatbuffers.js"></script>
-  <script src="../util/tflite/schema/schema_generated.js"></script>
-  <script src="../util/tflite/TfLiteModelUtils.js"></script>
-  <script src="../util/tflite/TFliteModelImporter.js"></script>
-  <script src="../util/decoders/SsdDecoder.js"></script>
-  <script src="../util/decoders/Yolo2Decoder.js"></script>
+  <script src='../util/tflite/flatbuffers/js/flatbuffers.js'></script>
+  <script src='../util/tflite/schema/schema_generated.js'></script>
+  <script src='../util/tflite/TfLiteModelUtils.js'></script>
+  <script src='../util/tflite/TFliteModelImporter.js'></script>
+  <script src='../util/decoders/SsdDecoder.js'></script>
+  <script src='../util/decoders/Yolo2Decoder.js'></script>
   <script src='utils.js'></script>
   <script src='../static/js/main.common.js'></script>
   <script src='main.js'></script>

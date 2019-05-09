@@ -52,26 +52,106 @@ $(document).ready(() => {
   }
   updateTitleSD(ub, up);
 
+  $('#backendswitch').click(() => {
+    $('.alert').hide();
+    let polyfillId = $('input:radio[name="bp"]:checked').attr('id') || $('input:radio[name="bp"][checked="checked"]').attr('id');
+    let webnnId = $('input:radio[name="bw"]:checked').attr('id') || $('input:radio[name="bw"][checked="checked"]').attr('id');
+    $('.b-polyfill input').removeAttr('checked');
+    $('.b-polyfill label').removeClass('checked');
+    $('.b-webnn input').removeAttr('checked');
+    $('.b-webnn label').removeClass('checked');
+
+    if(!isBackendSwitch()) {
+      $('.backendtitle').html('Backend');
+      if (polyfillId) {
+        $('#' + polyfillId).attr('checked', 'checked');
+        $('#l-' + polyfillId).addClass('checked');
+        currentBackend = polyfillId;
+        currentPrefer = 'none';
+      } else if (webnnId) {
+        $('#' + webnnId).attr('checked', 'checked');
+        $('#l-' + webnnId).addClass('checked');
+        currentBackend = 'WebML';
+        currentPrefer = webnnId;
+      } else {
+        $('#WASM').attr('checked', 'checked');
+        $('#l-WASM').addClass('checked');
+        currentBackend = 'WASM';
+        currentPrefer = 'none';
+      }
+    } else {
+      $('.backendtitle').html('Backends');
+      if (polyfillId && webnnId) {
+        $('#' + polyfillId).attr('checked', 'checked');
+        $('#l-' + polyfillId).addClass('checked');
+        $('#' + webnnId).attr('checked', 'checked');
+        $('#l-' + webnnId).addClass('checked');
+        currentBackend = polyfillId;
+        currentPrefer = webnnId;
+      } else if (polyfillId) {
+        $('#' + polyfillId).attr('checked', 'checked');
+        $('#l-' + polyfillId).addClass('checked');
+        $('#fast').attr('checked', 'checked');
+        $('#l-fast').addClass('checked');
+        currentBackend = polyfillId;
+        currentPrefer = 'fast';
+      } else if (webnnId) {
+        $('#WASM').attr('checked', 'checked');
+        $('#l-WASM').addClass('checked');
+        $('#' + webnnId).attr('checked', 'checked');
+        $('#l-' + webnnId).addClass('checked');
+        currentBackend = 'WASM';
+        currentPrefer = webnnId;
+      } else {
+        $('#WASM').attr('checked', 'checked');
+        $('#l-WASM').addClass('checked');
+        $('#fast').attr('checked', 'checked');
+        $('#l-fast').addClass('checked');
+        currentBackend = 'WASM';
+        currentPrefer = 'fast';
+      }
+    }
+
+    updateTitleSD(currentBackend, currentPrefer);
+    updateBackendRadioUI(currentBackend, currentPrefer);
+    strsearch = `?prefer=${currentPrefer}&b=${currentBackend}&m=${um}&t=${ut}&s=${us}&d=${ud}`;
+    window.history.pushState(null, null, strsearch);
+    if (um === 'none') {
+      showError('No model selected', 'Please select a model to start prediction.');
+      return;
+    }
+    main(us === 'camera');
+  })
   
   $('input:radio[name=bp]').click(() => {
     $('.alert').hide();
     let polyfillId = $('input:radio[name="bp"]:checked').attr('id') || $('input:radio[name="bp"][checked="checked"]').attr('id');
-
-    if (polyfillId !== currentBackend) {
-      $('.b-polyfill input').removeAttr('checked');
-      $('.b-polyfill label').removeClass('checked');
-      $('#' + polyfillId).attr('checked', 'checked');
-      $('#l-' + polyfillId).addClass('checked');
-    } else if (currentPrefer === 'none') {
-      showAlert('At least one backend required, please select other backends if needed.');
-      return;
+    if(isBackendSwitch()) {
+      if (polyfillId !== currentBackend) {
+        $('.b-polyfill input').removeAttr('checked');
+        $('.b-polyfill label').removeClass('checked');
+        $('#' + polyfillId).attr('checked', 'checked');
+        $('#l-' + polyfillId).addClass('checked');
+      } else if (currentPrefer === 'none') {
+        showAlert('At least one backend required, please select other backends if needed.');
+        return;
+      } else {
+        $('.b-polyfill input').removeAttr('checked');
+        $('.b-polyfill label').removeClass('checked');
+        polyfillId = 'WebML';
+      }
+      currentBackend = polyfillId;
+      updateBackendRadioUI(currentBackend, currentPrefer);
     } else {
       $('.b-polyfill input').removeAttr('checked');
       $('.b-polyfill label').removeClass('checked');
-      polyfillId = 'WebML';
+      $('.b-webnn input').removeAttr('checked');
+      $('.b-webnn label').removeClass('checked');
+      $('#' + polyfillId).attr('checked', 'checked');
+      $('#l-' + polyfillId).addClass('checked');
+      currentBackend = polyfillId;
+      currentPrefer = 'none';
     }
-
-    currentBackend = polyfillId;
 
     $('#option').show();
     optionCompact();
@@ -79,31 +159,39 @@ $(document).ready(() => {
     updateTitleSD(currentBackend, currentPrefer);
     strsearch = `?prefer=${currentPrefer}&b=${currentBackend}&s=${us}&d=${ud}`;
     window.history.pushState(null, null, strsearch);
-    
-    updateBackendRadioUI(currentBackend, currentPrefer);
     main(us === 'camera');
   });
 
   $('input:radio[name=bw]').click(() => {
     $('.alert').hide();
-
     let webnnId = $('input:radio[name="bw"]:checked').attr('id') || $('input:radio[name="bw"][checked="checked"]').attr('id');
-
-    if (webnnId !== currentPrefer) {
+    if(isBackendSwitch()) {
+      if (webnnId !== currentPrefer) {
+        $('.b-webnn input').removeAttr('checked');
+        $('.b-webnn label').removeClass('checked');
+        $('#' + webnnId).attr('checked', 'checked');
+        $('#l-' + webnnId).addClass('checked');
+      } else if (currentBackend === 'WebML') {
+        showAlert('At least one backend required, please select other backends if needed.');
+        return;
+      } else {
+        $('.b-webnn input').removeAttr('checked');
+        $('.b-webnn label').removeClass('checked');
+        webnnId = 'none';
+      }
+      currentPrefer = webnnId;
+      updateBackendRadioUI(currentBackend, currentPrefer);
+    }
+    else {
+      $('.b-polyfill input').removeAttr('checked');
+      $('.b-polyfill label').removeClass('checked');
       $('.b-webnn input').removeAttr('checked');
       $('.b-webnn label').removeClass('checked');
       $('#' + webnnId).attr('checked', 'checked');
       $('#l-' + webnnId).addClass('checked');
-    } else if (currentBackend === 'WebML') {
-      showAlert('At least one backend required, please select other backends if needed.');
-      return;
-    } else {
-      $('.b-webnn input').removeAttr('checked');
-      $('.b-webnn label').removeClass('checked');
-      webnnId = 'none';
+      currentBackend = 'WebML';
+      currentPrefer = webnnId;
     }
-
-    currentPrefer = webnnId;
 
     if (currentPrefer !== 'none' && currentBackend === 'none') {
       currentBackend = 'WebML';
@@ -114,8 +202,6 @@ $(document).ready(() => {
     updateTitleSD(currentBackend, currentPrefer);
     strsearch = `?prefer=${currentPrefer}&b=${currentBackend}&s=${us}&d=${ud}`;
     window.history.pushState(null, null, strsearch);
-
-    updateBackendRadioUI(currentBackend, currentPrefer);
     main(us === 'camera');
   });
 
