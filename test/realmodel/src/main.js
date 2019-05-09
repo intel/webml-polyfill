@@ -46,7 +46,7 @@ console.log('Begin Test...');
 
   let getHtmlProcess = await childProcess.spawnSync(
     'node',
-    [path.join(__dirname, 'genHtml.js')],
+    [path.join(__dirname, 'genhtml.js')],
     {stdio: [process.stdin, process.stdout, 'pipe']}
   );
   if (geterateCaseProcess.stderr.toString() != '') {

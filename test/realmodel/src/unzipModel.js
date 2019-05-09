@@ -37,7 +37,7 @@ const targz = require('targz');
   }
   await Unzip(path.join(__dirname, '..', 'model', JSON_DATA.getURL().split('/').pop()));
 })().then(() => {
-  console.log('Unzip Module File' + ` ${JSON_DATA.getModelName()}.tar.gz`);
+  console.log(`Unzip Module File ${JSON_DATA.getModelName()}.tar.gz`);
 
 }).catch((err) => {
   throw err;

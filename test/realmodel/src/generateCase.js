@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 let filePath = path.join(__dirname, '..', 'model', JSON_DATA.getModelName(), `${JSON_DATA.getModelName()}.json`);
 if (!fs.existsSync(filePath)) throw (`Can't get ${filePath}`);
-let stream = fs.createReadStream(filePath, { flags: 'r', encoding: 'utf-8' });
+let stream = fs.createReadStream(filePath, {flags: 'r', encoding: 'utf-8'});
 let buf = '';
 let case_path = path.join(__dirname, '..', 'testcase', `${JSON_DATA.getModelName()}`);
 
@@ -43,9 +43,8 @@ async function saveToLocalFile(input) {
     dataArray.push(dataString[key]);
   }
   let saveFileDirs = path.join(__dirname, '..', 'testcase', 'res', `${JSON_DATA.getModelName()}`);
-  // console.log(saveFileDirs)
   mkdirsSync(saveFileDirs);
-  let saveStream = fs.createWriteStream(path.join(saveFileDirs, output), { flags: 'w', encoding: 'utf-8' });
+  let saveStream = fs.createWriteStream(path.join(saveFileDirs, output), {flags: 'w', encoding: 'utf-8'});
   saveStream.on('error', (err) => {
     console.error(err);
   });
@@ -59,8 +58,7 @@ async function saveToLocalFile(input) {
 
 async function saveCaseToLocal(input, output) {
   let saveFileDirs = path.join(__dirname, '..', 'testcase', `${JSON_DATA.getModelName()}`);
-  // mkdirsSync(saveFileDirs);
-  let saveStream = fs.createWriteStream(path.join(saveFileDirs, output), { flags: 'w', encoding: 'utf-8' });
+  let saveStream = fs.createWriteStream(path.join(saveFileDirs, output), {flags: 'w', encoding: 'utf-8'});
   saveStream.on('error', (err) => {
     console.error(err);
   });
@@ -85,7 +83,6 @@ async function getOperands(ids) {
 }
 
 async function splitContext(context) {
-  // context --> input.operations[i];
   let inputFile = context[1][0];
   let inputDims = (await gettensorTypes(inputFile));
   let outputFile = context[2][0];
@@ -101,7 +98,7 @@ async function splitContext(context) {
     let savePath = path.join(__dirname, '..', 'testcase', `${JSON_DATA.getModelName()}`);
     var readDir = fs.readdirSync(savePath);
     let count = 1;
-    for (let i in readDir){
+    for (let i in readDir) {
       regex = /averagepool-/;
       matchFlat = regex.test(readDir[i]);
       if (matchFlat) {
@@ -111,7 +108,7 @@ async function splitContext(context) {
     let caseSample = `describe('CTS Real Model Test', function() {
     const assert = chai.assert;
     const nn = navigator.ml.getNeuralNetworkContext();
-    it('Check result for AVERAGE_POOL_2D example/${count}', async function() {
+    it('Check result for AVERAGE_POOL_2D example/${count} of ${JSON_DATA.getModelName()} model', async function() {
       this.timeout(120000);
       let model = await nn.createModel(options);
       let operandIndex = 0;
@@ -185,7 +182,7 @@ async function splitContext(context) {
     let savePath = path.join(__dirname, '..', 'testcase', `${JSON_DATA.getModelName()}`);
     var readDir = fs.readdirSync(savePath);
     let count = 1;
-    for (let i in readDir){
+    for (let i in readDir) {
       regex = /maxpool-/;
       matchFlat = regex.test(readDir[i]);
       if (matchFlat) {
@@ -195,7 +192,7 @@ async function splitContext(context) {
     let caseSample = `describe('CTS Real Model Test', function() {
   const assert = chai.assert;
   const nn = navigator.ml.getNeuralNetworkContext();
-  it('Check result for max_pool_2d example/${count}', async function() {
+  it('Check result for MAX_POOL_2D example/${count} of ${JSON_DATA.getModelName()} model', async function() {
     this.timeout(120000);
     let model = await nn.createModel(options);
     let operandIndex = 0;
@@ -269,7 +266,7 @@ async function splitContext(context) {
     let savePath = path.join(__dirname, '..', 'testcase', `${JSON_DATA.getModelName()}`);
     var readDir = fs.readdirSync(savePath);
     let count = 1;
-    for (let i in readDir){
+    for (let i in readDir) {
       regex = /concatenation-/;
       matchFlat = regex.test(readDir[i]);
       if (matchFlat) {
@@ -279,7 +276,7 @@ async function splitContext(context) {
     let caseSample = `describe('CTS Real Model Test', function() {
   const assert = chai.assert;
   const nn = navigator.ml.getNeuralNetworkContext();
-  it('Check result for concatenation example/${count}', async function() {
+  it('Check result for CONCATENATION example/${count} of ${JSON_DATA.getModelName()} model', async function() {
     this.timeout(120000);
     let model = await nn.createModel(options);
     let operandIndex = 0;
@@ -365,7 +362,7 @@ async function splitContext(context) {
     let savePath = path.join(__dirname, '..', 'testcase', `${JSON_DATA.getModelName()}`);
     var readDir = fs.readdirSync(savePath);
     let count = 1;
-    for (let i in readDir){
+    for (let i in readDir) {
       regex = /conv2d-/;
       matchFlat = regex.test(readDir[i]);
       if (matchFlat) {
@@ -375,7 +372,7 @@ async function splitContext(context) {
     let caseSample = `describe('CTS Real Model Test', function() {
   const assert = chai.assert;
   const nn = navigator.ml.getNeuralNetworkContext();
-  it('Check result for conv_2d example/${count}', async function() {
+  it('Check result for CONV_2D example/${count} of ${JSON_DATA.getModelName()} model', async function() {
     this.timeout(120000);
     let model = await nn.createModel(options);
     let operandIndex = 0;
@@ -476,7 +473,7 @@ async function splitContext(context) {
     let savePath = path.join(__dirname, '..', 'testcase', `${JSON_DATA.getModelName()}`);
     var readDir = fs.readdirSync(savePath);
     let count = 1;
-    for (let i in readDir){
+    for (let i in readDir) {
       regex = /reshape-/;
       matchFlat = regex.test(readDir[i]);
       if (matchFlat) {
@@ -486,7 +483,7 @@ async function splitContext(context) {
     let caseSample = `describe('CTS Real Model Test', function() {
   const assert = chai.assert;
   const nn = navigator.ml.getNeuralNetworkContext();
-  it('Check result for reshape example/${count}', async function() {
+  it('Check result for RESHAPE example/${count} of ${JSON_DATA.getModelName()} model', async function() {
     this.timeout(120000);
     let model = await nn.createModel(options);
     let operandIndex = 0;
@@ -562,7 +559,7 @@ async function findSync(startPath) {
   let saveFileDirs = path.join(__dirname, '..', 'testcase', `${JSON_DATA.getModelName()}`);
   let saveStream = fs.createWriteStream(
     path.join(saveFileDirs, `${JSON_DATA.getModelName()}.txt`),
-    { flags: 'w', encoding: 'utf-8' }
+    {flags: 'w', encoding: 'utf-8'}
   );
   saveStream.on('error', (err) => {
     console.error(err);

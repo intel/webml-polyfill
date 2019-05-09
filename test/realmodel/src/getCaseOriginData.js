@@ -24,7 +24,7 @@ const puppeteer = require('puppeteer');
   }
   await downloadFile(JSON_DATA.getlocalURL());
 })().then(() => {
-  console.log('Downloading Case Data' + ` ${JSON_DATA.getModelName()}.json`);
+  console.log(`Downloading Case Data ${JSON_DATA.getModelName()}.json`);
 }).catch((err) => {
   throw err;
 });
