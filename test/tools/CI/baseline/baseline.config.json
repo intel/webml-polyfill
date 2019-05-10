@@ -3,52 +3,29 @@
         "chromium": "ef9d267",
         "polyfill": "853173e"
     },
-    "Android-WASM": {
+    "Android-Polyfill-Fast-WASM": {
+        "total": 178,
+        "pass": 178,
+        "fail": 0,
+        "block": 0
+    },   
+    "Linux-Polyfill-Fast-WASM": {
+        "total": 178,
+        "pass": 178,
+        "fail": 0,
+        "block": 0
+    }, 
+    "macOS-Polyfill-Fast-WASM": {
         "total": 178,
         "pass": 178,
         "fail": 0,
         "block": 0
     },
-    "Android-WebGL": {
-        "total": 178,
-        "pass": 178,
-        "fail": 0,
-        "block": 0
-    },
-    "Linux-WASM": {
-        "total": 178,
-        "pass": 178,
-        "fail": 0,
-        "block": 0
-    },
-    "Linux-WebGL": {
-        "total": 178,
-        "pass": 178,
-        "fail": 0,
-        "block": 0
-    },
-    "Mac-WASM": {
-        "total": 178,
-        "pass": 178,
-        "fail": 0,
-        "block": 0
-    },
-    "Mac-WebGL": {
-        "total": 178,
-        "pass": 178,
-        "fail": 0,
-        "block": 0
-    },
-    "Windows-WASM": {
-        "total": 178,
-        "pass": 178,
-        "fail": 0,
-        "block": 0
-    },
-    "Windows-WebGL": {
+    "Win-Polyfill-Fast-WASM": {
         "total": 178,
         "pass": 178,
         "fail": 0,
         "block": 0
     }
+    
 }
