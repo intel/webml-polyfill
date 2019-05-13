@@ -140,7 +140,7 @@ if (testPlatform == "Linux") {
 
         if (supportSwitch) {
             testPrefers.push("Win-WebNN-Sustained-DML");
-            testPrefers.push("Win-WebNN-Low-DML");
+//            testPrefers.push("Win-WebNN-Low-DML");
         }
     }
 }
