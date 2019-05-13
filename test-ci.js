@@ -1,8 +1,5 @@
-// const path = require('path');
 const webdriver = require('selenium-webdriver');
 const chrome = require('selenium-webdriver/chrome');
-// const chromedriver = require('chromedriver');
-// const until = webdriver.until;
 const By = webdriver.By;
 const options = new chrome.Options();
 options.addArguments('no-sandbox');
@@ -32,11 +29,11 @@ let csvNA = null;
   if (sys == 'Linux') {
     platform = 'Linux';
   } else if (sys == 'Darwin') {
-    platform = 'Mac';
+    platform = 'macOS';
   } else if (sys == 'Windows_NT') {
-    platform = 'Windows';
+    platform = 'Win';
   } else {
-    let string = 'We do not support ' + sys + ' as run platform';
+    let string = `We do not support ${sys} as run platform`;
     throw new Error(string);
   }
 
@@ -69,27 +66,20 @@ let csvNA = null;
     return Text;
   };
 
-  // let getCode = async function(element) {
-  //   let Text = await element.findElement(By.xpath('./pre[last()]')).getText();
-  //   return Text;
-  // };
   let backendModel;
   let baseLineData = new Map();
   let lists = [
     'Feature',
     'Case Id',
     'Test Case',
-    'Mac-WASM',
-    'Mac-WebGL',
-    'Android-WASM',
-    'Android-WebGL',
-    'Windows-WASM',
-    'Windows-WebGL',
-    'Linux-WASM',
-    'Linux-WebGL',
+    'Linux-Polyfill-Fast-WASM',
+    'macOS-Polyfill-Fast-WASM',
+    'Android-Polyfill-Fast-WASM',
+    'Win-Polyfill-Fast-WASM',
   ];
+
   let checkStatus = async function(backendModel, results) {
-    for (let i=0; i< lists.length; i++) {
+    for (let i = 0; i < lists.length; i++) {
       if (lists[i] == backendModel) {
         csv.fromPath('test/tools/CI/baseline/unitTestsBaseline.csv').on('data', function(data) {
           baseLineData.set(data[0] + data[2] + data[i]);
@@ -105,8 +95,6 @@ let csvNA = null;
 
   let getInfo = async function(element) {
     let array = await element.findElements(By.xpath('./ul/li[@class="test fail"]'));
-    // just check fail test case, save time.
-
     for (let i = 1; i <= array.length; i++) {
       await array[i - 1].getAttribute('class')
         .then(function(message) {
@@ -186,44 +174,34 @@ let csvNA = null;
 
   let testResult = async function() {
     let backendModels = [
-      'Mac-MPS',
-      'Mac-BNNS',
-      'Mac-WASM',
-      'Mac-WebGL',
-      'Android-NNAPI',
-      'Android-WASM',
-      'Android-WebGL',
-      'Windows-clDNN',
-      'Windows-WASM',
-      'Windows-WebGL',
-      'Linux-clDNN',
-      'Linux-WASM',
-      'Linux-WebGL',
+      'Linux-Polyfill-Fast-WASM',
+      'macOS-Polyfill-Fast-WASM',
+      'Android-Polyfill-Fast-WASM',
+      'Win-Polyfill-Fast-WASM',
     ];
-    let backends = [
-      'WASM',
-      // 'WebGL'
+    
+    let prefers = [
+      'fast',
     ];
     await driver.get('chrome://gpu');
     let vr = await driver.findElement(By.xpath('//*[@id="info-view-table"]/tbody/tr[2]/td[2]/span')).getText();
     await driver.sleep(1000);
-    console.log('chrome version is :' + vr + '\n');
-    for (let j of backends) {
+    console.log(`chrome version is : ${vr} \n`);
+    for (let j of prefers) {
       let totalResult;
+      j1 = j.replace(/(\w)/,function(v){return v.toUpperCase()});
       for (let i of backendModels) {
-        if ((i.indexOf(platform) != -1) && (i.indexOf(j) != -1)) {
+        if ((i.indexOf(platform) != -1) && (i.indexOf(j1) != -1)) {
           backendModel = i;
-          console.log('Begin test with : ' + i + ' backend.');
+          console.log(`Begin test with : ${i} prefer.`);
           totalResult = baselinejson[i];
-          // let testlink = path.join('file:\/\/', __dirname, 'test', 'cts.html?backend=');
-          let testlink = 'https://brucedai.github.io/nt/test/ci.html?backend=';
+          let testlink = 'https://brucedai.github.io/webnnt/test/ci.html?prefer=';
           await driver.get(testlink + j.toLowerCase());
           for (let t = 0; t <= 6; t++) {
             let time_begin = await driver.findElement(By.xpath('//ul[@id="mocha-stats"]/li[@class="duration"]//em')).getText();
             await driver.sleep(10000);
             let time_end = await driver.findElement(By.xpath('//ul[@id="mocha-stats"]/li[@class="duration"]//em')).getText();
             if (time_begin === time_end) {
-              // add check, if pass/fail not match baseline will exit.
               let passResult = await driver.findElement(By.xpath('//*[@id="mocha-stats"]/li[2]/em')).getText();
               let failResult = await driver.findElement(By.xpath('//*[@id="mocha-stats"]/li[3]/em')).getText();
               if (totalResult.pass > passResult) {
