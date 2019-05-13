@@ -1,6 +1,6 @@
 {
     "Version": {
-        "chromium": "3acec85",
+        "chromium": "b5692cd",
         "polyfill": "853173e"
     },
     "Android-Polyfill-Fast-WASM": {
@@ -73,6 +73,12 @@
         "total": 714,
         "pass": 315,
         "fail": 399,
+        "block": 0
+    },
+    "Win-WebNN-Sustained-DML": {
+        "total": 714,
+        "pass": 286,
+        "fail": 428,
         "block": 0
     },
     "Win-WebNN-Sustained-clDNN": {
