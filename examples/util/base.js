@@ -609,12 +609,14 @@ const facialLandmarkDetectionModels = [{
   modelFile: '../facial_landmark_detection/model/face_landmark.tflite',
   inputSize: [128, 128, 3],
   outputSize: 136,
-  intro: 'Converted from a pre-trained Simple CNN model',
+  intro: 'A simple CNN model uses regression methods to map human facial features to 68 key points.',
   paperUrl: 'https://www.sciencedirect.com/science/article/pii/S0262885615001341'
 }];
 
 const emotionAnalysisModels = [{
   modelName: 'Simple CNN 7(TFlite)',
+  modelFormatName: 'emotion_analysis_tflite',
+  modelSize: '7.3MB',
   modelFile: '../emotion_analysis/model/emotion_classification_7.tflite',
   labels: ['anger', 'disgust', 'fear', 'happy', 'sad', 'surprise', 'neutral'],
   inputSize: [48, 48, 1],
@@ -622,7 +624,8 @@ const emotionAnalysisModels = [{
   preOptions: {
     norm: true,
   },
-  intro: 'Converted from a pre-trained Simple CNN model',
+  intro: 'A simple CNN model uses regression methods to map human facial features to seven different types of emotion class.',
+  paperUrl: ''
 }];
 
 const getOS = () => {

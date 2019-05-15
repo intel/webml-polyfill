@@ -61,4 +61,5 @@ $(document).ready(function () {
   showModel('#modelcv-sr tbody', superResolutionModels)
   showModel('#modelcv-odf tbody', faceDetectionModels)
   showModel('#modelcv-fld tbody', facialLandmarkDetectionModels)
+  showModel('#modelcv-ea tbody', emotionAnalysisModels)
 });
