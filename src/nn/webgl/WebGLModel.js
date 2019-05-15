@@ -23,7 +23,7 @@ export default class WebGLModel {
     this._prepared = false;
     this._profiler = null;
 
-    if (tf.ENV.backend.floatPrecision() === 16) {
+    if (tf.backend().floatPrecision() === 16) {
       console.warn(
           'The current floating point operation precision is only 16-bit');
     }
@@ -689,6 +689,7 @@ export default class WebGLModel {
   }
 
   static _supportWebGL() {
+    tf.setBackend('webgl');
     return tf.getBackend() === 'webgl';
   }
 
