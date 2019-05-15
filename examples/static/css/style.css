@@ -220,7 +220,7 @@ section {
   padding: 85px 0;
 }
 
-#imageclassification section, #posenet section, #semanticsegmentation section, #objectdetection section, #superresolution section, #faciallandmarkdetection section {
+#imageclassification section, #posenet section, #semanticsegmentation section, #objectdetection section, #superresolution section, #faciallandmarkdetection section, #emotionanalysis section {
   padding: 0px 0;
 }
 
@@ -2245,32 +2245,29 @@ button.xclose {
   display: none;
 }
 
-#objectdetection .item, #faciallandmarkdetection .item {
+#objectdetection .item, #faciallandmarkdetection .item, #emotionanalysis .item {
   border: 0px;
   background-image: none;
   box-shadow: 0 0 0 rgba(0, 0, 0, 0);
 }
 
-#objectdetection .inner, #faciallandmarkdetection .inner {
+#objectdetection .inner, #faciallandmarkdetection .inner, #emotionanalysis .inner {
   box-shadow: 0 0 0 rgba(0, 0, 0, 0);
 }
 
-#objectdetection #canvasshow, #faciallandmarkdetection #canvasshow {
+#objectdetection #canvasshow, #faciallandmarkdetection #canvasshow, #emotionanalysis #canvasshow {
   padding: 0;
   margin: 0;
   max-width: 80%;
 }
 
-#objectdetection #inference, #faciallandmarkdetection #inference {
+#objectdetection #inference, #faciallandmarkdetection #inference, #emotionanalysis #inference {
   margin-top: 15px;
   margin-bottom: -11px;
-}
-
-#objectdetection #inference, #faciallandmarkdetection #inference {
   height: 2rem;
 }
 
-#objectdetection #fps, #faciallandmarkdetection #fps {
+#objectdetection #fps, #faciallandmarkdetection #fps, #emotionanalysis #fps {
   position: relative;
   top: -1.7rem;
   left: 8.8rem;
@@ -2278,7 +2275,7 @@ button.xclose {
   padding: 4px 10px 2px 10px;
 }
 
-#objectdetection #fps.fullscreen, #faciallandmarkdetection #fps.fullscreen {
+#objectdetection #fps.fullscreen, #faciallandmarkdetection #fps.fullscreen, #emotionanalysis #fps.fullscreen {
   display: inline-block;
   position: fixed;
   left: auto !important;
@@ -2286,20 +2283,20 @@ button.xclose {
   top: 2rem;
 }
 
-#objectdetection #fullscreen i svg, #faciallandmarkdetection #fullscreen i svg {
+#objectdetection #fullscreen i svg, #faciallandmarkdetection #fullscreen i svg, #emotionanalysis #fullscreen i svg  {
   top: -4.5rem;
   left: 70%;
 }
 
-#objectdetection #fullscreen i.fullscreen svg, #faciallandmarkdetection #fullscreen i.fullscreen svg {
+#objectdetection #fullscreen i.fullscreen svg, #faciallandmarkdetection #fullscreen i.fullscreen svg, #emotionanalysis #fullscreen i.fullscreen svg {
   top: 2.2rem;
 }
 
-#objectdetection #cameratab, #faciallandmarkdetection #cameratab {
+#objectdetection #cameratab, #faciallandmarkdetection #cameratab, #emotionanalysis #cameratab {
   height: 0px;
 }
 
-#objectdetection #inference.fullscreen, #faciallandmarkdetection #inference.fullscreen {
+#objectdetection #inference.fullscreen, #faciallandmarkdetection #inference.fullscreen, #emotionanalysis #inference.fullscreen {
   width: auto !important;
   background-color: transparent;
   top: 6rem;
@@ -2307,16 +2304,16 @@ button.xclose {
 
 @media (max-width: 768px) {
   
-  #objectdetection #canvasshow, #faciallandmarkdetection #canvasshow {
+  #objectdetection #canvasshow, #faciallandmarkdetection #canvasshow, #emotionanalysis #canvasshow {
     max-width: 100%;
   }
 
-  #objectdetection #fullscreen i svg, #faciallandmarkdetection #fullscreen i svg {
+  #objectdetection #fullscreen i svg, #faciallandmarkdetection #fullscreen i svg, #emotionanalysis #fullscreen i svg {
     top: -4.5rem;
     left: 85%;
   }
 
-  #objectdetection #inference.fullscreen, #faciallandmarkdetection #inference.fullscreen {
+  #objectdetection #inference.fullscreen, #faciallandmarkdetection #inference.fullscreen, #emotionanalysis #inference.fullscreen {
     right: 2rem;
     top: 6.3rem;
   }
@@ -2374,19 +2371,23 @@ button.xclose {
   }
 }
 
-#faciallandmarkdetection #l-face_landmark_tflite {
+#faciallandmarkdetection #l-face_landmark_tflite, #emotionanalysis #l-face_landmark_tflite {
   color: rgba(255, 255, 255, 1.0);
   background-color: rgba(25, 190, 225, 0.8);
   border: 1px solid rgba(25, 190, 225, 0.9);
   padding: 0px 6px;
 }
 
-#faciallandmarkdetection #l-face_landmark_tflite:hover {
+#faciallandmarkdetection #l-face_landmark_tflite:hover, #emotionanalysis #l-face_landmark_tflite:hover  {
   background-color: rgba(25, 190, 225, 0.9);
   border: 1px solid rgba(25, 190, 225, 1.0);
 }
 
 #faciallandmarkdetection #image, #faciallandmarkdetection #video, #faciallandmarkdetection #canvas1 {
+  display: none;
+}
+
+#emotionanalysis #image, #emotionanalysis #video, #emotionanalysis #canvas1 {
   display: none;
 }
 
@@ -2673,4 +2674,5 @@ button.xclose {
   border-color: rgba(255, 111, 97, 1.0);
   background-color: rgba(255, 111, 97, 1.0);
 }
+
 

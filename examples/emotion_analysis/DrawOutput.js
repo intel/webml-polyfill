@@ -11,8 +11,8 @@ function drawFaceBoxes(image, canvas, face_boxes, classes) {
       let xmax = box[1] / image.height * canvas.height;
       let ymin = box[2] / image.height * canvas.height;
       let ymax = box[3] / image.height * canvas.height;
-      ctx.strokeStyle = "blue";
-      ctx.fillStyle = "blue";
+      ctx.strokeStyle = "#009bea";
+      ctx.fillStyle = "#009bea";
       ctx.lineWidth = 3;
       ctx.strokeRect(xmin, ymin, xmax-xmin, ymax-ymin);
       ctx.font = "20px Arial";
