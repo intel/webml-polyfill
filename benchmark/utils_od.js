@@ -15,8 +15,8 @@ class ODBenchmark extends Benchmark {
     this.deQuantizedOutputClassScoresTensor = null;
     this.deQuantizeParams = null;
     this.anchors = null;
-    this.ooModelType = null;
-    this.ooModelMargin = null;
+    this.modelType = null;
+    this.modelMargin = null;
     this.numClasses = 0;
     this.isQuantized = false;
   }
@@ -92,8 +92,8 @@ class ODBenchmark extends Benchmark {
       imageElement.src = bkImageSrc;
     }
     this.outputTensor = [];
-    this.ooModelType = this.modelInfoDict.type;
-    this.ooModelMargin = this.modelInfoDict.margin;
+    this.modelType = this.modelInfoDict.type;
+    this.modelMargin = this.modelInfoDict.margin;
     this.numClasses = this.modelInfoDict.num_classes;
     if (this.modelInfoDict.type === 'SSD') {
       if (this.isQuantized) {
@@ -159,7 +159,7 @@ class ODBenchmark extends Benchmark {
   async executeAsync() {
     let computeResults = [];
     let decodeResults = [];
-    if (this.ooModelType === 'SSD') {
+    if (this.modelType === 'SSD') {
       let outputBoxTensor, outputClassScoresTensor;
       for (let i = 0; i < this.iterations; i++) {
         this.onExecuteSingle(i);
@@ -199,7 +199,7 @@ class ODBenchmark extends Benchmark {
         console.log("Decode time:" + decodeTime);
         decodeResults.push(decodeTime);
       }
-      let boxes = getBoxes(decode_out, this.ooModelMargin);
+      let boxes = getBoxes(decode_out, this.modelMargin);
       showCanvasElement.setAttribute("width", imageElement.width);
       showCanvasElement.setAttribute("height", imageElement.height);
       drawBoxes(imageElement, showCanvasElement, boxes, this.labels);
@@ -229,8 +229,11 @@ class ODBenchmark extends Benchmark {
    * @returns {Promise<void>}
    */
   finalize() {
-    super.finalize();
     this.modelInfoDict = null;
+    if (this.backend !== 'WebNN') {
+      // explictly release memory of GPU texture or WASM heap
+      this.model._compilation._preparedModel._deleteAll();
+    }
     this.model = null;
     this.labels = null;
     this.inputTensor = null;
@@ -243,9 +246,10 @@ class ODBenchmark extends Benchmark {
     this.deQuantizedOutputClassScoresTensor = null;
     this.deQuantizeParams = null;
     this.anchors = null;
-    this.ooModelType = null;
-    this.ooModelMargin = null;
+    this.modelType = null;
+    this.modelMargin = null;
     this.numClasses = 0;
     this.isQuantized = false;
+    super.finalize();
   }
 }

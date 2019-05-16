@@ -5,13 +5,14 @@ const BenchmarkClass = {
   'semantic_segmentation': SSBenchmark
 };
 
-let imageElement = null;
 let inputElement = null;
 let pickBtnElement = null;
 let canvasElement = null;
 let showCanvasElement = null;
 let segCanvas = null;
 let bkImageSrc = null;
+let imageElement = document.getElementById('image');
+let modelElement = document.getElementById('modelName');
 let preferDivElement = document.getElementById('preferDiv');
 let preferSelectElement = document.getElementById('preferSelect');
 
@@ -94,10 +95,34 @@ async function main() {
     logger.groupEnd();
   }
 
+  function setImageSrc() {
+    let inputFile = document.getElementById('input').files[0];
+    if (inputFile !== undefined) {
+      imageElement.src = URL.createObjectURL(inputFile);
+    } else {
+      let modelClass = modelElement.options[modelElement.selectedIndex].className;
+      switch (modelClass) {
+        case 'image_classification':
+          imageElement.src = document.getElementById('imageClassificationImage').src;
+          break;
+        case 'object_detection':
+          imageElement.src = document.getElementById('objectDetectionImage').src;
+          break;
+        case 'skeleton_detection':
+          imageElement.src = document.getElementById('poseImage').src;
+          break;
+        case 'semantic_segmentation':
+          imageElement.src = document.getElementById('segmentationImage').src;
+          break;
+        default:
+          imageElement.src = document.getElementById('imageClassificationImage').src;
+      }
+    }
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
     inputElement = document.getElementById('input');
     pickBtnElement = document.getElementById('pickButton');
-    imageElement = document.getElementById('image');
     canvasElement = document.getElementById('canvas');
     showCanvasElement = document.getElementById('showCanvas');
     segCanvas = document.getElementById('segCanvas');
@@ -109,46 +134,16 @@ async function main() {
         bkImageSrc = imageElement.src;
       }
     }, false);
-    let modelElement = document.getElementById('modelName');
     modelElement.addEventListener('change', (e) => {
       $('.labels-wrapper').empty();
       bkImageSrc = null;
-      let modelClass = modelElement.options[modelElement.selectedIndex].className;
-      let inputFile = document.getElementById('input').files[0];
-      if (inputFile !== undefined) {
-        imageElement.src = URL.createObjectURL(inputFile);
-      } else {
-        if (modelClass === 'skeleton_detection') {
-          imageElement.src = document.getElementById('poseImage').src;
-        } else if (modelClass === 'object_detection') {
-          imageElement.src = document.getElementById('objectDetectionImage').src;
-        } else if (modelClass === 'semantic_segmentation') {
-          imageElement.src = document.getElementById('segmentationImage').src;
-        } else {
-          imageElement.src = document.getElementById('imageClassificationImage').src;
-        }
-      }
+      setImageSrc();
     }, false);
     let configurationsElement = document.getElementById('configurations');
     configurationsElement.addEventListener('change', (e) => {
       $('.labels-wrapper').empty();
       bkImageSrc = null;
-      let modelClass = modelElement.options[modelElement.selectedIndex].className;
-      console.log('modelClass:' + modelClass);
-      let inputFile = document.getElementById('input').files[0];
-      if (inputFile !== undefined) {
-        imageElement.src = URL.createObjectURL(inputFile);
-      } else {
-        if (modelClass === 'skeleton_detection') {
-          imageElement.src = document.getElementById('poseImage').src;
-        } else if (modelClass === 'object_detection') {
-          imageElement.src = document.getElementById('objectDetectionImage').src;
-        } else if (modelClass === 'semantic_segmentation') {
-          imageElement.src = document.getElementById('segmentationImage').src;
-        } else {
-          imageElement.src = document.getElementById('imageClassificationImage').src;
-        }
-      }
+      setImageSrc();
       if (JSON.parse(e.target.value).backend === 'WebNN') {
         document.querySelector('#preferSelect option[value=none]').disabled = true;
       } else {
@@ -175,6 +170,7 @@ async function main() {
     let preferSelectElement = document.getElementById('preferSelect');
     preferSelectElement.addEventListener('change', () => {
       updateOpsSelect();
+      setImageSrc();
     }, false);
     let polyfillConfigurations = [{
       backend: 'WASM',
