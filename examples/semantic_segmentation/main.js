@@ -1,6 +1,7 @@
 const outputCanvas = document.getElementById('canvasvideo');
 
 let currentTab = 'image';
+let front = true;
 
 let clippedSize = [];
 let hoverPos = null;
@@ -61,7 +62,7 @@ const predictCamera = async () => {
     streaming = true;
     // let res = utils.getFittedResolution(4 / 3);
     // setCamResolution(res);
-    let stream = await navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: 'user' } });
+    let stream = await navigator.mediaDevices.getUserMedia({ audio: false, video: (front ? 'user' : 'environment') });
     videoElement.srcObject = stream;
     track = stream.getTracks()[0];
     showProgress('Inferencing ...');

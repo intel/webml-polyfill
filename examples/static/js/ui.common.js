@@ -288,6 +288,46 @@ let isBackendSwitch = () => {
   return $('#backendswitch').is(':checked')
 }
 
+let isFrontFacingSwitch = () => {
+  return $('#cameraswitch').is(':checked')
+}
+
+$(document).ready(() => {
+  if (/Mobi|Android|iPhone|iPad|iPod/.test(navigator.userAgent)) {
+    $('#cameraswitch').prop('checked', front);
+
+    $('#cameraswitch').click(() => {
+      front = !front;
+      $('#cameraswitch').prop('checked', front);
+      if (skeletonDetectionPath > -1) {
+        main(us === 'camera');
+      } else {
+        updateBackend(us === 'camera', true);
+      }
+    })
+
+    if (us == 'camera') {
+      $('#cameraswitcher').show();
+    } else {
+      $('#cameraswitcher').hide();
+    }
+
+    $('#fullscreen i svg').click(() => {
+      $('#cameraswitcher').toggleClass('fullscreen');
+    })
+    
+    $('#img').click(() => {
+      $('#cameraswitcher').hide();
+    })
+
+    $('#cam').click(() => {
+      $('#cameraswitcher').fadeIn()
+    })
+  } else {
+    $('#cameraswitcher').hide();
+  }
+})
+
 $(document).ready(() => {
 
   if (us == 'camera') {

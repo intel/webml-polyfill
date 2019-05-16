@@ -1,6 +1,8 @@
 const inputCanvas = document.getElementById('inputCanvas');
 const outputCanvas = document.getElementById('outputCanvas');
 
+let front = false;
+
 let utils = new Utils();
 utils.updateProgress = updateProgress;
 
