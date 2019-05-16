@@ -113,7 +113,7 @@ body {
   position: fixed;
   left: 0;
   top: 0;
-  z-index: 1001;
+  z-index: 401;
 }
 
 .github-corner:hover .octo-arm {
@@ -528,7 +528,7 @@ a:hover {
   position: fixed;
   right: 0;
   top: 0;
-  z-index: 999;
+  z-index: 401;
   margin: 8px 10px 0 0;
   border: 0;
   background: none;
