@@ -288,6 +288,20 @@ let isBackendSwitch = () => {
   return $('#backendswitch').is(':checked')
 }
 
+let isFrontFacingSwitch = () => {
+  return $('#cameraswitch').is(':checked')
+}
+
+$(document).ready(() => {
+  $('#cameraswitch').prop('checked', front);
+
+  $('#cameraswitch').click(() => {
+    front = !front;
+    $('#cameraswitch').prop('checked', front);
+    updateBackend(us === 'camera', true);
+  })
+})
+
 $(document).ready(() => {
 
   if (us == 'camera') {
@@ -295,12 +309,14 @@ $(document).ready(() => {
     $('.nav-pills #cam').addClass('active');
     $('#imagetab').removeClass('active');
     $('#cameratab').addClass('active');
+    $('#cameraswitcher').show();
   } else {
     $('.nav-pills li').removeClass('active');
     $('.nav-pills #img').addClass('active');
     $('#cameratab').removeClass('active');
     $('#imagetab').addClass('active');
     $('#fps').html('');
+    $('#cameraswitcher').hide();
   }
 
   if (hasUrlParam('b')) {
@@ -536,6 +552,7 @@ $('#fullscreen i svg').click(() => {
   $('#fullscreen i').toggleClass('fullscreen');
   $('#ictitle').toggleClass('fullscreen');
   $('#inference').toggleClass('fullscreen');
+  $('#cameraswitcher').toggleClass('fullscreen');
 });
 
 $(document).ready(() => {
@@ -546,6 +563,7 @@ $(document).ready(() => {
     $('ul.nav-pills #img').addClass('active');
     $('#imagetab').addClass('active');
     $('#cameratab').removeClass('active');
+    $('#cameraswitcher').hide();
   });
 
   $('#cam').click(() => {
@@ -554,6 +572,7 @@ $(document).ready(() => {
     $('ul.nav-pills #cam').addClass('active');
     $('#cameratab').addClass('active');
     $('#imagetab').removeClass('active');
+    $('#cameraswitcher').fadeIn()
   });
 });
 

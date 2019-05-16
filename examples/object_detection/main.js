@@ -1,5 +1,6 @@
 const canvasElement = document.getElementById('canvas');
 const canvasShowElement = document.getElementById('canvasshow');
+let front = false;
 
 let utils = new Utils(canvasElement, canvasShowElement);
 utils.updateProgress = updateProgress;    //register updateProgress function if progressBar element exist
@@ -48,7 +49,7 @@ const utilsPredict = async (imageElement, backend, prefer) => {
 const utilsPredictCamera = async (backend, prefer) => {
   streaming = true;
   try {
-    let stream = await navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: 'environment' } });
+    let stream = await navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: (front ? 'user' : 'environment') } });
     video.srcObject = stream;
     track = stream.getTracks()[0];
     showProgress('Camera inferencing ...');

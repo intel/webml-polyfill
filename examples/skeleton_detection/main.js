@@ -35,6 +35,7 @@ customContainer.appendChild(gui.domElement);
 guiState.scoreThreshold = 0.15;
 
 let currentTab = 'image';
+let front = true;
 
 const utils = new Utils();
 const canvassingle = document.getElementById('canvas');
@@ -181,7 +182,7 @@ const drawResult = async (predict = true, decode = true) => {
 
 const setupCamera = async () => {
   showProgress('Starting camera ...');
-  const stream = await navigator.mediaDevices.getUserMedia({ 'audio': false, 'video': {facingMode: 'user'}});
+  const stream = await navigator.mediaDevices.getUserMedia({ 'audio': false, 'video': {facingMode: (front ? 'user' : 'environment') }});
   video.srcObject = stream;
   track = stream.getTracks()[0];
   streaming = true;

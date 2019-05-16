@@ -1283,7 +1283,7 @@ video.fullscreen, #canvasvideo.fullscreen, #canvasshow.fullscreen {
   width: auto;
   height: auto;
   object-fit: fill;
-  z-index: 2999;
+  z-index: 500;
   border: 0px;
 }
 
@@ -1320,7 +1320,7 @@ video.fullscreen, #canvasvideo.fullscreen, #canvasshow.fullscreen {
   right: 6rem;
   top: 2rem;
   font-size: 1.2rem;
-  z-index: 3002;
+  z-index: 502;
   border-radius: 0px;
   color: rgba(255, 255, 255, 0.7);
   background: rgba(25, 190, 225, 0.7);
@@ -1338,7 +1338,7 @@ video.fullscreen, #canvasvideo.fullscreen, #canvasshow.fullscreen {
   right: 2rem;
   top: 2rem;
   cursor: pointer;
-  z-index: 3003;
+  z-index: 503;
   color: rgba(255, 255, 255, 0.70);
 }
 
@@ -1349,7 +1349,7 @@ video.fullscreen, #canvasvideo.fullscreen, #canvasshow.fullscreen {
   font-size: 1.0rem;
   top: 5rem;
   text-transform: capitalize;
-  z-index: 3004;
+  z-index: 504;
   color: rgba(255, 255, 255, 0.70);
 }
 
@@ -1360,10 +1360,55 @@ video.fullscreen, #canvasvideo.fullscreen, #canvasshow.fullscreen {
   right: 2rem;
   font-size: 1.0rem;
   top: 7rem;
-  z-index: 3005;
+  z-index: 505;
   padding-top: 1rem;
   background-color: rgba(255, 255, 255, .03);
   color: rgba(255, 255, 255, 0.70);
+}
+
+.fullscreen .table {
+  color: rgba(255, 255, 255, 0.70);
+}
+
+
+#cameraswitcher {
+  top: 0px;
+  display: block;
+  margin-top: -50px;
+  font-weight: 200;
+  font-size: 13px;
+  text-align: center;
+}
+
+#cameraswitcher.fullscreen {
+  position: fixed;
+  display: block;
+  top: auto;
+  right: 2rem;
+  bottom: 2rem;
+  z-index: 506;
+  color: rgba(255, 255, 255, 0.70);
+}
+
+#imageclassification #cameraswitcher, #semanticsegmentation #cameraswitcher {
+  margin-top: 0px;
+}
+
+#posenet #cameraswitcher {
+  margin-top: 1rem;
+}
+
+#cameraswitcher.fullscreen .custom-control-input:checked~.custom-control-label::before {
+  border-color: rgba(255, 111, 97, 0.4);
+  background-color: rgba(255, 111, 97, 0.1);
+}
+
+#cameraswitcher.fullscreen .custom-control-input:checked~.custom-control-label::after {
+  background-color: rgba(255, 255, 255, 0.70);
+}
+
+#cameraswitcher.fullscreen .custom-control-label::before {
+  background-color: transparent;
 }
 
 #posenet #inference.fullscreen {
@@ -1374,13 +1419,15 @@ video.fullscreen, #canvasvideo.fullscreen, #canvasshow.fullscreen {
   width: 186px;
 }
 
+
+
 #my-gui-container.fullscreen {
   position: fixed;
   right: 2rem;
   font-size: 0.8rem;
   top: 8rem;
   text-transform: capitalize;
-  z-index: 3006;
+  z-index: 507;
   color: rgba(255, 255, 255, 0.70);
   padding: 10px;
 }
@@ -1430,7 +1477,7 @@ video.fullscreen, #canvasvideo.fullscreen, #canvasshow.fullscreen {
   color: rgba(255, 255, 255, 0.4);
   text-shadow: 0px 1px 1px rgba(0, 0, 0, 0.2);
   cursor: pointer;
-  z-index: 3000;
+  z-index: 600;
 }
 
 #fullscreen i svg:hover {

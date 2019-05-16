@@ -2,6 +2,7 @@ const canvasElement = document.getElementById('canvas');
 const canvasShowElement = document.getElementById('canvasshow');
 const canvasElement1 = document.getElementById('canvas1');
 
+let front = true;
 let currentEmotionModel = 'emotion_analysis_tflite';
 
 let faceDetector = new FaceDetecor(canvasElement);
@@ -64,7 +65,7 @@ const startPredict = async () => {
 const utilsPredictCamera = async () => {
   streaming = true;
   try {
-    let stream = await navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: 'environment' } });
+    let stream = await navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: (front ? 'user' : 'environment') } });
     video.srcObject = stream;
     track = stream.getTracks()[0];
     await showProgress('Camera inferencing ...');
