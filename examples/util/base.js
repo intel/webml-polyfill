@@ -17,7 +17,7 @@ const preferMap = {
 
 
 const imageClassificationModels = [{
-  modelName: 'Mobilenet v1 (TFLite)',
+  modelName: 'MobileNet v1 (TFLite)',
   modelFormatName: 'mobilenet_v1_tflite',
   modelSize: '16.9MB',
   inputSize: [224, 224, 3],
@@ -31,7 +31,7 @@ const imageClassificationModels = [{
   intro: 'An efficient Convolutional Neural Networks for Mobile Vision Applications.',
   paperUrl: 'https://arxiv.org/pdf/1704.04861.pdf'
 }, {
-  modelName: 'Mobilenet v1 Quant (TFLite)',
+  modelName: 'MobileNet v1 Quant (TFLite)',
   modelFormatName: 'mobilenet_v1_quant_tflite',
   isQuantized: true,
   modelSize: '4.3MB',
@@ -42,7 +42,7 @@ const imageClassificationModels = [{
   intro: 'Quantized version of Mobilenet v1',
   paperUrl: 'https://arxiv.org/pdf/1712.05877.pdf'
 }, {
-  modelName: 'Mobilenet v2 (TFLite)',
+  modelName: 'MobileNet v2 (TFLite)',
   modelFormatName: 'mobilenet_v2_tflite',
   modelSize: '14.0MB',
   inputSize: [224, 224, 3],
@@ -56,7 +56,7 @@ const imageClassificationModels = [{
   intro: 'MobileNetV2 improves the state of the art performance of mobile models.',
   paperUrl: 'https://arxiv.org/abs/1801.04381'
 }, {
-  modelName: 'Mobilenet v2 Quant (TFLite)',
+  modelName: 'MobileNet v2 Quant (TFLite)',
   modelFormatName: 'mobilenet_v2_quant_tflite',
   isQuantized: true,
   modelSize: '6.9MB',
@@ -123,7 +123,7 @@ const imageClassificationModels = [{
   intro: 'Quantized version of Inception v4.',
   paperUrl: 'https://arxiv.org/abs/1602.07261'
 }, {
-  modelName: 'Squeezenet (TFLite)',
+  modelName: 'SqueezeNet (TFLite)',
   modelFormatName: 'squeezenet_tflite',
   modelSize: '5.0MB',
   inputSize: [224, 224, 3],
@@ -137,7 +137,7 @@ const imageClassificationModels = [{
   intro: 'A light-weight CNN providing Alexnet level accuracy with 50X fewer parameters.',
   paperUrl: 'https://arxiv.org/abs/1602.07360'
 }, {
-  modelName: 'Inception Resnet v2 (TFLite)',
+  modelName: 'Inception ResNet v2 (TFLite)',
   modelFormatName: 'inception_resnet_v2_tflite',
   modelSize: '121.0MB',
   inputSize: [299, 299, 3],
@@ -154,7 +154,7 @@ const imageClassificationModels = [{
   intro: 'Inception architecture that has been shown to achieve very good performance at relatively low computational cost, and training with residual connections accelerates the training of Inception networks significantly. There is also some evidence of residual Inception networks outperforming similarly expensive Inception networks without residual connections.',
   paperUrl: 'https://arxiv.org/abs/1602.07261'
 }, {
-  modelName: 'Squeezenet (ONNX)',
+  modelName: 'SqueezeNet (ONNX)',
   modelFormatName: 'squeezenet_onnx',
   modelSize: '5.0MB',
   modelFile: '../image_classification/model/squeezenet1.1.onnx',
@@ -173,7 +173,7 @@ const imageClassificationModels = [{
   intro: 'A light-weight CNN providing Alexnet level accuracy with 50X fewer parameters.',
   paperUrl: 'https://arxiv.org/abs/1602.07360'
 }, {
-  modelName: 'Mobilenet v2 (ONNX)',
+  modelName: 'MobileNet v2 (ONNX)',
   modelFormatName: 'mobilenet_v2_onnx',
   modelSize: '14.2MB',
   modelFile: '../image_classification/model/mobilenetv2-1.0.onnx',
@@ -192,7 +192,7 @@ const imageClassificationModels = [{
   intro: 'MobileNetV2 improves the state of the art performance of mobile models.',
   paperUrl: 'https://arxiv.org/abs/1801.04381'
 }, {
-  modelName: 'Resnet v1 (ONNX)',
+  modelName: 'ResNet50 v1 (ONNX)',
   modelFormatName: 'resnet_v1_onnx',
   modelSize: '102.6MB',
   modelFile: '../image_classification/model/resnet50v1.onnx',
@@ -211,7 +211,7 @@ const imageClassificationModels = [{
   intro: 'A residual learning framework to ease the training of networks that are substantially deeper than those used previously. This result won the 1st place on the ILSVRC 2015 classification task.',
   paperUrl: 'https://arxiv.org/abs/1512.03385'
 }, {
-  modelName: 'Resnet v2 (ONNX)',
+  modelName: 'ResNet50 v2 (ONNX)',
   modelFormatName: 'resnet_v2_onnx',
   modelSize: '102.4MB',
   modelFile: '../image_classification/model/resnet50v2.onnx',
@@ -240,7 +240,7 @@ const imageClassificationModels = [{
   intro: 'Inception-v2 is trained for the ImageNet Large Visual Recognition Challenge.',
   paperUrl: 'https://arxiv.org/abs/1512.00567'
 }, {
-  modelName: 'Densenet (ONNX)',
+  modelName: 'DenseNet (ONNX)',
   modelFormatName: 'densenet_onnx',
   modelSize: '32.7MB',
   modelFile: '../image_classification/model/densenet121.onnx',
@@ -671,6 +671,7 @@ const getNativeAPI = (preferString) => {
     'Linux': {
       'sustained': 'clDNN',
       'fast': 'mklDNN',
+      'low': 'Myriad',
     },
     'Mac OS': {
       'fast': 'BNNS',

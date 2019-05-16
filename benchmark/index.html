@@ -49,40 +49,40 @@
           <div>
             <h4>Model</h4>
             <select id="modelName">
-              <option value="mobilenet_v1_tflite" selected>Mobilenet v1 (TFLite)</option>
-              <option value="mobilenet_v1_quant_tflite">Mobilenet v1 Quant (TFLite)</option>
-              <option value="mobilenet_v2_tflite">Mobilenet v2 (TFLite)</option>
-              <option value="mobilenet_v2_quant_tflite">Mobilenet v2 Quant (TFLite)</option>
-              <option value="squeezenet_tflite">Squeezenet (TFLite)</option>
-              <option value="inception_v3_tflite">Inception v3 (TFLite)</option>
-              <option value="inception_v4_tflite">Inception v4 (TFLite)</option>
-              <option value="inception_resnet_v2_tflite">Inception Resnet v2 (TFLite)</option>
-              <option value="mobilenet_v2_onnx">Mobilenet v2 (ONNX)</option>
-              <option value="squeezenet_onnx">SqueezeNet (ONNX)</option>
-              <option value="resnet_v1_onnx">ResNet50 v1 (ONNX)</option>
-              <option value="resnet_v2_onnx">ResNet50 v2 (ONNX)</option>
-              <option value="inception_v2_onnx">Inception v2 (ONNX)</option>
-              <option value="densenet_onnx">DenseNet (ONNX)</option>
-              <option value="ssd_mobilenet_v1_tflite">SSD MobileNet v1 (TFLite)</option>
-              <option value="ssd_mobilenet_v1_quant_tflite">SSD MobileNet v1 Quant (TFLite)</option>
-              <option value="ssd_mobilenet_v2_tflite">SSD MobileNet v2 (TFLite)</option>
-              <option value="ssd_mobilenet_v2_quant_tflite">SSD MobileNet v2 Quant (TFLite)</option>
-              <option value="ssdlite_mobilenet_v2_tflite">SSDLite MobileNet v2 (TFLite)</option>
-              <option value="tiny_yolov2_coco_tflite">Tiny Yolo v2 COCO (TFLite)</option>
-              <option value="tiny_yolov2_voc_tflite">Tiny Yolo v2 VOC (TFLite)</option>
-              <option value="posenet">PoseNet</option>
-              <option value="deeplab_mobilenet_v2_224_tflite">Deeplab 224 (TFLite)</option>
-              <option value="deeplab_mobilenet_v2_224_atrous_tflite">Deeplab 224 Atrous (TFLite)</option>
-              <option value="deeplab_mobilenet_v2_257_tflite">Deeplab 257 (TFLite)</option>
-              <option value="deeplab_mobilenet_v2_257_atrous_tflite">Deeplab 257 Atrous (TFLite)</option>
-              <option value="deeplab_mobilenet_v2_321_tflite">Deeplab 321 (TFLite)</option>
-              <option value="deeplab_mobilenet_v2_321_atrous_tflite">Deeplab 321 Atrous (TFLite)</option>
-              <option value="deeplab_mobilenet_v2_513_tflite">Deeplab 513 (TFLite)</option>
-              <option value="deeplab_mobilenet_v2_513_atrous_tflite">Deeplab 513 Atrous (TFLite)</option>
+              <option class="image_classification" selected >MobileNet v1 (TFLite)</option>
+              <option class="image_classification" >MobileNet v1 Quant (TFLite)</option>
+              <option class="image_classification" >MobileNet v2 (TFLite)</option>
+              <option class="image_classification" >MobileNet v2 Quant (TFLite)</option>
+              <option class="image_classification" >SqueezeNet (TFLite)</option>
+              <option class="image_classification" >Inception v3 (TFLite)</option>
+              <option class="image_classification" >Inception v4 (TFLite)</option>
+              <option class="image_classification" >Inception ResNet v2 (TFLite)</option>
+              <option class="image_classification" >MobileNet v2 (ONNX)</option>
+              <option class="image_classification" >SqueezeNet (ONNX)</option>
+              <option class="image_classification" >ResNet50 v1 (ONNX)</option>
+              <option class="image_classification" >ResNet50 v2 (ONNX)</option>
+              <option class="image_classification" >Inception v2 (ONNX)</option>
+              <option class="image_classification" >DenseNet (ONNX)</option>
+              <option class="object_detection" >SSD MobileNet v1 (TFLite)</option>
+              <option class="object_detection" >SSD MobileNet v1 Quant (TFLite)</option>
+              <option class="object_detection" >SSD MobileNet v2 (TFLite)</option>
+              <option class="object_detection" >SSD MobileNet v2 Quant (TFLite)</option>
+              <option class="object_detection" >SSDLite MobileNet v2 (TFLite)</option>
+              <option class="object_detection" >Tiny Yolo v2 COCO (TFLite)</option>
+              <option class="object_detection" >Tiny Yolo v2 VOC (TFLite)</option>
+              <option class="skeleton_detection" >PoseNet</option>
+              <option class="semantic_segmentation" >Deeplab 224 (TFLite)</option>
+              <option class="semantic_segmentation" >Deeplab 224 Atrous (TFLite)</option>
+              <option class="semantic_segmentation" >Deeplab 257 (TFLite)</option>
+              <option class="semantic_segmentation" >Deeplab 257 Atrous (TFLite)</option>
+              <option class="semantic_segmentation" >Deeplab 321 (TFLite)</option>
+              <option class="semantic_segmentation" >Deeplab 321 Atrous (TFLite)</option>
+              <option class="semantic_segmentation" >Deeplab 513 (TFLite)</option>
+              <option class="semantic_segmentation" >Deeplab 513 Atrous (TFLite)</option>
             </select>
           </div>
           <div>
-            <h4>Framework and backends</h4>
+            <h4>Backend</h4>
             <select id="configurations">
             </select>
           </div>
@@ -97,7 +97,7 @@
           </div>
           <div>
             <h4>Iterations</h4>
-            1(warming up) + <input type="number" id="iteration" min="1" size="4" value="200"/>
+            1(warming up) + <input type="number" id="iterations" min="1" size="4" value="200"/>
           </div>
           <div class="row top-margin">
             <div class="col-4" id="supported-ops-select">
@@ -133,14 +133,14 @@
               <label><input type="checkbox" name="supportedOp" value="25"> SOFTMAX</label>
             </div>
             <div class="col-8" align="center">
-              <canvas id="poseCanvas"></canvas>
-              <canvas id="poseCanvasPredict" width="513" height="513"></canvas>
+              <canvas id="showCanvas"></canvas>
+              <canvas id="posePredictCanvas" width="513" height="513"></canvas>
               <canvas id="segCanvas"></canvas>
               <canvas id="canvas"></canvas>
               <img id="image" crossorigin="anonymous" class="img-fluid" alt="Responsive image" src="../examples/image_classification/img/bee_eater.jpg">
               <img id="imageClassificationImage" hidden crossorigin="anonymous" class="img-fluid" alt="Responsive image" src="../examples/image_classification/img/bee_eater.jpg">
               <img id="poseImage" hidden  crossorigin="anonymous" class="img-fluid" alt="Responsive image" src="../examples/skeleton_detection/img/download.png">
-              <img id="ssdMobileImage" hidden crossorigin="anonymous" class="img-fluid" alt="Responsive image" src="../examples/object_detection/img/image1.jpg">
+              <img id="objectDetectionImage" hidden crossorigin="anonymous" class="img-fluid" alt="Responsive image" src="../examples/object_detection/img/image1.jpg">
               <img id='segmentationImage' hidden crossorigin='anonymous' class='img-fluid' alt='Responsive image' src='../examples/semantic_segmentation/img/woman.jpg'>
             </div>
             <div class="col">
@@ -167,7 +167,6 @@
     </div>
     <script src="../dist/webml-polyfill.js"></script>
     <script src="../examples/util/base.js"></script>
-
     <script src="../examples/third_party/protobuf.min.js"></script>
     <script src="../examples/util/tflite/flatbuffers/js/flatbuffers.js"></script>
     <script src="../examples/util/tflite/schema/schema_generated.js"></script>
@@ -188,7 +187,11 @@
     <script src='../examples/semantic_segmentation/src/GuidedFilter.js'></script>
     <script src="../examples/semantic_segmentation/src/DrawOutputs.js"></script>
     <script src='../examples/static/lib/jquery/jquery.min.js'></script>
-
-    <script src="index.js"></script>
+    <script src="utils.js"></script>
+    <script src="utils_ic.js"></script>
+    <script src="utils_od.js"></script>
+    <script src="utils_sd.js"></script>
+    <script src="utils_ss.js"></script>
+    <script src="main.js"></script>
   </body>
 </html>
