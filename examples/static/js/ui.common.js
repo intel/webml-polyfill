@@ -299,7 +299,11 @@ $(document).ready(() => {
     $('#cameraswitch').click(() => {
       front = !front;
       $('#cameraswitch').prop('checked', front);
-      updateBackend(us === 'camera', true);
+      if (skeletonDetectionPath > -1) {
+        main(us === 'camera');
+      } else {
+        updateBackend(us === 'camera', true);
+      }
     })
 
     if (us == 'camera') {
