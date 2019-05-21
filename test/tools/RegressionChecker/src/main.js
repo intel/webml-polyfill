@@ -528,7 +528,7 @@ var matchFlag = null;
             });
         }
 
-        return Text.slice(0, length);
+        return Text.slice(0, length).trim();
     }
 
     var checkResult = async function(element, count, title, module, flag) {
@@ -683,10 +683,11 @@ var matchFlag = null;
             }
         });
 
+        RClog("console", " ");
         await driver.wait(function() {
             if (actionCount != actions) {
                 actionCount = actions;
-                RClog("debug", graspTotal + " : " + actionCount);
+                RClog("console", "\033[1A\033[50D\033[K    grasping: " + actionCount + "/" + graspTotal);
             }
 
             return (actions == graspTotal);
