@@ -29,8 +29,9 @@ class SSBenchmark extends Benchmark {
     } else {
       typedArray = Float32Array;
     }
-    if (bkImageSrc !== null) {
-      // reset for rerun with same image
+    if (bkImageSrc === null) {
+      bkImageSrc = imageElement.src;
+    } else {
       imageElement.src = bkImageSrc;
     }
     this.inputTensor = new typedArray(this.modelInfoDict.inputSize.reduce((a, b) => a * b));
@@ -113,7 +114,6 @@ class SSBenchmark extends Benchmark {
       outputShape: this.outputSize,
       labels: this.labels,
     });
-    bkImageSrc = imageElement.src;
     imageElement.src = segCanvas.toDataURL();
     return results;
   }

@@ -87,8 +87,9 @@ class ODBenchmark extends Benchmark {
     } else {
       typedArray = Float32Array;
     }
-    if (bkImageSrc !== null) {
-      // reset for rerun with same image
+    if (bkImageSrc === null) {
+      bkImageSrc = imageElement.src;
+    } else {
       imageElement.src = bkImageSrc;
     }
     this.outputTensor = [];
@@ -204,7 +205,6 @@ class ODBenchmark extends Benchmark {
       showCanvasElement.setAttribute("height", imageElement.height);
       drawBoxes(imageElement, showCanvasElement, boxes, this.labels);
     }
-    bkImageSrc = imageElement.src;
     imageElement.src = showCanvasElement.toDataURL();
     return {
       "computeResults": computeResults,

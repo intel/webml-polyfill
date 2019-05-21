@@ -38,8 +38,9 @@ class SDBenchmark extends Benchmark {
     } else {
       typedArray = Float32Array;
     }
-    if (bkImageSrc !== null) {
-      // reset for rerun with same image
+    if (bkImageSrc === null) {
+      bkImageSrc = imageElement.src;
+    } else {
       imageElement.src = bkImageSrc;
     }
     if (pnConfigDic === null) {
@@ -160,7 +161,6 @@ class SDBenchmark extends Benchmark {
         drawSkeleton(pose.keypoints, this.minScore, ctx, scaleX, scaleY);
       }
     });
-    bkImageSrc = imageElement.src;
     imageElement.src = showCanvasElement.toDataURL();
     return {
       "computeResults": computeResults,
