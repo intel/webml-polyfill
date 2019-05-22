@@ -229,27 +229,9 @@ class ODBenchmark extends Benchmark {
    * @returns {Promise<void>}
    */
   finalize() {
-    this.modelInfoDict = null;
     if (this.backend !== 'WebNN') {
       // explictly release memory of GPU texture or WASM heap
       this.model._compilation._preparedModel._deleteAll();
     }
-    this.model = null;
-    this.labels = null;
-    this.inputTensor = null;
-    this.inputSize = null;
-    this.outputTensor = null;
-    this.outputSize = null;
-    this.outputBoxTensor = null;
-    this.outputClassScoresTensor = null;
-    this.deQuantizedOutputBoxTensor = null;
-    this.deQuantizedOutputClassScoresTensor = null;
-    this.deQuantizeParams = null;
-    this.anchors = null;
-    this.modelType = null;
-    this.modelMargin = null;
-    this.numClasses = 0;
-    this.isQuantized = false;
-    super.finalize();
   }
 }

@@ -134,18 +134,9 @@ class SSBenchmark extends Benchmark {
    * @returns {Promise<void>}
    */
   finalize() {
-    this.modelInfoDict = null;
     if (this.backend !== 'WebNN') {
       // explictly release memory of GPU texture or WASM heap
       this.model._compilation._preparedModel._deleteAll();
     }
-    this.model = null;
-    this.labels = null;
-    this.inputTensor = null;
-    this.inputSize = null;
-    this.outputTensor = null;
-    this.outputSize = null;
-    this.isQuantized = false;
-    super.finalize();
   }
 }

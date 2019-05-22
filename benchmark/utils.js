@@ -78,11 +78,7 @@ class Benchmark {
    * Finalize
    * @returns {Promise<void>}
    */
-  finalize() {
-    this.modelName = null;
-    this.backend = null;
-    this.iterations = null;
-  }
+  finalize() {}
 }
 
 function setInputTensor(pixels, imageChannels, height, width, channels, channelScheme, mean, std, inputTensor) {

@@ -185,24 +185,9 @@ class SDBenchmark extends Benchmark {
    * @returns {Promise<void>}
    */
   finalize() {
-    this.modelInfoDict = null;
     if (this.backend !== 'WebNN') {
       // explictly release memory of GPU texture or WASM heap
       this.model._compilation._preparedModel._deleteAll();
     }
-    this.model = null;
-    this.labels = null;
-    this.inputTensor = null;
-    this.inputSize = null;
-    this.modelVersion = null;
-    this.outputStride = null;
-    this.scaleFactor = null;
-    this.minScore = null;
-    this.scaleWidth = null;
-    this.scaleHeight = null;
-    this.scaleInputSize = null;
-    this.heatmapTensor = null;
-    this.offsetTensor  = null;
-    super.finalize();
   }
 }
