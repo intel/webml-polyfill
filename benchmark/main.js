@@ -52,6 +52,7 @@ async function main() {
     logger.groupEnd();
   } catch (err) {
     logger.error(err);
+    logger.groupEnd();
   }
   inputElement.removeAttribute('disabled');
   pickBtnElement.setAttribute('class', 'btn btn-primary');
