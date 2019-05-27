@@ -3,7 +3,6 @@ class Utils {
     this.rawModel;
     this.labels;
     this.model;
-    this.inputTensor;
     this.outputTensor;
     this.modelFile;
     this.labelsFile;
@@ -11,15 +10,15 @@ class Utils {
     this.outputSize;
     this.preOptions;
     this.postOptions;
-    this.canvasElement = canvas;
-    this.canvasContext = this.canvasElement.getContext('2d');
     this.updateProgress;
     this.backend = '';
     this.prefer = '';
     this.initialized = false;
     this.loaded = false;
+    this.imageSource = null;
     this.resolveGetRequiredOps = null;
     this.outstandingRequest = null;
+    this.preprocessor = null;
   }
 
   async loadModel(model) {
@@ -29,6 +28,7 @@ class Utils {
     // reset all states
     this.loaded = this.initialized = false;
     this.backend = this.prefer = '';
+    this.imageSource = null;
 
     // set new model params
     this.inputSize = model.inputSize;
@@ -38,17 +38,12 @@ class Utils {
     this.preOptions = model.preOptions || {};
     this.postOptions = model.postOptions || {};
     this.isQuantized = model.isQuantized;
-    let typedArray;
     if (this.isQuantized) {
-      typedArray = Uint8Array;
+      this.tensorType = Uint8Array;
     } else {
-      typedArray = Float32Array;
+      this.tensorType = Float32Array;
     }
-    this.inputTensor = new typedArray(this.inputSize.reduce((a, b) => a * b));
-    this.outputTensor = new typedArray(this.outputSize);
-
-    this.canvasElement.width = model.inputSize[1];
-    this.canvasElement.height = model.inputSize[0];
+    this.outputTensor = new this.tensorType(this.outputSize);
 
     let result = await this.loadModelAndLabels(this.modelFile, this.labelsFile);
     this.labels = result.text.split('\n');
@@ -98,8 +93,9 @@ class Utils {
     }
     let result = await this.model.createCompiledModel();
     console.log(`compilation result: ${result}`);
+    const dummyInputTensor = new this.tensorType(this.inputSize.reduce((a, b) => a * b));
     let start = performance.now();
-    result = await this.model.compute([this.inputTensor], [this.outputTensor]);
+    result = await this.model.compute([dummyInputTensor], [this.outputTensor]);
     let elapsed = performance.now() - start;
     console.log(`warmup time: ${elapsed.toFixed(2)} ms`);
     this.initialized = true;
@@ -132,13 +128,18 @@ class Utils {
 
   async predict(imageSource) {
     if (!this.initialized) return;
-    this.canvasContext.drawImage(imageSource, 0, 0,
-                                 this.canvasElement.width,
-                                 this.canvasElement.height);
-    this.prepareInputTensor(this.inputTensor, this.canvasElement);
-    let start = performance.now();
-    let result = await this.model.compute([this.inputTensor], [this.outputTensor]);
-    let elapsed = performance.now() - start;
+
+    if (this.imageSource !== imageSource) {
+      this.imageSource = imageSource;
+      // initialize preprocessor
+      this.preprocessor =
+          new Preprocessor(this.imageSource, this.inputSize, this.tensorType, true, this.preOptions);
+    }
+
+    const inputTensor = await this.preprocessor.getFrame();
+    const start = performance.now();
+    await this.model.compute([inputTensor], [this.outputTensor]);
+    const elapsed = performance.now() - start;
     return {
       time: elapsed.toFixed(2),
       classes: this.getTopClasses(this.outputTensor, this.labels, 3, this.model._deQuantizeParams)
@@ -180,50 +181,6 @@ class Utils {
     });
   }
 
-  prepareInputTensor(tensor, canvas) {
-    const width = this.inputSize[1];
-    const height = this.inputSize[0];
-    const channels = this.inputSize[2];
-    const imageChannels = 4; // RGBA
-    const mean = this.preOptions.mean || [0, 0, 0, 0];
-    const std  = this.preOptions.std  || [1, 1, 1, 1];
-    const norm = this.preOptions.norm || false;
-    const channelScheme = this.preOptions.channelScheme || 'RGB';
-    if (canvas.width !== width || canvas.height !== height) {
-      throw new Error(`canvas.width(${canvas.width}) is not ${width} or canvas.height(${canvas.height}) is not ${height}`);
-    }
-    let context = canvas.getContext('2d');
-    let pixels = context.getImageData(0, 0, width, height).data;
-    if (norm) {
-      pixels = new Float32Array(pixels).map(p => p / 255);
-    }
-    
-    if (channelScheme === 'RGB') {
-      // NHWC layout
-      for (let y = 0; y < height; ++y) {
-        for (let x = 0; x < width; ++x) {
-          for (let c = 0; c < channels; ++c) {
-            let value = pixels[y*width*imageChannels + x*imageChannels + c];
-            tensor[y*width*channels + x*channels + c] = (value - mean[c]) / std[c];
-          }
-        }
-      }
-    } else if (channelScheme === 'BGR') {
-      // NHWC layout
-      for (let y = 0; y < height; ++y) {
-        for (let x = 0; x < width; ++x) {
-          for (let c = 0; c < channels; ++c) {
-            let value = pixels[y*width*imageChannels + x*imageChannels + (channels-c-1)];
-            tensor[y*width*channels + x*channels + c] = (value - mean[c]) / std[c];
-          }
-        }
-      }
-    } else {
-      throw new Error(`Unknown color channel scheme ${channelScheme}`);
-    }
-
-  }
-
   getTopClasses(tensor, labels, k = 5, deQuantizeParams) {
     let probs = Array.from(tensor);
     let indexes = probs.map((prob, index) => [prob, index]);
@@ -263,6 +220,7 @@ class Utils {
 
     let iterators = [];
     let models = [];
+    let inputTensor = await this.preprocessor.getFrame();
     for (let config of configs) {
       let importer = this.modelFile.split('.').pop() === 'tflite' ? TFliteModelImporter : OnnxModelImporter;
       let model = await new importer({
@@ -270,7 +228,7 @@ class Utils {
         backend: config.backend,
         prefer: config.prefer || null,
       });
-      iterators.push(model.layerIterator([this.inputTensor], layerList));
+      iterators.push(model.layerIterator([inputTensor], layerList));
       models.push(model);
     }
 

@@ -4,8 +4,7 @@ class Utils {
     this.labels;
     this.model;
     this.modelType;
-    this.inputTensor = [];
-    this.outputTensor = [];
+    this.outputTensors = [];
     this.outputBoxTensor;
     this.outputClassScoresTensor;
     this.inputSize;
@@ -17,8 +16,7 @@ class Utils {
     this.numBoxes;
     this.anchors;
     this.margin;
-    this.canvasElement = canvas;
-    this.canvasContext = this.canvasElement.getContext('2d');
+    this.imageSource;
     this.canvasShowElement = canvasShow;
     this.updateProgress;
     this.loaded = false;
@@ -33,6 +31,7 @@ class Utils {
     // reset all states
     this.loaded = this.initialized = false;
     this.backend = this.prefer = '';
+    this.imageSource = null;
 
     // set new model params
     this.inputSize = newModel.inputSize;
@@ -49,27 +48,24 @@ class Utils {
       this.boxSize = newModel.box_size;
       this.numBoxes = newModel.num_boxes;
       this.isQuantized = newModel.isQuantized;
-      let typedArray;
       if (this.isQuantized) {
-        typedArray = Uint8Array;
+        this.tensorType = Uint8Array;
         this.deQuantizedOutputBoxTensor = new Float32Array(this.numBoxes * this.boxSize);
         this.deQuantizedOutputClassScoresTensor = new Float32Array(this.numBoxes * this.numClasses);
       } else {
-        typedArray = Float32Array;
+        this.tensorType = Float32Array;
       }
-      this.inputTensor = [new typedArray(this.inputSize.reduce((a, b) => a * b))];
-      this.outputBoxTensor = new typedArray(this.numBoxes * this.boxSize);
-      this.outputClassScoresTensor = new typedArray(this.numBoxes * this.numClasses);
-      this.outputTensor = this.prepareSsdOutputTensor(this.outputBoxTensor, this.outputClassScoresTensor);
+      
+      // this.inputTensors = [new this.inputType(this.inputSize.reduce((a, b) => a * b))];
+      this.outputBoxTensor = new this.tensorType(this.numBoxes * this.boxSize);
+      this.outputClassScoresTensor = new this.tensorType(this.numBoxes * this.numClasses);
+      this.outputTensors = this.prepareSsdOutputTensor(this.outputBoxTensor, this.outputClassScoresTensor);
     } else {
       this.anchors = newModel.anchors;
-      this.inputTensor = [new Float32Array(this.inputSize.reduce((a, b) => a * b))];
-      this.outputTensor = [new Float32Array(this.outputSize)];
+      // this.inputTensors = [new Float32Array(this.inputSize.reduce((a, b) => a * b))];
+      this.outputTensors = [new Float32Array(this.outputSize)];
     }
     this.rawModel = null;
-
-    this.canvasElement.width = newModel.inputSize[1];
-    this.canvasElement.height = newModel.inputSize[0];
 
     let result = await this.loadModelAndLabels(this.modelFile, this.labelsFile);
     this.labels = result.text.split('\n');
@@ -100,8 +96,9 @@ class Utils {
     this.model = new TFliteModelImporter(kwargs);
     let result = await this.model.createCompiledModel();
     console.log(`compilation result: ${result}`);
+    const dummyInputTensor = new this.tensorType(this.inputSize.reduce((a, b) => a * b));
     let start = performance.now();
-    result = await this.model.compute(this.inputTensor, this.outputTensor);
+    result = await this.model.compute([dummyInputTensor], this.outputTensors);
     let elapsed = performance.now() - start;
     console.log(`warmup time: ${elapsed.toFixed(2)} ms`);
     this.initialized = true;
@@ -141,15 +138,18 @@ class Utils {
 
   async predictSSD(imageSource) {
     if (!this.initialized) return;
-    this.canvasContext.drawImage(imageSource, 0, 0,
-                                 this.canvasElement.width,
-                                 this.canvasElement.height);
-    // console.log('inputTensor1', this.inputTensor)
-    this.prepareInputTensor(this.inputTensor, this.canvasElement);
-    // console.log('inputTensor2', this.inputTensor)
-    let start = performance.now();
-    let result = await this.model.compute(this.inputTensor, this.outputTensor);
-    let elapsed = performance.now() - start;
+
+    if (this.imageSource !== imageSource) {
+      this.imageSource = imageSource;
+      // initialize preprocessor
+      this.preprocessor =
+          new Preprocessor(this.imageSource, this.inputSize, this.tensorType, true, this.preOptions);
+    }
+
+    const inputTensor = await this.preprocessor.getFrame();
+    const start = performance.now();
+    await this.model.compute([inputTensor], this.outputTensors);
+    const elapsed = performance.now() - start;
     console.log(`Inference time: ${elapsed.toFixed(2)} ms`);
     // console.log('outputBoxTensor', this.outputBoxTensor)
     // console.log('outputClassScoresTensor', this.outputClassScoresTensor)
@@ -178,16 +178,21 @@ class Utils {
 
   async predictYolo(imageSource) {
     if (!this.initialized) return;
-    this.canvasContext.drawImage(imageSource, 0, 0,
-                                this.canvasElement.width,
-                                this.canvasElement.height);
-    this.prepareInputTensor(this.inputTensor, this.canvasElement);
-    let start = performance.now();
-    let result = await this.model.compute(this.inputTensor, this.outputTensor);
-    let elapsed = performance.now() - start;
+
+    if (this.imageSource !== imageSource) {
+      this.imageSource = imageSource;
+      // initialize preprocessor
+      this.preprocessor =
+          new Preprocessor(imageSource, this.inputSize, this.tensorType, this.preOptions);
+    }
+
+    const inputTensor = await this.preprocessor.getFrame();
+    const start = performance.now();
+    await this.model.compute([inputTensor], this.outputTensors);
+    const elapsed = performance.now() - start;
     console.log(`Inference time: ${elapsed.toFixed(2)} ms`);
     // let decodeStart = performance.now();
-    let decode_out = decodeYOLOv2({nb_class: this.numClasses}, this.outputTensor[0], this.anchors);
+    let decode_out = decodeYOLOv2({nb_class: this.numClasses}, this.outputTensors[0], this.anchors);
     let boxes = getBoxes(decode_out, this.margin);
     // console.log(`Decode time: ${(performance.now() - decodeStart).toFixed(2)} ms`);
     // let drawStart = performance.now();
@@ -231,43 +236,6 @@ class Utils {
       }
       request.send();
     });
-  }
-
-  prepareInputTensor(tensors, canvas) {
-    let tensor = tensors[0];
-    const width = this.inputSize[1];
-    const height = this.inputSize[0];
-    const channels = this.inputSize[2];
-    const imageChannels = 4; // RGBA
-    const mean = this.preOptions.mean || [0, 0, 0, 0];
-    const std  = this.preOptions.std  || [1, 1, 1, 1];
-    const norm = this.preOptions.norm || false;
-
-    if (canvas.width !== width || canvas.height !== height) {
-      throw new Error(`canvas.width(${canvas.width}) is not ${width} or canvas.height(${canvas.height}) is not ${height}`);
-    }
-    let context = canvas.getContext('2d');
-    let pixels = context.getImageData(0, 0, width, height).data;
-    // NHWC layout
-    if (norm) {
-      for (let y = 0; y < height; ++y) {
-        for (let x = 0; x < width; ++x) {
-          for (let c = 0; c < channels; ++c) {
-            let value = pixels[y*width*imageChannels + x*imageChannels + c] / 255;
-            tensor[y*width*channels + x*channels + c] = (value - mean[c]) / std[c];
-          }
-        }
-      }
-    } else {
-      for (let y = 0; y < height; ++y) {
-        for (let x = 0; x < width; ++x) {
-          for (let c = 0; c < channels; ++c) {
-            let value = pixels[y*width*imageChannels + x*imageChannels + c];
-            tensor[y*width*channels + x*channels + c] = (value - mean[c]) / std[c];
-          }
-        }
-      }
-    }
   }
 
   prepareSsdOutputTensor(outputBoxTensor, outputClassScoresTensor) {
