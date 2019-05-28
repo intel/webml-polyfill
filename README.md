@@ -57,6 +57,12 @@ Open browser and navigate to http://localhost:8080/test
 $ npm run watch
 ```
 
+# Examples
+
+![QR Code](./examples/static/img/qr.png)
+
+* [WebNN API Examples](https://intel.github.io/webml-polyfill/examples/)
+
 # License
 This project is following [Apache License Version 2.0](./LICENSE_APACHE2).
 
