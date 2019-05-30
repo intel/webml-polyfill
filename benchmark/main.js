@@ -3,7 +3,8 @@ const BenchmarkClass = {
   'object_detection': ODBenchmark,
   'skeleton_detection': SDBenchmark,
   'semantic_segmentation': SSBenchmark,
-  'facial_landmark_detection': FLDBenchmark
+  'facial_landmark_detection': FLDBenchmark,
+  'super_resolution': SRBenchmark
 };
 
 async function main() {

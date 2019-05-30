@@ -48,8 +48,9 @@ class SSBenchmark extends Benchmark {
     let dheight = Math.floor(imHeight / resizeRatio);
     canvasElement.setAttribute("width", width);
     canvasElement.setAttribute("height", height);
+    let imageBytes = await loadImage(imageElement.src);
     let canvasContext = canvasElement.getContext('2d');
-    canvasContext.drawImage(imageElement, 0, 0, dwidth, dheight);
+    canvasContext.drawImage(imageBytes, 0, 0, dwidth, dheight);
     let pixels = canvasContext.getImageData(0, 0, width, height).data;
     if (norm) {
       pixels = new Float32Array(pixels).map(p => p / 255);
