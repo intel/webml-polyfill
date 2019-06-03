@@ -125,11 +125,11 @@ async function loadUrl(url, binary) {
   });
 }
 
-async function loadModelAndLabels(model, label) {
+async function loadModelAndLabels(model, label=null) {
   let url = '../examples/util/';
   let arrayBuffer = await this.loadUrl(url + model, true);
   let bytes = new Uint8Array(arrayBuffer);
-  let text = await this.loadUrl(url + label);
+  let text = label ? await this.loadUrl(url + label) : null;
   return {
     bytes: bytes,
     text: text
