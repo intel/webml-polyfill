@@ -81,6 +81,10 @@
               <option class="semantic_segmentation" >Deeplab 321 Atrous (TFLite)</option>
               <option class="semantic_segmentation" >Deeplab 513 (TFLite)</option>
               <option class="semantic_segmentation" >Deeplab 513 Atrous (TFLite)</option>
+              <option class="facial_landmark_detection" >SSD MobileNet v1 (TFlite)</option>
+              <option class="facial_landmark_detection" >SSD MobileNet v2 (TFlite)</option>
+              <option class="facial_landmark_detection" >SSDLite MobileNet v2 (TFlite)</option>
+              <option class="facial_landmark_detection" >Tiny Yolo v2 (TFlite)</option>
             </select>
           </div>
           <div>
@@ -144,6 +148,7 @@
               <img id="poseImage" hidden  crossorigin="anonymous" class="img-fluid" alt="Responsive image" src="../examples/skeleton_detection/img/download.png">
               <img id="objectDetectionImage" hidden crossorigin="anonymous" class="img-fluid" alt="Responsive image" src="../examples/object_detection/img/image1.jpg">
               <img id='segmentationImage' hidden crossorigin='anonymous' class='img-fluid' alt='Responsive image' src='../examples/semantic_segmentation/img/woman.jpg'>
+              <img id='facialLandmarkDetectionImage' hidden crossorigin='anonymous' class='img-fluid' alt='Responsive image' src='../examples/facial_landmark_detection/img/image1.jpg'>
             </div>
             <div class="col">
             </div>
@@ -169,6 +174,7 @@
     </div>
     <script src="../dist/webml-polyfill.js"></script>
     <script src="../examples/util/base.js"></script>
+    <script src="../examples/util/faceDetector.js"></script>
     <script src="../examples/third_party/protobuf.min.js"></script>
     <script src="../examples/util/tflite/flatbuffers/js/flatbuffers.js"></script>
     <script src="../examples/util/tflite/schema/schema_generated.js"></script>
@@ -195,6 +201,7 @@
     <script src="utils_od.js"></script>
     <script src="utils_sd.js"></script>
     <script src="utils_ss.js"></script>
+    <script src="utils_fld.js"></script>
     <script src="main.js"></script>
   </body>
 </html>

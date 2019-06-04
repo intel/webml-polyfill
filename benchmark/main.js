@@ -2,7 +2,8 @@ const BenchmarkClass = {
   'image_classification': ICBenchmark,
   'object_detection': ODBenchmark,
   'skeleton_detection': SDBenchmark,
-  'semantic_segmentation': SSBenchmark
+  'semantic_segmentation': SSBenchmark,
+  'facial_landmark_detection': FLDBenchmark
 };
 
 async function main() {

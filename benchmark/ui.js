@@ -55,6 +55,9 @@ function setImageSrc() {
       case 'semantic_segmentation':
         imageElement.src = document.getElementById('segmentationImage').src;
         break;
+      case 'facial_landmark_detection':
+        imageElement.src = document.getElementById('facialLandmarkDetectionImage').src;
+        break;
       default:
         imageElement.src = document.getElementById('imageClassificationImage').src;
     }
