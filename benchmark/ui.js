@@ -3,6 +3,7 @@ let pickBtnElement = null;
 let canvasElement = null;
 let showCanvasElement = null;
 let segCanvas = null;
+let superCanvas = null;
 let bkImageSrc = null;
 let imageElement = document.getElementById('image');
 let modelElement = document.getElementById('modelName');
@@ -35,13 +36,44 @@ function updateOpsSelect() {
   supportedOps = getSelectedOps();
 }
 
+async function setSuperImageUI(modelClass, modelName) {
+  if (modelClass === 'super_resolution') {
+    imageElement.parentNode.setAttribute('align', '');
+    imageElement.style.width = '300px';
+    imageElement.style.height = '300px';
+    let srCanvas = document.createElement('canvas');
+    let srCtx = srCanvas.getContext('2d');
+    switch (modelName) {
+      case 'SRGAN 96x4 (TFLite)':
+        srCanvas.width = 96;
+        srCanvas.height = 96;
+        break;
+      case 'SRGAN 128x4 (TFLite)':
+        srCanvas.width = 128;
+        srCanvas.height = 128;
+        break;
+      default:
+        srCanvas.width = 96;
+        srCanvas.height = 96;
+    }
+    let imageBytes = await loadImage(imageElement.src);
+    srCtx.drawImage(imageBytes, 0, 0, srCanvas.width, srCanvas.height);
+    imageElement.src = srCanvas.toDataURL();
+  } else {
+    imageElement.parentNode.setAttribute('align', 'center');
+    imageElement.style.width = null;
+    imageElement.style.height = null;
+  }
+}
+
 function setImageSrc() {
   bkImageSrc = null;
   let inputFile = document.getElementById('input').files[0];
+  let modelClass = modelElement.options[modelElement.selectedIndex].className;
+  let modelName = modelElement.options[modelElement.selectedIndex].modelName;
   if (inputFile !== undefined) {
     imageElement.src = URL.createObjectURL(inputFile);
   } else {
-    let modelClass = modelElement.options[modelElement.selectedIndex].className;
     switch (modelClass) {
       case 'image_classification':
         imageElement.src = document.getElementById('imageClassificationImage').src;
@@ -58,10 +90,14 @@ function setImageSrc() {
       case 'facial_landmark_detection':
         imageElement.src = document.getElementById('facialLandmarkDetectionImage').src;
         break;
+      case 'super_resolution':
+        imageElement.src = document.getElementById('superImage').src;
+        break;
       default:
         imageElement.src = document.getElementById('imageClassificationImage').src;
     }
   }
+  setSuperImageUI(modelClass, modelName);
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -70,6 +106,7 @@ document.addEventListener('DOMContentLoaded', () => {
   canvasElement = document.getElementById('canvas');
   showCanvasElement = document.getElementById('showCanvas');
   segCanvas = document.getElementById('segCanvas');
+  superCanvas = document.getElementById('superCanvas');
   inputElement.addEventListener('change', (e) => {
     $('.labels-wrapper').empty();
     let files = e.target.files;
@@ -77,6 +114,7 @@ document.addEventListener('DOMContentLoaded', () => {
       bkImageSrc = null;
       imageElement.src = URL.createObjectURL(files[0]);
     }
+    setImageSrc();
   }, false);
   modelElement.addEventListener('change', (e) => {
     $('.labels-wrapper').empty();

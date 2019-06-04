@@ -93,6 +93,7 @@ class ICBenchmark extends Benchmark {
     let results = [];
     for (let i = 0; i < this.iterations; i++) {
       this.onExecuteSingle(i);
+      await new Promise(resolve => requestAnimationFrame(resolve));
       let tStart = performance.now();
       await this.executeSingleAsync();
       let elapsedTime = performance.now() - tStart;

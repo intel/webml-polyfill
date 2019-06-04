@@ -105,6 +105,18 @@ function setInputTensor(pixels, imageChannels, height, width, channels, channelS
   }
 }
 
+async function loadImage(url) {
+  let image = new Image();
+  let promise = new Promise((resolve, reject) => {
+    image.crossOrigin = '';
+    image.onload = () => {
+      resolve(image);
+    };
+  });
+  image.src = url;
+  return promise;
+}
+
 async function loadUrl(url, binary) {
   return new Promise((resolve, reject) => {
     let request = new XMLHttpRequest();

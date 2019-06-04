@@ -85,6 +85,8 @@
               <option class="facial_landmark_detection" >SSD MobileNet v2 (TFlite)</option>
               <option class="facial_landmark_detection" >SSDLite MobileNet v2 (TFlite)</option>
               <option class="facial_landmark_detection" >Tiny Yolo v2 (TFlite)</option>
+              <option class="super_resolution" >SRGAN 96x4 (TFLite)</option>
+              <option class="super_resolution" >SRGAN 128x4 (TFLite)</option>
             </select>
           </div>
           <div>
@@ -142,13 +144,15 @@
               <canvas id="showCanvas"></canvas>
               <canvas id="posePredictCanvas" width="513" height="513"></canvas>
               <canvas id="segCanvas"></canvas>
+              <canvas id="superCanvas"></canvas>
               <canvas id="canvas"></canvas>
-              <img id="image" crossorigin="anonymous" class="img-fluid" alt="Responsive image" src="../examples/image_classification/img/bee_eater.jpg">
-              <img id="imageClassificationImage" hidden crossorigin="anonymous" class="img-fluid" alt="Responsive image" src="../examples/image_classification/img/bee_eater.jpg">
+              <img id="image" crossorigin="anonymous" class="img-fluid" alt="Responsive image" src="../examples/image_classification/img/test.jpg">
+              <img id="imageClassificationImage" hidden crossorigin="anonymous" class="img-fluid" alt="Responsive image" src="../examples/image_classification/img/test.jpg">
               <img id="poseImage" hidden  crossorigin="anonymous" class="img-fluid" alt="Responsive image" src="../examples/skeleton_detection/img/download.png">
               <img id="objectDetectionImage" hidden crossorigin="anonymous" class="img-fluid" alt="Responsive image" src="../examples/object_detection/img/image1.jpg">
               <img id='segmentationImage' hidden crossorigin='anonymous' class='img-fluid' alt='Responsive image' src='../examples/semantic_segmentation/img/woman.jpg'>
               <img id='facialLandmarkDetectionImage' hidden crossorigin='anonymous' class='img-fluid' alt='Responsive image' src='../examples/facial_landmark_detection/img/image1.jpg'>
+              <img id='superImage' hidden crossorigin='anonymous' class='img-fluid' alt='Responsive image' src='../examples/super_resolution/img/mushroom.png'>
             </div>
             <div class="col">
             </div>
@@ -202,6 +206,7 @@
     <script src="utils_sd.js"></script>
     <script src="utils_ss.js"></script>
     <script src="utils_fld.js"></script>
+    <script src="utils_sr.js"></script>
     <script src="main.js"></script>
   </body>
 </html>
