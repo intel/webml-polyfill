@@ -4,7 +4,8 @@ const BenchmarkClass = {
   'skeleton_detection': SDBenchmark,
   'semantic_segmentation': SSBenchmark,
   'facial_landmark_detection': FLDBenchmark,
-  'super_resolution': SRBenchmark
+  'super_resolution': SRBenchmark,
+  'emotion_analysis' : EMBenchmark
 };
 
 async function main() {

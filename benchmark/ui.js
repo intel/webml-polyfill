@@ -93,6 +93,9 @@ function setImageSrc() {
       case 'super_resolution':
         imageElement.src = document.getElementById('superImage').src;
         break;
+      case 'emotion_analysis':
+        imageElement.src = document.getElementById('emotionanalysisImage').src;
+        break;
       default:
         imageElement.src = document.getElementById('imageClassificationImage').src;
     }
