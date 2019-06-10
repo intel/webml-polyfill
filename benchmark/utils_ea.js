@@ -1,5 +1,5 @@
 // Benchmark for Facial Landmark Detection models
-class EMBenchmark extends Benchmark {
+class EABenchmark extends Benchmark {
   constructor(modelName, backend, iterations) {
     super(...arguments);
     this.faceDetector = new FaceDetecor(canvasElement);
@@ -37,13 +37,11 @@ class EMBenchmark extends Benchmark {
     let height = imageElement.naturalHeight;
     canvas.setAttribute('width', width);
     canvas.setAttribute('height', height);
-    let ctx =canvas.getContext('2d');
+    let ctx = canvas.getContext('2d');
     ctx.drawImage(imageElement,0,0,width,height);
     this.imageElement = document.createElement('img');
-    this.imageElement.setAttribute('src',canvas.toDataURL());
+    this.imageElement.setAttribute('src', canvas.toDataURL());
   }
-  
-  
   
   async setInputOutput(box) {
     let inputCanvas = document.createElement('canvas');
@@ -63,16 +61,15 @@ class EMBenchmark extends Benchmark {
     let canvasContext = inputCanvas.getContext('2d');
     canvasContext.drawImage(imageElement, box[0], box[2], 
                             box[1]-box[0], box[3]-box[2], 0, 0, 
-                            width,
-                            height);
+                            width,height);
     let pixels = canvasContext.getImageData(0, 0, width, height).data;
     if (norm) {
       for (let y = 0; y < height; ++y) {
         for (let x = 0; x < width; ++x) {
           for (let c = 0; c < channels; ++c) {
-            let index = y*width*imageChannels + x*imageChannels + c;
-            let value = (pixels[index]+pixels[index+1]+pixels[index+2]) / 3 / 255;
-            this.inputTensor[y*width*channels + x*channels + c] = (value - mean[c]) / std[c];
+            let index = y * width * imageChannels + x * imageChannels + c;
+            let value = (pixels[index] + pixels[index + 1] + pixels[index + 2]) / 3 / 255;
+            this.inputTensor[y * width * channels + x * channels + c] = (value - mean[c]) / std[c];
           }
         }
       }
