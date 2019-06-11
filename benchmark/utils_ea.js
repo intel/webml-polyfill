@@ -1,4 +1,4 @@
-// Benchmark for Emotion Analysis models
+// Benchmark for Facial Landmark Detection models
 class EABenchmark extends Benchmark {
   constructor(modelName, backend, iterations) {
     super(...arguments);
@@ -11,6 +11,7 @@ class EABenchmark extends Benchmark {
     this.outputTensor = null;
     this.outputSize = null;
     this.outputBoxTensor = null;
+    this.imageElement = null;
   }
 
   async setupFaceDetector() {
@@ -38,7 +39,7 @@ class EABenchmark extends Benchmark {
     canvas.setAttribute('width', width);
     canvas.setAttribute('height', height);
     let ctx = canvas.getContext('2d');
-    ctx.drawImage(imageElement,0,0,width,height);
+    ctx.drawImage(imageElement, 0, 0, width, height);
     this.imageElement = document.createElement('img');
     this.imageElement.setAttribute('src', canvas.toDataURL());
   }
@@ -60,8 +61,8 @@ class EABenchmark extends Benchmark {
     inputCanvas.setAttribute("height", height);
     let canvasContext = inputCanvas.getContext('2d');
     canvasContext.drawImage(imageElement, box[0], box[2], 
-                            box[1]-box[0], box[3]-box[2], 0, 0, 
-                            width,height);
+                            box[1] - box[0], box[3] - box[2], 0, 0, 
+                            width, height);
     let pixels = canvasContext.getImageData(0, 0, width, height).data;
     if (norm) {
       for (let y = 0; y < height; ++y) {
@@ -171,7 +172,7 @@ class EABenchmark extends Benchmark {
       ctx.strokeStyle = "#009bea";
       ctx.fillStyle = "#009bea";
       ctx.lineWidth = 3;
-      ctx.strokeRect(xmin, ymin, xmax-xmin, ymax-ymin);
+      ctx.strokeRect(xmin, ymin, xmax - xmin, ymax - ymin);
       ctx.font = "20px Arial";
       let prob = classes[i].prob;
       let label = classes[i].label;
@@ -183,7 +184,7 @@ class EABenchmark extends Benchmark {
         ctx.textAlign = 'start';
         ctx.fillText(text, xmin, ymin - 3);
       } else {
-        ctx.fillRect(xmin + 2, ymin , width + 4,  parseInt(ctx.font, 10));
+        ctx.fillRect(xmin + 2, ymin, width + 4, parseInt(ctx.font, 10));
         ctx.fillStyle = "white";
         ctx.textAlign = 'start';
         ctx.fillText(text, xmin + 2, ymin + 15);
