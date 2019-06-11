@@ -66,6 +66,7 @@ export default class WebGLModel {
         // allocate WebGL runtime textures
         for (const operation of ops) {
           for (const tensorId of [...operation.inputs, ...operation.outputs]) {
+            if (!!this._operands[tensorId]) continue;
             const operand = this._model._operands[tensorId];
             if (utils.isTensor(operand.type)) {
               const type = this._getOperandType(operand.type);
