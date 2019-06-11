@@ -1,4 +1,4 @@
-// Benchmark for Facial Landmark Detection models
+// Benchmark for Emotion Analysis Detection models
 class EABenchmark extends Benchmark {
   constructor(modelName, backend, iterations) {
     super(...arguments);
