@@ -5,7 +5,7 @@ const BenchmarkClass = {
   'semantic_segmentation': SSBenchmark,
   'facial_landmark_detection': FLDBenchmark,
   'super_resolution': SRBenchmark,
-  'emotion_analysis' : EABenchmark
+  'emotion_analysis': EABenchmark
 };
 
 async function main() {
