@@ -99,6 +99,43 @@ const showSubGraphsSummary = (summary) => {
   }
 }
 
+const formatToLogo = {
+  'tflite': '../static/img/l-tflite.png',
+  'onnx': '../static/img/l-onnx.png',
+  'openvino': '../static/img/l-openvino.png',
+};
+
+const constructModelTable = (modelList) => {
+
+  const allFormats = new Set(modelList.map((m) => m.format));
+  const tbody = $('#query tbody');
+  const trows = [];
+  for (const format of allFormats) {
+    const trow = $('<tr class="model">');
+    const tdata = $('<td>');
+    trow.append(tdata);
+
+    const logo = formatToLogo[format.toLowerCase()];
+    tdata.append($(`<img src='${logo}' alt='${format} Format' title='${format} Format'>`));
+
+    const models = modelList.filter((m) => format === m.format && !m.disabled);
+    for (const model of models) {
+      const modelName = model.modelName.replace(/ \(.*\)$/, '');
+      const modelFormatName = model.modelFormatName;
+      tdata.append($(`<input type='radio' class='d-none' name='m'id='${modelFormatName}' value='${modelFormatName}'>`));
+      tdata.append($(`<label id='l-${modelFormatName}' class='themodel' for='${modelFormatName}' title='${modelName}'>${modelName}</label>`));
+    }
+    trows.push(trow);
+  }
+  trows[0].prepend($(`<th class='text-center' rowspan='${allFormats.size}'>
+                        <a href='../model.html' title='View model details'>Model</a>
+                      </th>`));
+  tbody.prepend(trows);
+
+  $('input:radio[name=m]').click(changeModel);
+  checkedModelStyle();
+};
+
 const setPreferenceCodeToolTip = () => {
   if($('#backendpolyfilltitle')) {
     $('#backendpolyfilltitle').attr('data-html', 'true')
@@ -285,6 +322,40 @@ let isFrontFacingSwitch = () => {
   return $('#cameraswitch').is(':checked')
 }
 
+const changeModel = () => {
+  $('.alert').hide();
+  let rid = $('input:radio[name="m"]:checked').attr('id');
+  if (rid) {
+    if (rid.indexOf('_onnx') > -1) {
+      um = rid.replace('_onnx', '');
+      ut = 'onnx';
+    }
+    if (rid.indexOf('_tflite') > -1) {
+      um = rid.replace('_tflite', '');
+      ut = 'tflite';
+    }
+    if (rid.indexOf('_openvino') > -1) {
+      um = rid.replace('_openvino', '');
+      ut = 'openvino';
+    }
+  }
+  if (currentBackend && currentPrefer) {
+    strsearch = `?prefer=${currentPrefer}&b=${currentBackend}&m=${um}&t=${ut}&s=${us}&d=${ud}`;
+  } else {
+    strsearch = `?prefer=${up}&b=${ub}&m=${um}&t=${ut}&s=${us}&d=${ud}`;
+  }
+  // location.href = strsearch;
+  window.history.pushState(null, null, strsearch);
+
+  checkedModelStyle();
+  disableModel();
+  currentModel = `${um}_${ut}`;
+  updateTitle(currentExample, currentBackend, currentPrefer, `${um}`, `${ut}`);
+  $('.offload').hide();
+  main(us === 'camera');
+};
+
+
 $(document).ready(() => {
   if (/Mobi|Android|iPhone|iPad|iPod/.test(navigator.userAgent)) {
     $('#cameraswitch').prop('checked', front);
@@ -469,6 +540,7 @@ if (skeletonDetectionPath <= -1) {
         showError('No model selected', 'Please select a model to start prediction.');
         return;
       }
+      updateTitle(currentExample, currentBackend, currentPrefer, `${um}`, `${ut}`);
       updateBackend(us === 'camera', true);
     });
 
@@ -508,35 +580,11 @@ if (skeletonDetectionPath <= -1) {
         showError('No model selected', 'Please select a model to start prediction.');
         return;
       }
+      updateTitle(currentExample, currentBackend, currentPrefer, `${um}`, `${ut}`);
       updateBackend(us === 'camera', true);
     });
 
-    $('input:radio[name=m]').click(() => {
-      $('.alert').hide();
-      let rid = $('input:radio[name="m"]:checked').attr('id');
-      if (rid) {
-        if (rid.indexOf('_onnx') > -1) {
-          um = rid.replace('_onnx', '');
-          ut = 'onnx';
-        }
-        if (rid.indexOf('_tflite') > -1) {
-          um = rid.replace('_tflite', '');
-          ut = 'tflite';
-        }
-      }
-      if (currentBackend && currentPrefer) {
-        strsearch = `?prefer=${currentPrefer}&b=${currentBackend}&m=${um}&t=${ut}&s=${us}&d=${ud}`;
-      } else {
-        strsearch = `?prefer=${up}&b=${ub}&m=${um}&t=${ut}&s=${us}&d=${ud}`;
-      }
-      // location.href = strsearch;
-      window.history.pushState(null, null, strsearch);
-
-      checkedModelStyle();
-      disableModel();
-      currentModel = `${um}_${ut}`;
-      main(us === 'camera');
-    });
+    $('input:radio[name=m]').click(changeModel);
 
     $('#extra').click(() => {
       componentToggle();

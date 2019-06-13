@@ -1,5 +1,6 @@
 function getModelName(modelname) {
-  return modelname.replace('_tflite', '').replace('_onnx', '').replace(/_/g, ' ');
+  return modelname.replace('_tflite', '').replace('_onnx', '')
+      .replace('_openvino', '').replace(/_/g, ' ');
 }
 
 function isTFLite(modelname){
@@ -17,14 +18,7 @@ function showModel(div, modelcategory) {
     let name = '<td scope=\'col\' class=\'name\'>' + getModelName(model.modelFormatName) + '</td>';
     row += name;
 
-    let modeltype;
-    if(isTFLite(model.modelFormatName)) {
-      modeltype = `<td scope='col' class='format'>TFLite</td>`;
-    } else if(isONNX(model.modelFormatName)) {
-      modeltype = `<td scope='col' class='format'>ONNX</td>`;
-    } else {
-      modeltype = `<td scope='col' class='format'></td>`;
-    }
+    let modeltype = `<td scope='col' class='format'>${model.format || '-'}</td>`;
     row += modeltype;
 
     let size = `<td scope='col' class='size'>${model.modelSize}</td>`;

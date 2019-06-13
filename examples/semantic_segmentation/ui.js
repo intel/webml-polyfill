@@ -15,19 +15,6 @@ let ssmodel = () => {
 $(document).ready(() => {
   updateTitle('Semantic Segmentation', ub, up, ssmodel(), ut);
 
-  $('input:radio[name=bp]').click(() => {
-    updateTitle('Semantic Segmentation', currentBackend, currentPrefer, ssmodel(), `${ut}`);
-  });
-
-  $('input:radio[name=bw]').click(() => {
-    updateTitle('Semantic Segmentation', currentBackend, currentPrefer, ssmodel(), `${ut}`);
-  });
-
-  $('input:radio[name=m]').click(() => {
-    updateTitle('Semantic Segmentation', currentBackend, currentPrefer, ssmodel(), `${ut}`);
-    $('.offload').hide();
-  });
- 
   inputElement.addEventListener('change', (e) => {
     let files = e.target.files;
     if (files.length > 0) {
@@ -65,6 +52,8 @@ const selectBackgroundButton = document.getElementById('chooseBackground');
 const clearBackgroundButton = document.getElementById('clearBackground');
 
 $(window).load(() => {
+
+  constructModelTable(semanticSegmentationModels);
 
   let colorPicker = new iro.ColorPicker('#color-picker-container', {
     width: 200,

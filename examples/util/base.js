@@ -18,6 +18,7 @@ const preferMap = {
 
 const imageClassificationModels = [{
   modelName: 'MobileNet v1 (TFLite)',
+  format: 'TFLite',
   modelFormatName: 'mobilenet_v1_tflite',
   modelSize: '16.9MB',
   inputSize: [224, 224, 3],
@@ -32,6 +33,7 @@ const imageClassificationModels = [{
   paperUrl: 'https://arxiv.org/pdf/1704.04861.pdf'
 }, {
   modelName: 'MobileNet v1 Quant (TFLite)',
+  format: 'TFLite',
   modelFormatName: 'mobilenet_v1_quant_tflite',
   isQuantized: true,
   modelSize: '4.3MB',
@@ -43,6 +45,7 @@ const imageClassificationModels = [{
   paperUrl: 'https://arxiv.org/pdf/1712.05877.pdf'
 }, {
   modelName: 'MobileNet v2 (TFLite)',
+  format: 'TFLite',
   modelFormatName: 'mobilenet_v2_tflite',
   modelSize: '14.0MB',
   inputSize: [224, 224, 3],
@@ -57,6 +60,7 @@ const imageClassificationModels = [{
   paperUrl: 'https://arxiv.org/abs/1801.04381'
 }, {
   modelName: 'MobileNet v2 Quant (TFLite)',
+  format: 'TFLite',
   modelFormatName: 'mobilenet_v2_quant_tflite',
   isQuantized: true,
   modelSize: '6.9MB',
@@ -70,7 +74,23 @@ const imageClassificationModels = [{
   intro: 'Quantized version of Mobilenet v2',
   paperUrl: 'https://arxiv.org/abs/1806.08342'
 }, {
+  modelName: 'SqueezeNet (TFLite)',
+  format: 'TFLite',
+  modelFormatName: 'squeezenet_tflite',
+  modelSize: '5.0MB',
+  inputSize: [224, 224, 3],
+  outputSize: 1001,
+  modelFile: '../image_classification/model/squeezenet.tflite',
+  labelsFile: '../image_classification/model/labels1001.txt',
+  preOptions: {
+    mean: [127.5, 127.5, 127.5],
+    std: [127.5, 127.5, 127.5],
+  },
+  intro: 'A light-weight CNN providing Alexnet level accuracy with 50X fewer parameters.',
+  paperUrl: 'https://arxiv.org/abs/1602.07360'
+}, {
   modelName: 'Inception v3 (TFLite)',
+  format: 'TFLite',
   modelFormatName: 'inception_v3_tflite',
   modelSize: '95.3MB',
   inputSize: [299, 299, 3],
@@ -85,6 +105,7 @@ const imageClassificationModels = [{
   paperUrl: 'http://arxiv.org/abs/1512.00567'
 }, {
   modelName: 'Inception v3 Quant (TFLite)',
+  format: 'TFLite',
   modelFormatName: 'inception_v3_quant_tflite',
   isQuantized: true,
   modelSize: '23.9MB',
@@ -99,6 +120,7 @@ const imageClassificationModels = [{
   paperUrl: 'https://arxiv.org/abs/1806.08342'
 }, {
   modelName: 'Inception v4 (TFLite)',
+  format: 'TFLite',
   modelFormatName: 'inception_v4_tflite',
   modelSize: '170.7MB',
   inputSize: [299, 299, 3],
@@ -113,6 +135,7 @@ const imageClassificationModels = [{
   paperUrl: 'https://arxiv.org/abs/1602.07261'
 }, {
   modelName: 'Inception v4 Quant (TFLite)',
+  format: 'TFLite',
   modelFormatName: 'inception_v4_quant_tflite',
   isQuantized: true,
   modelSize: '42.9MB',
@@ -123,21 +146,8 @@ const imageClassificationModels = [{
   intro: 'Quantized version of Inception v4.',
   paperUrl: 'https://arxiv.org/abs/1602.07261'
 }, {
-  modelName: 'SqueezeNet (TFLite)',
-  modelFormatName: 'squeezenet_tflite',
-  modelSize: '5.0MB',
-  inputSize: [224, 224, 3],
-  outputSize: 1001,
-  modelFile: '../image_classification/model/squeezenet.tflite',
-  labelsFile: '../image_classification/model/labels1001.txt',
-  preOptions: {
-    mean: [127.5, 127.5, 127.5],
-    std: [127.5, 127.5, 127.5],
-  },
-  intro: 'A light-weight CNN providing Alexnet level accuracy with 50X fewer parameters.',
-  paperUrl: 'https://arxiv.org/abs/1602.07360'
-}, {
   modelName: 'Inception ResNet v2 (TFLite)',
+  format: 'TFLite',
   modelFormatName: 'inception_resnet_v2_tflite',
   modelSize: '121.0MB',
   inputSize: [299, 299, 3],
@@ -155,6 +165,7 @@ const imageClassificationModels = [{
   paperUrl: 'https://arxiv.org/abs/1602.07261'
 }, {
   modelName: 'SqueezeNet (ONNX)',
+  format: 'ONNX',
   modelFormatName: 'squeezenet_onnx',
   modelSize: '5.0MB',
   modelFile: '../image_classification/model/squeezenet1.1.onnx',
@@ -174,6 +185,7 @@ const imageClassificationModels = [{
   paperUrl: 'https://arxiv.org/abs/1602.07360'
 }, {
   modelName: 'MobileNet v2 (ONNX)',
+  format: 'ONNX',
   modelFormatName: 'mobilenet_v2_onnx',
   modelSize: '14.2MB',
   modelFile: '../image_classification/model/mobilenetv2-1.0.onnx',
@@ -193,6 +205,7 @@ const imageClassificationModels = [{
   paperUrl: 'https://arxiv.org/abs/1801.04381'
 }, {
   modelName: 'ResNet50 v1 (ONNX)',
+  format: 'ONNX',
   modelFormatName: 'resnet_v1_onnx',
   modelSize: '102.6MB',
   modelFile: '../image_classification/model/resnet50v1.onnx',
@@ -212,6 +225,7 @@ const imageClassificationModels = [{
   paperUrl: 'https://arxiv.org/abs/1512.03385'
 }, {
   modelName: 'ResNet50 v2 (ONNX)',
+  format: 'ONNX',
   modelFormatName: 'resnet_v2_onnx',
   modelSize: '102.4MB',
   modelFile: '../image_classification/model/resnet50v2.onnx',
@@ -231,6 +245,7 @@ const imageClassificationModels = [{
   paperUrl: 'https://arxiv.org/abs/1603.05027'
 }, {
   modelName: 'Inception v2 (ONNX)',
+  format: 'ONNX',
   modelFormatName: 'inception_v2_onnx',
   modelSize: '45.0MB',
   modelFile: '../image_classification/model/inceptionv2.onnx',
@@ -240,8 +255,9 @@ const imageClassificationModels = [{
   intro: 'Inception-v2 is trained for the ImageNet Large Visual Recognition Challenge.',
   paperUrl: 'https://arxiv.org/abs/1512.00567'
 }, {
-  modelName: 'DenseNet (ONNX)',
-  modelFormatName: 'densenet_onnx',
+  modelName: 'DenseNet 121 (ONNX)',
+  format: 'ONNX',
+  modelFormatName: 'densenet_121_onnx',
   modelSize: '32.7MB',
   modelFile: '../image_classification/model/densenet121.onnx',
   labelsFile: '../image_classification/model/labels1000.txt',
@@ -263,6 +279,7 @@ const imageClassificationModels = [{
 
 const objectDetectionModels = [{
   modelName: 'SSD MobileNet v1 (TFLite)',
+  format: 'TFLite',
   modelFormatName: 'ssd_mobilenet_v1_tflite',
   modelSize: '27.3MB',
   modelFile: '../object_detection/model/ssd_mobilenet_v1.tflite',
@@ -281,6 +298,7 @@ const objectDetectionModels = [{
   paperUrl: 'https://arxiv.org/abs/1803.08225'
 }, {
   modelName: 'SSD MobileNet v1 Quant (TFLite)',
+  format: 'TFLite',
   modelFormatName: 'ssd_mobilenet_v1_quant_tflite',
   isQuantized: true,
   modelSize: '6.9MB',
@@ -296,6 +314,7 @@ const objectDetectionModels = [{
   paperUrl: 'https://arxiv.org/pdf/1712.05877.pdf'
 }, {
   modelName: 'SSD MobileNet v2 (TFLite)',
+  format: 'TFLite',
   modelFormatName: 'ssd_mobilenet_v2_tflite',
   modelSize: '67.3MB',
   modelFile: '../object_detection/model/ssd_mobilenet_v2.tflite',
@@ -314,6 +333,7 @@ const objectDetectionModels = [{
   paperUrl: 'https://arxiv.org/abs/1801.04381'
 }, {
   modelName: 'SSD MobileNet v2 Quant (TFLite)',
+  format: 'TFLite',
   modelFormatName: 'ssd_mobilenet_v2_quant_tflite',
   isQuantized: true,
   modelSize: '6.2MB',
@@ -329,6 +349,7 @@ const objectDetectionModels = [{
   paperUrl: 'https://arxiv.org/abs/1806.08342'
 }, {
   modelName: 'SSDLite MobileNet v2 (TFLite)',
+  format: 'TFLite',
   modelFormatName: 'ssdlite_mobilenet_v2_tflite',
   modelSize: '17.9MB',
   modelFile: '../object_detection/model/ssdlite_mobilenet_v2.tflite',
@@ -347,6 +368,7 @@ const objectDetectionModels = [{
   paperUrl: 'https://arxiv.org/abs/1801.04381'
 }, {
   modelName: 'Tiny Yolo v2 COCO (TFLite)',
+  format: 'TFLite',
   modelFormatName: 'tiny_yolov2_coco_tflite',
   modelSize: '44.9MB',
   modelFile: '../object_detection/model/tiny_yolov2_coco.tflite',
@@ -364,6 +386,7 @@ const objectDetectionModels = [{
   paperUrl: 'https://arxiv.org/abs/1612.08242'
 }, {
   modelName: 'Tiny Yolo v2 VOC (TFLite)',
+  format: 'TFLite',
   modelFormatName: 'tiny_yolov2_voc_tflite',
   modelSize: '63.4MB',
   modelFile: '../object_detection/model/tiny_yolov2_voc.tflite',
@@ -383,6 +406,7 @@ const objectDetectionModels = [{
 
 const humanPoseEstimationModels = [{
   modelName: 'PoseNet',
+  format: '',
   modelFormatName: 'posenet',
   modelSize: '13.3MB',
   modelFile: '../skeleton_detection/model/mobilenet_v1_101',
@@ -397,6 +421,7 @@ const humanPoseEstimationModels = [{
 
 const semanticSegmentationModels = [{
     modelName: 'Deeplab 224 (TFLite)',
+    format: 'TFLite',
     modelFormatName: 'deeplab_mobilenet_v2_224_tflite',
     modelSize: '9.5MB',
     modelFile: '../semantic_segmentation/model/deeplab_mobilenetv2_224.tflite',
@@ -411,6 +436,7 @@ const semanticSegmentationModels = [{
     paperUrl: 'https://arxiv.org/abs/1802.02611'
   }, {
     modelName: 'Deeplab 224 Atrous (TFLite)',
+    format: 'TFLite',
     modelFormatName: 'deeplab_mobilenet_v2_224_atrous_tflite',
     modelSize: '8.4MB',
     modelFile: '../semantic_segmentation/model/deeplab_mobilenetv2_224_dilated.tflite',
@@ -425,6 +451,7 @@ const semanticSegmentationModels = [{
     paperUrl: 'https://arxiv.org/abs/1802.02611'
   }, {
     modelName: 'Deeplab 257 (TFLite)',
+    format: 'TFLite',
     modelFormatName: 'deeplab_mobilenet_v2_257_tflite',
     modelSize: '9.5MB',
     modelFile: '../semantic_segmentation/model/deeplab_mobilenetv2_257.tflite',
@@ -439,6 +466,7 @@ const semanticSegmentationModels = [{
     paperUrl: 'https://arxiv.org/abs/1802.02611'
   }, {
     modelName: 'Deeplab 257 Atrous (TFLite)',
+    format: 'TFLite',
     modelFormatName: 'deeplab_mobilenet_v2_257_atrous_tflite',
     modelSize: '8.4MB',
     modelFile: '../semantic_segmentation/model/deeplab_mobilenetv2_257_dilated.tflite',
@@ -453,6 +481,7 @@ const semanticSegmentationModels = [{
     paperUrl: 'https://arxiv.org/abs/1802.02611'
   }, {
     modelName: 'Deeplab 321 (TFLite)',
+    format: 'TFLite',
     modelFormatName: 'deeplab_mobilenet_v2_321_tflite',
     modelSize: '9.5MB',
     modelFile: '../semantic_segmentation/model/deeplab_mobilenetv2_321.tflite',
@@ -467,6 +496,7 @@ const semanticSegmentationModels = [{
     paperUrl: 'https://arxiv.org/abs/1802.02611'
   }, {
     modelName: 'Deeplab 321 Atrous (TFLite)',
+    format: 'TFLite',
     modelFormatName: 'deeplab_mobilenet_v2_321_atrous_tflite',
     modelSize: '8.4MB',
     modelFile: '../semantic_segmentation/model/deeplab_mobilenetv2_321_dilated.tflite',
@@ -481,6 +511,7 @@ const semanticSegmentationModels = [{
     paperUrl: 'https://arxiv.org/abs/1802.02611'
   }, {
     modelName: 'Deeplab 513 (TFLite)',
+    format: 'TFLite',
     modelFormatName: 'deeplab_mobilenet_v2_513_tflite',
     modelSize: '9.5MB',
     modelFile: '../semantic_segmentation/model/deeplab_mobilenetv2_513.tflite',
@@ -495,6 +526,7 @@ const semanticSegmentationModels = [{
     paperUrl: 'https://arxiv.org/abs/1802.02611'
   }, {
     modelName: 'Deeplab 513 Atrous (TFLite)',
+    format: 'TFLite',
     modelFormatName: 'deeplab_mobilenet_v2_513_atrous_tflite',
     modelSize: '8.4MB',
     modelFile: '../semantic_segmentation/model/deeplab_mobilenetv2_513_dilated.tflite',
@@ -512,7 +544,8 @@ const semanticSegmentationModels = [{
 const superResolutionModels = [
   {
     modelName: 'SRGAN 96x4 (TFLite)',
-    modelFormatName: 'srgan_96_4_tflite',
+    format: 'TFLite',
+    modelFormatName: 'srgan_96x4_tflite',
     modelSize: '6.1MB',
     inputSize: [96, 96, 3],
     outputSize: [384, 384, 3],
@@ -523,7 +556,8 @@ const superResolutionModels = [
   },
   {
     modelName: 'SRGAN 128x4 (TFLite)',
-    modelFormatName: 'srgan_128_4_tflite',
+    format: 'TFLite',
+    modelFormatName: 'srgan_128x4_tflite',
     modelSize: '6.1MB',
     inputSize: [128, 128, 3],
     outputSize: [512, 512, 3],
@@ -536,6 +570,7 @@ const superResolutionModels = [
 
 const faceDetectionModels = [{
     modelName: 'SSD MobileNet v1 (TFlite)',
+    format: 'TFLite',
     modelFormatName: 'ssd_mobilenetv1_face_tflite',
     modelSize: '22.0MB',
     type: 'SSD',
@@ -553,6 +588,7 @@ const faceDetectionModels = [{
     paperUrl: 'https://arxiv.org/abs/1803.08225'
   }, {
     modelName: 'SSD MobileNet v2 (TFlite)',
+    format: 'TFLite',
     modelFormatName: 'ssd_mobilenetv2_face_tflite',
     modelSize: '18.4MB',
     type: 'SSD',
@@ -570,6 +606,7 @@ const faceDetectionModels = [{
     paperUrl: 'https://arxiv.org/abs/1801.04381'
   }, {
     modelName: 'SSDLite MobileNet v2 (TFlite)',
+    format: 'TFLite',
     modelFormatName: 'ssdlite_mobilenetv2_face_tflite',
     modelSize: '12.1MB',
     type: 'SSD',
@@ -587,6 +624,7 @@ const faceDetectionModels = [{
     paperUrl: 'https://arxiv.org/abs/1801.04381'
   }, {
     modelName: 'Tiny Yolo v2 (TFlite)',
+    format: 'TFLite',
     modelFormatName: 'tiny_yolov2_face_tflite',
     modelSize: '44.1MB',
     modelFile: '../facial_landmark_detection/model/tiny_yolov2_face.tflite',
@@ -604,6 +642,7 @@ const faceDetectionModels = [{
 
 const facialLandmarkDetectionModels = [{
   modelName: 'SimpleCNN (TFlite)',
+  format: 'TFLite',
   modelFormatName: 'face_landmark_tflite',
   modelSize: '29.4MB',
   modelFile: '../facial_landmark_detection/model/face_landmark.tflite',
@@ -615,6 +654,7 @@ const facialLandmarkDetectionModels = [{
 
 const emotionAnalysisModels = [{
   modelName: 'Simple CNN 7(TFlite)',
+  format: 'TFLite',
   modelFormatName: 'emotion_analysis_tflite',
   modelSize: '7.3MB',
   modelFile: '../emotion_analysis/model/emotion_classification_7.tflite',
@@ -830,3 +870,10 @@ const getSearchParamsModel = () => {
     return '';
   }
 }
+
+const getExampleDirectoryName = () => {
+  const pathArray = location.pathname.split('/');
+  const dirName = pathArray[pathArray.length - 2];
+  return dirName.split('_').map(s => s.charAt(0).toUpperCase() + s.substring(1))
+      .join(' '); // title case
+};

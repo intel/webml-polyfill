@@ -11,20 +11,7 @@ $(document).ready(() => {
   }
 
   updateTitle('Emotion Analysis', ub, up, um, ut);
-  
-  $('input:radio[name=bp]').click(() => {
-    updateTitle('Emotion Analysis', currentBackend, currentPrefer, `${um}`, `${ut}`);
-  });
 
-  $('input:radio[name=bw]').click(() => {
-    updateTitle('Emotion Analysis', currentBackend, currentPrefer, `${um}`, `${ut}`);
-  });
-
-  $('input:radio[name=m]').click(() => {
-    updateTitle('Emotion Analysis', currentBackend, currentPrefer, `${um}`, `${ut}`);
-    $('.offload').hide();
-  });
- 
   inputElement.addEventListener('change', (e) => {
     let files = e.target.files;
     if (files.length > 0) {

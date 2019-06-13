@@ -11,19 +11,6 @@ $(document).ready(() => {
   }
 
   updateTitle('Object Detection', ub, up, um, ut);
-  
-  $('input:radio[name=bp]').click(() => {
-    updateTitle('Object Detection', currentBackend, currentPrefer, `${um}`, `${ut}`);
-  });
-
-  $('input:radio[name=bw]').click(() => {
-    updateTitle('Object Detection', currentBackend, currentPrefer, `${um}`, `${ut}`);
-  });
-
-  $('input:radio[name=m]').click(() => {
-    updateTitle('Object Detection', currentBackend, currentPrefer, `${um}`, `${ut}`);
-    $('.offload').hide();
-  });
  
   inputElement.addEventListener('change', (e) => {
     let files = e.target.files;
@@ -59,6 +46,7 @@ $(document).ready(() => {
 
 
 $(window).load(() => {
+  constructModelTable(objectDetectionModels);
   if (um === 'none') {
     showError('No model selected', 'Please select a model to start prediction.');
     return;
