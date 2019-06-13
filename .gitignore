@@ -2,6 +2,8 @@ node_modules/
 dist/
 examples/**/*.tflite
 examples/**/*.onnx
+examples/**/*.bin
+examples/**/*.xml
 src/nn/wasm/src/build
 .DS_Store
 package-lock.json

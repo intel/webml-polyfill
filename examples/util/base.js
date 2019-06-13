@@ -275,6 +275,113 @@ const imageClassificationModels = [{
   },
   intro: 'Dense Convolutional Network (DenseNet) connects each layer to every other layer in a feed-forward fashion. DenseNets have several compelling advantages: they alleviate the vanishing-gradient problem, strengthen feature propagation, encourage feature reuse, and substantially reduce the number of parameters. ',
   paperUrl: 'https://arxiv.org/abs/1608.06993'
+}, {
+  modelName: 'SqueezeNet (OpenVino)',
+  format: 'OpenVINO',
+  modelFormatName: 'squeezenet_openvino',
+  modelSize: '4.9MB',
+  modelFile: '../image_classification/model/squeezenet1.1.bin',
+  labelsFile: '../image_classification/model/labels1000.txt',
+  inputSize: [227, 227, 3],
+  outputSize: 1000,
+  preOptions: {
+    channelScheme: 'BGR',
+  },
+  intro: 'A light-weight CNN providing Alexnet level accuracy with 50X fewer parameters.',
+  paperUrl: 'https://arxiv.org/abs/1602.07360'
+}, {
+  modelName: 'MobileNet v1 (OpenVino)',
+  format: 'OpenVINO',
+  modelFormatName: 'mobilenet_v1_openvino',
+  modelSize: '16.9MB',
+  modelFile: '../image_classification/model/mobilenet_v1_1.0_224.bin',
+  labelsFile: '../image_classification/model/labels1001.txt',
+  inputSize: [224, 224, 3],
+  outputSize: 1001,
+  preOptions: {
+    mean: [127.5, 127.5, 127.5],
+    std: [127.5, 127.5, 127.5],
+  },
+  intro: 'An efficient Convolutional Neural Networks for Mobile Vision Applications.',
+  paperUrl: 'https://arxiv.org/pdf/1704.04861.pdf'
+}, {
+  modelName: 'MobileNet v2 (OpenVino)',
+  format: 'OpenVINO',
+  modelFormatName: 'mobilenet_v2_openvino',
+  modelSize: '14.0MB',
+  modelFile: '../image_classification/model/mobilenet_v2_1.0_224.bin',
+  labelsFile: '../image_classification/model/labels1001.txt',
+  inputSize: [224, 224, 3],
+  outputSize: 1001,
+  preOptions: {
+    mean: [127.5, 127.5, 127.5],
+    std: [127.5, 127.5, 127.5],
+  },
+  intro: 'MobileNetV2 improves the state of the art performance of mobile models.',
+  paperUrl: 'https://arxiv.org/abs/1801.04381'
+}, {
+  modelName: 'ResNet50 v1 (OpenVino)',
+  format: 'OpenVINO',
+  modelFormatName: 'resnet50_v1_openvino',
+  modelSize: '102.1MB',
+  modelFile: '../image_classification/model/resnet-50.bin',
+  labelsFile: '../image_classification/model/labels1000.txt',
+  inputSize: [224, 224, 3],
+  outputSize: 1000,
+  preOptions: {
+    channelScheme: 'BGR',
+  },
+  intro: 'A residual learning framework to ease the training of networks that are substantially deeper than those used previously. This result won the 1st place on the ILSVRC 2015 classification task.',
+  paperUrl: 'https://arxiv.org/abs/1512.03385'
+}, {
+  modelName: 'DenseNet 121 (OpenVino)',
+  format: 'OpenVINO',
+  modelFormatName: 'densenet_121_openvino',
+  modelSize: '31.9MB',
+  modelFile: '../image_classification/model/densenet-121.bin',
+  labelsFile: '../image_classification/model/labels1000.txt',
+  inputSize: [224, 224, 3],
+  outputSize: 1000,
+  preOptions: {
+    mean: [0.406, 0.456, 0.485],
+    std: [0.225, 0.224, 0.229],
+    norm: true,
+    channelScheme: 'BGR',
+  },
+  postOptions: {
+    softmax: true,
+  },
+  intro: 'Dense Convolutional Network (DenseNet) connects each layer to every other layer in a feed-forward fashion. DenseNets have several compelling advantages: they alleviate the vanishing-gradient problem, strengthen feature propagation, encourage feature reuse, and substantially reduce the number of parameters. ',
+  paperUrl: 'https://arxiv.org/abs/1608.06993'
+}, {
+  modelName: 'Inception v2 (OpenVino)',
+  format: 'OpenVINO',
+  modelFormatName: 'inception_v2_openvino',
+  modelSize: '44.7MB',
+  modelFile: '../image_classification/model/googlenet-v2.bin',
+  labelsFile: '../image_classification/model/ilsvrc2012labels.txt',
+  inputSize: [224, 224, 3],
+  outputSize: 1000,
+  preOptions: {
+    channelScheme: 'BGR',
+  },
+  intro: 'Inception-v2 is trained for the ImageNet Large Visual Recognition Challenge.',
+  paperUrl: 'https://arxiv.org/abs/1512.00567'
+}, {
+  modelName: 'Inception v4 (OpenVino)',
+  format: 'OpenVINO',
+  modelFormatName: 'inception_v4_openvino',
+  modelSize: '170.6MB',
+  modelFile: '../image_classification/model/googlenet-v4.bin',
+  labelsFile: '../image_classification/model/labels1000.txt',
+  inputSize: [299, 299, 3],
+  outputSize: 1000,
+  preOptions: {
+    mean: [127.5, 127.5, 127.5],
+    std: [127.5, 127.5, 127.5],
+  },
+  intro: 'Inception architecture that has been shown to achieve very good performance at relatively low computational cost.',
+  paperUrl: 'https://arxiv.org/abs/1602.07261'
 }];
 
 const objectDetectionModels = [{
