@@ -76,25 +76,28 @@ function setImageSrc() {
   } else {
     switch (modelClass) {
       case 'image_classification':
-        imageElement.src = document.getElementById('imageClassificationImage').src;
-        break;
-      case 'object_detection':
-        imageElement.src = document.getElementById('objectDetectionImage').src;
+        imageElement.src = '../examples/image_classification/img/test.jpg';
         break;
       case 'skeleton_detection':
-        imageElement.src = document.getElementById('poseImage').src;
+        imageElement.src = '../examples/skeleton_detection/img/download.png';
+        break;
+      case 'object_detection':
+        imageElement.src = '../examples/object_detection/img/image1.jpg';
         break;
       case 'semantic_segmentation':
-        imageElement.src = document.getElementById('segmentationImage').src;
+        imageElement.src = '../examples/semantic_segmentation/img/woman.jpg';
         break;
       case 'facial_landmark_detection':
-        imageElement.src = document.getElementById('facialLandmarkDetectionImage').src;
+        imageElement.src = '../examples/facial_landmark_detection/img/image1.jpg';
         break;
       case 'super_resolution':
-        imageElement.src = document.getElementById('superImage').src;
+        imageElement.src = '../examples/super_resolution/img/mushroom.png';
+        break;
+      case 'emotion_analysis':
+        imageElement.src = '../examples/emotion_analysis/img/image1.jpg';
         break;
       default:
-        imageElement.src = document.getElementById('imageClassificationImage').src;
+        imageElement.src = '../examples/image_classification/img/test.jpg';
     }
   }
   setSuperImageUI(modelClass, modelName);
