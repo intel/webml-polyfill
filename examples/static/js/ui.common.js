@@ -168,13 +168,6 @@ $('.scrolltop, #logo a').click(() => {
 });
 
 $(document).ready(() => {
-  if(navigator.userAgent.toLowerCase().indexOf("edge") > -1) {
-    if(location.pathname.toLocaleLowerCase() === '/examples/' || location.pathname.toLocaleLowerCase().indexOf('/examples/index') >-1 || location.pathname.toLocaleLowerCase().indexOf('/examples/model') >-1) {
-      $('#logo').html('<img src="static/img/edge_logo.png">')
-    } else {
-      $('#logo').html('<img src="../static/img/edge_logo.png">')
-    }
-  }
 
   $('.nav-menu').superfish({
     animation: { opacity: 'show' },
