@@ -2,7 +2,7 @@
 class FLDBenchmark extends Benchmark {
   constructor(modelName, backend, iterations) {
     super(...arguments);
-    this.faceDetector = new FaceDetecor(canvasElement);
+    this.faceDetector = null;
     this.modelName = modelName;
     this.modelInfoDict = getModelInfoDict(facialLandmarkDetectionModels, 'SimpleCNN (TFlite)');
     this.model = null;
@@ -10,19 +10,40 @@ class FLDBenchmark extends Benchmark {
     this.inputSize = null;
     this.outputTensor = null;
     this.outputSize = null;
-    this.outputBoxTensor = null;
+    this.imageElement = null;
+  }
+
+  setupImageElement() {
+    if (bkImageSrc === null) {
+      bkImageSrc = imageElement.src;
+    } else {
+      imageElement.src = bkImageSrc;
+    }
+    let canvas = document.createElement('canvas');
+    let width = imageElement.naturalWidth;
+    let height = imageElement.naturalHeight;
+    canvas.setAttribute("width", width);
+    canvas.setAttribute("height", height);
+    let ctx = canvas.getContext('2d');
+    ctx.drawImage(imageElement, 0, 0, width, height);
+    this.imageElement = document.createElement("img");
+    this.imageElement.setAttribute("src", canvas.toDataURL());
   }
 
   async setupFaceDetector() {
+    let inputCanvas = document.createElement('canvas');
     let model = faceDetectionModels.filter(f => f.modelName == this.modelName);
+    inputCanvas.setAttribute("width", model[0].inputSize[1]);
+    inputCanvas.setAttribute("height", model[0].inputSize[0]);
     model[0].modelFile = '../examples' + model[0].modelFile.slice(2);
+    this.faceDetector = new FaceDetecor(inputCanvas);
     await this.faceDetector.loadModel(model[0]);
-    await this.faceDetector.init(this.backend, preferSelect.value);
+    await this.faceDetector.init(this.backend.replace('WebNN', 'WebML'), preferSelect.value);
     model[0].modelFile = '..' + model[0].modelFile.slice(11);
   }
 
   async getFaceDetectResult() {
-    let detectResult = await this.faceDetector.getFaceBoxes(imageElement);
+    let detectResult = await this.faceDetector.getFaceBoxes(this.imageElement);
     return detectResult;
   }
 
@@ -38,17 +59,12 @@ class FLDBenchmark extends Benchmark {
     const norm = preOptions.norm || false;
     const channelScheme = preOptions.channelScheme || 'RGB';
     let typedArray = Float32Array;
-    if (bkImageSrc === null) {
-      bkImageSrc = imageElement.src;
-    } else {
-      imageElement.src = bkImageSrc;
-    }
     this.inputTensor = new typedArray(this.modelInfoDict.inputSize.reduce((a, b) => a * b));
     this.outputTensor = new typedArray(this.modelInfoDict.outputSize);
     inputCanvas.setAttribute("width", width);
     inputCanvas.setAttribute("height", height);
     let canvasContext = inputCanvas.getContext('2d');
-    canvasContext.drawImage(imageElement, box[0], box[2], 
+    canvasContext.drawImage(this.imageElement, box[0], box[2], 
                             box[1]-box[0], box[3]-box[2], 0, 0, 
                             inputCanvas.width,
                             inputCanvas.height);
@@ -65,6 +81,7 @@ class FLDBenchmark extends Benchmark {
    * @returns {Promise<void>}
    */
   async setupAsync() {
+    this.setupImageElement();
     await this.setupFaceDetector();
     let backend = this.backend.replace('WebNN', 'WebML');
     let loadResult = await loadModelAndLabels(this.modelInfoDict.modelFile);
@@ -108,10 +125,10 @@ class FLDBenchmark extends Benchmark {
       let elapsedTime = performance.now() - tStart;
       results.push(elapsedTime);
     }
-    showCanvasElement.setAttribute("width", imageElement.naturalWidth);
-    showCanvasElement.setAttribute("height", imageElement.naturalHeight);
-    this.drawFaceBoxes(imageElement, showCanvasElement, exeResult.faceBoxes);
-    this.drawKeyPoints(imageElement, showCanvasElement, exeResult.keyPoints, exeResult.faceBoxes);
+    showCanvasElement.setAttribute("width", this.imageElement.width);
+    showCanvasElement.setAttribute("height", this.imageElement.height);
+    this.drawFaceBoxes(this.imageElement, showCanvasElement, exeResult.faceBoxes);
+    this.drawKeyPoints(this.imageElement, showCanvasElement, exeResult.keyPoints, exeResult.faceBoxes);
     imageElement.src = showCanvasElement.toDataURL();
     return results;
   }
