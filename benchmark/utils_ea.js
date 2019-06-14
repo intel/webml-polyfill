@@ -18,7 +18,7 @@ class EABenchmark extends Benchmark {
     let model = faceDetectionModels.filter(f => f.modelName == this.modelName);
     model[0].modelFile = '../examples' + model[0].modelFile.slice(2);
     await this.faceDetector.loadModel(model[0]);
-    await this.faceDetector.init(this.backend, preferSelect.value);
+    await this.faceDetector.init(this.backend.replace('WebNN', 'WebML'), preferSelect.value);
     model[0].modelFile = '..' + model[0].modelFile.slice(11);
   }
 
