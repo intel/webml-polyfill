@@ -85,6 +85,11 @@ export default class WebGLModel {
             }
           }
           this._changeWeightsFormat(operation);
+
+          // Packed depthwiseConv2d with large filter size (5x5, 9x9) will cause
+          // poor performance on the PC (#849) and crash on the mobile (#821).
+          // This function can be removed after fixing tfjs bug.
+          this._checkWhetherToUsePackedDepthwiseConv2d(operation);
         }
 
         // allocate JS buffers for model outputs
@@ -679,7 +684,7 @@ export default class WebGLModel {
 
   _isPaddingEqual(left, right, top, bottom) {
     return (left === right) && (left === top) && (left === bottom);
- }
+  }
 
   _deleteAll() {
     this._operands.forEach(operand => {
@@ -687,6 +692,21 @@ export default class WebGLModel {
         operand.dispose();
       }
     })
+  }
+
+  _checkWhetherToUsePackedDepthwiseConv2d(operation) {
+    switch(operation.type) {
+      case OperationCode.DEPTHWISE_CONV_2D:
+      case OperationCode.ATROUS_DEPTHWISE_CONV_2D: {
+        const inputs = operation.inputs;
+        const filter = this._operands[inputs[1]];
+        const filterH = filter.shape[0];
+        const filterW = filter.shape[1];
+        if (filterH >= 5 || filterW >= 5) {
+          tf.ENV.set('WEBGL_PACK_DEPTHWISECONV', false);
+        }
+      } break;
+    }
   }
 
   static _supportWebGL() {
