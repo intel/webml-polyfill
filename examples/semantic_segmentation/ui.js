@@ -8,26 +8,10 @@ const buttonUI = (camera = false) => {
   }
 }
 
-let ssmodel = () => {
-  return um.replace('mobilenet', '').replace('v2', '').replace(/_/g, ' ');
-}
-
 $(document).ready(() => {
-  updateTitle('Semantic Segmentation', ub, up, ssmodel(), ut);
+  updateTitle('Semantic Segmentation', ub, up, um);
+  constructModelTable(semanticSegmentationModels);
 
-  $('input:radio[name=bp]').click(() => {
-    updateTitle('Semantic Segmentation', currentBackend, currentPrefer, ssmodel(), `${ut}`);
-  });
-
-  $('input:radio[name=bw]').click(() => {
-    updateTitle('Semantic Segmentation', currentBackend, currentPrefer, ssmodel(), `${ut}`);
-  });
-
-  $('input:radio[name=m]').click(() => {
-    updateTitle('Semantic Segmentation', currentBackend, currentPrefer, ssmodel(), `${ut}`);
-    $('.offload').hide();
-  });
- 
   inputElement.addEventListener('change', (e) => {
     let files = e.target.files;
     if (files.length > 0) {

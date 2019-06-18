@@ -14,7 +14,14 @@ Download the following model packages, then uncompress them if necessary and mov
 13. [Resnet-50 v1(Onnx)](https://s3.amazonaws.com/onnx-model-zoo/resnet/resnet50v1/resnet50v1.onnx)
 14. [Resnet-50 v2(Onnx)](https://s3.amazonaws.com/onnx-model-zoo/resnet/resnet50v2/resnet50v2.onnx)
 15. [Inception v2(Onnx)](https://s3.amazonaws.com/download.onnx/models/opset_9/inception_v2.tar.gz) (Untar it and rename `model.onnx` to `inceptionv2.onnx`)
-16. [DenseNet(Onnx)](https://s3.amazonaws.com/download.onnx/models/opset_9/densenet121.tar.gz) (Untar it and rename `model.onnx` to `densenet121.onnx`)
+16. [DenseNet 121(Onnx)](https://s3.amazonaws.com/download.onnx/models/opset_9/densenet121.tar.gz) (Untar it and rename `model.onnx` to `densenet121.onnx`)
+17. [SqueezeNet(OpenVINO)](https://drive.google.com/drive/folders/1TIdN3MepLthIyvYDNumAhY_hdoxtOW96) (`squeezenet1.1.{bin,xml}` in the shared folder)
+18. [MobileNet v1(OpenVINO)](https://drive.google.com/drive/folders/1TIdN3MepLthIyvYDNumAhY_hdoxtOW96) (`mobilenet_v1_1.0_224.{bin,xml}` in the shared folder)
+19. [MobileNet v2(OpenVINO)](https://drive.google.com/drive/folders/1TIdN3MepLthIyvYDNumAhY_hdoxtOW96) (`mobilenet_v2_1.0_224.{bin,xml}` in the shared folder)
+20. [ResNet50 v1(OpenVINO)](https://drive.google.com/drive/folders/1TIdN3MepLthIyvYDNumAhY_hdoxtOW96) (`resnet-50.{bin,xml}` in the shared folder)
+21. [DenseNet 121(OpenVINO)](https://drive.google.com/drive/folders/1TIdN3MepLthIyvYDNumAhY_hdoxtOW96) (`densenet-121.{bin,xml}` in the shared folder)
+22. [Inception (GoogLeNet) v2(OpenVINO)](https://drive.google.com/drive/folders/1TIdN3MepLthIyvYDNumAhY_hdoxtOW96) (`googlenet-v2.{bin,xml}` in the shared folder)
+23. [Inception (GoogLeNet) v4(OpenVINO)](https://drive.google.com/drive/folders/1TIdN3MepLthIyvYDNumAhY_hdoxtOW96) (`googlenet-v4.{bin,xml}` in the shared folder)
 
 The model files are:
 ```
@@ -35,6 +42,14 @@ resnet50v1.onnx
 resnet50v2.onnx
 inceptionv2.onnx
 densenet121.onnx
+
+squeezenet1.1.{bin,xml}
+mobilenet_v1_1.0_224.{bin,xml}
+mobilenet_v2_1.0_224.{bin,xml}
+resnet-50.{bin,xml}
+densenet-121.{bin,xml}
+googlenet-v2.{bin,xml}
+googlenet-v4.{bin,xml}
 ```
 
 And we have provided the labels files:
@@ -44,4 +59,7 @@ labels1000.txt
 ilsvrc2012labels.txt
 ```
 
-Check out [TensorFlow Lite Models](https://www.tensorflow.org/lite/guide/hosted_models) and [ONNX models](https://github.com/onnx/models) for details.
+For TFLite and ONNX models, please check out [TensorFlow Hosted Models](https://www.tensorflow.org/lite/guide/hosted_models) and [ONNX Model Zoo](https://github.com/onnx/models) for details.
+
+For OpenVINO models, they are converted from either Caffe models or TensorFlow frozen graphs by [Model Optimizer in the OpenVINO toolkit](https://docs.openvinotoolkit.org/latest/_docs_MO_DG_prepare_model_Prepare_Trained_Model.html).
+For those converted from caffe models, such as SqueezeNet, ResNet50 v1, DenseNet 121, Inception v2/v4, you could download using the [model downloader](https://github.com/opencv/open_model_zoo/tree/master/model_downloader) and convert them according to [this doc](https://docs.openvinotoolkit.org/latest/_docs_MO_DG_prepare_model_convert_model_Convert_Model_From_Caffe.html). For those converted from TensorFlow models, such as MobileNet v1/v2, you could download them from [TensorFlow Hosted Models](https://www.tensorflow.org/lite/guide/hosted_models) and convert them according to [this doc](https://docs.openvinotoolkit.org/latest/_docs_MO_DG_prepare_model_convert_model_Convert_Model_From_TensorFlow.html).

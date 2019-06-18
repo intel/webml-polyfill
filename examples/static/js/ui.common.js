@@ -23,7 +23,6 @@ const isWebML = () => {
 let up = getUrlParam('prefer');
 let ub = getUrlParam('b');
 let um = getUrlParam('m');
-let ut = getUrlParam('t');
 let us = getUrlParam('s');
 let ud = getUrlParam('d');
 let strsearch;
@@ -38,7 +37,7 @@ if (!location.search) {
     let path = location.href;
     location.href = path + strsearch;
   } else {
-    strsearch = `?prefer=none&b=WASM&m=none&t=none&s=image&d=0`;
+    strsearch = `?prefer=none&b=WASM&m=none&s=image&d=0`;
     let path = location.href;
     location.href = path + strsearch;
   }
@@ -99,6 +98,44 @@ const showSubGraphsSummary = (summary) => {
   }
 }
 
+const formatToLogo = {
+  'tflite': '../static/img/l-tflite.png',
+  'onnx': '../static/img/l-onnx.png',
+  'openvino': '../static/img/l-openvino.png',
+};
+
+const constructModelTable = (modelList) => {
+
+  const allFormats = new Set(modelList.map((m) => m.format));
+  const tbody = $('#query tbody');
+  const trows = [];
+  for (const format of allFormats) {
+    const trow = $('<tr class="model">');
+    const tdata = $('<td>');
+    trow.append(tdata);
+
+    const logo = formatToLogo[format.toLowerCase()];
+    tdata.append($(`<img src='${logo}' alt='${format} Format' title='${format} Format'>`));
+
+    const models = modelList.filter((m) => format === m.format && !m.disabled);
+    for (const model of models) {
+      const modelName = model.modelName.replace(/ \(.*\)$/, '');
+      const modelId = model.modelId;
+      tdata.append($(`<input type='radio' class='d-none' name='m'id='${modelId}' value='${modelId}'>`));
+      tdata.append($(`<label id='l-${modelId}' class='themodel' for='${modelId}' title='${modelName}'>${modelName}</label>`));
+    }
+    trows.push(trow);
+  }
+  trows[0].prepend($(`<th class='text-center' rowspan='${allFormats.size}'>
+                        <a href='../model.html' title='View model details'>Model</a>
+                      </th>`));
+  tbody.prepend(trows);
+
+  $('input:radio[name=m]').click(changeModel);
+  checkedModelStyle();
+  disableModel();
+};
+
 const setPreferenceCodeToolTip = () => {
   if($('#backendpolyfilltitle')) {
     $('#backendpolyfilltitle').attr('data-html', 'true')
@@ -121,8 +158,7 @@ const setPreferenceCodeToolTip = () => {
   }
 }
 
-const updateTitle = (name, backend, prefer, model, modeltype) => {
-  model = model.replace(/_/g, ' ');
+const updateTitle = (name, backend, prefer, modelId) => {
   let currentprefertext = {
     // fast: 'FAST_SINGLE_ANSWER',
     // sustained: 'SUSTAINED_SPEED',
@@ -141,10 +177,11 @@ const updateTitle = (name, backend, prefer, model, modeltype) => {
     backendtext = backend + ' + WebNN';
   }
 
+  const model = getModelById(modelId);
   if(currentprefertext === 'None') {
-    $('#ictitle').html(`${name} / ${backendtext} / ${model} (${modeltype})`);
+    $('#ictitle').html(`${name} / ${backendtext} / ${model.modelName || 'None'}`);
   } else {
-    $('#ictitle').html(`${name} / ${backendtext} (${currentprefertext}) / ${model} (${modeltype})`);
+    $('#ictitle').html(`${name} / ${backendtext} (${currentprefertext}) / ${model.modelName || 'None'}`);
   }
 }
 
@@ -242,22 +279,20 @@ const componentToggle = () => {
 }
 
 const disableModel = () => {
-  if (`${um}` && `${ut}`) {
-    let m_t = `${um}` + '_' + `${ut}`;
-    $('.model input').attr('disabled', false)
+  if (um) {
+    $('.model input').attr('disabled', false);
     $('.model label').removeClass('cursordefault');
-    $('#' + m_t).attr('disabled', true)
-    $('#l-' + m_t).addClass('cursordefault');
+    $('#' + um).attr('disabled', true);
+    $('#l-' + um).addClass('cursordefault');
   }
 }
 
 const checkedModelStyle = () => {
-  if (`${um}` && `${ut}`) {
+  if (um) {
     $('.model input').removeAttr('checked');
     $('.model label').removeClass('checked');
-    let m_t = `${um}` + '_' + `${ut}`;
-    $('#' + m_t).attr('checked', 'checked');
-    $('#l-' + m_t).addClass('checked');
+    $('#' + um).attr('checked', 'checked');
+    $('#l-' + um).addClass('checked');
   }
 }
 
@@ -284,6 +319,29 @@ let isBackendSwitch = () => {
 let isFrontFacingSwitch = () => {
   return $('#cameraswitch').is(':checked')
 }
+
+const changeModel = () => {
+  $('.alert').hide();
+  um = $('input:radio[name="m"]:checked').attr('id');
+  if (currentModel === um) {
+    return;
+  }
+  currentModel = um;
+  if (currentBackend && currentPrefer) {
+    strsearch = `?prefer=${currentPrefer}&b=${currentBackend}&m=${um}&s=${us}&d=${ud}`;
+  } else {
+    strsearch = `?prefer=${up}&b=${ub}&m=${um}&s=${us}&d=${ud}`;
+  }
+  // location.href = strsearch;
+  window.history.pushState(null, null, strsearch);
+
+  checkedModelStyle();
+  disableModel();
+  updateTitle(currentExample, currentBackend, currentPrefer, um);
+  $('.offload').hide();
+  main(us === 'camera');
+};
+
 
 $(document).ready(() => {
   if (/Mobi|Android|iPhone|iPad|iPod/.test(navigator.userAgent)) {
@@ -343,7 +401,7 @@ $(document).ready(() => {
     $('#l-' + getUrlParam('b')).addClass('checked');
   }
 
-  if (hasUrlParam('m') && hasUrlParam('t')) {
+  if (hasUrlParam('m')) {
     checkedModelStyle();
   }
 
@@ -388,7 +446,7 @@ if (skeletonDetectionPath <= -1) {
           currentBackend = 'WASM';
           currentPrefer = 'none';
         }
-        updateTitle('Sole Backend', currentBackend, currentPrefer, `${um}`, `${ut}`);
+        updateTitle('Sole Backend', currentBackend, currentPrefer, um);
       } else {
         $('.backendtitle').html('Backends');
         if (polyfillId && webnnId) {
@@ -420,11 +478,11 @@ if (skeletonDetectionPath <= -1) {
           currentBackend = 'WASM';
           currentPrefer = 'fast';
         }
-        updateTitle('Dual Backends', currentBackend, currentPrefer, `${um}`, `${ut}`);
+        updateTitle('Dual Backends', currentBackend, currentPrefer, um);
       }
 
       updateBackendRadioUI(currentBackend, currentPrefer);
-      strsearch = `?prefer=${currentPrefer}&b=${currentBackend}&m=${um}&t=${ut}&s=${us}&d=${ud}`;
+      strsearch = `?prefer=${currentPrefer}&b=${currentBackend}&m=${um}&s=${us}&d=${ud}`;
       window.history.pushState(null, null, strsearch);
       if (um === 'none') {
         showError('No model selected', 'Please select a model to start prediction.');
@@ -463,12 +521,13 @@ if (skeletonDetectionPath <= -1) {
         currentPrefer = 'none';
       }
 
-      strsearch = `?prefer=${currentPrefer}&b=${currentBackend}&m=${um}&t=${ut}&s=${us}&d=${ud}`;
+      strsearch = `?prefer=${currentPrefer}&b=${currentBackend}&m=${um}&s=${us}&d=${ud}`;
       window.history.pushState(null, null, strsearch);
       if (um === 'none') {
         showError('No model selected', 'Please select a model to start prediction.');
         return;
       }
+      updateTitle(currentExample, currentBackend, currentPrefer, um);
       updateBackend(us === 'camera', true);
     });
 
@@ -502,41 +561,17 @@ if (skeletonDetectionPath <= -1) {
         currentBackend = 'WebML';
         currentPrefer = webnnId;
       }
-      strsearch = `?prefer=${currentPrefer}&b=${currentBackend}&m=${um}&t=${ut}&s=${us}&d=${ud}`;
+      strsearch = `?prefer=${currentPrefer}&b=${currentBackend}&m=${um}&s=${us}&d=${ud}`;
       window.history.pushState(null, null, strsearch);
       if (um === 'none') {
         showError('No model selected', 'Please select a model to start prediction.');
         return;
       }
+      updateTitle(currentExample, currentBackend, currentPrefer, um);
       updateBackend(us === 'camera', true);
     });
 
-    $('input:radio[name=m]').click(() => {
-      $('.alert').hide();
-      let rid = $('input:radio[name="m"]:checked').attr('id');
-      if (rid) {
-        if (rid.indexOf('_onnx') > -1) {
-          um = rid.replace('_onnx', '');
-          ut = 'onnx';
-        }
-        if (rid.indexOf('_tflite') > -1) {
-          um = rid.replace('_tflite', '');
-          ut = 'tflite';
-        }
-      }
-      if (currentBackend && currentPrefer) {
-        strsearch = `?prefer=${currentPrefer}&b=${currentBackend}&m=${um}&t=${ut}&s=${us}&d=${ud}`;
-      } else {
-        strsearch = `?prefer=${up}&b=${ub}&m=${um}&t=${ut}&s=${us}&d=${ud}`;
-      }
-      // location.href = strsearch;
-      window.history.pushState(null, null, strsearch);
-
-      checkedModelStyle();
-      disableModel();
-      currentModel = `${um}_${ut}`;
-      main(us === 'camera');
-    });
+    $('input:radio[name=m]').click(changeModel);
 
     $('#extra').click(() => {
       componentToggle();
@@ -551,9 +586,9 @@ if (skeletonDetectionPath <= -1) {
 
       let strsearch;
       if (currentBackend && currentPrefer) {
-        strsearch = `?prefer=${currentPrefer}&b=${currentBackend}&m=${um}&t=${ut}&s=${us}&d=${display}`;
+        strsearch = `?prefer=${currentPrefer}&b=${currentBackend}&m=${um}&s=${us}&d=${display}`;
       } else {
-        strsearch = `?prefer=${up}&b=${ub}&m=${um}&t=${ut}&s=${us}&d=${display}`;
+        strsearch = `?prefer=${up}&b=${ub}&m=${um}&s=${us}&d=${display}`;
       }
       window.history.pushState(null, null, strsearch);
     });
@@ -594,7 +629,7 @@ if (skeletonDetectionPath <= -1) {
   $(document).ready(() => {
     $('#img').click(() => {
       us = 'image';
-      strsearch = `?prefer=${up}&b=${ub}&m=${um}&t=${ut}&s=${us}&d=${ud}`;
+      strsearch = `?prefer=${up}&b=${ub}&m=${um}&s=${us}&d=${ud}`;
       window.history.pushState(null, null, strsearch);
       if (um === 'none') {
         showError('No model selected', 'Please select a model to start prediction.');
@@ -605,7 +640,7 @@ if (skeletonDetectionPath <= -1) {
 
     $('#cam').click(() => {
       us = 'camera';
-      strsearch = `?prefer=${up}&b=${ub}&m=${um}&t=${ut}&s=${us}&d=${ud}`;
+      strsearch = `?prefer=${up}&b=${ub}&m=${um}&s=${us}&d=${ud}`;
       window.history.pushState(null, null, strsearch);
       if (um === 'none') {
         showError('No model selected', 'Please select a model to start prediction.');

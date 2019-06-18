@@ -10,20 +10,7 @@ $(document).ready(() => {
     fpsToggle(false);
   }
 
-  updateTitle('Facial Landmark Detection', ub, up, um, ut);
-  
-  $('input:radio[name=bp]').click(() => {
-    updateTitle('Facial Landmark Detection', currentBackend, currentPrefer, `${um}`, `${ut}`);
-  });
-
-  $('input:radio[name=bw]').click(() => {
-    updateTitle('Facial Landmark Detection', currentBackend, currentPrefer, `${um}`, `${ut}`);
-  });
-
-  $('input:radio[name=m]').click(() => {
-    updateTitle('Facial Landmark Detection', currentBackend, currentPrefer, `${um}`, `${ut}`);
-    $('.offload').hide();
-  });
+  updateTitle('Facial Landmark Detection', ub, up, um);
  
   inputElement.addEventListener('change', (e) => {
     let files = e.target.files;

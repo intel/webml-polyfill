@@ -114,7 +114,7 @@ $(document).ready(() => {
 
     updateTitleSD(currentBackend, currentPrefer);
     updateBackendRadioUI(currentBackend, currentPrefer);
-    strsearch = `?prefer=${currentPrefer}&b=${currentBackend}&m=${um}&t=${ut}&s=${us}&d=${ud}`;
+    strsearch = `?prefer=${currentPrefer}&b=${currentBackend}&m=${um}&s=${us}&d=${ud}`;
     window.history.pushState(null, null, strsearch);
     if (um === 'none') {
       showError('No model selected', 'Please select a model to start prediction.');

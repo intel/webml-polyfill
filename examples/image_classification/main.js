@@ -116,8 +116,8 @@ const main = async (camera = false) => {
   logConfig();
   await showProgress('Loading model ...');
   try {
-    let model = imageClassificationModels.filter(f => f.modelFormatName == currentModel);
-    await utils.loadModel(model[0]);
+    let model = getModelById(currentModel);
+    await utils.loadModel(model);
     getOffloadOps(currentBackend, currentPrefer);
     await utilsInit(currentBackend, currentPrefer);
     showSubGraphsSummary(utils.getSubgraphsSummary());

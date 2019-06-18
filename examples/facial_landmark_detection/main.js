@@ -138,10 +138,10 @@ const main = async (camera = false) => {
   logConfig();
   await showProgress('Loading model ...');
   try {
-    let model = faceDetectionModels.filter(f => f.modelFormatName == currentModel);
-    await faceDetector.loadModel(model[0]);
-    let landmarkmodel = facialLandmarkDetectionModels.filter(f => f.modelFormatName == currentLandmarkModel);
-    await landmarkDetector.loadModel(landmarkmodel[0]);
+    let model = getModelById(currentModel);
+    await faceDetector.loadModel(model);
+    let landmarkmodel = getModelById(currentLandmarkModel);
+    await landmarkDetector.loadModel(landmarkmodel);
     getOffloadOps(currentBackend, currentPrefer);
     await utilsInit(currentBackend, currentPrefer);
     showSubGraphsSummary(landmarkDetector.getSubgraphsSummary());

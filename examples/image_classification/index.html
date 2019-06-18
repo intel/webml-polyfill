@@ -83,73 +83,6 @@
     <div class='filter mb-3 mt-2'>
       <table id='filter' class='t-filter table table-condensed'>
         <tbody>
-          <tr class='model'>
-            <th class='text-center' rowspan='2'><a href='../model.html' title='View model details'>Model</a></th>
-            <td>
-              <img src='../static/img/l-tflite.png' alt='TensorFlow Lite Format' title='TensorFlow Lite Format'>
-              <input type='radio' class='d-none' name='m' id='mobilenet_v1_tflite' value='mobilenet_v1_tflite' checked>
-              <label id='l-mobilenet_v1_tflite' class='themodel' for='mobilenet_v1_tflite'
-                title='MobileNet v1'>MobileNet
-                v1</label>
-              <input type='radio' class='d-none' name='m' id='mobilenet_v1_quant_tflite'
-                value='mobilenet_v1_quant_tflite' checked>
-              <label id='l-mobilenet_v1_quant_tflite' class='themodel' for='mobilenet_v1_quant_tflite'
-                title='MobileNet v1 Quant'>MobileNet
-                v1 Quant</label>
-              <input type='radio' class='d-none' name='m' id='mobilenet_v2_tflite' value='mobilenet_v2_tflite'>
-              <label id='l-mobilenet_v2_tflite' class='themodel' for='mobilenet_v2_tflite'
-                title='MobileNet v2'>MobileNet
-                v2</label>
-              <input type='radio' class='d-none' name='m' id='mobilenet_v2_quant_tflite'
-                value='mobilenet_v2_quant_tflite'>
-              <label id='l-mobilenet_v2_quant_tflite' class='themodel' for='mobilenet_v2_quant_tflite'
-                title='MobileNet v2 Quant'>MobileNet
-                v2 Quant</label>
-              <input type='radio' class='d-none' name='m' id='squeezenet_tflite' value='squeezenet_tflite'>
-              <label id='l-squeezenet_tflite' class='themodel' for='squeezenet_tflite'
-                title='SqueezeNet'>SqueezeNet</label>
-              <input type='radio' class='d-none' name='m' id='inception_v3_tflite' value='inception_v3_tflite'>
-              <label id='l-inception_v3_tflite' class='themodel' for='inception_v3_tflite'
-                title='Inception v3'>Inception
-                v3</label>
-              <input type='radio' class='d-none' name='m' id='inception_v3_quant_tflite' value='inception_v3_quant_tflite'>
-              <label id='l-inception_v3_quant_tflite' class='themodel' for='inception_v3_quant_tflite'
-                title='Inception v3 Quant'>Inception
-                v3 Quant</label>
-              <input type='radio' class='d-none' name='m' id='inception_v4_tflite' value='inception_v4_tflite'>
-              <label id='l-inception_v4_tflite' class='themodel' for='inception_v4_tflite'
-                title='Inception v4'>Inception
-                v4</label>
-              <input type='radio' class='d-none' name='m' id='inception_v4_quant_tflite' value='inception_v4_quant_tflite'>
-              <label id='l-inception_v4_quant_tflite' class='themodel' for='inception_v4_quant_tflite'
-                title='Inception v4 Quant'>Inception
-                v4 Quant</label>
-              <input type='radio' class='d-none' name='m' id='inception_resnet_v2_tflite'
-                value='inception_resnet_v2_tflite'>
-              <label id='l-inception_resnet_v2_tflite' class='themodel' for='inception_resnet_v2_tflite'
-                title='Inception Resnet v2'>Inception
-                Resnet v2</label>
-            </td>
-          </tr>
-          <tr class='model'>
-            <td>
-              <img src='../static/img/l-onnx.png' alt='Onnx Format' title='Onnx Format'>
-              <input type='radio' class='d-none' name='m' id='mobilenet_v2_onnx' value='mobilenet_v2_onnx'>
-              <label id='l-mobilenet_v2_onnx' class='themodel' for='mobilenet_v2_onnx' title='MobileNet v2'>MobileNet
-                v2</label>
-              <input type='radio' class='d-none' name='m' id='squeezenet_onnx' value='squeezenet_onnx'>
-              <label id='l-squeezenet_onnx' class='themodel' for='squeezenet_onnx' title='SqueezeNet'>SqueezeNet</label>
-              <input type='radio' class='d-none' name='m' id='resnet_v1_onnx' value='resnet_v1_onnx'>
-              <label id='l-resnet_v1_onnx' class='themodel' for='resnet_v1_onnx' title='ResNet50 v1'>ResNet50 v1</label>
-              <input type='radio' class='d-none' name='m' id='resnet_v2_onnx' value='resnet_v2_onnx'>
-              <label id='l-resnet_v2_onnx' class='themodel' for='resnet_v2_onnx' title='ResNet50 v2'>ResNet50 v2</label>
-              <input type='radio' class='d-none' name='m' id='inception_v2_onnx' value='inception_v2_onnx'>
-              <label id='l-inception_v2_onnx' class='themodel' for='inception_v2_onnx' title='Inception v2'>Inception
-                v2</label>
-              <input type='radio' class='d-none' name='m' id='densenet_onnx' value='densenet_onnx'>
-              <label id='l-densenet_onnx' class='themodel' for='densenet_onnx' title='DenseNet'>DenseNet</label>
-            </td>
-          </tr>
           <tr class='backend'>
             <th class='text-center backendtitle'>Backend</th>
             <td>
@@ -429,6 +362,9 @@
   <script src='../util/onnx/onnx.js'></script>
   <script src='../util/onnx/OnnxModelUtils.js'></script>
   <script src='../util/onnx/OnnxModelImporter.js'></script>
+  <script src='../util/openvino/openvino.js'></script>
+  <script src='../util/openvino/OpenVINOModelUtils.js'></script>
+  <script src='../util/openvino/OpenVINOModelImporter.js'></script>
   <script src='utils.js'></script>
   <script src='../static/js/main.common.js'></script>
   <script src='main.js'></script>
