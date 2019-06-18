@@ -10,7 +10,7 @@ $(document).ready(() => {
     fpsToggle(false);
   }
 
-  updateTitle('Emotion Analysis', ub, up, um, ut);
+  updateTitle('Emotion Analysis', ub, up, um);
 
   inputElement.addEventListener('change', (e) => {
     let files = e.target.files;

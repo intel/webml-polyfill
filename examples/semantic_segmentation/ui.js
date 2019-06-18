@@ -8,12 +8,9 @@ const buttonUI = (camera = false) => {
   }
 }
 
-let ssmodel = () => {
-  return um.replace('mobilenet', '').replace('v2', '').replace(/_/g, ' ');
-}
-
 $(document).ready(() => {
-  updateTitle('Semantic Segmentation', ub, up, ssmodel(), ut);
+  updateTitle('Semantic Segmentation', ub, up, um);
+  constructModelTable(semanticSegmentationModels);
 
   inputElement.addEventListener('change', (e) => {
     let files = e.target.files;
@@ -52,8 +49,6 @@ const selectBackgroundButton = document.getElementById('chooseBackground');
 const clearBackgroundButton = document.getElementById('clearBackground');
 
 $(window).load(() => {
-
-  constructModelTable(semanticSegmentationModels);
 
   let colorPicker = new iro.ColorPicker('#color-picker-container', {
     width: 200,

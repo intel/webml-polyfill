@@ -129,8 +129,8 @@ const main = async (camera = false) => {
   logConfig();
   showProgress('Loading model and initializing...');
   try {
-    let model = semanticSegmentationModels.filter(f => f.modelFormatName == currentModel);
-    await utils.loadModel(model[0]);
+    let model = getModelById(currentModel);
+    await utils.loadModel(model);
     getOffloadOps(currentBackend, currentPrefer);
     await utils.init(currentBackend, currentPrefer);
     showSubGraphsSummary(utils.getSubgraphsSummary());

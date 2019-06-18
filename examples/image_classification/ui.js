@@ -1,6 +1,7 @@
 $(document).ready(() => {
 
-  updateTitle('Image Classification', ub, up, um, ut);
+  updateTitle('Image Classification', ub, up, um);
+  constructModelTable(imageClassificationModels);
 
   inputElement.addEventListener('change', (e) => {
     let files = e.target.files;
@@ -15,7 +16,6 @@ $(document).ready(() => {
 });
 
 $(window).load(() => {
-  constructModelTable(imageClassificationModels);
   if (um === 'none') {
     showError('No model selected', 'Please select a model to start prediction.');
     return;

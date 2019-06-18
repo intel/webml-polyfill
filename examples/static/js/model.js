@@ -15,7 +15,7 @@ function showModel(div, modelcategory) {
   let rowstring, row;  
   modelcategory.map(model => {
     row = '<tr>';
-    let name = '<td scope=\'col\' class=\'name\'>' + getModelName(model.modelFormatName) + '</td>';
+    let name = '<td scope=\'col\' class=\'name\'>' + getModelName(model.modelId) + '</td>';
     row += name;
 
     let modeltype = `<td scope='col' class='format'>${model.format || '-'}</td>`;

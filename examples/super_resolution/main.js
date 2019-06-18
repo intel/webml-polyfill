@@ -70,9 +70,9 @@ const main = async (camera = false) => {
   logConfig();
   showProgress('Loading model and initializing...');
   try {
-    let model = superResolutionModels.filter(f => f.modelFormatName == currentModel);
-    await utils.loadModel(model[0]);
-    changeCanvasSize(model[0]);
+    let model = getModelById(currentModel);
+    await utils.loadModel(model);
+    changeCanvasSize(model);
     getOffloadOps(currentBackend, currentPrefer);
     await utils.init(currentBackend, currentPrefer);
     showSubGraphsSummary(utils.getSubgraphsSummary());

@@ -137,10 +137,10 @@ const main = async (camera = false) => {
   logConfig();
   await showProgress('Loading model ...');
   try {
-    let model = faceDetectionModels.filter(f => f.modelFormatName == currentModel);
-    await faceDetector.loadModel(model[0]);
-    let emotionanalysismodel = emotionAnalysisModels.filter(f => f.modelFormatName == currentEmotionModel);
-    await emotionAnalysis.loadModel(emotionanalysismodel[0]);
+    let model = getModelById(currentModel);
+    await faceDetector.loadModel(model);
+    let emotionanalysismodel = getModelById(currentEmotionModel);
+    await emotionAnalysis.loadModel(emotionanalysismodel);
     getOffloadOps(currentBackend, currentPrefer);
     await utilsInit(currentBackend, currentPrefer);
     showSubGraphsSummary(emotionAnalysis.getSubgraphsSummary());

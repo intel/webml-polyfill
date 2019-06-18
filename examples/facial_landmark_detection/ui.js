@@ -10,7 +10,7 @@ $(document).ready(() => {
     fpsToggle(false);
   }
 
-  updateTitle('Facial Landmark Detection', ub, up, um, ut);
+  updateTitle('Facial Landmark Detection', ub, up, um);
  
   inputElement.addEventListener('change', (e) => {
     let files = e.target.files;

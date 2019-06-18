@@ -1,6 +1,7 @@
 $(document).ready(() => {
 
-  updateTitle('Super Resolution', ub, up, um, ut);
+  updateTitle('Super Resolution', ub, up, um);
+  constructModelTable(superResolutionModels);
 
   inputElement.addEventListener('change', (e) => {
     let files = e.target.files;
@@ -15,9 +16,6 @@ $(document).ready(() => {
 });
 
 $(window).load(() => {
-
-  constructModelTable(superResolutionModels);
-
   if (um === 'none') {
     showError('No model selected', 'Please select a model to start prediction.');
     return;

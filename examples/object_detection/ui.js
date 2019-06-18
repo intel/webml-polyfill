@@ -10,7 +10,8 @@ $(document).ready(() => {
     fpsToggle(false);
   }
 
-  updateTitle('Object Detection', ub, up, um, ut);
+  updateTitle('Object Detection', ub, up, um);
+  constructModelTable(objectDetectionModels);
  
   inputElement.addEventListener('change', (e) => {
     let files = e.target.files;
@@ -46,7 +47,6 @@ $(document).ready(() => {
 
 
 $(window).load(() => {
-  constructModelTable(objectDetectionModels);
   if (um === 'none') {
     showError('No model selected', 'Please select a model to start prediction.');
     return;
