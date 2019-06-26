@@ -2785,7 +2785,7 @@ button.xclose {
     width: calc(100% - 100px);
     top: 28%;
     left: calc(50% + 50px);
-    border-top: 2px dotted #E2DFDA;
+    border-top: 1px dotted #E2DFDA;
   }
 }
 
@@ -2797,6 +2797,7 @@ button.xclose {
   .prog-done:after {
     border-top-style: solid;
     border-top-width: 1px;
+    border-top-color: rgba(25, 190, 225, 1.0);
   }
 }
 

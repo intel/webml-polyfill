@@ -747,7 +747,7 @@ const showProgress = async (pm, pb, pi, pii) => {
             ${updateicon}<span class='prog_list_title'>Initialization, compilation, warmup</span>
           </li>
           <li class='prog prog-${pi}'>
-            ${inferenceicon}<span class='prog_list_title'>Image inference (input, compute)</span>
+            ${inferenceicon}<span class='prog_list_title'>Camera inference (input, compute)</span>
           </li>
         </ul>
       </nav>
