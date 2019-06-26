@@ -107,6 +107,7 @@ const main = async (camera = false) => {
     let model = getModelById(currentModel);
     await utils.loadModel(model);
     getOffloadOps(currentBackend, currentPrefer);
+    await showProgress('done', 'current', 'pending', !camera);
     await utilsInit(currentBackend, currentPrefer);
     showSubGraphsSummary(utils.getSubgraphsSummary());
   } catch (e) {

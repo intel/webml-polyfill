@@ -144,6 +144,7 @@ const main = async (camera = false) => {
     let emotionanalysismodel = getModelById(currentEmotionModel);
     await emotionAnalysis.loadModel(emotionanalysismodel);
     getOffloadOps(currentBackend, currentPrefer);
+    await showProgress('done', 'current', 'pending', !camera);
     await utilsInit(currentBackend, currentPrefer);
     showSubGraphsSummary(emotionAnalysis.getSubgraphsSummary());
     predictPath(camera);

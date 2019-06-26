@@ -145,6 +145,7 @@ const main = async (camera = false) => {
     let landmarkmodel = getModelById(currentLandmarkModel);
     await landmarkDetector.loadModel(landmarkmodel);
     getOffloadOps(currentBackend, currentPrefer);
+    await showProgress('done', 'current', 'pending', !camera);
     await utilsInit(currentBackend, currentPrefer);
     showSubGraphsSummary(landmarkDetector.getSubgraphsSummary());
     predictPath(camera);
