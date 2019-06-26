@@ -173,6 +173,7 @@ const drawResult = async (predict = true, decode = true) => {
     }
     utils.drawPoses(canvassingle, singlePose);
     utils.drawPoses(canvasmulti, multiPoses);
+    await showProgress('done', 'done', 'done', true);
     showResults();
   }
   catch (e) {
@@ -181,7 +182,7 @@ const drawResult = async (predict = true, decode = true) => {
 }
 
 const setupCamera = async () => {
-  showProgress('Starting camera ...');
+  await showProgress('done', 'done', 'current', false);
   const stream = await navigator.mediaDevices.getUserMedia({ 'audio': false, 'video': {facingMode: (front ? 'user' : 'environment') }});
   video.srcObject = stream;
   track = stream.getTracks()[0];
@@ -240,11 +241,11 @@ const updateScenario = async (camera = false) => {
   try {
     if(camera){
       await loadVideo();
-      showProgress('Inferencing ...');
+      await showProgress('done', 'done', 'current', !camera);
       poseDetectionFrame();
     }
     else {
-      showProgress('Inferencing ...');
+      showProgress('done', 'done', 'current', !camera);
       drawResult();
     }
   } catch (e) {
@@ -259,19 +260,19 @@ const main = async (camera = false) => {
   try {
     if(camera){
       await loadVideo();
-      showProgress('Loading model and initializing ...');
+      await showProgress('current', 'pending', 'pending', !camera);
       getOffloadOps(currentBackend, currentPrefer);
       await utils.init(currentBackend, currentPrefer, inputSize);
       showSubGraphsSummary(utils.getSubgraphsSummary());
-      showProgress('Inferencing ...');
+      await showProgress('done', 'done', 'current', !camera);
       poseDetectionFrame();
     }
     else {
-      showProgress('Loading model and initializing...');
+      await showProgress('current', 'pending', 'pending', !camera);
       getOffloadOps(currentBackend, currentPrefer);
       await utils.init(currentBackend, currentPrefer, inputSize);
       showSubGraphsSummary(utils.getSubgraphsSummary());
-      showProgress('Inferencing ...');
+      await showProgress('done', 'done', 'current', !camera);
       drawResult();
     }
   } catch (e) {

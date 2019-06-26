@@ -42,8 +42,9 @@ const utilsPredict = async (source) => {
     track.stop();
   }
   try {
-    await showProgress('Image inferencing ...');
+    await showProgress('done', 'done', 'current', true);
     await predict(source);
+    await showProgress('done', 'done', 'done', true);
     showResults();
   }
   catch (e) {
@@ -68,8 +69,9 @@ const utilsPredictCamera = async () => {
     let stream = await navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: (front ? 'user' : 'environment') } });
     video.srcObject = stream;
     track = stream.getTracks()[0];
-    await showProgress('Camera inferencing ...');
+    await showProgress('done', 'done', 'current', false);
     startPredict();
+    await showProgress('done', 'done', 'done', false);
     showResults();
   }
   catch (e) {
@@ -108,7 +110,7 @@ const updateBackend = async (camera = false, force = false) => {
     faceDetector.deleteAll();
   } catch (e) { }
   logConfig();
-  await showProgress('Updating backend ...');
+  await showProgress('done', 'current', 'pending', !camera);
   try {
     getOffloadOps(currentBackend, currentPrefer);
     await utilsInit(currentBackend, currentPrefer);
@@ -135,13 +137,14 @@ const main = async (camera = false) => {
     faceDetector.deleteAll();
   } catch (e) { }
   logConfig();
-  await showProgress('Loading model ...');
+  await showProgress('current', 'pending', 'pending', !camera);
   try {
     let model = getModelById(currentModel);
     await faceDetector.loadModel(model);
     let emotionanalysismodel = getModelById(currentEmotionModel);
     await emotionAnalysis.loadModel(emotionanalysismodel);
     getOffloadOps(currentBackend, currentPrefer);
+    await showProgress('done', 'current', 'pending', !camera);
     await utilsInit(currentBackend, currentPrefer);
     showSubGraphsSummary(emotionAnalysis.getSubgraphsSummary());
     predictPath(camera);
