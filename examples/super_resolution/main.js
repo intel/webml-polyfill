@@ -27,6 +27,7 @@ const updateResult = (result) => {
 }
 
 const utilsPredict = async (source, backend, prefer) => {
+  await showProgress('done', 'done', 'current', true);
   let result = await utils.predict(source);
   updateResult(result);
   let start = performance.now();
@@ -34,6 +35,7 @@ const utilsPredict = async (source, backend, prefer) => {
   utils.drawOutput(outputCanvas, source);
   let elapsed = performance.now() - start;
   console.log(`draw time: ${elapsed.toFixed(2)} ms`);
+  await showProgress('done', 'done', 'done', true);
   showResults();
 }
 
@@ -47,7 +49,7 @@ const updateBackend = async (camera = false, force = false) => {
   }
   try { utils.deleteAll(); } catch (e) { }
   logConfig();
-  await showProgress('Updating backend ...');
+  await showProgress('done', 'current', 'pending', !camera);
   try {
     getOffloadOps(currentBackend, currentPrefer);
     await utils.init(currentBackend, currentPrefer);
@@ -68,12 +70,13 @@ const main = async (camera = false) => {
   streaming = false;
   try { utils.deleteAll(); } catch (e) { }
   logConfig();
-  showProgress('Loading model and initializing...');
+  await showProgress('current', 'pending', 'pending', !camera);
   try {
     let model = getModelById(currentModel);
     await utils.loadModel(model);
     changeCanvasSize(model);
     getOffloadOps(currentBackend, currentPrefer);
+    await showProgress('done', 'current', 'pending', !camera);
     await utils.init(currentBackend, currentPrefer);
     showSubGraphsSummary(utils.getSubgraphsSummary());
     utilsPredict(imageElement, currentBackend, currentPrefer);

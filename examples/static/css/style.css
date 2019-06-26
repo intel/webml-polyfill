@@ -924,9 +924,9 @@ footer {
 }
 
 #filter img {
-  width: 116px;
+  width: 98px;
   height: 20px;
-  margin-right: 14px;
+  margin-right: 10px;
 }
 
 .modelcv tbody td.name {
@@ -993,6 +993,12 @@ footer {
 
 .table td {
   font-weight: 200;
+}
+
+@media (max-width: 768px) {
+  .t-filter label, .g span {
+    padding: 0.25rem 0.5rem !important;
+  }
 }
 
 .checked {
@@ -2726,4 +2732,130 @@ button.xclose {
   background-color: rgba(255, 111, 97, 1.0);
 }
 
+#trademark {
+  font-size: 0.65rem;
+}
 
+@media (min-width: 48em) {
+  .prog {
+    padding: 10px;
+    font-size: 13px;
+  }
+}
+
+.prog_list {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style-type: none;
+}
+
+@media (min-width: 48em) {
+  .prog_list {
+    display: flex;
+    justify-content: space-between;
+  }
+}
+
+.prog {
+  padding: 3px 5px;
+  text-align: center;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+@media (min-width: 48em) {
+  .prog {
+    padding: 10px;
+    flex-direction: column;
+    flex: 1;
+  }
+}
+
+.prog:after {
+  content: '';
+  display: block;
+  position: absolute;
+  z-index: 2;
+}
+
+@media (min-width: 48em) {
+  .prog:after {
+    width: calc(100% - 100px);
+    top: 28%;
+    left: calc(50% + 50px);
+    border-top: 2px dotted #E2DFDA;
+  }
+}
+
+.prog-done {
+  color: rgba(25, 190, 225, 1.0);
+}
+
+@media (min-width: 48em) {
+  .prog-done:after {
+    border-top-style: solid;
+    border-top-width: 1px;
+  }
+}
+
+.prog-current {
+  color: rgba(25, 190, 225, 1.0);
+}
+
+.prog-current:last-of-type:after, .prog-current:only-of-type:after {
+  height: 30%;
+}
+
+.prog:last-of-type:after {
+  display: none;
+}
+
+.prog-pending {
+  color: #333;
+}
+
+.prog-pending:after {
+  height: 30%;
+}
+
+.prog_list_title {
+  margin: 1px 0 0;
+}
+
+@media (min-width: 48em) {
+  .prog_list_title {
+    margin: 0;
+  }
+}
+
+.prog_list_icon {
+  margin: 0 10px 0 0;
+  height: 2em;
+  width: 2em;
+}
+
+@media (min-width: 48em) {
+  .prog_list_icon {
+    margin: 0 0 15px;
+  }
+}
+
+.prog_list_icon path {
+  fill: currentColor;
+}
+
+.prog_list_icon ellipse,
+.prog_list_icon circle {
+  stroke: currentColor;
+}
+
+@media (max-width: 768px) {
+  .prog {
+    font-size: 13px;
+  }
+  .prog_list_title {
+    text-align: left;
+  }
+}
