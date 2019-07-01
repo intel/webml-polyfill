@@ -22,6 +22,7 @@ class SDBenchmark extends Benchmark {
   }
 
   async setInputOutput() {
+    let canvasElement = document.createElement('canvas');
     let width = this.modelInfoDict.inputSize[1];
     let height = this.modelInfoDict.inputSize[0];
     const channels = this.modelInfoDict.inputSize[2];
@@ -38,14 +39,9 @@ class SDBenchmark extends Benchmark {
     } else {
       typedArray = Float32Array;
     }
-    if (bkImageSrc === null) {
-      bkImageSrc = imageElement.src;
-    } else {
-      imageElement.src = bkImageSrc;
-    }
     if (pnConfigDic === null) {
       // Read modelVersion outputStride scaleFactor minScore from json file
-      let posenetConfigURL = './posenetConfig.json';
+      let posenetConfigURL = './resources/posenetConfig.json';
       let pnConfigText = await loadUrl(posenetConfigURL);
       pnConfigDic = JSON.parse(pnConfigText);
     }
@@ -66,15 +62,12 @@ class SDBenchmark extends Benchmark {
     let OFFSET_TENSOR_SIZE = HEATMAP_TENSOR_SIZE * 2;
     this.heatmapTensor = new typedArray(HEATMAP_TENSOR_SIZE);
     this.offsetTensor = new typedArray(OFFSET_TENSOR_SIZE);
-    // prepare canvas for predict
-    let posePredictCanvas = document.getElementById('posePredictCanvas');
-    let drawContent = await this.loadImage(posePredictCanvas, width, height);
     width = this.scaleWidth;
     height = this.scaleHeight;
     canvasElement.setAttribute("width", width);
     canvasElement.setAttribute("height", height);
     let canvasContext = canvasElement.getContext('2d');
-    canvasContext.drawImage(drawContent, 0, 0, width, height);
+    canvasContext.drawImage(imageElement, 0, 0, width, height);
     let pixels = canvasContext.getImageData(0, 0, width, height).data;
     if (norm) {
       pixels = new Float32Array(pixels).map(p => p / 255);
@@ -111,24 +104,6 @@ class SDBenchmark extends Benchmark {
     console.log(`compute result: ${result}`);
   }
 
-  async loadImage(canvas, width, height) {
-    let ctx = canvas.getContext('2d');
-    let image = new Image();
-    let promise = new Promise((resolve, reject) => {
-      image.crossOrigin = '';
-      image.onload = () => {
-        canvas.width = width;
-        canvas.height = height;
-        canvas.setAttribute("width", width);
-        canvas.setAttribute("height", height);
-        ctx.drawImage(image, 0, 0, width, height);
-        resolve(image);
-      };
-    });
-    image.src = imageElement.src;
-    return promise;
-  }
-
   async executeAsync() {
     let computeResults = [];
     let decodeResults = [];
@@ -151,7 +126,6 @@ class SDBenchmark extends Benchmark {
       decodeResults.push(decodeTime);
     }
     // draw canvas by last result
-    await this.loadImage(showCanvasElement, imageElement.width, imageElement.height);
     let ctx = showCanvasElement.getContext('2d');
     let scaleX = showCanvasElement.width / this.scaleWidth;
     let scaleY = showCanvasElement.height / this.scaleHeight;
@@ -161,7 +135,6 @@ class SDBenchmark extends Benchmark {
         drawSkeleton(pose.keypoints, this.minScore, ctx, scaleX, scaleY);
       }
     });
-    imageElement.src = showCanvasElement.toDataURL();
     return {
       "computeResults": computeResults,
       "decodeResults": decodeResults

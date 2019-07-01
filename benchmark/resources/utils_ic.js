@@ -13,6 +13,7 @@ class ICBenchmark extends Benchmark {
   }
 
   async setInputOutput() {
+    let canvasElement = document.createElement('canvas');
     let width = this.modelInfoDict.inputSize[1];
     let height = this.modelInfoDict.inputSize[0];
     const channels = this.modelInfoDict.inputSize[2];
@@ -65,7 +66,13 @@ class ICBenchmark extends Benchmark {
         throw new Error(`Invalid model ${err}`);
       }
       rawModel = onnx.ModelProto.decode(loadResult.bytes);
-      importerClass =  OnnxModelImporter;
+      importerClass = OnnxModelImporter;
+    } else if (modelName.indexOf('OpenVino')!== -1) {
+      const networkFile = this.modelInfoDict.modelFile.replace(/bin$/, 'xml');
+      const networkText = await loadUrl('../examples/util/' + networkFile, false);
+      const weightsBuffer = loadResult.bytes.buffer;
+      rawModel = new OpenVINOModel(networkText, weightsBuffer);
+      importerClass = OpenVINOModelImporter;
     }
     let postOptions = this.modelInfoDict.postOptions || {};
     let kwargs = {

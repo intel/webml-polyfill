@@ -71,6 +71,7 @@ class ODBenchmark extends Benchmark {
   }
 
   async setInputOutput() {
+    let canvasElement = document.createElement('canvas');
     let width = this.modelInfoDict.inputSize[1];
     let height = this.modelInfoDict.inputSize[0];
     const channels = this.modelInfoDict.inputSize[2];
@@ -86,11 +87,6 @@ class ODBenchmark extends Benchmark {
       typedArray = Uint8Array;
     } else {
       typedArray = Float32Array;
-    }
-    if (bkImageSrc === null) {
-      bkImageSrc = imageElement.src;
-    } else {
-      imageElement.src = bkImageSrc;
     }
     this.outputTensor = [];
     this.modelType = this.modelInfoDict.type;
@@ -205,7 +201,6 @@ class ODBenchmark extends Benchmark {
       showCanvasElement.setAttribute("height", imageElement.height);
       drawBoxes(imageElement, showCanvasElement, boxes, this.labels);
     }
-    imageElement.src = showCanvasElement.toDataURL();
     return {
       "computeResults": computeResults,
       "decodeResults": decodeResults

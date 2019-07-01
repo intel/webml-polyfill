@@ -13,6 +13,7 @@ class SSBenchmark extends Benchmark {
   }
 
   async setInputOutput() {
+    let canvasElement = document.createElement('canvas');
     let width = this.modelInfoDict.inputSize[1];
     let height = this.modelInfoDict.inputSize[0];
     const channels = this.modelInfoDict.inputSize[2];
@@ -28,11 +29,6 @@ class SSBenchmark extends Benchmark {
       typedArray = Uint8Array;
     } else {
       typedArray = Float32Array;
-    }
-    if (bkImageSrc === null) {
-      bkImageSrc = imageElement.src;
-    } else {
-      imageElement.src = bkImageSrc;
     }
     this.inputTensor = new typedArray(this.modelInfoDict.inputSize.reduce((a, b) => a * b));
     this.outputTensor = new typedArray(this.modelInfoDict.outputSize.reduce((a, b) => a * b));
@@ -93,6 +89,7 @@ class SSBenchmark extends Benchmark {
   }
 
   async executeAsync() {
+    let segCanvasElement = document.createElement('canvas');
     let results = [];
     for (let i = 0; i < this.iterations; i++) {
       this.onExecuteSingle(i);
@@ -102,12 +99,12 @@ class SSBenchmark extends Benchmark {
       let elapsedTime = performance.now() - tStart;
       results.push(elapsedTime);
     }
-    let imWidth = imageElement.naturalWidth;
-    let imHeight = imageElement.naturalHeight;
+    let imWidth = imageElement.width;
+    let imHeight = imageElement.height;
     let resizeRatio = Math.max(Math.max(imWidth, imHeight) / this.inputSize[0], 1);
     let scaledWidth = Math.floor(imWidth / resizeRatio);
     let scaledHeight = Math.floor(imHeight / resizeRatio);
-    let renderer = new Renderer(segCanvas);
+    let renderer = new Renderer(segCanvasElement);
     renderer.setup();
     renderer.uploadNewTexture(imageElement, [scaledWidth, scaledHeight]);
     renderer.drawOutputs({
@@ -115,7 +112,8 @@ class SSBenchmark extends Benchmark {
       outputShape: this.outputSize,
       labels: this.labels,
     });
-    imageElement.src = segCanvas.toDataURL();
+    let showCanvasContext = showCanvasElement.getContext('2d');
+    showCanvasContext.drawImage(segCanvasElement, 0, 0, imWidth, imHeight);
     return results;
   }
 

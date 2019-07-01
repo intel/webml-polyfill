@@ -6,13 +6,8 @@ class SRBenchmark extends Benchmark {
     this.model = null;
     this.inputTensor = null;
     this.outputTensor = null;
-    this.outputElement = document.getElementById('superCanvas');
-    this.outputCtx = this.outputElement.getContext('2d');
-    this.isQuantized = false;
-    this.blockWidth = 300;
-    this.blockHeight = 300;
-    this.outputElement.width = this.blockWidth * 2 + 10;
-    this.outputElement.height = this.blockHeight;
+    this.isQuantized = null;
+    this.outputCtx = showCanvasElement.getContext('2d');
   }
 
   async setInputOutput() {
@@ -25,11 +20,6 @@ class SRBenchmark extends Benchmark {
       typedArray = Uint8Array;
     } else {
       typedArray = Float32Array;
-    }
-    if (bkImageSrc === null) {
-      bkImageSrc = imageElement.src;
-    } else {
-      imageElement.src = bkImageSrc;
     }
     this.inputTensor = new typedArray(this.modelInfoDict.inputSize.reduce((a, b) => a * b));
     this.outputTensor = new typedArray(this.modelInfoDict.outputSize.reduce((a, b) => a * b));
@@ -48,10 +38,8 @@ class SRBenchmark extends Benchmark {
         }
       }
     }
-    this.outputCtx.drawImage(inCanvas, 0, 0, this.blockWidth, this.blockHeight);
-    imageElement.style.width = `${this.outputElement.width}px`;
-    imageElement.style.height = `${this.outputElement.height}px`;
-    imageElement.src = this.outputElement.toDataURL();
+    showCanvasElement.setAttribute("height", imageElement.height * 2 + 5);
+    this.outputCtx.drawImage(inCanvas, 0, 0, imageElement.width, imageElement.height);
   }
 
   /**
@@ -118,8 +106,7 @@ class SRBenchmark extends Benchmark {
     let imageData = new ImageData(bytes, outCanvas.width, outCanvas.height);
     let outCtx = outCanvas.getContext('2d');
     outCtx.putImageData(imageData, 0, 0);
-    this.outputCtx.drawImage(outCanvas, 0, 0, outCanvas.width, outCanvas.height, this.blockWidth + 10, 0, this.blockWidth, this.blockHeight);
-    imageElement.src = this.outputElement.toDataURL();
+    this.outputCtx.drawImage(outCanvas, 0, imageElement.height + 5, imageElement.width, imageElement.height);
   }
 
   handleResults(results) {
