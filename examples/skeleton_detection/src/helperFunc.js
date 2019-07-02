@@ -30,8 +30,8 @@ function getInput(inputElement) {
 
 function getURL(version) {
   let address;
-  const urlBase = 'https://storage.googleapis.com/tfjs-models/weights/posenet/';
-  // const urlBase = '../skeleton_detection/model/';
+  // const urlBase = 'https://storage.googleapis.com/tfjs-models/weights/posenet/';
+  const urlBase = '../skeleton_detection/model/';
   switch (version) {
     case 1.01:
       address = urlBase + 'mobilenet_v1_101/';
@@ -64,7 +64,7 @@ async function fetchDataByUrl(url, binary) {
         if (xhr.status == 200) {
           resolve(xhr.response);
         } else {
-          reject(new Error('Failed to load ' + modelUrl + ' status: ' + request.status));
+          reject(new Error('Failed to load ' + url + ' status: ' + xhr.status));
         }
       }
     };

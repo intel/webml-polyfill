@@ -62,11 +62,11 @@ const predictCamera = async () => {
     streaming = true;
     // let res = utils.getFittedResolution(4 / 3);
     // setCamResolution(res);
-    await showProgress('done', 'done', 'current', false);
+    await showProgress('done', 'done', 'current');
     let stream = await navigator.mediaDevices.getUserMedia({ audio: false, video: (front ? 'user' : 'environment') });
     videoElement.srcObject = stream;
     track = stream.getTracks()[0];
-    await showProgress('done', 'done', 'done', false);
+    await showProgress('done', 'done', 'done');
     videoElement.onloadeddata = startPredict;
   } catch (e) {
     errorHandler(e);
@@ -78,7 +78,7 @@ const predictAndDraw = async (source, camera = false) => {
     streaming = false;
     if (track) track.stop();
   }
-  await showProgress('done', 'done', 'current', true);
+  await showProgress('done', 'done', 'current');
   clippedSize = utils.prepareInput(source);
   renderer.uploadNewTexture(source, clippedSize);
   let result = await utils.predict();
@@ -87,7 +87,7 @@ const predictAndDraw = async (source, camera = false) => {
   inferenceTime.innerHTML = `inference time: <span class='ir'>${inferTime.toFixed(2)} ms</span>`;
   renderer.drawOutputs(result.segMap)
   renderer.highlightHoverLabel(hoverPos);
-  await showProgress('done', 'done', 'done', true);
+  await showProgress('done', 'done', 'done');
   showResults();
   buttonUI(us === 'camera');
 }
@@ -109,7 +109,7 @@ const updateBackend = async (camera = false, force = false) => {
   streaming = false;
   try { utils.deleteAll(); } catch (e) { }
   logConfig();
-  await showProgress('done', 'current', 'pending', !camera);
+  await showProgress('done', 'current', 'pending');
   try {
     getOffloadOps(currentBackend, currentPrefer);
     await utils.init(currentBackend, currentPrefer);
@@ -130,12 +130,12 @@ const main = async (camera = false) => {
   streaming = false;
   try { utils.deleteAll(); } catch (e) { }
   logConfig();
-  await showProgress('current', 'pending', 'pending', !camera);
+  await showProgress('current', 'pending', 'pending');
   try {
     let model = getModelById(currentModel);
     await utils.loadModel(model);
     getOffloadOps(currentBackend, currentPrefer);
-    await showProgress('done', 'current', 'pending', !camera);
+    await showProgress('done', 'current', 'pending');
     await utils.init(currentBackend, currentPrefer);
     showSubGraphsSummary(utils.getSubgraphsSummary());
   } catch (e) {
