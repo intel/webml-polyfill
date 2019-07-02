@@ -1,14 +1,12 @@
 let inputElement = null;
 let pickBtnElement = null;
-let canvasElement = null;
 let showCanvasElement = null;
-let segCanvas = null;
-let superCanvas = null;
-let bkImageSrc = null;
 let imageElement = document.getElementById('image');
+let categoryElement = document.getElementById('categoryName');
 let modelElement = document.getElementById('modelName');
 let preferDivElement = document.getElementById('preferDiv');
 let preferSelectElement = document.getElementById('preferSelect');
+let runButton = document.querySelector('#runButton');
 
 function getPreferString() {
   return preferSelectElement.options[preferSelectElement.selectedIndex].value;
@@ -36,45 +34,20 @@ function updateOpsSelect() {
   supportedOps = getSelectedOps();
 }
 
-async function setSuperImageUI(modelClass, modelName) {
-  if (modelClass === 'super_resolution') {
-    imageElement.parentNode.setAttribute('align', '');
-    imageElement.style.width = '300px';
-    imageElement.style.height = '300px';
-    let srCanvas = document.createElement('canvas');
-    let srCtx = srCanvas.getContext('2d');
-    switch (modelName) {
-      case 'SRGAN 96x4 (TFLite)':
-        srCanvas.width = 96;
-        srCanvas.height = 96;
-        break;
-      case 'SRGAN 128x4 (TFLite)':
-        srCanvas.width = 128;
-        srCanvas.height = 128;
-        break;
-      default:
-        srCanvas.width = 96;
-        srCanvas.height = 96;
-    }
-    let imageBytes = await loadImage(imageElement.src);
-    srCtx.drawImage(imageBytes, 0, 0, srCanvas.width, srCanvas.height);
-    imageElement.src = srCanvas.toDataURL();
-  } else {
-    imageElement.parentNode.setAttribute('align', 'center');
-    imageElement.style.width = null;
-    imageElement.style.height = null;
-  }
+function showImage() {
+  let ctx = showCanvasElement.getContext("2d");
+  showCanvasElement.setAttribute("width", imageElement.width);
+  showCanvasElement.setAttribute("height", imageElement.height);
+  ctx.drawImage(imageElement, 0, 0);
 }
 
 function setImageSrc() {
-  bkImageSrc = null;
   let inputFile = document.getElementById('input').files[0];
-  let modelClass = modelElement.options[modelElement.selectedIndex].className;
-  let modelName = modelElement.options[modelElement.selectedIndex].modelName;
+  let categoryId = categoryElement.options[categoryElement.selectedIndex].id;
   if (inputFile !== undefined) {
     imageElement.src = URL.createObjectURL(inputFile);
   } else {
-    switch (modelClass) {
+    switch (categoryId) {
       case 'image_classification':
         imageElement.src = '../examples/image_classification/img/test.jpg';
         break;
@@ -100,36 +73,53 @@ function setImageSrc() {
         imageElement.src = '../examples/image_classification/img/test.jpg';
     }
   }
-  setSuperImageUI(modelClass, modelName);
+  imageElement.onload = function() {
+    showImage();
+  }
+}
+
+function setModelsOptions(category) {
+  let modelsList = modelZoo[category];
+  for (let model of modelsList) {
+    let option = document.createElement('option');
+    option.textContent = model.modelName;
+    document.querySelector('#modelName').appendChild(option);
+  }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
   inputElement = document.getElementById('input');
   pickBtnElement = document.getElementById('pickButton');
-  canvasElement = document.getElementById('canvas');
   showCanvasElement = document.getElementById('showCanvas');
-  segCanvas = document.getElementById('segCanvas');
-  superCanvas = document.getElementById('superCanvas');
+  let curCategory = categoryElement.options[categoryElement.selectedIndex].className;
+  setModelsOptions(curCategory);
   inputElement.addEventListener('change', (e) => {
     $('.labels-wrapper').empty();
     let files = e.target.files;
     if (files.length > 0) {
-      bkImageSrc = null;
       imageElement.src = URL.createObjectURL(files[0]);
     }
     setImageSrc();
   }, false);
+  categoryElement.addEventListener('change', (e) => {
+    $('#modelName').empty();
+    $('.labels-wrapper').empty();
+    curCategory = categoryElement.options[categoryElement.selectedIndex].className;
+    setModelsOptions(curCategory);
+    setImageSrc();
+  }, false);
   modelElement.addEventListener('change', (e) => {
     $('.labels-wrapper').empty();
-    setImageSrc();
   }, false);
   let configurationsElement = document.getElementById('configurations');
   configurationsElement.addEventListener('change', (e) => {
     $('.labels-wrapper').empty();
     setImageSrc();
     if (JSON.parse(e.target.value).backend === 'WebNN') {
+      $("#preferSelect option[value='sustained']").prop("selected", true);
       document.querySelector('#preferSelect option[value=none]').disabled = true;
     } else {
+      $("#preferSelect option[value='none']").prop("selected", true);
       document.querySelector('#preferSelect option[value=none]').disabled = false;
     }
     updateOpsSelect();
@@ -158,19 +148,19 @@ document.addEventListener('DOMContentLoaded', () => {
   let polyfillConfigurations = [{
     backend: 'WASM',
     modelName: '',
-    modelClass: '',
+    category: '',
     iterations: 0
   },
   {
     backend: 'WebGL',
     modelName: '',
-    modelClass: '',
+    category: '',
     iterations: 0
   }];
   let webnnConfigurations = [{
     backend: 'WebNN',
     modelName: '',
-    modelClass: '',
+    category: '',
     iterations: 0
   }];
   let configurations = [];
@@ -181,7 +171,6 @@ document.addEventListener('DOMContentLoaded', () => {
     option.textContent = `${configuration.backend}`;
     document.querySelector('#configurations').appendChild(option);
   }
-  let button = document.querySelector('#runButton');
-  button.setAttribute('class', 'btn btn-primary');
-  button.addEventListener('click', main);
+  runButton.addEventListener('click', main);
+  showImage();
 });

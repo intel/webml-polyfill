@@ -8,10 +8,8 @@
       body {
         font-size: 13px;
       }
-      canvas {
-        display: none;
-        position: absolute;
-        z-index: -3;
+      #showCanvas {
+        width: 60%;
       }
       .top-margin {
         margin-top:10px;
@@ -47,64 +45,32 @@
         <div class="col-12">
           <h1>WebNN Benchmark</h1>
           <div>
-            <h4>Model</h4>
-            <select id="modelName">
-              <option class="image_classification" selected >MobileNet v1 (TFLite)</option>
-              <option class="image_classification" >MobileNet v1 Quant (TFLite)</option>
-              <option class="image_classification" >MobileNet v2 (TFLite)</option>
-              <option class="image_classification" >MobileNet v2 Quant (TFLite)</option>
-              <option class="image_classification" >SqueezeNet (TFLite)</option>
-              <option class="image_classification" >Inception v3 (TFLite)</option>
-              <option class="image_classification" >Inception v3 Quant (TFLite)</option>
-              <option class="image_classification" >Inception v4 (TFLite)</option>
-              <option class="image_classification" >Inception v4 Quant (TFLite)</option>
-              <option class="image_classification" >Inception ResNet v2 (TFLite)</option>
-              <option class="image_classification" >MobileNet v2 (ONNX)</option>
-              <option class="image_classification" >SqueezeNet (ONNX)</option>
-              <option class="image_classification" >ResNet50 v1 (ONNX)</option>
-              <option class="image_classification" >ResNet50 v2 (ONNX)</option>
-              <option class="image_classification" >Inception v2 (ONNX)</option>
-              <option class="image_classification" >DenseNet (ONNX)</option>
-              <option class="object_detection" >SSD MobileNet v1 (TFLite)</option>
-              <option class="object_detection" >SSD MobileNet v1 Quant (TFLite)</option>
-              <option class="object_detection" >SSD MobileNet v2 (TFLite)</option>
-              <option class="object_detection" >SSD MobileNet v2 Quant (TFLite)</option>
-              <option class="object_detection" >SSDLite MobileNet v2 (TFLite)</option>
-              <option class="object_detection" >Tiny Yolo v2 COCO (TFLite)</option>
-              <option class="object_detection" >Tiny Yolo v2 VOC (TFLite)</option>
-              <option class="skeleton_detection" >PoseNet</option>
-              <option class="semantic_segmentation" >Deeplab 224 (TFLite)</option>
-              <option class="semantic_segmentation" >Deeplab 224 Atrous (TFLite)</option>
-              <option class="semantic_segmentation" >Deeplab 257 (TFLite)</option>
-              <option class="semantic_segmentation" >Deeplab 257 Atrous (TFLite)</option>
-              <option class="semantic_segmentation" >Deeplab 321 (TFLite)</option>
-              <option class="semantic_segmentation" >Deeplab 321 Atrous (TFLite)</option>
-              <option class="semantic_segmentation" >Deeplab 513 (TFLite)</option>
-              <option class="semantic_segmentation" >Deeplab 513 Atrous (TFLite)</option>
-              <option class="facial_landmark_detection" >SSD MobileNet v1 (TFlite)</option>
-              <option class="facial_landmark_detection" >SSD MobileNet v2 (TFlite)</option>
-              <option class="facial_landmark_detection" >SSDLite MobileNet v2 (TFlite)</option>
-              <option class="facial_landmark_detection" >Tiny Yolo v2 (TFlite)</option>
-              <option class="super_resolution" >SRGAN 96x4 (TFLite)</option>
-              <option class="super_resolution" >SRGAN 128x4 (TFLite)</option>
-              <option class="emotion_analysis" >SSD MobileNet v1 (TFlite)</option>
-              <option class="emotion_analysis" >SSD MobileNet v2 (TFlite)</option>
-              <option class="emotion_analysis" >SSDLite MobileNet v2 (TFlite)</option>
-              <option class="emotion_analysis" >Tiny Yolo v2 (TFlite)</option> 
+            <h4>Category</h4>
+            <select id="categoryName">
+              <option class="imageClassificationModels" id="image_classification" selected>Image Classification</option>
+              <option class="objectDetectionModels" id="object_detection">Object Detection</option>
+              <option class="humanPoseEstimationModels" id="skeleton_detection">Skeleton Detection</option>
+              <option class="semanticSegmentationModels" id="semantic_segmentation"> Semantic Segmentation</option>
+              <option class="superResolutionModels" id="super_resolution">Super Resolution</option>
+              <option class="faceDetectionModels" id="facial_landmark_detection">Facial Landmark Detection</option>
+              <option class="faceDetectionModels" id="emotion_analysis">Emotion Analysis</option>
             </select>
           </div>
           <div>
+            <h4>Model</h4>
+            <select id="modelName"></select>
+          </div>
+          <div>
             <h4>Backend</h4>
-            <select id="configurations">
-            </select>
+            <select id="configurations"></select>
           </div>
           <div id="preferDiv" class="prefer-show">
             <h4>Preference</h4>
             <select id="preferSelect">
-              <option value="sustained" selected>SUSTAINED_SPEED</option>
+              <option value="sustained">SUSTAINED_SPEED</option>
               <option value="fast">FAST_SINGLE_ANSWER</option>
               <option value="low">LOW_POWER</option>
-              <option value="none">None</option>
+              <option value="none" selected>None</option>
             </select>
           </div>
           <div>
@@ -112,7 +78,7 @@
             1(warming up) + <input type="number" id="iterations" min="1" size="4" value="200"/>
           </div>
           <div class="row top-margin">
-            <div class="col-4" id="supported-ops-select">
+            <div class="col-4" id="supported-ops-select" style="visibility: hidden">
               <label><input id="eagerMode" type="checkbox"> Eager Mode</label>
               <br><br>
               <button id="selectAllOps">Select All</button>
@@ -146,27 +112,16 @@
             </div>
             <div class="col-8" align="center">
               <canvas id="showCanvas"></canvas>
-              <canvas id="posePredictCanvas" width="513" height="513"></canvas>
-              <canvas id="segCanvas"></canvas>
-              <canvas id="superCanvas"></canvas>
-              <canvas id="canvas"></canvas>
-              <img id="image" crossorigin="anonymous" class="img-fluid" alt="Responsive image" src="../examples/image_classification/img/test.jpg">
-            </div>
-            <div class="col">
-            </div>
-          </div>
-          <div class='row labels-wrapper' id='labelitem'></div>
-          <div class="row top-margin">
-            <div class="col">
-            </div>
-            <div class="col" align="center">
-              <label id="pickButton" class="btn btn-primary">Pick Image <input type="file" id="input" accept="image/*" hidden>
-              </label>
-            </div>
-            <div class="col">
+              <img id="image" crossorigin="anonymous" class="img-fluid" alt="Responsive image" src="../examples/image_classification/img/test.jpg" hidden>
+              <div class='row labels-wrapper' id='labelitem' align="left" style="position: relative; left: 20%"></div>
+              <div class="col" style="padding-top: 10px">
+                <label id="pickButton" class="btn btn-primary">Pick Image
+                  <input type="file" id="input" accept="image/*" hidden>
+                </label>
+              </div>
             </div>
           </div>
-          <button type="button" id="runButton" class="btn btn-primary disabled">Run</button>
+          <button type="button" id="runButton" class="btn btn-primary">Run</button>
             (It will take several minutes)
           <div>
             <pre id="log"></pre>
@@ -185,6 +140,9 @@
     <script src="../examples/util/onnx/onnx.js"></script>
     <script src="../examples/util/onnx/OnnxModelUtils.js"></script>
     <script src="../examples/util/onnx/OnnxModelImporter.js"></script>
+    <script src='../examples/util/openvino/openvino.js'></script>
+    <script src='../examples/util/openvino/OpenVINOModelUtils.js'></script>
+    <script src='../examples/util/openvino/OpenVINOModelImporter.js'></script>
     <script src="../examples/skeleton_detection/src/decodePose.js"></script>
     <script src="../examples/skeleton_detection/src/helperFunc.js"></script>
     <script src="../examples/skeleton_detection/utils.js"></script>
@@ -197,15 +155,15 @@
     <script src='../examples/semantic_segmentation/src/GuidedFilter.js'></script>
     <script src="../examples/semantic_segmentation/src/DrawOutputs.js"></script>
     <script src='../examples/static/lib/jquery/jquery.min.js'></script>
-    <script src="ui.js"></script>
-    <script src="utils.js"></script>
-    <script src="utils_ic.js"></script>
-    <script src="utils_od.js"></script>
-    <script src="utils_sd.js"></script>
-    <script src="utils_ss.js"></script>
-    <script src="utils_fld.js"></script>
-    <script src="utils_sr.js"></script>
-    <script src="utils_ea.js"></script>
-    <script src="main.js"></script>
+    <script src="./resources/ui.js"></script>
+    <script src="./resources/utils.js"></script>
+    <script src="./resources/utils_ic.js"></script>
+    <script src="./resources/utils_od.js"></script>
+    <script src="./resources/utils_sd.js"></script>
+    <script src="./resources/utils_ss.js"></script>
+    <script src="./resources/utils_fld.js"></script>
+    <script src="./resources/utils_sr.js"></script>
+    <script src="./resources/utils_ea.js"></script>
+    <script src="./resources/main.js"></script>
   </body>
 </html>

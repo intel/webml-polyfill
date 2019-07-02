@@ -13,6 +13,7 @@ class ICBenchmark extends Benchmark {
   }
 
   async setInputOutput() {
+    let canvasElement = document.createElement('canvas');
     let width = this.modelInfoDict.inputSize[1];
     let height = this.modelInfoDict.inputSize[0];
     const channels = this.modelInfoDict.inputSize[2];
@@ -50,22 +51,32 @@ class ICBenchmark extends Benchmark {
   async setupAsync() {
     await this.setInputOutput();
     let backend = this.backend.replace('WebNN', 'WebML');
-    const modelName = this.modelInfoDict.modelName;
+    const modelFormat = this.modelInfoDict.format;
     let loadResult = await loadModelAndLabels(this.modelInfoDict.modelFile, this.modelInfoDict.labelsFile);
     this.labels = loadResult.text.split('\n');
     let importerClass;
     let rawModel;
-    if (modelName.indexOf('TFLite') !== -1) {
-      let flatBuffer = new flatbuffers.ByteBuffer(loadResult.bytes);
-      rawModel = tflite.Model.getRootAsModel(flatBuffer);
-      importerClass = TFliteModelImporter;
-    } else if (modelName.indexOf('ONNX') !== -1) {
-      let err = onnx.ModelProto.verify(loadResult.bytes);
-      if (err) {
-        throw new Error(`Invalid model ${err}`);
-      }
-      rawModel = onnx.ModelProto.decode(loadResult.bytes);
-      importerClass =  OnnxModelImporter;
+    switch (modelFormat) {
+      case 'TFLite':
+        let flatBuffer = new flatbuffers.ByteBuffer(loadResult.bytes);
+        rawModel = tflite.Model.getRootAsModel(flatBuffer);
+        importerClass = TFliteModelImporter;
+        break;
+      case 'ONNX':
+        let err = onnx.ModelProto.verify(loadResult.bytes);
+        if (err) {
+          throw new Error(`Invalid model ${err}`);
+        }
+        rawModel = onnx.ModelProto.decode(loadResult.bytes);
+        importerClass = OnnxModelImporter;
+        break;
+      case 'OpenVINO':
+        const networkFile = this.modelInfoDict.modelFile.replace(/bin$/, 'xml');
+        const networkText = await loadUrl('../examples/util/' + networkFile, false);
+        const weightsBuffer = loadResult.bytes.buffer;
+        rawModel = new OpenVINOModel(networkText, weightsBuffer);
+        importerClass = OpenVINOModelImporter;
+        break;
     }
     let postOptions = this.modelInfoDict.postOptions || {};
     let kwargs = {

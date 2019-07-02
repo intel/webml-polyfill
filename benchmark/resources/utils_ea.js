@@ -1,33 +1,16 @@
-// Benchmark for Facial Landmark Detection models
-class FLDBenchmark extends Benchmark {
+// Benchmark for Emotion Analysis Detection models
+class EABenchmark extends Benchmark {
   constructor(modelName, backend, iterations) {
     super(...arguments);
     this.faceDetector = null;
     this.modelName = modelName;
-    this.modelInfoDict = getModelInfoDict(facialLandmarkDetectionModels, 'SimpleCNN (TFlite)');
+    this.modelInfoDict = getModelInfoDict(emotionAnalysisModels, 'Simple CNN 7(TFlite)');
     this.model = null;
     this.inputTensor = null;
     this.inputSize = null;
     this.outputTensor = null;
     this.outputSize = null;
-    this.imageElement = null;
-  }
-
-  setupImageElement() {
-    if (bkImageSrc === null) {
-      bkImageSrc = imageElement.src;
-    } else {
-      imageElement.src = bkImageSrc;
-    }
-    let canvas = document.createElement('canvas');
-    let width = imageElement.naturalWidth;
-    let height = imageElement.naturalHeight;
-    canvas.setAttribute("width", width);
-    canvas.setAttribute("height", height);
-    let ctx = canvas.getContext('2d');
-    ctx.drawImage(imageElement, 0, 0, width, height);
-    this.imageElement = document.createElement("img");
-    this.imageElement.setAttribute("src", canvas.toDataURL());
+    this.outputBoxTensor = null;
   }
 
   async setupFaceDetector() {
@@ -43,10 +26,10 @@ class FLDBenchmark extends Benchmark {
   }
 
   async getFaceDetectResult() {
-    let detectResult = await this.faceDetector.getFaceBoxes(this.imageElement);
+    let detectResult = await this.faceDetector.getFaceBoxes(imageElement);
     return detectResult;
   }
-
+  
   async setInputOutput(box) {
     let inputCanvas = document.createElement('canvas');
     let width = this.modelInfoDict.inputSize[1];
@@ -57,23 +40,26 @@ class FLDBenchmark extends Benchmark {
     const mean = preOptions.mean || [0, 0, 0, 0];
     const std = preOptions.std  || [1, 1, 1, 1];
     const norm = preOptions.norm || false;
-    const channelScheme = preOptions.channelScheme || 'RGB';
-    let typedArray = Float32Array;
-    this.inputTensor = new typedArray(this.modelInfoDict.inputSize.reduce((a, b) => a * b));
-    this.outputTensor = new typedArray(this.modelInfoDict.outputSize);
+    this.inputTensor = new Float32Array(this.modelInfoDict.inputSize.reduce((a, b) => a * b));
+    this.outputTensor = new Float32Array(this.modelInfoDict.outputSize);
     inputCanvas.setAttribute("width", width);
     inputCanvas.setAttribute("height", height);
     let canvasContext = inputCanvas.getContext('2d');
-    canvasContext.drawImage(this.imageElement, box[0], box[2], 
-                            box[1]-box[0], box[3]-box[2], 0, 0, 
-                            inputCanvas.width,
-                            inputCanvas.height);
+    canvasContext.drawImage(imageElement, box[0], box[2], 
+                            box[1] - box[0], box[3] - box[2], 0, 0, 
+                            width, height);
     let pixels = canvasContext.getImageData(0, 0, width, height).data;
     if (norm) {
-      pixels = new Float32Array(pixels).map(p => p / 255);
+      for (let y = 0; y < height; ++y) {
+        for (let x = 0; x < width; ++x) {
+          for (let c = 0; c < channels; ++c) {
+            let index = y * width * imageChannels + x * imageChannels + c;
+            let value = (pixels[index] + pixels[index + 1] + pixels[index + 2]) / 3 / 255;
+            this.inputTensor[y * width * channels + x * channels + c] = (value - mean[c]) / std[c];
+          }
+        }
+      }
     }
-    setInputTensor(pixels, imageChannels, height, width, channels,
-                   channelScheme, mean, std, this.inputTensor);
   }
 
   /**
@@ -81,7 +67,6 @@ class FLDBenchmark extends Benchmark {
    * @returns {Promise<void>}
    */
   async setupAsync() {
-    this.setupImageElement();
     await this.setupFaceDetector();
     let backend = this.backend.replace('WebNN', 'WebML');
     let loadResult = await loadModelAndLabels(this.modelInfoDict.modelFile);
@@ -125,11 +110,8 @@ class FLDBenchmark extends Benchmark {
       let elapsedTime = performance.now() - tStart;
       results.push(elapsedTime);
     }
-    showCanvasElement.setAttribute("width", this.imageElement.width);
-    showCanvasElement.setAttribute("height", this.imageElement.height);
-    this.drawFaceBoxes(this.imageElement, showCanvasElement, exeResult.faceBoxes);
-    this.drawKeyPoints(this.imageElement, showCanvasElement, exeResult.keyPoints, exeResult.faceBoxes);
-    imageElement.src = showCanvasElement.toDataURL();
+    let classes = this.getTopClasses(exeResult.keyPoints, this.modelInfoDict.labels, 1);
+    this.drawFaceBoxes(imageElement, showCanvasElement, exeResult.faceBoxes, classes);
     return results;
   }
 
@@ -156,57 +138,61 @@ class FLDBenchmark extends Benchmark {
     }
   }
 
-  drawFaceBoxes(image, canvas, face_boxes) {
+  drawFaceBoxes(image, canvas, face_boxes, classes) {
     canvas.width = image.width / image.height * canvas.height;
     // drawImage
     let ctx = canvas.getContext('2d');
     ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
   
     // drawFaceBox
-    face_boxes.forEach(box => {
+    face_boxes.forEach((box, i) => {
       let xmin = box[0] / image.height * canvas.height;
       let xmax = box[1] / image.height * canvas.height;
       let ymin = box[2] / image.height * canvas.height;
       let ymax = box[3] / image.height * canvas.height;
-      let prob = box[4];
       ctx.strokeStyle = "#009bea";
       ctx.fillStyle = "#009bea";
       ctx.lineWidth = 3;
-      ctx.strokeRect(xmin, ymin, xmax-xmin, ymax-ymin);
-      ctx.font = "18px Arial";
-      let text = `${prob.toFixed(2)}`;
+      ctx.strokeRect(xmin, ymin, xmax - xmin, ymax - ymin);
+      ctx.font = "20px Arial";
+      let prob = classes[i].prob;
+      let label = classes[i].label;
+      let text = `${label}:${prob}`;
       let width = ctx.measureText(text).width;
       if (xmin >= 2 && ymin >= parseInt(ctx.font, 10)) {
         ctx.fillRect(xmin - 2, ymin - parseInt(ctx.font, 10), width + 4, parseInt(ctx.font, 10));
-        ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+        ctx.fillStyle = "white";
         ctx.textAlign = 'start';
         ctx.fillText(text, xmin, ymin - 3);
       } else {
-        ctx.fillRect(xmin + 2, ymin , width + 4,  parseInt(ctx.font, 10));
-        ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+        ctx.fillRect(xmin + 2, ymin, width + 4, parseInt(ctx.font, 10));
+        ctx.fillStyle = "white";
         ctx.textAlign = 'start';
         ctx.fillText(text, xmin + 2, ymin + 15);
       }
     });
   }
 
-  drawKeyPoints(image, canvas, Keypoints, boxes) {
-    let keypoints = null;
-    let ctx = canvas.getContext('2d');
-    boxes.forEach((box, n) => {
-      keypoints = Keypoints[n];
-      for (let i = 0; i < 136; i = i + 2) {
-        // decode keypoints
-        let x = ((box[1] - box[0]) * keypoints[i] + box[0]) / image.width * canvas.width;
-        let y = ((box[3] - box[2]) * keypoints[i + 1] + box[2]) / image.height * canvas.height;
-        // draw keypoints
-        ctx.beginPath();
-        ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
-        ctx.strokeStyle = "rgba(255, 255, 255, 0.8)";
-        ctx.arc(x, y, 2, 0, 2 * Math.PI);
-        ctx.fill();
-        ctx.closePath();
+  getTopClasses(tensors, labels, k = 3) {
+    let classes = [];
+    tensors.forEach(tensor => {
+      let probs = Array.from(tensor);
+      let indexes = probs.map((prob, index) => [prob, index]);
+      let sorted = indexes.sort((a, b) => {
+        if (a[0] === b[0]) {return 0;}
+        return a[0] < b[0] ? -1 : 1;
+      });
+      sorted.reverse();
+      for (let i = 0; i < k; ++i) {
+        let prob = sorted[i][0];
+        let index = sorted[i][1];
+        let c = {
+          label: labels[index],
+          prob: (prob * 100).toFixed(2)
+        }
+        classes.push(c);
       }
     });
+    return classes;
   }
 }
