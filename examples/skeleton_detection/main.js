@@ -173,7 +173,7 @@ const drawResult = async (predict = true, decode = true) => {
     }
     utils.drawPoses(canvassingle, singlePose);
     utils.drawPoses(canvasmulti, multiPoses);
-    await showProgress('done', 'done', 'done', true);
+    await showProgress('done', 'done', 'done');
     showResults();
   }
   catch (e) {
@@ -182,7 +182,7 @@ const drawResult = async (predict = true, decode = true) => {
 }
 
 const setupCamera = async () => {
-  await showProgress('done', 'done', 'current', false);
+  await showProgress('done', 'done', 'current');
   const stream = await navigator.mediaDevices.getUserMedia({ 'audio': false, 'video': {facingMode: (front ? 'user' : 'environment') }});
   video.srcObject = stream;
   track = stream.getTracks()[0];
@@ -241,11 +241,11 @@ const updateScenario = async (camera = false) => {
   try {
     if(camera){
       await loadVideo();
-      await showProgress('done', 'done', 'current', !camera);
+      await showProgress('done', 'done', 'current');
       poseDetectionFrame();
     }
     else {
-      showProgress('done', 'done', 'current', !camera);
+      showProgress('done', 'done', 'current');
       drawResult();
     }
   } catch (e) {
@@ -260,19 +260,19 @@ const main = async (camera = false) => {
   try {
     if(camera){
       await loadVideo();
-      await showProgress('current', 'pending', 'pending', !camera);
+      await showProgress('current', 'pending', 'pending');
       getOffloadOps(currentBackend, currentPrefer);
       await utils.init(currentBackend, currentPrefer, inputSize);
       showSubGraphsSummary(utils.getSubgraphsSummary());
-      await showProgress('done', 'done', 'current', !camera);
+      await showProgress('done', 'done', 'current');
       poseDetectionFrame();
     }
     else {
-      await showProgress('current', 'pending', 'pending', !camera);
+      await showProgress('current', 'pending', 'pending');
       getOffloadOps(currentBackend, currentPrefer);
       await utils.init(currentBackend, currentPrefer, inputSize);
       showSubGraphsSummary(utils.getSubgraphsSummary());
-      await showProgress('done', 'done', 'current', !camera);
+      await showProgress('done', 'done', 'current');
       drawResult();
     }
   } catch (e) {

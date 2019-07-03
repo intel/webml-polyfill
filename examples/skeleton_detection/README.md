@@ -3,6 +3,9 @@ This example loads a pretrained posenet model, constructs and infers it by WebNN
 
 ## Screenshot   
 ![PoseNet Screenshot](./img/posenet.png)
+
+## Model
+Before launching this example, you need to download the model. Please check out [README.md](model/README.md) in model folder for details.
        
 ## Usage        
 PoseNet can be used to estimate either a single pose or multiple poses, so there are two versions, one is for single pose detection with an assumption that is there exists only one persion in image or video, another one is for multiple poses detection used to detect several person poses. At the same time, there are various parameters shown in above control pad could affect PoseNet model's accuracy and cost time.    
