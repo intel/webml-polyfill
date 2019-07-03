@@ -1,0 +1,617 @@
+{
+  "MobilenetV1/Conv2d_0/biases": {
+    "filename": "MobilenetV1_Conv2d_0_biases", 
+    "shape": [
+      32
+    ]
+  }, 
+  "MobilenetV1/Conv2d_0/weights": {
+    "filename": "MobilenetV1_Conv2d_0_weights", 
+    "shape": [
+      3, 
+      3, 
+      3, 
+      32
+    ]
+  }, 
+  "MobilenetV1/Conv2d_10_depthwise/biases": {
+    "filename": "MobilenetV1_Conv2d_10_depthwise_biases", 
+    "shape": [
+      512
+    ]
+  }, 
+  "MobilenetV1/Conv2d_10_depthwise/depthwise_weights": {
+    "filename": "MobilenetV1_Conv2d_10_depthwise_depthwise_weights", 
+    "shape": [
+      3, 
+      3, 
+      512, 
+      1
+    ]
+  }, 
+  "MobilenetV1/Conv2d_10_pointwise/biases": {
+    "filename": "MobilenetV1_Conv2d_10_pointwise_biases", 
+    "shape": [
+      512
+    ]
+  }, 
+  "MobilenetV1/Conv2d_10_pointwise/weights": {
+    "filename": "MobilenetV1_Conv2d_10_pointwise_weights", 
+    "shape": [
+      1, 
+      1, 
+      512, 
+      512
+    ]
+  }, 
+  "MobilenetV1/Conv2d_11_depthwise/biases": {
+    "filename": "MobilenetV1_Conv2d_11_depthwise_biases", 
+    "shape": [
+      512
+    ]
+  }, 
+  "MobilenetV1/Conv2d_11_depthwise/depthwise_weights": {
+    "filename": "MobilenetV1_Conv2d_11_depthwise_depthwise_weights", 
+    "shape": [
+      3, 
+      3, 
+      512, 
+      1
+    ]
+  }, 
+  "MobilenetV1/Conv2d_11_pointwise/biases": {
+    "filename": "MobilenetV1_Conv2d_11_pointwise_biases", 
+    "shape": [
+      512
+    ]
+  }, 
+  "MobilenetV1/Conv2d_11_pointwise/weights": {
+    "filename": "MobilenetV1_Conv2d_11_pointwise_weights", 
+    "shape": [
+      1, 
+      1, 
+      512, 
+      512
+    ]
+  }, 
+  "MobilenetV1/Conv2d_12_depthwise/biases": {
+    "filename": "MobilenetV1_Conv2d_12_depthwise_biases", 
+    "shape": [
+      512
+    ]
+  }, 
+  "MobilenetV1/Conv2d_12_depthwise/depthwise_weights": {
+    "filename": "MobilenetV1_Conv2d_12_depthwise_depthwise_weights", 
+    "shape": [
+      3, 
+      3, 
+      512, 
+      1
+    ]
+  }, 
+  "MobilenetV1/Conv2d_12_pointwise/biases": {
+    "filename": "MobilenetV1_Conv2d_12_pointwise_biases", 
+    "shape": [
+      1024
+    ]
+  }, 
+  "MobilenetV1/Conv2d_12_pointwise/weights": {
+    "filename": "MobilenetV1_Conv2d_12_pointwise_weights", 
+    "shape": [
+      1, 
+      1, 
+      512, 
+      1024
+    ]
+  }, 
+  "MobilenetV1/Conv2d_13_depthwise/biases": {
+    "filename": "MobilenetV1_Conv2d_13_depthwise_biases", 
+    "shape": [
+      1024
+    ]
+  }, 
+  "MobilenetV1/Conv2d_13_depthwise/depthwise_weights": {
+    "filename": "MobilenetV1_Conv2d_13_depthwise_depthwise_weights", 
+    "shape": [
+      3, 
+      3, 
+      1024, 
+      1
+    ]
+  }, 
+  "MobilenetV1/Conv2d_13_pointwise/biases": {
+    "filename": "MobilenetV1_Conv2d_13_pointwise_biases", 
+    "shape": [
+      1024
+    ]
+  }, 
+  "MobilenetV1/Conv2d_13_pointwise/weights": {
+    "filename": "MobilenetV1_Conv2d_13_pointwise_weights", 
+    "shape": [
+      1, 
+      1, 
+      1024, 
+      1024
+    ]
+  }, 
+  "MobilenetV1/Conv2d_1_depthwise/biases": {
+    "filename": "MobilenetV1_Conv2d_1_depthwise_biases", 
+    "shape": [
+      32
+    ]
+  }, 
+  "MobilenetV1/Conv2d_1_depthwise/depthwise_weights": {
+    "filename": "MobilenetV1_Conv2d_1_depthwise_depthwise_weights", 
+    "shape": [
+      3, 
+      3, 
+      32, 
+      1
+    ]
+  }, 
+  "MobilenetV1/Conv2d_1_pointwise/biases": {
+    "filename": "MobilenetV1_Conv2d_1_pointwise_biases", 
+    "shape": [
+      64
+    ]
+  }, 
+  "MobilenetV1/Conv2d_1_pointwise/weights": {
+    "filename": "MobilenetV1_Conv2d_1_pointwise_weights", 
+    "shape": [
+      1, 
+      1, 
+      32, 
+      64
+    ]
+  }, 
+  "MobilenetV1/Conv2d_2_depthwise/biases": {
+    "filename": "MobilenetV1_Conv2d_2_depthwise_biases", 
+    "shape": [
+      64
+    ]
+  }, 
+  "MobilenetV1/Conv2d_2_depthwise/depthwise_weights": {
+    "filename": "MobilenetV1_Conv2d_2_depthwise_depthwise_weights", 
+    "shape": [
+      3, 
+      3, 
+      64, 
+      1
+    ]
+  }, 
+  "MobilenetV1/Conv2d_2_pointwise/biases": {
+    "filename": "MobilenetV1_Conv2d_2_pointwise_biases", 
+    "shape": [
+      128
+    ]
+  }, 
+  "MobilenetV1/Conv2d_2_pointwise/weights": {
+    "filename": "MobilenetV1_Conv2d_2_pointwise_weights", 
+    "shape": [
+      1, 
+      1, 
+      64, 
+      128
+    ]
+  }, 
+  "MobilenetV1/Conv2d_3_depthwise/biases": {
+    "filename": "MobilenetV1_Conv2d_3_depthwise_biases", 
+    "shape": [
+      128
+    ]
+  }, 
+  "MobilenetV1/Conv2d_3_depthwise/depthwise_weights": {
+    "filename": "MobilenetV1_Conv2d_3_depthwise_depthwise_weights", 
+    "shape": [
+      3, 
+      3, 
+      128, 
+      1
+    ]
+  }, 
+  "MobilenetV1/Conv2d_3_pointwise/biases": {
+    "filename": "MobilenetV1_Conv2d_3_pointwise_biases", 
+    "shape": [
+      128
+    ]
+  }, 
+  "MobilenetV1/Conv2d_3_pointwise/weights": {
+    "filename": "MobilenetV1_Conv2d_3_pointwise_weights", 
+    "shape": [
+      1, 
+      1, 
+      128, 
+      128
+    ]
+  }, 
+  "MobilenetV1/Conv2d_4_depthwise/biases": {
+    "filename": "MobilenetV1_Conv2d_4_depthwise_biases", 
+    "shape": [
+      128
+    ]
+  }, 
+  "MobilenetV1/Conv2d_4_depthwise/depthwise_weights": {
+    "filename": "MobilenetV1_Conv2d_4_depthwise_depthwise_weights", 
+    "shape": [
+      3, 
+      3, 
+      128, 
+      1
+    ]
+  }, 
+  "MobilenetV1/Conv2d_4_pointwise/biases": {
+    "filename": "MobilenetV1_Conv2d_4_pointwise_biases", 
+    "shape": [
+      256
+    ]
+  }, 
+  "MobilenetV1/Conv2d_4_pointwise/weights": {
+    "filename": "MobilenetV1_Conv2d_4_pointwise_weights", 
+    "shape": [
+      1, 
+      1, 
+      128, 
+      256
+    ]
+  }, 
+  "MobilenetV1/Conv2d_5_depthwise/biases": {
+    "filename": "MobilenetV1_Conv2d_5_depthwise_biases", 
+    "shape": [
+      256
+    ]
+  }, 
+  "MobilenetV1/Conv2d_5_depthwise/depthwise_weights": {
+    "filename": "MobilenetV1_Conv2d_5_depthwise_depthwise_weights", 
+    "shape": [
+      3, 
+      3, 
+      256, 
+      1
+    ]
+  }, 
+  "MobilenetV1/Conv2d_5_pointwise/biases": {
+    "filename": "MobilenetV1_Conv2d_5_pointwise_biases", 
+    "shape": [
+      256
+    ]
+  }, 
+  "MobilenetV1/Conv2d_5_pointwise/weights": {
+    "filename": "MobilenetV1_Conv2d_5_pointwise_weights", 
+    "shape": [
+      1, 
+      1, 
+      256, 
+      256
+    ]
+  }, 
+  "MobilenetV1/Conv2d_6_depthwise/biases": {
+    "filename": "MobilenetV1_Conv2d_6_depthwise_biases", 
+    "shape": [
+      256
+    ]
+  }, 
+  "MobilenetV1/Conv2d_6_depthwise/depthwise_weights": {
+    "filename": "MobilenetV1_Conv2d_6_depthwise_depthwise_weights", 
+    "shape": [
+      3, 
+      3, 
+      256, 
+      1
+    ]
+  }, 
+  "MobilenetV1/Conv2d_6_pointwise/biases": {
+    "filename": "MobilenetV1_Conv2d_6_pointwise_biases", 
+    "shape": [
+      512
+    ]
+  }, 
+  "MobilenetV1/Conv2d_6_pointwise/weights": {
+    "filename": "MobilenetV1_Conv2d_6_pointwise_weights", 
+    "shape": [
+      1, 
+      1, 
+      256, 
+      512
+    ]
+  }, 
+  "MobilenetV1/Conv2d_7_depthwise/biases": {
+    "filename": "MobilenetV1_Conv2d_7_depthwise_biases", 
+    "shape": [
+      512
+    ]
+  }, 
+  "MobilenetV1/Conv2d_7_depthwise/depthwise_weights": {
+    "filename": "MobilenetV1_Conv2d_7_depthwise_depthwise_weights", 
+    "shape": [
+      3, 
+      3, 
+      512, 
+      1
+    ]
+  }, 
+  "MobilenetV1/Conv2d_7_pointwise/biases": {
+    "filename": "MobilenetV1_Conv2d_7_pointwise_biases", 
+    "shape": [
+      512
+    ]
+  }, 
+  "MobilenetV1/Conv2d_7_pointwise/weights": {
+    "filename": "MobilenetV1_Conv2d_7_pointwise_weights", 
+    "shape": [
+      1, 
+      1, 
+      512, 
+      512
+    ]
+  }, 
+  "MobilenetV1/Conv2d_8_depthwise/biases": {
+    "filename": "MobilenetV1_Conv2d_8_depthwise_biases", 
+    "shape": [
+      512
+    ]
+  }, 
+  "MobilenetV1/Conv2d_8_depthwise/depthwise_weights": {
+    "filename": "MobilenetV1_Conv2d_8_depthwise_depthwise_weights", 
+    "shape": [
+      3, 
+      3, 
+      512, 
+      1
+    ]
+  }, 
+  "MobilenetV1/Conv2d_8_pointwise/biases": {
+    "filename": "MobilenetV1_Conv2d_8_pointwise_biases", 
+    "shape": [
+      512
+    ]
+  }, 
+  "MobilenetV1/Conv2d_8_pointwise/weights": {
+    "filename": "MobilenetV1_Conv2d_8_pointwise_weights", 
+    "shape": [
+      1, 
+      1, 
+      512, 
+      512
+    ]
+  }, 
+  "MobilenetV1/Conv2d_9_depthwise/biases": {
+    "filename": "MobilenetV1_Conv2d_9_depthwise_biases", 
+    "shape": [
+      512
+    ]
+  }, 
+  "MobilenetV1/Conv2d_9_depthwise/depthwise_weights": {
+    "filename": "MobilenetV1_Conv2d_9_depthwise_depthwise_weights", 
+    "shape": [
+      3, 
+      3, 
+      512, 
+      1
+    ]
+  }, 
+  "MobilenetV1/Conv2d_9_pointwise/biases": {
+    "filename": "MobilenetV1_Conv2d_9_pointwise_biases", 
+    "shape": [
+      512
+    ]
+  }, 
+  "MobilenetV1/Conv2d_9_pointwise/weights": {
+    "filename": "MobilenetV1_Conv2d_9_pointwise_weights", 
+    "shape": [
+      1, 
+      1, 
+      512, 
+      512
+    ]
+  }, 
+  "MobilenetV1/displacement_bwd_1/biases": {
+    "filename": "MobilenetV1_displacement_bwd_1_biases", 
+    "shape": [
+      32
+    ]
+  }, 
+  "MobilenetV1/displacement_bwd_1/weights": {
+    "filename": "MobilenetV1_displacement_bwd_1_weights", 
+    "shape": [
+      1, 
+      1, 
+      512, 
+      32
+    ]
+  }, 
+  "MobilenetV1/displacement_bwd_2/biases": {
+    "filename": "MobilenetV1_displacement_bwd_2_biases", 
+    "shape": [
+      32
+    ]
+  }, 
+  "MobilenetV1/displacement_bwd_2/weights": {
+    "filename": "MobilenetV1_displacement_bwd_2_weights", 
+    "shape": [
+      1, 
+      1, 
+      1024, 
+      32
+    ]
+  }, 
+  "MobilenetV1/displacement_fwd_1/biases": {
+    "filename": "MobilenetV1_displacement_fwd_1_biases", 
+    "shape": [
+      32
+    ]
+  }, 
+  "MobilenetV1/displacement_fwd_1/weights": {
+    "filename": "MobilenetV1_displacement_fwd_1_weights", 
+    "shape": [
+      1, 
+      1, 
+      512, 
+      32
+    ]
+  }, 
+  "MobilenetV1/displacement_fwd_2/biases": {
+    "filename": "MobilenetV1_displacement_fwd_2_biases", 
+    "shape": [
+      32
+    ]
+  }, 
+  "MobilenetV1/displacement_fwd_2/weights": {
+    "filename": "MobilenetV1_displacement_fwd_2_weights", 
+    "shape": [
+      1, 
+      1, 
+      1024, 
+      32
+    ]
+  }, 
+  "MobilenetV1/heatmap_1/biases": {
+    "filename": "MobilenetV1_heatmap_1_biases", 
+    "shape": [
+      17
+    ]
+  }, 
+  "MobilenetV1/heatmap_1/weights": {
+    "filename": "MobilenetV1_heatmap_1_weights", 
+    "shape": [
+      1, 
+      1, 
+      512, 
+      17
+    ]
+  }, 
+  "MobilenetV1/heatmap_2/biases": {
+    "filename": "MobilenetV1_heatmap_2_biases", 
+    "shape": [
+      17
+    ]
+  }, 
+  "MobilenetV1/heatmap_2/weights": {
+    "filename": "MobilenetV1_heatmap_2_weights", 
+    "shape": [
+      1, 
+      1, 
+      1024, 
+      17
+    ]
+  }, 
+  "MobilenetV1/offset_1/biases": {
+    "filename": "MobilenetV1_offset_1_biases", 
+    "shape": [
+      34
+    ]
+  }, 
+  "MobilenetV1/offset_1/weights": {
+    "filename": "MobilenetV1_offset_1_weights", 
+    "shape": [
+      1, 
+      1, 
+      512, 
+      34
+    ]
+  }, 
+  "MobilenetV1/offset_2/biases": {
+    "filename": "MobilenetV1_offset_2_biases", 
+    "shape": [
+      34
+    ]
+  }, 
+  "MobilenetV1/offset_2/weights": {
+    "filename": "MobilenetV1_offset_2_weights", 
+    "shape": [
+      1, 
+      1, 
+      1024, 
+      34
+    ]
+  }, 
+  "MobilenetV1/partheat_1/biases": {
+    "filename": "MobilenetV1_partheat_1_biases", 
+    "shape": [
+      17
+    ]
+  }, 
+  "MobilenetV1/partheat_1/weights": {
+    "filename": "MobilenetV1_partheat_1_weights", 
+    "shape": [
+      1, 
+      1, 
+      512, 
+      17
+    ]
+  }, 
+  "MobilenetV1/partheat_2/biases": {
+    "filename": "MobilenetV1_partheat_2_biases", 
+    "shape": [
+      17
+    ]
+  }, 
+  "MobilenetV1/partheat_2/weights": {
+    "filename": "MobilenetV1_partheat_2_weights", 
+    "shape": [
+      1, 
+      1, 
+      1024, 
+      17
+    ]
+  }, 
+  "MobilenetV1/partoff_1/biases": {
+    "filename": "MobilenetV1_partoff_1_biases", 
+    "shape": [
+      34
+    ]
+  }, 
+  "MobilenetV1/partoff_1/weights": {
+    "filename": "MobilenetV1_partoff_1_weights", 
+    "shape": [
+      1, 
+      1, 
+      512, 
+      34
+    ]
+  }, 
+  "MobilenetV1/partoff_2/biases": {
+    "filename": "MobilenetV1_partoff_2_biases", 
+    "shape": [
+      34
+    ]
+  }, 
+  "MobilenetV1/partoff_2/weights": {
+    "filename": "MobilenetV1_partoff_2_weights", 
+    "shape": [
+      1, 
+      1, 
+      1024, 
+      34
+    ]
+  }, 
+  "MobilenetV1/segment_1/biases": {
+    "filename": "MobilenetV1_segment_1_biases", 
+    "shape": [
+      1
+    ]
+  }, 
+  "MobilenetV1/segment_1/weights": {
+    "filename": "MobilenetV1_segment_1_weights", 
+    "shape": [
+      1, 
+      1, 
+      512, 
+      1
+    ]
+  }, 
+  "MobilenetV1/segment_2/biases": {
+    "filename": "MobilenetV1_segment_2_biases", 
+    "shape": [
+      1
+    ]
+  }, 
+  "MobilenetV1/segment_2/weights": {
+    "filename": "MobilenetV1_segment_2_weights", 
+    "shape": [
+      1, 
+      1, 
+      1024, 
+      1
+    ]
+  }
+}
