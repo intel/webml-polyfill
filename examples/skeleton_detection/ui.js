@@ -138,7 +138,6 @@ $(document).ready(() => {
     }
 
     $('#option').show();
-    optionCompact();
 
     updateTitleSD(currentBackend, currentPrefer);
     strsearch = `?prefer=${currentPrefer}&b=${currentBackend}&s=${us}&d=${ud}`;
@@ -181,7 +180,6 @@ $(document).ready(() => {
       currentBackend = 'WebML';
     }
     $('#option').show();
-    optionCompact();
 
     updateTitleSD(currentBackend, currentPrefer);
     strsearch = `?prefer=${currentPrefer}&b=${currentBackend}&s=${us}&d=${ud}`;
