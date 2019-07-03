@@ -1,4 +1,4 @@
-let guiState = {
+let sdconfig = {
   algorithm: 'multi-pose',
   model: 1.01,
   useAtrousConv: true, 
@@ -12,27 +12,6 @@ let guiState = {
   showPose: true,
   showBoundingBox: false,
 };
-
-const gui = new dat.GUI();
-gui.domElement.id = 'gui';
-const model = gui.add(guiState, 'model', [0.50, 0.75, 1.00, 1.01]);
-const outputStride = gui.add(guiState, 'outputStride', [8, 16, 32]);
-const scaleFactor = gui.add(guiState, 'scaleFactor', [0.25, 0.5, 0.75, 1.00]).listen();
-const scoreThreshold = gui.add(guiState, 'scoreThreshold', 0.0, 1.0);
-const multiPoseDetection = gui.addFolder('Multi Pose Estimation');
-multiPoseDetection.open();
-const nmsRadius = multiPoseDetection.add(guiState.multiPoseDetection, 'nmsRadius', 0.0, 40.0);
-const maxDetections = multiPoseDetection.add(guiState.multiPoseDetection, 'maxDetections')
-  .min(1)
-  .max(20)
-  .step(1);
-const showPose = gui.add(guiState, 'showPose');
-const showBoundingBox = gui.add(guiState, 'showBoundingBox');
-const useAtrousConv = gui.add(guiState, 'useAtrousConv');
-gui.close();
-let customContainer = document.getElementById('my-gui-container');
-customContainer.appendChild(gui.domElement);
-guiState.scoreThreshold = 0.15;
 
 let currentTab = 'image';
 let front = true;
@@ -51,60 +30,10 @@ const inputHeight = 513;
 const inputSize = [1, inputWidth, inputHeight, 3];
 const videoWidth = 500;
 const videoHeight = 500;
-const algorithm = gui.add(guiState, 'algorithm', ['single-pose', 'multi-pose']);
-let isMultiple = guiState.algorithm;
 
 inputElement.addEventListener('change', () => {
   drawResult();
 })
-
-model.onFinishChange((model) => {
-  guiState.model = model;
-  main(currentTab === 'camera');
-});
-
-outputStride.onFinishChange((outputStride) => {
-  guiState.outputStride = parseInt(outputStride);
-  main(currentTab === 'camera');
-});
-
-scaleFactor.onFinishChange((scaleFactor) => {
-  guiState.scaleFactor = parseFloat(scaleFactor);
-  main(currentTab === 'camera');
-});
-
-useAtrousConv.onFinishChange((useAtrousConv) => {
-  guiState.useAtrousConv = useAtrousConv;
-  main(currentTab === 'camera');
-});
-
-scoreThreshold.onChange((scoreThreshold) => {
-  guiState.scoreThreshold = parseFloat(scoreThreshold);
-  utils._minScore = guiState.scoreThreshold;
-  (currentTab === 'camera') ? poseDetectionFrame() : drawResult(false, false);
-});
-
-nmsRadius.onChange((nmsRadius) => {
-  guiState.multiPoseDetection.nmsRadius = parseInt(nmsRadius);
-  utils._nmsRadius = guiState.multiPoseDetection.nmsRadius;
-  (currentTab === 'camera') ? poseDetectionFrame() : drawResult(false, true);
-});
-
-maxDetections.onChange((maxDetections) => {
-  guiState.multiPoseDetection.maxDetections = parseInt(maxDetections);
-  utils._maxDetection = guiState.multiPoseDetection.maxDetections;
-  (currentTab === 'camera') ? poseDetectionFrame() : drawResult(false, true);
-});
-
-showPose.onChange((showPose) => {
-  guiState.showPose = showPose;
-  (currentTab === 'camera') ? poseDetectionFrame() : drawResult(false, false);
-});
-
-showBoundingBox.onChange((showBoundingBox) => {
-  guiState.showBoundingBox = showBoundingBox;
-  (currentTab === 'camera') ? poseDetectionFrame() : drawResult(false, false);
-});
 
 const drawImage = (image, canvas, w, h) => {
   const ctx = canvas.getContext('2d');
@@ -205,7 +134,7 @@ const loadVideo = async () => {
 const predict = async (video) => {
   stats.begin();
   const start = performance.now();
-  let type = guiState.algorithm == 'multi-pose' ? 'multi' : 'single';
+  let type = sdconfig.algorithm == 'multi-pose' ? 'multi' : 'single';
   drawVideo(video, scaleCanvas, utils.scaleWidth, utils.scaleHeight);
   await utils.predict(scaleCanvas, type);
   drawVideo(video, canvas, video.videoWidth, video.videoHeight);
