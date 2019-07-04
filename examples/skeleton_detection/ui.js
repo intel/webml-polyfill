@@ -6,12 +6,6 @@ $(document).ready(() => {
     currentTab = 'image';
   }
 
-  $('#my-gui-container ul li select').after('<div class=\'select__arrow\'></div>');
-  $('#my-gui-container ul li input[type=checkbox]').after('<label class=\'\'></label>');
-  // $('#my-gui-container ul li .slider').remove();
-  $('#posenet ul li .c input[type=text]').attr('title', 'Update value by dragging mouse up/down on inputbox');
-  $('#my-gui-container ul li.string').remove();
-
   const updateTitleSD = (backend, prefer) => {
     let currentprefertext = {
       fast: 'FAST_SINGLE_ANSWER',
