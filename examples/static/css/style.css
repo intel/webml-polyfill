@@ -1796,6 +1796,10 @@ button.xclose {
   background: rgba(255, 111, 97, 0.2);
 }
 
+#sdnmsradius, #sdmaxdetections {
+  width: 48px !important;
+}
+
 #posenet #my-gui-container.fullscreen #gui {
   padding: 1rem 1rem;
   background-color: rgba(0, 0, 0, 0.1);
