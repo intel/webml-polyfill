@@ -78,7 +78,6 @@ const predictAndDraw = async (source, camera = false) => {
     streaming = false;
     if (track) track.stop();
   }
-  await showProgress('done', 'done', 'current');
   clippedSize = utils.prepareInput(source);
   renderer.uploadNewTexture(source, clippedSize);
   let result = await utils.predict();
@@ -87,7 +86,6 @@ const predictAndDraw = async (source, camera = false) => {
   inferenceTime.innerHTML = `inference time: <span class='ir'>${inferTime.toFixed(2)} ms</span>`;
   renderer.drawOutputs(result.segMap)
   renderer.highlightHoverLabel(hoverPos);
-  await showProgress('done', 'done', 'done');
   showResults();
   buttonUI(us === 'camera');
 }
