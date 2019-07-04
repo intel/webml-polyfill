@@ -1,17 +1,3 @@
-const optionCompact = () => {
-  for (s of $('#my-gui-container ul li .property-name')) {
-    if(s.innerText.toLowerCase() == 'model') { s.setAttribute('title', 'Model: The larger the value, the larger the size of the layers, and more accurate the model at the cost of speed.'); }
-    if(s.innerText.toLowerCase() == 'useatrousconv' || s.innerText == 'useAtrousConv') { s.innerText = 'AtrousConv'; s.setAttribute('title', 'UseAtrousConvOps'); }
-    if(s.innerText.toLowerCase() == 'outputstride') { s.innerText = 'Stride'; s.setAttribute('title', 'OutputStride: The desired stride for the output decides output dimension of model. The higher the number, the faster the performance but slower the accuracy. '); }
-    if(s.innerText.toLowerCase() == 'scalefactor') { s.innerText = 'Scale'; s.setAttribute('title', 'ScaleFactor: Scale down the image size before feed it through model, set this number lower to scale down the image and increase the speed when feeding through the network at the cost of accuracy.'); }
-    if(s.innerText.toLowerCase() == 'scorethreshold') { s.innerText = 'Threshold'; s.setAttribute('title', 'ScoreThreshold: Score is the probability of keypoint and pose, set score threshold higher to reduce the number of poses to draw on image and visa versa.'); }
-    if(s.innerText.toLowerCase() == 'nmsradius') { s.innerText = 'Radius'; s.setAttribute('title', 'NmsRadius: The minimal distance value between two poses under multiple poses situation. The smaller this value, the poses in image are more concentrated.'); }
-    if(s.innerText.toLowerCase() == 'maxdetections') { s.innerText = 'Detections'; s.setAttribute('title', 'MaxDetections: The maximul number of poses to be detected in multiple poses situation.'); }
-    if(s.innerText.toLowerCase() == 'showpose') { s.innerText = 'Pose'; s.setAttribute('title', 'ShowPose'); }
-    if(s.innerText.toLowerCase() == 'showboundingbox') { s.innerText = 'Bounding'; s.setAttribute('title', 'ShowBoundingBox'); }
-  }
-}
-
 $(document).ready(() => {
 
   if (us == 'camera') {
@@ -19,14 +5,6 @@ $(document).ready(() => {
   } else {
     currentTab = 'image';
   }
-
-  $('#my-gui-container ul li select').after('<div class=\'select__arrow\'></div>');
-  $('#my-gui-container ul li input[type=checkbox]').after('<label class=\'\'></label>');
-  // $('#my-gui-container ul li .slider').remove();
-  $('#posenet ul li .c input[type=text]').attr('title', 'Update value by dragging mouse up/down on inputbox');
-  $('#my-gui-container ul li.string').remove();
-
-  optionCompact();
 
   const updateTitleSD = (backend, prefer) => {
     let currentprefertext = {
@@ -114,7 +92,7 @@ $(document).ready(() => {
 
     updateTitleSD(currentBackend, currentPrefer);
     updateBackendRadioUI(currentBackend, currentPrefer);
-    strsearch = `?prefer=${currentPrefer}&b=${currentBackend}&m=${um}&t=${ut}&s=${us}&d=${ud}`;
+    strsearch = `?prefer=${currentPrefer}&b=${currentBackend}&m=${um}&s=${us}&d=${ud}`;
     window.history.pushState(null, null, strsearch);
     if (um === 'none') {
       showError('No model selected', 'Please select a model to start prediction.');
@@ -154,7 +132,6 @@ $(document).ready(() => {
     }
 
     $('#option').show();
-    optionCompact();
 
     updateTitleSD(currentBackend, currentPrefer);
     strsearch = `?prefer=${currentPrefer}&b=${currentBackend}&s=${us}&d=${ud}`;
@@ -197,7 +174,6 @@ $(document).ready(() => {
       currentBackend = 'WebML';
     }
     $('#option').show();
-    optionCompact();
 
     updateTitleSD(currentBackend, currentPrefer);
     strsearch = `?prefer=${currentPrefer}&b=${currentBackend}&s=${us}&d=${ud}`;
@@ -263,6 +239,56 @@ $(document).ready(() => {
 const updateLoadingSD = (loadedSize, totalSize, percentComplete) => {
   $('.loading-page .counter h1').html(`${loadedSize}/${totalSize} ${percentComplete}%`);
 }
+
+$(document).ready(function(){
+  $('#sdmodel').change(() => {
+    sdconfig.model = $('#sdmodel').find('option:selected').attr('value');
+    main(currentTab === 'camera');
+  });
+
+  $('#sdstride').change(() => {
+    sdconfig.outputStride = parseInt($('#sdstride').find('option:selected').attr('value'));
+    main(currentTab === 'camera');
+  });
+
+  $('#scalefactor').change(() => {
+    sdconfig.scaleFactor = parseFloat($('#scalefactor').find('option:selected').attr('value'));
+    main(currentTab === 'camera');
+  });
+
+  $('#sdscorethreshold').change(() => {
+    sdconfig.scoreThreshold = parseFloat($('#sdscorethreshold').val());
+    utils._minScore = sdconfig.scoreThreshold;
+    (currentTab === 'camera') ? poseDetectionFrame() : drawResult(false, false);
+  });
+
+  $('#sdnmsradius').change(() => {
+    sdconfig.multiPoseDetection.nmsRadius = parseInt($('#sdnmsradius').val());
+    utils._nmsRadius = sdconfig.multiPoseDetection.nmsRadius;
+    (currentTab === 'camera') ? poseDetectionFrame() : drawResult(false, true);
+  });
+
+  $('#sdmaxdetections').change(() => {
+    sdconfig.multiPoseDetection.maxDetections = parseInt($('#sdmaxdetections').val());
+    utils._maxDetection = sdconfig.multiPoseDetection.maxDetections;
+    (currentTab === 'camera') ? poseDetectionFrame() : drawResult(false, true);
+  });
+
+  $('#sdshowpose').change(() => {
+    sdconfig.showPose = $('#sdshowpose').prop('checked');
+    (currentTab === 'camera') ? poseDetectionFrame() : drawResult(false, false);
+  });
+
+  $('#sduseatrousconvops').change(() => {
+    sdconfig.useAtrousConv = $('#sduseatrousconvops').prop('checked');
+    main(currentTab === 'camera');
+  });
+
+  $('#sdshowboundingbox').change(() => {
+    sdconfig.showBoundingBox = $('#sdshowboundingbox').prop('checked');
+    (currentTab === 'camera') ? poseDetectionFrame() : drawResult(false, false);
+  });
+})
 
 $(window).load(() => {
   if(currentBackend === 'none' || currentBackend === '') {

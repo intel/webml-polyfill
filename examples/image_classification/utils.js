@@ -54,19 +54,31 @@ class Utils {
     this.labels = result.text.split('\n');
     console.log(`labels: ${this.labels}`);
 
-    if (this.modelFile.split('.').pop() === 'tflite') {
-      let flatBuffer = new flatbuffers.ByteBuffer(result.bytes);
-      this.rawModel = tflite.Model.getRootAsModel(flatBuffer);
-      this.rawModel._rawFormat = 'TFLITE';
-      printTfLiteModel(this.rawModel);
-    } else if (this.modelFile.split('.').pop() === 'onnx') {
-      let err = onnx.ModelProto.verify(result.bytes);
-      if (err) {
-        throw new Error(`Invalid model ${err}`);
-      }
-      this.rawModel = onnx.ModelProto.decode(result.bytes);
-      this.rawModel._rawFormat = 'ONNX';
-      printOnnxModel(this.rawModel);
+    switch (this.modelFile.split('.').pop()) {
+      case 'tflite':
+        let flatBuffer = new flatbuffers.ByteBuffer(result.bytes);
+        this.rawModel = tflite.Model.getRootAsModel(flatBuffer);
+        this.rawModel._rawFormat = 'TFLITE';
+        printTfLiteModel(this.rawModel);
+        break;
+      case 'onnx':
+        let err = onnx.ModelProto.verify(result.bytes);
+        if (err) {
+          throw new Error(`Invalid model ${err}`);
+        }
+        this.rawModel = onnx.ModelProto.decode(result.bytes);
+        this.rawModel._rawFormat = 'ONNX';
+        printOnnxModel(this.rawModel);
+        break;
+      case 'bin':
+        const networkFile = this.modelFile.replace(/bin$/, 'xml');
+        const networkText = await this.loadUrl(networkFile, false, false);
+        const weightsBuffer = result.bytes.buffer;
+        this.rawModel = new OpenVINOModel(networkText, weightsBuffer);
+        this.rawModel._rawFormat = 'OPENVINO';
+        break;
+      default:
+        throw new Error('Unrecognized model format');
     }
     this.loaded = true;
     return 'SUCCESS';
@@ -94,6 +106,9 @@ class Utils {
         break;
       case 'ONNX':
         this.model = new OnnxModelImporter(configs);
+        break;
+      case 'OPENVINO':
+        this.model = new OpenVINOModelImporter(configs);
         break;
     }
     let result = await this.model.createCompiledModel();
@@ -261,11 +276,16 @@ class Utils {
   async iterateLayers(configs, layerList) {
     if (!this.initialized) return;
 
-    let iterators = [];
-    let models = [];
-    for (let config of configs) {
-      let importer = this.modelFile.split('.').pop() === 'tflite' ? TFliteModelImporter : OnnxModelImporter;
-      let model = await new importer({
+    const iterators = [];
+    const models = [];
+    for (const config of configs) {
+      const fileExtension = this.modelFile.split('.').pop();
+      const importer = {
+        tflite: TFliteModelImporter,
+        onnx: OnnxModelImporter,
+        bin: OpenVINOModelImporter,
+      }[fileExtension];
+      const model = await new importer({
         rawModel: this.rawModel,
         backend: config.backend,
         prefer: config.prefer || null,

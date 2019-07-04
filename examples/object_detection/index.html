@@ -83,40 +83,6 @@
     <div class='filter mb-3 mt-2'>
       <table id='filter' class='t-filter table table-condensed'>
         <tbody>
-          <tr class='model'>
-            <th class='text-center'><a href='../model.html' title='View model details'>Model</a></th>
-            <td>
-              <img src='../static/img/l-tflite.png' alt='TensorFlow Lite Format' title='TensorFlow Lite Format'>
-              <input type='radio' class='d-none' name='m' id='ssd_mobilenet_v1_tflite' value='ssd_mobilenet_v1_tflite'
-                checked>
-              <label id='l-ssd_mobilenet_v1_tflite' class='themodel' for='ssd_mobilenet_v1_tflite'
-                title='SSD MobileNet v1'>SSD MobileNet v1</label>
-              <input type='radio' class='d-none' name='m' id='ssd_mobilenet_v1_quant_tflite'
-                value='ssd_mobilenet_v1_quant_tflite' checked>
-              <label id='l-ssd_mobilenet_v1_quant_tflite' class='themodel' for='ssd_mobilenet_v1_quant_tflite'
-                title='SSD MobileNet v1 Quant'>SSD MobileNet v1 Quant</label>
-              <input type='radio' class='d-none' name='m' id='ssd_mobilenet_v2_tflite' value='ssd_mobilenet_v2_tflite'
-                checked>
-              <label id='l-ssd_mobilenet_v2_tflite' class='themodel' for='ssd_mobilenet_v2_tflite'
-                title='SSD MobileNet v2'>SSD MobileNet v2</label>
-              <input type='radio' class='d-none' name='m' id='ssd_mobilenet_v2_quant_tflite'
-                value='ssd_mobilenet_v2_quant_tflite' checked>
-              <label id='l-ssd_mobilenet_v2_quant_tflite' class='themodel' for='ssd_mobilenet_v2_quant_tflite'
-                title='SSD MobileNet v2 Quant'>SSD MobileNet v2 Quant</label>
-              <input type='radio' class='d-none' name='m' id='ssdlite_mobilenet_v2_tflite'
-                value='ssdlite_mobilenet_v2_tflite' checked>
-              <label id='l-ssdlite_mobilenet_v2_tflite' class='themodel' for='ssdlite_mobilenet_v2_tflite'
-                title='SSDLite MobileNet v2'>SSDLite MobileNet v2</label>
-              <input type='radio' class='d-none' name='m' id='tiny_yolov2_coco_tflite' value='tiny_yolov2_coco_tflite'
-                checked>
-              <label id='l-tiny_yolov2_coco_tflite' class='themodel' for='tiny_yolov2_coco_tflite'
-                title='Tiny Yolo v2 COCO'>Tiny Yolo v2 COCO</label>
-              <input type='radio' class='d-none' name='m' id='tiny_yolov2_voc_tflite' value='tiny_yolov2_voc_tflite'
-                checked>
-              <label id='l-tiny_yolov2_voc_tflite' class='themodel' for='tiny_yolov2_voc_tflite'
-                title='Tiny Yolo v2 VOC'>Tiny Yolo v2 VOC</label>
-            </td>
-          </tr>
           <tr class='backend'>
             <th class='text-center backendtitle'>Backend</th>
             <td>
@@ -293,6 +259,7 @@
     <div class='container'>
       <div class='row'>
         <div class='col-lg-12 col-xs-12 text-lg-center text-center'>
+          <div id='trademark' class='mb-4'></div>
           <div class='webmlbadge mb-4'>
             <div class='webml-title'>WebNN API</div>
             <div id='webmlstatus'></div>

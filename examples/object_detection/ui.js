@@ -10,20 +10,8 @@ $(document).ready(() => {
     fpsToggle(false);
   }
 
-  updateTitle('Object Detection', ub, up, um, ut);
-  
-  $('input:radio[name=bp]').click(() => {
-    updateTitle('Object Detection', currentBackend, currentPrefer, `${um}`, `${ut}`);
-  });
-
-  $('input:radio[name=bw]').click(() => {
-    updateTitle('Object Detection', currentBackend, currentPrefer, `${um}`, `${ut}`);
-  });
-
-  $('input:radio[name=m]').click(() => {
-    updateTitle('Object Detection', currentBackend, currentPrefer, `${um}`, `${ut}`);
-    $('.offload').hide();
-  });
+  updateTitle('Object Detection', ub, up, um);
+  constructModelTable(objectDetectionModels);
  
   inputElement.addEventListener('change', (e) => {
     let files = e.target.files;

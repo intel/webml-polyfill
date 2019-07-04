@@ -1,6 +1,7 @@
 let currentBackend = getSearchParamsBackend();
 let currentModel = getSearchParamsModel();
 let currentPrefer = getSearchParamsPrefer();
+let currentExample = getExampleDirectoryName();
 
 const videoElement = document.getElementById('video');
 const imageElement = document.getElementById('image');

@@ -83,47 +83,6 @@
     <div class='filter mb-3 mt-2'>
       <table id='filter' class='t-filter table table-condensed'>
         <tbody>
-          <tr class='model'>
-            <th class='text-center'><a href='../model.html' title='View model details'>Model</a></th>
-            <td>
-              <img src='../static/img/l-tflite.png' alt='TensorFlow Lite Format' title='TensorFlow Lite Format'>
-              <div class='g'>
-                <span>Deeplab</span>
-                <input type='radio' class='d-none' name='m' id='deeplab_mobilenet_v2_224_tflite'
-                  value='deeplab_mobilenet_v2_224_tflite' checked>
-                <label id='l-deeplab_mobilenet_v2_224_tflite' class='themodel' for='deeplab_mobilenet_v2_224_tflite'
-                  title='Deeplab 224'>224</label>
-                <input type='radio' class='d-none' name='m' id='deeplab_mobilenet_v2_224_atrous_tflite'
-                  value='deeplab_mobilenet_v2_224_atrous_tflite'>
-                <label id='l-deeplab_mobilenet_v2_224_atrous_tflite' class='themodel'
-                  for='deeplab_mobilenet_v2_224_atrous_tflite' title='Deeplab 224 Atrous'>224 Atrous</label>
-                <input type='radio' class='d-none' name='m' id='deeplab_mobilenet_v2_257_tflite'
-                  value='deeplab_mobilenet_v2_257_tflite' checked>
-                <label id='l-deeplab_mobilenet_v2_257_tflite' class='themodel' for='deeplab_mobilenet_v2_257_tflite'
-                  title='Deeplab 257'>257</label>
-                <input type='radio' class='d-none' name='m' id='deeplab_mobilenet_v2_257_atrous_tflite'
-                  value='deeplab_mobilenet_v2_257_atrous_tflite'>
-                <label id='l-deeplab_mobilenet_v2_257_atrous_tflite' class='themodel'
-                  for='deeplab_mobilenet_v2_257_atrous_tflite' title='Deeplab 257 Atrous'>257 Atrous</label>
-                <input type='radio' class='d-none' name='m' id='deeplab_mobilenet_v2_321_tflite'
-                  value='deeplab_mobilenet_v2_321_tflite' checked>
-                <label id='l-deeplab_mobilenet_v2_321_tflite' class='themodel' for='deeplab_mobilenet_v2_321_tflite'
-                  title='Deeplab 321'>321</label>
-                <input type='radio' class='d-none' name='m' id='deeplab_mobilenet_v2_321_atrous_tflite'
-                  value='deeplab_mobilenet_v2_321_atrous_tflite'>
-                <label id='l-deeplab_mobilenet_v2_321_atrous_tflite' class='themodel'
-                  for='deeplab_mobilenet_v2_321_atrous_tflite' title='Deeplab 321 Atrous'>321 Atrous</label>
-                <input type='radio' class='d-none' name='m' id='deeplab_mobilenet_v2_513_tflite'
-                  value='deeplab_mobilenet_v2_513_tflite' checked>
-                <label id='l-deeplab_mobilenet_v2_513_tflite' class='themodel' for='deeplab_mobilenet_v2_513_tflite'
-                  title='Deeplab 513'>513</label>
-                <input type='radio' class='d-none' name='m' id='deeplab_mobilenet_v2_513_atrous_tflite'
-                  value='deeplab_mobilenet_v2_513_atrous_tflite'>
-                <label id='l-deeplab_mobilenet_v2_513_atrous_tflite' class='themodel'
-                  for='deeplab_mobilenet_v2_513_atrous_tflite' title='Deeplab 513 Atrous'>513 Atrous</label>
-              </div>
-            </td>
-          </tr>
           <tr class='backend'>
             <th class='text-center backendtitle'>Backend</th>
             <td>
@@ -342,6 +301,7 @@
     <div class='container'>
       <div class='row'>
         <div class='col-lg-12 col-xs-12 text-lg-center text-center'>
+          <div id='trademark' class='mb-4'></div>
           <div class='webmlbadge mb-4'>
             <div class='webml-title'>WebNN API</div>
             <div id='webmlstatus'></div>

@@ -23,7 +23,6 @@ const isWebML = () => {
 let up = getUrlParam('prefer');
 let ub = getUrlParam('b');
 let um = getUrlParam('m');
-let ut = getUrlParam('t');
 let us = getUrlParam('s');
 let ud = getUrlParam('d');
 let strsearch;
@@ -38,7 +37,7 @@ if (!location.search) {
     let path = location.href;
     location.href = path + strsearch;
   } else {
-    strsearch = `?prefer=none&b=WASM&m=none&t=none&s=image&d=0`;
+    strsearch = `?prefer=none&b=WASM&m=none&s=image&d=0`;
     let path = location.href;
     location.href = path + strsearch;
   }
@@ -99,6 +98,62 @@ const showSubGraphsSummary = (summary) => {
   }
 }
 
+const formatToLogo = {
+  'tflite': '../static/img/l-tflite.png',
+  'onnx': '../static/img/l-onnx.png',
+  'openvino': '../static/img/l-openvino.png',
+};
+
+const trademarks = (allFormats) => {
+  let trademarknote;
+  for (const format of allFormats) {
+    if (format.toLowerCase() === 'tflite') {
+      trademarknote = 'TensorFlow, the TensorFlow logo and any related marks are trademarks of Google Inc.';
+    } else if (format.toLowerCase() === 'onnx') {
+      trademarknote += ' ONNX is a community project created by Facebook and Microsoft. ONNX is a trademark of Facebook, Inc.';
+    } else if (format.toLowerCase() === 'openvino') {
+      trademarknote += ' OpenVINO and the OpenVINO logo are trademarks of Intel Corporation or its subsidiaries in the U.S. and/or other countries.';
+    }
+  }
+  if(trademarknote) {
+    $('#trademark').html(trademarknote);
+  }
+}
+
+const constructModelTable = (modelList) => {
+
+  const allFormats = new Set(modelList.map((m) => m.format));
+  const tbody = $('#query tbody');
+  const trows = [];
+  for (const format of allFormats) {
+    const trow = $('<tr class="model">');
+    const tdata = $('<td>');
+    trow.append(tdata);
+
+    const logo = formatToLogo[format.toLowerCase()];
+    tdata.append($(`<img src='${logo}' alt='${format} Format' title='${format} Format'>`));
+
+    const models = modelList.filter((m) => format === m.format && !m.disabled);
+    for (const model of models) {
+      const modelName = model.modelName.replace(/ \(.*\)$/, '');
+      const modelId = model.modelId;
+      tdata.append($(`<input type='radio' class='d-none' name='m'id='${modelId}' value='${modelId}'>`));
+      tdata.append($(`<label id='l-${modelId}' class='themodel' for='${modelId}' title='${modelName}'>${modelName}</label>`));
+    }
+    trows.push(trow);
+  }
+  trows[0].prepend($(`<th class='text-center' rowspan='${allFormats.size}'>
+                        <a href='../model.html' title='View model details'>Model</a>
+                      </th>`));
+  tbody.prepend(trows);
+
+  trademarks(allFormats);
+
+  $('input:radio[name=m]').click(changeModel);
+  checkedModelStyle();
+  disableModel();
+};
+
 const setPreferenceCodeToolTip = () => {
   if($('#backendpolyfilltitle')) {
     $('#backendpolyfilltitle').attr('data-html', 'true')
@@ -121,8 +176,7 @@ const setPreferenceCodeToolTip = () => {
   }
 }
 
-const updateTitle = (name, backend, prefer, model, modeltype) => {
-  model = model.replace(/_/g, ' ');
+const updateTitle = (name, backend, prefer, modelId) => {
   let currentprefertext = {
     // fast: 'FAST_SINGLE_ANSWER',
     // sustained: 'SUSTAINED_SPEED',
@@ -141,10 +195,11 @@ const updateTitle = (name, backend, prefer, model, modeltype) => {
     backendtext = backend + ' + WebNN';
   }
 
+  const model = getModelById(modelId);
   if(currentprefertext === 'None') {
-    $('#ictitle').html(`${name} / ${backendtext} / ${model} (${modeltype})`);
+    $('#ictitle').html(`${name} / ${backendtext} / ${model.modelName || 'None'}`);
   } else {
-    $('#ictitle').html(`${name} / ${backendtext} (${currentprefertext}) / ${model} (${modeltype})`);
+    $('#ictitle').html(`${name} / ${backendtext} (${currentprefertext}) / ${model.modelName || 'None'}`);
   }
 }
 
@@ -168,13 +223,6 @@ $('.scrolltop, #logo a').click(() => {
 });
 
 $(document).ready(() => {
-  if(navigator.userAgent.toLowerCase().indexOf("edge") > -1) {
-    if(location.pathname.toLocaleLowerCase() === '/examples/' || location.pathname.toLocaleLowerCase().indexOf('/examples/index') >-1 || location.pathname.toLocaleLowerCase().indexOf('/examples/model') >-1) {
-      $('#logo').html('<img src="static/img/edge_logo.png">')
-    } else {
-      $('#logo').html('<img src="../static/img/edge_logo.png">')
-    }
-  }
 
   $('.nav-menu').superfish({
     animation: { opacity: 'show' },
@@ -249,22 +297,20 @@ const componentToggle = () => {
 }
 
 const disableModel = () => {
-  if (`${um}` && `${ut}`) {
-    let m_t = `${um}` + '_' + `${ut}`;
-    $('.model input').attr('disabled', false)
+  if (um) {
+    $('.model input').attr('disabled', false);
     $('.model label').removeClass('cursordefault');
-    $('#' + m_t).attr('disabled', true)
-    $('#l-' + m_t).addClass('cursordefault');
+    $('#' + um).attr('disabled', true);
+    $('#l-' + um).addClass('cursordefault');
   }
 }
 
 const checkedModelStyle = () => {
-  if (`${um}` && `${ut}`) {
+  if (um) {
     $('.model input').removeAttr('checked');
     $('.model label').removeClass('checked');
-    let m_t = `${um}` + '_' + `${ut}`;
-    $('#' + m_t).attr('checked', 'checked');
-    $('#l-' + m_t).addClass('checked');
+    $('#' + um).attr('checked', 'checked');
+    $('#l-' + um).addClass('checked');
   }
 }
 
@@ -291,6 +337,29 @@ let isBackendSwitch = () => {
 let isFrontFacingSwitch = () => {
   return $('#cameraswitch').is(':checked')
 }
+
+const changeModel = () => {
+  $('.alert').hide();
+  um = $('input:radio[name="m"]:checked').attr('id');
+  if (currentModel === um) {
+    return;
+  }
+  currentModel = um;
+  if (currentBackend && currentPrefer) {
+    strsearch = `?prefer=${currentPrefer}&b=${currentBackend}&m=${um}&s=${us}&d=${ud}`;
+  } else {
+    strsearch = `?prefer=${up}&b=${ub}&m=${um}&s=${us}&d=${ud}`;
+  }
+  // location.href = strsearch;
+  window.history.pushState(null, null, strsearch);
+
+  checkedModelStyle();
+  disableModel();
+  updateTitle(currentExample, currentBackend, currentPrefer, um);
+  $('.offload').hide();
+  main(us === 'camera');
+};
+
 
 $(document).ready(() => {
   if (/Mobi|Android|iPhone|iPad|iPod/.test(navigator.userAgent)) {
@@ -350,7 +419,7 @@ $(document).ready(() => {
     $('#l-' + getUrlParam('b')).addClass('checked');
   }
 
-  if (hasUrlParam('m') && hasUrlParam('t')) {
+  if (hasUrlParam('m')) {
     checkedModelStyle();
   }
 
@@ -395,7 +464,7 @@ if (skeletonDetectionPath <= -1) {
           currentBackend = 'WASM';
           currentPrefer = 'none';
         }
-        updateTitle('Sole Backend', currentBackend, currentPrefer, `${um}`, `${ut}`);
+        updateTitle('Sole Backend', currentBackend, currentPrefer, um);
       } else {
         $('.backendtitle').html('Backends');
         if (polyfillId && webnnId) {
@@ -427,11 +496,11 @@ if (skeletonDetectionPath <= -1) {
           currentBackend = 'WASM';
           currentPrefer = 'fast';
         }
-        updateTitle('Dual Backends', currentBackend, currentPrefer, `${um}`, `${ut}`);
+        updateTitle('Dual Backends', currentBackend, currentPrefer, um);
       }
 
       updateBackendRadioUI(currentBackend, currentPrefer);
-      strsearch = `?prefer=${currentPrefer}&b=${currentBackend}&m=${um}&t=${ut}&s=${us}&d=${ud}`;
+      strsearch = `?prefer=${currentPrefer}&b=${currentBackend}&m=${um}&s=${us}&d=${ud}`;
       window.history.pushState(null, null, strsearch);
       if (um === 'none') {
         showError('No model selected', 'Please select a model to start prediction.');
@@ -470,12 +539,13 @@ if (skeletonDetectionPath <= -1) {
         currentPrefer = 'none';
       }
 
-      strsearch = `?prefer=${currentPrefer}&b=${currentBackend}&m=${um}&t=${ut}&s=${us}&d=${ud}`;
+      strsearch = `?prefer=${currentPrefer}&b=${currentBackend}&m=${um}&s=${us}&d=${ud}`;
       window.history.pushState(null, null, strsearch);
       if (um === 'none') {
         showError('No model selected', 'Please select a model to start prediction.');
         return;
       }
+      updateTitle(currentExample, currentBackend, currentPrefer, um);
       updateBackend(us === 'camera', true);
     });
 
@@ -509,41 +579,17 @@ if (skeletonDetectionPath <= -1) {
         currentBackend = 'WebML';
         currentPrefer = webnnId;
       }
-      strsearch = `?prefer=${currentPrefer}&b=${currentBackend}&m=${um}&t=${ut}&s=${us}&d=${ud}`;
+      strsearch = `?prefer=${currentPrefer}&b=${currentBackend}&m=${um}&s=${us}&d=${ud}`;
       window.history.pushState(null, null, strsearch);
       if (um === 'none') {
         showError('No model selected', 'Please select a model to start prediction.');
         return;
       }
+      updateTitle(currentExample, currentBackend, currentPrefer, um);
       updateBackend(us === 'camera', true);
     });
 
-    $('input:radio[name=m]').click(() => {
-      $('.alert').hide();
-      let rid = $('input:radio[name="m"]:checked').attr('id');
-      if (rid) {
-        if (rid.indexOf('_onnx') > -1) {
-          um = rid.replace('_onnx', '');
-          ut = 'onnx';
-        }
-        if (rid.indexOf('_tflite') > -1) {
-          um = rid.replace('_tflite', '');
-          ut = 'tflite';
-        }
-      }
-      if (currentBackend && currentPrefer) {
-        strsearch = `?prefer=${currentPrefer}&b=${currentBackend}&m=${um}&t=${ut}&s=${us}&d=${ud}`;
-      } else {
-        strsearch = `?prefer=${up}&b=${ub}&m=${um}&t=${ut}&s=${us}&d=${ud}`;
-      }
-      // location.href = strsearch;
-      window.history.pushState(null, null, strsearch);
-
-      checkedModelStyle();
-      disableModel();
-      currentModel = `${um}_${ut}`;
-      main(us === 'camera');
-    });
+    $('input:radio[name=m]').click(changeModel);
 
     $('#extra').click(() => {
       componentToggle();
@@ -558,9 +604,9 @@ if (skeletonDetectionPath <= -1) {
 
       let strsearch;
       if (currentBackend && currentPrefer) {
-        strsearch = `?prefer=${currentPrefer}&b=${currentBackend}&m=${um}&t=${ut}&s=${us}&d=${display}`;
+        strsearch = `?prefer=${currentPrefer}&b=${currentBackend}&m=${um}&s=${us}&d=${display}`;
       } else {
-        strsearch = `?prefer=${up}&b=${ub}&m=${um}&t=${ut}&s=${us}&d=${display}`;
+        strsearch = `?prefer=${up}&b=${ub}&m=${um}&s=${us}&d=${display}`;
       }
       window.history.pushState(null, null, strsearch);
     });
@@ -601,7 +647,7 @@ if (skeletonDetectionPath <= -1) {
   $(document).ready(() => {
     $('#img').click(() => {
       us = 'image';
-      strsearch = `?prefer=${up}&b=${ub}&m=${um}&t=${ut}&s=${us}&d=${ud}`;
+      strsearch = `?prefer=${up}&b=${ub}&m=${um}&s=${us}&d=${ud}`;
       window.history.pushState(null, null, strsearch);
       if (um === 'none') {
         showError('No model selected', 'Please select a model to start prediction.');
@@ -612,7 +658,7 @@ if (skeletonDetectionPath <= -1) {
 
     $('#cam').click(() => {
       us = 'camera';
-      strsearch = `?prefer=${up}&b=${ub}&m=${um}&t=${ut}&s=${us}&d=${ud}`;
+      strsearch = `?prefer=${up}&b=${ub}&m=${um}&s=${us}&d=${ud}`;
       window.history.pushState(null, null, strsearch);
       if (um === 'none') {
         showError('No model selected', 'Please select a model to start prediction.');
@@ -623,9 +669,74 @@ if (skeletonDetectionPath <= -1) {
   });
 }
 
-const showProgress = async (text) => {
+const showProgress = async (pm, pb, pi) => {
+  let p = '';
+  let modelicon = ``;
+  if(pm === 'done') {
+    modelicon = `<svg class='prog_list_icon' viewbox='0 0 24 24'>
+                  <path class='st0' d='M12 20c4.4 0 8-3.6 8-8s-3.6-8-8-8-8 3.6-8 8 3.6 8 8 8zm0 1.5c-5.2 0-9.5-4.3-9.5-9.5S6.8 2.5 12 2.5s9.5 4.3 9.5 9.5-4.3 9.5-9.5 9.5z'></path>
+                  <path class='st0' d='M11.1 12.9l-1.2-1.1c-.4-.3-.9-.3-1.3 0-.3.3-.4.8-.1 1.1l.1.1 1.8 1.6c.1.1.4.3.7.3.2 0 .5-.1.7-.3l3.6-4.1c.3-.3.4-.8.1-1.1l-.1-.1c-.4-.3-1-.3-1.3 0l-3 3.6z'></path>
+                </svg>`;
+  } else if (pm === 'current') {
+    modelicon = `<svg class='prog_list_icon prog_list_icon-${pb}' width='24' height='24' viewbox='0 0 24 24'>
+                <path d='M12.2 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm0 1.377a9.377 9.377 0 1 1 0-18.754 9.377 9.377 0 0 1 0 18.754zm-4-8a1.377 1.377 0 1 1 0-2.754 1.377 1.377 0 0 1 0 2.754zm4 0a1.377 1.377 0 1 1 0-2.754 1.377 1.377 0 0 1 0 2.754zm4 0a1.377 1.377 0 1 1 0-2.754 1.377 1.377 0 0 1 0 2.754z' fill='#006DFF' fill-rule='evenodd'></path>
+              </svg>`;
+  } else {
+    modelicon = `<svg class='prog_list_icon prog_list_icon-${pi}' width='24' height='24' viewbox='0 0 24 24'>
+                <path d='M12 16.1c1.8 0 3.3-1.4 3.3-3.2 0-1.8-1.5-3.2-3.3-3.2s-3.3 1.4-3.3 3.2c0 1.7 1.5 3.2 3.3 3.2zm0 1.7c-2.8 0-5-2.2-5-4.9S9.2 8 12 8s5 2.2 5 4.9-2.2 4.9-5 4.9z'></path>
+              </svg>`;
+  }
+
+  let updateicon = ``;
+  if(pb === 'done') {
+    updateicon = `<svg class='prog_list_icon' viewbox='0 0 24 24'>
+                  <path class='st0' d='M12 20c4.4 0 8-3.6 8-8s-3.6-8-8-8-8 3.6-8 8 3.6 8 8 8zm0 1.5c-5.2 0-9.5-4.3-9.5-9.5S6.8 2.5 12 2.5s9.5 4.3 9.5 9.5-4.3 9.5-9.5 9.5z'></path>
+                  <path class='st0' d='M11.1 12.9l-1.2-1.1c-.4-.3-.9-.3-1.3 0-.3.3-.4.8-.1 1.1l.1.1 1.8 1.6c.1.1.4.3.7.3.2 0 .5-.1.7-.3l3.6-4.1c.3-.3.4-.8.1-1.1l-.1-.1c-.4-.3-1-.3-1.3 0l-3 3.6z'></path>
+                </svg>`;
+  } else if (pb === 'current') {
+    updateicon = `<svg class='prog_list_icon prog_list_icon-${pb}' width='24' height='24' viewbox='0 0 24 24'>
+                <path d='M12.2 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm0 1.377a9.377 9.377 0 1 1 0-18.754 9.377 9.377 0 0 1 0 18.754zm-4-8a1.377 1.377 0 1 1 0-2.754 1.377 1.377 0 0 1 0 2.754zm4 0a1.377 1.377 0 1 1 0-2.754 1.377 1.377 0 0 1 0 2.754zm4 0a1.377 1.377 0 1 1 0-2.754 1.377 1.377 0 0 1 0 2.754z' fill='#006DFF' fill-rule='evenodd'></path>
+              </svg>`;
+  } else {
+    updateicon = `<svg class='prog_list_icon prog_list_icon-${pi}' width='24' height='24' viewbox='0 0 24 24'>
+                <path d='M12 16.1c1.8 0 3.3-1.4 3.3-3.2 0-1.8-1.5-3.2-3.3-3.2s-3.3 1.4-3.3 3.2c0 1.7 1.5 3.2 3.3 3.2zm0 1.7c-2.8 0-5-2.2-5-4.9S9.2 8 12 8s5 2.2 5 4.9-2.2 4.9-5 4.9z'></path>
+              </svg>`;
+  }
+
+  let inferenceicon = ``;
+  if(pi === 'done') {
+    inferenceicon = `<svg class='prog_list_icon' viewbox='0 0 24 24'>
+                  <path class='st0' d='M12 20c4.4 0 8-3.6 8-8s-3.6-8-8-8-8 3.6-8 8 3.6 8 8 8zm0 1.5c-5.2 0-9.5-4.3-9.5-9.5S6.8 2.5 12 2.5s9.5 4.3 9.5 9.5-4.3 9.5-9.5 9.5z'></path>
+                  <path class='st0' d='M11.1 12.9l-1.2-1.1c-.4-.3-.9-.3-1.3 0-.3.3-.4.8-.1 1.1l.1.1 1.8 1.6c.1.1.4.3.7.3.2 0 .5-.1.7-.3l3.6-4.1c.3-.3.4-.8.1-1.1l-.1-.1c-.4-.3-1-.3-1.3 0l-3 3.6z'></path>
+                </svg>`;
+  } else if (pi === 'current') {
+    inferenceicon = `<svg class='prog_list_icon prog_list_icon-${pb}' width='24' height='24' viewbox='0 0 24 24'>
+                <path d='M12.2 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm0 1.377a9.377 9.377 0 1 1 0-18.754 9.377 9.377 0 0 1 0 18.754zm-4-8a1.377 1.377 0 1 1 0-2.754 1.377 1.377 0 0 1 0 2.754zm4 0a1.377 1.377 0 1 1 0-2.754 1.377 1.377 0 0 1 0 2.754zm4 0a1.377 1.377 0 1 1 0-2.754 1.377 1.377 0 0 1 0 2.754z' fill='#006DFF' fill-rule='evenodd'></path>
+              </svg>`;
+  } else {
+    inferenceicon = `<svg class='prog_list_icon prog_list_icon-${pi}' width='24' height='24' viewbox='0 0 24 24'>
+                <path d='M12 16.1c1.8 0 3.3-1.4 3.3-3.2 0-1.8-1.5-3.2-3.3-3.2s-3.3 1.4-3.3 3.2c0 1.7 1.5 3.2 3.3 3.2zm0 1.7c-2.8 0-5-2.2-5-4.9S9.2 8 12 8s5 2.2 5 4.9-2.2 4.9-5 4.9z'></path>
+              </svg>`;
+  }
+
+  p = `
+    <nav class='prog'>
+      <ul class='prog_list'>
+        <li class='prog prog-${pm}'>
+          ${modelicon}<span class='prog_list_title'>Model loading</span>
+        </li>
+        <li class='prog prog-${pb}'>
+          ${updateicon}<span class='prog_list_title'>Model compilation</span>
+        </li>
+        <li class='prog prog-${pi}'>
+          ${inferenceicon}<span class='prog_list_title'>Model inferencing</span>
+        </li>
+      </ul>
+    </nav>
+  `;
+
   $('#progressmodel').show();
-  $('#progressstep').html(text);
+  $('#progressstep').html(p);
   $('.shoulddisplay').hide();
   $('.icdisplay').hide();
   $('#resulterror').hide();

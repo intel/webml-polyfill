@@ -1,19 +1,7 @@
 $(document).ready(() => {
 
-  updateTitle('Image Classification', ub, up, um, ut);
-
-  $('input:radio[name=bp]').click(() => {
-    updateTitle('Image Classification', currentBackend, currentPrefer, `${um}`, `${ut}`);
-  });
-
-  $('input:radio[name=bw]').click(() => {
-    updateTitle('Image Classification', currentBackend, currentPrefer, `${um}`, `${ut}`);
-  });
-
-  $('input:radio[name=m]').click(() => {
-    updateTitle('Image Classification', currentBackend, currentPrefer, `${um}`, `${ut}`);
-    $('.offload').hide();
-  });
+  updateTitle('Image Classification', ub, up, um);
+  constructModelTable(imageClassificationModels);
 
   inputElement.addEventListener('change', (e) => {
     let files = e.target.files;

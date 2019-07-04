@@ -36,8 +36,9 @@ const utilsPredict = async (imageElement, backend, prefer) => {
     track.stop();
   }
   try {
-    await showProgress('Image inferencing ...');
+    await showProgress('done', 'done', 'current');
     let ret = await utils.predict(imageElement);
+    await showProgress('done', 'done', 'done');
     showResults();
     updateResult(ret);
   }
@@ -48,11 +49,12 @@ const utilsPredict = async (imageElement, backend, prefer) => {
 
 const utilsPredictCamera = async (backend, prefer) => {
   streaming = true;
+  await showProgress('done', 'done', 'current');
   try {
     let stream = await navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: (front ? 'user' : 'environment') } });
     video.srcObject = stream;
     track = stream.getTracks()[0];
-    showProgress('Camera inferencing ...');
+    await showProgress('done', 'done', 'done');
   }
   catch (e) {
     errorHandler(e);
@@ -84,7 +86,7 @@ const updateBackend = async (camera = false, force = false) => {
   streaming = false;
   try { utils.deleteAll(); } catch (e) { }
   logConfig();
-  await showProgress('Updating backend ...');
+  await showProgress('done', 'current', 'pending');
   try {
     getOffloadOps(currentBackend, currentPrefer);
     await utilsInit(currentBackend, currentPrefer);
@@ -100,11 +102,12 @@ const main = async (camera = false) => {
   streaming = false;
   try { utils.deleteAll(); } catch (e) {}
   logConfig();
-  await showProgress('Loading model ...');
+  await showProgress('current', 'pending', 'pending');
   try {
-    let model = objectDetectionModels.filter(f => f.modelFormatName == currentModel);
-    await utils.loadModel(model[0]);
+    let model = getModelById(currentModel);
+    await utils.loadModel(model);
     getOffloadOps(currentBackend, currentPrefer);
+    await showProgress('done', 'current', 'pending');
     await utilsInit(currentBackend, currentPrefer);
     showSubGraphsSummary(utils.getSubgraphsSummary());
   } catch (e) {

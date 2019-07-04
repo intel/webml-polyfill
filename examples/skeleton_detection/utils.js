@@ -98,15 +98,15 @@ class Utils{
   async init(backend, prefer, inputSize) {
     this.initialized = false;
     // single input
-    this._version = guiState.model;
-    this._useAtrousConv = guiState.useAtrousConv;
-    this._outputStride = guiState.outputStride;
-    this._minScore = guiState.scoreThreshold;
-    this._scaleFactor = guiState.scaleFactor;
+    this._version = sdconfig.model;
+    this._useAtrousConv = sdconfig.useAtrousConv;
+    this._outputStride = sdconfig.outputStride;
+    this._minScore = sdconfig.scoreThreshold;
+    this._scaleFactor = sdconfig.scaleFactor;
     
     // multiple input
-    this._nmsRadius = guiState.multiPoseDetection.nmsRadius;
-    this._maxDetection = guiState.multiPoseDetection.maxDetections;
+    this._nmsRadius = sdconfig.multiPoseDetection.nmsRadius;
+    this._maxDetection = sdconfig.multiPoseDetection.maxDetections;
     this._type = "Multiperson";
     let result;
 
@@ -200,11 +200,11 @@ class Utils{
       const scaleX = canvas.width/this.scaleWidth;
       const scaleY = canvas.height/this.scaleHeight;
       if (pose.score >= this._minScore) {
-        if (guiState.showPose) {
+        if (sdconfig.showPose) {
           drawKeypoints(pose.keypoints, this._minScore, ctx, scaleX, scaleY);
           drawSkeleton(pose.keypoints, this._minScore, ctx, scaleX, scaleY);
         }
-        if (guiState.showBoundingBox) {
+        if (sdconfig.showBoundingBox) {
           drawBoundingBox(pose.keypoints, ctx, scaleX, scaleY);
         }
       }
