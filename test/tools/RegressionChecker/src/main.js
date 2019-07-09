@@ -86,6 +86,10 @@ if (jsonTypeCheck(RCjson, "webnn", "boolean")) {
 }
 
 var getLDLibraryPath = function() {
+    // The path of chromium is '.../chromium-mac/Chromium.app/Contents/MacOS/Chromium'.
+    // And the path of LD library is '.../chromium-mac/Chromium.app/Contents/Versions/75.0.3739.0/Chromium Framework.framework/Libraries/'.
+    // To get the path of LD library from the path of chromium, we need to tailor string of chromium path.
+    // And the length of 'MacOS/Chromium' is 14 that must be deleted.
     let basePath = chromiumPath.slice(0, -14) + "Versions/";
     let fileNames = fs.readdirSync(basePath);
 
