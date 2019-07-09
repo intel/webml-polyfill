@@ -68,6 +68,8 @@ Before run this benchmark with **Image Classification Models**, you need to down
 
 Before run this benchmark with **Object Detection Models**, please refer to [README.md](../examples/object_detection/model/README.md) in ../examples/object_detection/model folder for details.
 
+Before run this benchmark with **Skeleton Detection Models**, please refer to follow [README.md](../examples/skeleton_detection/model/README.md) in ../examples/skeleton_detection/model folder for details.
+
 Before run this benchmark with **Semantic Segmentation Models**, please refer to follow [README.md](../examples/semantic_segmentation/model/README.md) in ../examples/semantic_segmentation/model folder for details.
 
 Before run this benchmark with **Super Resolution Models**, please refer to follow [README.md](../examples/super_resolution/model/README.md) in ../examples/super_resolution/model folder for details.

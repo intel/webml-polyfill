@@ -87,8 +87,9 @@ class SDBenchmark extends Benchmark {
     let smType = 'Singleperson';
     let cacheMap = new Map();
     let useAtrousConv = false; // Default false, NNAPI and BNNS don't support AtrousConv
-    this.model = new PoseNet(modelArch, this.modelVersion, useAtrousConv, this.outputStride,
-                             this.scaleInputSize, smType, cacheMap, backend, getPreferString());
+    this.model = new PoseNet(modelArch, {'version': this.modelVersion, 'adjustPath': true,},
+                             useAtrousConv, this.outputStride, this.scaleInputSize,
+                             smType, cacheMap, backend, getPreferString());
     supportedOps = getSelectedOps();
     await this.model.createCompiledModel();
   }
