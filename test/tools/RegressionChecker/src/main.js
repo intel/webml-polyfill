@@ -85,6 +85,20 @@ if (jsonTypeCheck(RCjson, "webnn", "boolean")) {
     webnn = RCjson.webnn;
 }
 
+var getLDLibraryPath = function() {
+    let basePath = chromiumPath.slice(0, -14) + "Versions/";
+    let fileNames = fs.readdirSync(basePath);
+
+    for (let fileName of fileNames) {
+        if (fs.statSync(basePath + fileName).isDirectory()) {
+            basePath = basePath + fileName + "/Chromium Framework.framework/Libraries/";
+            break;
+        }
+    }
+
+    return basePath;
+}
+
 var testPrefers = new Array();
 if (testPlatform == "Linux") {
     if (preferIEMYRIAD) {
@@ -125,6 +139,8 @@ if (testPlatform == "Linux") {
         testPrefers.push("macOS-WebNN-Sustained-MPS");
 
         if (supportSwitch) {
+            // Add process ENV
+            process.env.LD_LIBRARY_PATH = getLDLibraryPath();
             testPrefers.push("macOS-WebNN-Fast-MKLDNN");
         }
     }
@@ -1207,6 +1223,7 @@ var matchFlag = null;
                 chromeOption = chromeOption
                     .setChromeBinaryPath(chromiumPath)
                     .addArguments("--use-mkldnn")
+                    .addArguments("--no-sandbox")
                     .addArguments("--enable-features=WebML");
             } else {
                 continue;
