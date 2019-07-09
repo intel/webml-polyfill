@@ -85,6 +85,24 @@ if (jsonTypeCheck(RCjson, "webnn", "boolean")) {
     webnn = RCjson.webnn;
 }
 
+var getLDLibraryPath = function() {
+    // The path of chromium is '.../chromium-mac/Chromium.app/Contents/MacOS/Chromium'.
+    // And the path of LD library is '.../chromium-mac/Chromium.app/Contents/Versions/75.0.3739.0/Chromium Framework.framework/Libraries/'.
+    // To get the path of LD library from the path of chromium, we need to tailor string of chromium path.
+    // And the length of 'MacOS/Chromium' is 14 that must be deleted.
+    let basePath = chromiumPath.slice(0, -14) + "Versions/";
+    let fileNames = fs.readdirSync(basePath);
+
+    for (let fileName of fileNames) {
+        if (fs.statSync(basePath + fileName).isDirectory()) {
+            basePath = basePath + fileName + "/Chromium Framework.framework/Libraries/";
+            break;
+        }
+    }
+
+    return basePath;
+}
+
 var testPrefers = new Array();
 if (testPlatform == "Linux") {
     if (preferIEMYRIAD) {
@@ -125,6 +143,8 @@ if (testPlatform == "Linux") {
         testPrefers.push("macOS-WebNN-Sustained-MPS");
 
         if (supportSwitch) {
+            // Add process ENV
+            process.env.LD_LIBRARY_PATH = getLDLibraryPath();
             testPrefers.push("macOS-WebNN-Fast-MKLDNN");
         }
     }
@@ -1207,6 +1227,7 @@ var matchFlag = null;
                 chromeOption = chromeOption
                     .setChromeBinaryPath(chromiumPath)
                     .addArguments("--use-mkldnn")
+                    .addArguments("--no-sandbox")
                     .addArguments("--enable-features=WebML");
             } else {
                 continue;
