@@ -31,7 +31,7 @@ function showModel(div, modelcategory) {
     }
 
     let modelUrl = new URL(model.modelFile.replace('../', '../examples/'), location.href);
-    let netronUrl = `https://lutzroeder.github.io/netron/?url=${modelUrl}`;
+    let netronUrl = `https://intel.github.io/webml-polyfill/netron/?url=${modelUrl}`;
     row += `<td scope='col' class='netron'><a title='View visualized model by Netron' href='${netronUrl}'>netron</a></td>`;
 
     if (model.intro) {
