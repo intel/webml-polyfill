@@ -1,114 +1,120 @@
 {
     "Version": {
-        "chromium": "1a2331d",
-        "polyfill": "9c16962"
+        "chromium": "77b2865",
+        "polyfill": "83d9d19"
     },
     "Android-Polyfill-Fast-WASM": {
-        "total": 714,
-        "pass": 459,
+        "total": 717,
+        "pass": 462,
         "fail": 255,
         "block": 0
     },
     "Android-Polyfill-Sustained-WebGL": {
-        "total": 714,
-        "pass": 459,
+        "total": 717,
+        "pass": 462,
         "fail": 255,
         "block": 0
     },
     "Android-WebNN-Sustained-NNAPI": {
-        "total": 714,
-        "pass": 432,
+        "total": 717,
+        "pass": 435,
         "fail": 282,
         "block": 0
     },
     "Linux-Polyfill-Fast-WASM": {
-        "total": 714,
-        "pass": 459,
+        "total": 717,
+        "pass": 462,
         "fail": 255,
         "block": 0
     },
     "Linux-Polyfill-Sustained-WebGL": {
-        "total": 714,
-        "pass": 459,
+        "total": 717,
+        "pass": 462,
         "fail": 255,
         "block": 0
     },
     "Linux-WebNN-Fast-IE-MKLDNN": {
-        "total": 714,
-        "pass": 315,
+        "total": 717,
+        "pass": 318,
         "fail": 399,
         "block": 0
     },
     "Linux-WebNN-Fast-MKLDNN": {
-        "total": 714,
+        "total": 717,
         "pass": 315,
-        "fail": 399,
+        "fail": 402,
         "block": 0
     },
     "Linux-WebNN-Sustained-IE-clDNN": {
-        "total": 714,
-        "pass": 313,
+        "total": 717,
+        "pass": 316,
         "fail": 401,
         "block": 0
     },
     "Linux-WebNN-Sustained-clDNN": {
-        "total": 714,
-        "pass": 405,
-        "fail": 309,
+        "total": 717,
+        "pass": 407,
+        "fail": 310,
         "block": 0
     },
     "Win-Polyfill-Fast-WASM": {
-        "total": 714,
-        "pass": 459,
+        "total": 717,
+        "pass": 462,
         "fail": 255,
         "block": 0
     },
     "Win-Polyfill-Sustained-WebGL": {
-        "total": 714,
-        "pass": 459,
+        "total": 717,
+        "pass": 462,
         "fail": 255,
         "block": 0
     },
     "Win-WebNN-Fast-MKLDNN": {
-        "total": 714,
+        "total": 717,
         "pass": 315,
-        "fail": 399,
+        "fail": 402,
         "block": 0
     },
     "Win-WebNN-Sustained-DML": {
-        "total": 714,
+        "total": 717,
         "pass": 402,
-        "fail": 312,
+        "fail": 315,
         "block": 0
     },
     "Win-WebNN-Sustained-clDNN": {
-        "total": 714,
-        "pass": 405,
-        "fail": 309,
+        "total": 717,
+        "pass": 407,
+        "fail": 310,
         "block": 0
     },
     "macOS-Polyfill-Fast-WASM": {
-        "total": 714,
-        "pass": 459,
+        "total": 717,
+        "pass": 462,
         "fail": 255,
         "block": 0
     },
     "macOS-Polyfill-Sustained-WebGL": {
-        "total": 714,
-        "pass": 459,
+        "total": 717,
+        "pass": 462,
         "fail": 255,
         "block": 0
     },
     "macOS-WebNN-Fast-BNNS": {
-        "total": 714,
-        "pass": 269,
-        "fail": 445,
+        "total": 717,
+        "pass": 280,
+        "fail": 437,
+        "block": 0
+    },
+    "macOS-WebNN-Fast-MKLDNN": {
+        "total": 717,
+        "pass": 315,
+        "fail": 402,
         "block": 0
     },
     "macOS-WebNN-Sustained-MPS": {
-        "total": 714,
+        "total": 717,
         "pass": 278,
-        "fail": 436,
+        "fail": 439,
         "block": 0
     }
 }
