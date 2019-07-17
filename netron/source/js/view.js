@@ -1172,6 +1172,7 @@ view.ModelFactoryService = class {
 
                             var requiredops = document.getElementById('requiredops');
                             var opmap = document.getElementById('opmap');
+                            opmap.innerHTML = '';
 
                             var nodes = model.graphs[0].nodes;
                             var allops = []
@@ -1364,6 +1365,11 @@ view.ModelFactoryService = class {
                                     }
                                 }
 
+                                // TFLite
+                                // else if(i.name === 'Squeeze') {
+                                //     item = 'Squeeze/Reshape';
+                                // }
+
                                 t.push(item);
                             });
 
@@ -1372,6 +1378,8 @@ view.ModelFactoryService = class {
                             
                             requiredops.innerHTML = '<span>' + t.join(' </span><span>') + '</span>'
 
+                            let td = '';
+
                             fetch('source/json/webnnops.json')
                                 .then(function (response) {
                                     return response.json();
@@ -1379,7 +1387,7 @@ view.ModelFactoryService = class {
                                 .then(function (data) {
                                     t.map((i) => {
                                         let tr = document.createElement('tr');
-                                        let td = `<td>${i}</td>`;
+                                        td = `<td>${i}</td>`;
 
                                         switch (i) {
                                             // ONNX
@@ -1514,6 +1522,17 @@ view.ModelFactoryService = class {
                                                 break;
                                             case 'Clamp/Relu1':
                                                 i = 'FUSED_RELU1';  
+                                                break;
+                                            default: {
+                                                //
+                                            }
+                                        }
+
+                                        switch (i) {
+                                            // TFLite
+                                            // https://github.com/intel/webml-polyfill/blob/master/examples/util/tflite/TFliteModelImporter.js
+                                            case 'Squeeze':
+                                                i = 'RESHAPE';
                                                 break;
                                             default: {
                                                 //
