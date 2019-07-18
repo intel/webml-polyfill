@@ -4,5 +4,5 @@
     "IEMYRIAD": false,
     "supportSwitch": false,
     "webmlPolyfill": true,
-    "webnn": true
+    "webnn": false
 }
