@@ -73,6 +73,7 @@ def transfer(ipath, opath, names):
 def create(opath, file_dict, file_list, describe):
   with open(opath, "w") as all_jsTest_file:
     all_jsTest_file.write("describe('" + describe + "', function() {\n")
+    all_jsTest_file.write("  this.timeout(20000);\n")
     all_jsTest_file.write("  const assert = chai.assert;\n")
     all_jsTest_file.write("  const nn = navigator.ml.getNeuralNetworkContext();\n")
     all_jsTest_file.write("\n")
