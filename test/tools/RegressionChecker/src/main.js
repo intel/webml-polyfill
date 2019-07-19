@@ -1,9 +1,10 @@
 const Builder = require("../node_modules/selenium-webdriver").Builder;
 const By = require("../node_modules/selenium-webdriver").By;
-const until = require("../node_modules/selenium-webdriver").until;
+const Until = require("../node_modules/selenium-webdriver").until;
 const Chrome = require("../node_modules/selenium-webdriver/chrome");
 const csv = require("../node_modules/fast-csv");
 const execSync = require("child_process").execSync;
+const cheerio = require("cheerio");
 const fs = require("fs");
 const os = require("os");
 require("chromedriver");
@@ -253,15 +254,6 @@ for (let [key1, value1] of Object.entries(baselinejson)) {
  */
 var baseLineData = new Map();
 
-/**
- * baseLineDataSummary = [
- *     model-name1: count1,
- *     model-name2: count2,
- *     model-name3: count3
- * ]
- */
-var baseLineDataSummary = new Map();
-
 csv.fromPath("./baseline/unitTestsBaseline.csv", {headers: true})
 .on("data", function(data) {
     let keyArray = new Array();
@@ -288,36 +280,21 @@ csv.fromPath("./baseline/unitTestsBaseline.csv", {headers: true})
         }
     }
 
-    baseLineData.set(valueArray[0] + "-" + valueArray[1], new Map());
     baseLineData.set(valueArray[0] + "-" + newData + "-" + valueArray[2], new Map());
 
     for (let x in keyArray) {
         if (keyArray[x] == "Case Id") {
-            baseLineData.get(valueArray[0] + "-" + valueArray[1]).set("CaseId", valueArray[x]);
             baseLineData.get(valueArray[0] + "-" + newData + "-" + valueArray[2]).set("CaseId", newData);
         } else if (keyArray[x] == "Test Case") {
-            baseLineData.get(valueArray[0] + "-" + valueArray[1]).set("TestCase", valueArray[x]);
             baseLineData.get(valueArray[0] + "-" + newData + "-" + valueArray[2]).set("TestCase", valueArray[x]);
         } else {
-            baseLineData.get(valueArray[0] + "-" + valueArray[1]).set(keyArray[x], valueArray[x]);
             baseLineData.get(valueArray[0] + "-" + newData + "-" + valueArray[2]).set(keyArray[x], valueArray[x]);
         }
-    }
-
-    if (baseLineDataSummary.has(valueArray[0] + "-" + newData)) {
-        baseLineDataSummary.set(valueArray[0] + "-" + newData, baseLineDataSummary.get(valueArray[0] + "-" + newData) + 1);
-    } else {
-        baseLineDataSummary.set(valueArray[0] + "-" + newData, 1);
     }
 })
 .on("end", function() {
     for (let key of baseLineData.keys()) {
         RClog("debug", "key: " + key);
-    }
-
-    for (let key of baseLineDataSummary.keys()) {
-        RClog("debug", "key: " + key);
-        RClog("debug", "value: " + baseLineDataSummary.get(key));
     }
 });
 
@@ -511,213 +488,9 @@ var continueFlag = false;
 var numberPasstoFail = 0;
 var numberFailtoPass = 0;
 var numberTotal = 0;
-var matchFlag = null;
 
 (async function() {
     RClog("console", "checking chromium code is start");
-
-    var getCaseStatus = async function(element) {
-        return element.getAttribute("class").then(function(message) {
-            let graspCaseStatus = null;
-            if (message == "test pass pending") {
-                graspCaseStatus = "N/A";
-            } else if (message == "test pass fast" || message == "test pass slow" || message == "test pass medium") {
-                graspCaseStatus = "Pass";
-            } else if (message == "test fail") {
-                graspCaseStatus = "Fail";
-            } else {
-                throw new Error("not support case status");
-            }
-
-            return graspCaseStatus;
-        });
-    }
-
-    var getCaseName = async function(element) {
-        let Text = null;
-        let length = 0;
-        await element.findElement(By.xpath("./h2")).getText().then(function(message) {
-            length = message.length - 1;
-            Text = message;
-        });
-
-        let arrayElement = await element.findElements(By.xpath("./h2/child::*"));
-        for (let j = 1; j <= arrayElement.length; j++) {
-            await arrayElement[j - 1].getText().then(function(message) {
-                length = length - message.length;
-            });
-        }
-
-        return Text.slice(0, length).trim();
-    }
-
-    var checkResult = async function(element, count, title, module, flag) {
-        let caseStatus = await getCaseStatus(element);
-        let caseName, key;
-
-        if (flag) {
-            key = title + "-" + module + "/" + count;
-            caseName = baseLineData.get(key).get("TestCase");
-        } else {
-            caseName = await getCaseName(element);
-            key = title + "-" + module + "-" + caseName;
-        }
-
-        if (baseLineData.has(key)) {
-            graspDataSummary["total"] = graspDataSummary["total"] + 1;
-            if (caseStatus == "Pass") {
-                graspDataSummary["pass"] = graspDataSummary["pass"] + 1;
-            } else if (caseStatus == "Fail") {
-                graspDataSummary["fail"] = graspDataSummary["fail"] + 1;
-            } else if (caseStatus == "N/A") {
-                graspDataSummary["block"] = graspDataSummary["block"] + 1;
-            }
-
-            let baseLineStatus = baseLineData.get(key).get(testPrefer);
-            if (caseStatus !== baseLineStatus) {
-                if (baseLineStatus == "Pass" && caseStatus == "Fail") {
-                    pageData.get(testPrefer).get("pass2fail").push([title, module + "-" + caseName]);
-                } else {
-                    pageData.get(testPrefer).get("fail2pass").push([title, module + "-" + caseName]);
-                }
-
-                RClog("debug", title + "-" + module + "-" + caseName);
-                RClog("debug", "baseLineStatus: " + baseLineStatus + " - caseStatus: " + caseStatus);
-            }
-        } else {
-            RClog("debug", "no match test case: " + title + "-" + module + "-" + caseName);
-
-            if (matchFlag == "macth" || matchFlag == "delete") {
-                throw new Error("no match test case: " + title + "-" + module + "-" + caseName);
-            } else {
-                if (!newTestCaseData.get("prefers").has(testPrefer)) {
-                    newTestCaseData.get("prefers").set(testPrefer, true);
-                }
-
-                if (!newTestCaseData.has(title + "-" + module + "-" + caseName)) {
-                    newTestCaseData.set(title + "-" + module + "-" + caseName, new Map());
-                    newTestCaseData.get(title + "-" + module + "-" + caseName).set("title", title);
-                    newTestCaseData.get(title + "-" + module + "-" + caseName).set("caseID", module + "-" + caseName);
-                    newTestCaseData.get(title + "-" + module + "-" + caseName).set("prefer", new Map());
-                    newTestCaseData.set("caseCount", newTestCaseData.get("caseCount") + 1);
-                }
-
-                newTestCaseData.get(title + "-" + module + "-" + caseName).get("prefer").set(testPrefer, caseStatus);
-            }
-        }
-    }
-
-    var graspResult = async function() {
-        let actions = 0;
-        let actionCount = 0;
-        let graspTotal, graspPass, graspFail;
-
-        await driver.findElement(By.xpath("//ul[@id='mocha-stats']/li[@class='passes']//em")).getText().then(function(message) {
-            RClog("debug", "passes: " + message);
-            graspPass = message >> 0;
-        });
-
-        await driver.findElement(By.xpath("//ul[@id='mocha-stats']/li[@class='failures']//em")).getText().then(function(message) {
-            RClog("debug", "failures: " + message);
-            graspFail = message >> 0;
-        });
-
-        graspTotal = graspPass + graspFail;
-        if (graspTotal == baselinejson[testPrefer]["total"]) {
-            matchFlag = "macth";
-            RClog("console", "match base line data: matching mode");
-        } else {
-            if (graspTotal > baselinejson[testPrefer]["total"]) {
-                matchFlag = "add";
-            } else if (graspTotal < baselinejson[testPrefer]["total"]) {
-                matchFlag = "delete";
-            }
-
-            RClog("console", "not match base line data: compatibility mode");
-            RClog("console", "will too slow, because grasping more information");
-        }
-
-        await driver.findElements(By.xpath("//ul[@id='mocha-report']/li[@class='suite']")).then(function(arrayTitles) {
-            for (let i = 0; i < arrayTitles.length; i++) {
-                arrayTitles[i].findElement(By.xpath("./h1/a")).getAttribute("textContent").then(function(message) {
-                    let title = message;
-
-                    arrayTitles[i].findElements(By.xpath("./ul/li[@class='suite']")).then(function(arrayModules) {
-                        if (arrayModules.length === 0) {
-                            let module = title;
-
-                            arrayTitles[i].findElements(By.xpath("./ul/li[@class='test pass fast' or " +
-                                                                 "@class='test pass slow' or " +
-                                                                 "@class='test fail' or " +
-                                                                 "@class='test pass pending' or " +
-                                                                 "@class='test pass medium']")).then(async function(arrayCase) {
-                                RClog("debug", "title: " + title + "    module: " + module + "    case: " + arrayCase.length);
-
-                                let modeFlag;
-                                if (baseLineDataSummary.get(title + "-" + module) == arrayCase.length) {
-                                    modeFlag = true;
-                                    RClog("debug", title + "-" + module + ": match, fast search mode");
-                                } else {
-                                    modeFlag = false;
-                                    RClog("console", title + "-" + module + ": not match, carefully search mode");
-                                }
-
-                                for (let k = 0; k < arrayCase.length; k++) {
-                                    await checkResult(arrayCase[k], k + 1, title, module, modeFlag).then(function() {
-                                        actions = actions + 1;
-                                    });
-                                }
-                            });
-                        } else {
-                            for (let j = 0; j < arrayModules.length; j++) {
-                                arrayModules[j].findElement(By.xpath("./h1/a")).getAttribute("textContent").then(function(message) {
-                                    let module = message.split("#")[1];
-
-                                    arrayModules[j].findElements(By.xpath("./ul/li[@class='test pass fast' or " +
-                                                                          "@class='test pass slow' or " +
-                                                                          "@class='test fail' or " +
-                                                                          "@class='test pass pending' or " +
-                                                                          "@class='test pass medium']")).then(async function(arrayCase) {
-                                        RClog("debug", "title: " + title + "    module: " + module + "    case: " + arrayCase.length);
-
-                                        let modeFlag;
-                                        if (baseLineDataSummary.get(title + "-" + module) == arrayCase.length) {
-                                            modeFlag = true;
-                                            RClog("debug", title + "-" + module + ": match, fast search mode");
-                                        } else {
-                                            modeFlag = false;
-                                            RClog("console", title + "-" + module + ": not match, carefully search mode");
-                                        }
-
-                                        for (let k = 0; k < arrayCase.length; k++) {
-                                            await checkResult(arrayCase[k], k + 1, title, module, modeFlag).then(function() {
-                                                actions = actions + 1;
-                                            });
-                                        }
-                                    });
-                                });
-                            }
-                        }
-                    });
-                });
-            }
-        });
-
-        RClog("console", " ");
-        await driver.wait(function() {
-            if (actionCount != actions) {
-                actionCount = actions;
-                RClog("console", "\033[1A\033[50D\033[K    grasping: " + actionCount + "/" + graspTotal);
-            }
-
-            return (actions == graspTotal);
-        }, 5000000).then(function() {
-            RClog("console", "grasp all test case: " + graspTotal);
-        }).catch(function() {
-            RClog("console", "total: " + graspTotal + " grasp: " + actionCount);
-            throw new Error("failed to grasp all test result");
-        });
-    }
 
     var createHtmlHead = function() {
         let htmlDataHead = "\
@@ -1421,7 +1194,7 @@ var matchFlag = null;
             .build();
 
         await driver.get(remoteURL);
-        await driver.wait(until.elementLocated(By.xpath("//*[@id='mocha-stats']/li[1]/canvas")), 100000).then(function() {
+        await driver.wait(Until.elementLocated(By.xpath("//*[@id='mocha-stats']/li[1]/canvas")), 200000).then(function() {
             RClog("console", "open remote URL: " + remoteURL);
         }).catch(function() {
             throw new Error("failed to load web page");
@@ -1434,27 +1207,17 @@ var matchFlag = null;
             return driver.executeScript("return window.mochaFinish;").catch(function(err) {
                 throw err;
             });
-        }, 200000).then(async function() {
+        }, 500000).then(async function() {
             RClog("console", "load remote URL is completed, no crash");
 
             // Output log file
             if (testPlatform == "Android") {
-                let Path, sourceHTMLPath, logPath;
+                let logPath;
                 if (os.type() == "Windows_NT") {
-                    sourceHTMLPath = outputPath + "\\source-" + testPrefer + ".html";
-                    Path = "file://" + process.cwd() + "\\output\\source-" + testPrefer + ".html";
                     logPath = process.cwd() + "\\output\\debug\\debug-" + testPrefer + ".log";
                 } else {
-                    sourceHTMLPath = outputPath + "/source-" + testPrefer + ".html";
-                    Path = "file://" + process.cwd() + "/output/source-" + testPrefer + ".html";
                     logPath = process.cwd() + "/output/debug/debug-" + testPrefer + ".log";
                 }
-
-                await driver.executeScript("return document.documentElement.outerHTML").then(function(html) {
-                    RClog("console", "dowload source html to " + sourceHTMLPath);
-
-                    fs.createWriteStream(sourceHTMLPath, {flags: "w"}).write(html);
-                });
 
                 await driver.manage().logs().get("browser").then(function(Entrys) {
                     if (fs.existsSync(logPath)) {
@@ -1467,18 +1230,6 @@ var matchFlag = null;
 
                     RClog("console", "dowload log file to " + logPath);
                 });
-
-                await driver.quit();
-                await driver.sleep(2000);
-
-                driver = new Builder()
-                    .forBrowser("chrome")
-                    .setChromeOptions(new Chrome.Options().setChromeBinaryPath(chromiumPath))
-                    .build();
-
-                RClog("time", "mark");
-
-                await driver.get(Path);
             } else if (testPlatform == "Windows") {
                 let readLogFile = process.cwd() + "\\output\\debug\\tmp\\chrome_debug.log";
                 let writeLogFile = process.cwd() + "\\output\\debug\\debug-" + testPrefer + ".log";
@@ -1509,9 +1260,191 @@ var matchFlag = null;
         }
 
         RClog("console", "checking with '" + testPrefer + "' prefer is start");
-        RClog("console", "checking....");
+        RClog("console", "checking....\n");
 
-        await graspResult();
+        await driver.executeScript("return document.documentElement.outerHTML").then(async function(html) {
+            let graspTotal, graspPass, graspFail;
+            let actions = 0;
+            let countPasses = 0;
+            let countFailures = 0;
+            let countTotal = 0;
+            let matchFlag = null;
+
+            await driver.findElement(By.xpath("//ul[@id='mocha-stats']/li[@class='passes']//em")).getText().then(function(message) {
+                RClog("debug", "passes: " + message);
+                graspPass = message >> 0;
+            });
+
+            await driver.findElement(By.xpath("//ul[@id='mocha-stats']/li[@class='failures']//em")).getText().then(function(message) {
+                RClog("debug", "failures: " + message);
+                graspFail = message >> 0;
+            });
+
+            graspTotal = graspPass + graspFail;
+
+            if (graspTotal == baselinejson[testPrefer]["total"]) {
+                matchFlag = "macth";
+            } else if (graspTotal > baselinejson[testPrefer]["total"]){
+                matchFlag = "add";
+            } else if (graspTotal < baselinejson[testPrefer]["total"]) {
+                matchFlag = "delete";
+            }
+
+            let $ = cheerio.load(html);
+
+            function getSuiteName($, suiteElement) {
+                return $(suiteElement).children("h1").children("a").text();
+            }
+
+            function checkSuiteOrCase($, suiteElement) {
+                let checkPoint = "case";
+                $(suiteElement).children("ul").children().each(function(i, element) {
+                    if ($(element).attr("class") === "suite") checkPoint = "suite";
+                });
+
+                return checkPoint;
+            }
+
+            function getCaseStatus($, caseElement) {
+                let caseStatus = $(caseElement).attr("class");
+                let resultStatus = null;
+                if (caseStatus == "test pass pending") {
+                    resultStatus = "N/A";
+                } else if (caseStatus == "test pass fast" || caseStatus == "test pass slow" || caseStatus == "test pass medium") {
+                    resultStatus = "Pass";
+                } else if (caseStatus == "test fail") {
+                    resultStatus = "Fail";
+                } else {
+                    throw new Error("not support case status");
+                }
+
+                return resultStatus;
+            }
+
+            function getCaseName($, caseElement) {
+                let caseName = $(caseElement).children("h2").text();
+                let length = caseName.length - 1;
+                $(caseElement).children("h2").children().each(function(i, element) {
+                    length = length - $(element).text().length;
+                });
+                return caseName.slice(0, length).trim();
+            }
+
+            function checkResult(titleName, moduleName, caseName, caseStatus) {
+                let key = titleName + "-" + moduleName + "-" + caseName;
+
+                if (baseLineData.has(key)) {
+                    graspDataSummary["total"] = graspDataSummary["total"] + 1;
+                    if (caseStatus == "Pass") {
+                        graspDataSummary["pass"] = graspDataSummary["pass"] + 1;
+                    } else if (caseStatus == "Fail") {
+                        graspDataSummary["fail"] = graspDataSummary["fail"] + 1;
+                    } else if (caseStatus == "N/A") {
+                        graspDataSummary["block"] = graspDataSummary["block"] + 1;
+                    }
+
+                    let baseLineStatus = baseLineData.get(key).get(testPrefer);
+                    if (caseStatus !== baseLineStatus) {
+                        if (baseLineStatus == "Pass" && caseStatus == "Fail") {
+                            pageData.get(testPrefer).get("pass2fail").push([titleName, moduleName + "-" + caseName]);
+                        } else {
+                            pageData.get(testPrefer).get("fail2pass").push([titleName, moduleName + "-" + caseName]);
+                        }
+
+                        RClog("debug", key);
+                        RClog("debug", "baseLineStatus: " + baseLineStatus + " - caseStatus: " + caseStatus);
+                    }
+                } else {
+                    RClog("debug", "no match test case: " + key);
+
+                    if (matchFlag == "macth" || matchFlag == "delete") {
+                        throw new Error("no match test case: " + key);
+                    } else {
+                        if (!newTestCaseData.get("prefers").has(testPrefer)) {
+                            newTestCaseData.get("prefers").set(testPrefer, true);
+                        }
+
+                        if (!newTestCaseData.has(key)) {
+                            newTestCaseData.set(key, new Map());
+                            newTestCaseData.get(key).set("title", titleName);
+                            newTestCaseData.get(key).set("caseID", moduleName + "-" + caseName);
+                            newTestCaseData.get(key).set("prefer", new Map());
+                            newTestCaseData.set("caseCount", newTestCaseData.get("caseCount") + 1);
+                        }
+
+                        newTestCaseData.get(key).get("prefer").set(testPrefer, caseStatus);
+                    }
+                }
+            }
+
+            // title suite
+            $("#mocha-report").children(".suite").each(function(i, titleElement) {
+                let titleName = getSuiteName($, titleElement);
+
+                if (checkSuiteOrCase($, titleElement) == "case") {
+                    let moduleName = titleName;
+
+                    // test case
+                    $(titleElement).children("ul").children("li").each(function(j, caseElement) {
+                        let caseStatus = getCaseStatus($, caseElement);
+                        let caseName = getCaseName($, caseElement);
+
+                        checkResult(titleName, moduleName, caseName, caseStatus);
+
+                        if (caseStatus == "Pass") {
+                            countPasses = countPasses + 1;
+                        } else {
+                            countFailures = countFailures + 1;
+                        }
+
+                        actions = actions + 1;
+                        RClog("console", "\033[1A\033[50D\033[K    grasping: " + actions + "/" + graspTotal);
+                    });
+                } else {
+                    // module suite
+                    $(titleElement).children("ul").children(".suite").each(function(j, moduleElement) {
+                        let moduleName = getSuiteName($, moduleElement).split("#")[1];
+
+                        if (checkSuiteOrCase($, moduleElement) == "case") {
+                            // test case
+                            $(moduleElement).children("ul").children("li").each(function(k, caseElement) {
+                                let caseStatus = getCaseStatus($, caseElement);
+                                let caseName = getCaseName($, caseElement);
+
+                                checkResult(titleName, moduleName, caseName, caseStatus);
+
+                                if (caseStatus == "Pass") {
+                                    countPasses = countPasses + 1;
+                                } else {
+                                    countFailures = countFailures + 1;
+                                }
+
+                                actions = actions + 1;
+                                RClog("console", "\033[1A\033[50D\033[K    grasping: " + actions + "/" + graspTotal);
+                            });
+                        }
+                    });
+                }
+            });
+
+            if (graspPass != countPasses) {
+                RClog("console", graspPass + " : " + countPasses);
+                throw new Error("It's wrong to passed result!");
+            }
+
+            if (graspFail != countFailures) {
+                RClog("console", graspFail + " : " + countFailures);
+                throw new Error("It's wrong to failed result!");
+            }
+
+            countTotal = countPasses + countFailures;
+            RClog("console", "grasp all test case: " + countTotal);
+            RClog("debug", "    Web passes: " + graspPass);
+            RClog("debug", "  Check passes: " + countPasses);
+            RClog("debug", "  Web failures: " + graspFail);
+            RClog("debug", "Check failures: " + countFailures);
+            RClog("debug", "         TOTAL: " + graspTotal);
+        });
 
         RClog("time", "mark");
 
