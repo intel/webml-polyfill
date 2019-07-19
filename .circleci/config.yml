@@ -14,7 +14,4 @@ workflows:
   build-and-deploy:
     jobs:
       - build
-          filters:
-            branches:
-              ignore:
-                - gh-pages
+

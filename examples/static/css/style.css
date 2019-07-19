@@ -2864,3 +2864,14 @@ button.xclose {
     text-align: left;
   }
 }
+
+.nbackend {
+  margin-left: 6px !important;
+  margin-bottom: 2px !important;
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 1.0) !important;
+  padding: 0px 6px 0px 6px !important;
+  box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.2);
+  text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.5);
+  background: linear-gradient(to bottom right, rgba(255, 213, 188, 1.0), rgba(255, 110, 97, 1.0));
+}
