@@ -120,6 +120,15 @@ const trademarks = (allFormats) => {
   }
 }
 
+const updateNativeBackend = () => {
+  if(currentPrefer === 'sustained' & currentOS === 'Mac OS') {
+    let nativebackend = getNativeAPI(currentPrefer);
+    $('#l-sustained').append(`<span class='nbackend'>${nativebackend}</span>`);
+  } else {
+    $('#l-sustained').html('SUSTAINED_SPEED');
+  }
+}
+
 const constructModelTable = (modelList) => {
 
   const allFormats = new Set(modelList.map((m) => m.format));
@@ -198,9 +207,11 @@ const updateTitle = (name, backend, prefer, modelId) => {
   const model = getModelById(modelId);
   if(currentprefertext === 'None') {
     $('#ictitle').html(`${name} / ${backendtext} / ${model.modelName || 'None'}`);
+  } else if(currentPrefer === 'sustained' & currentOS === 'Mac OS') {
+    $('#ictitle').html(`${name} / ${backendtext} (${currentprefertext}/MPS) / ${model.modelName || 'None'}`);
   } else {
     $('#ictitle').html(`${name} / ${backendtext} (${currentprefertext}) / ${model.modelName || 'None'}`);
-  }
+  } 
 }
 
 $('#header').sticky({ topSpacing: 0, zIndex: '50' });
@@ -431,6 +442,9 @@ $(document).ready(() => {
   }
 
   updateBackendRadioUI(ub, up);
+
+  updateNativeBackend();
+
 });
 
 
@@ -539,12 +553,15 @@ if (skeletonDetectionPath <= -1) {
         currentPrefer = 'none';
       }
 
+      updateNativeBackend();
+
       strsearch = `?prefer=${currentPrefer}&b=${currentBackend}&m=${um}&s=${us}&d=${ud}`;
       window.history.pushState(null, null, strsearch);
       if (um === 'none') {
         showError('No model selected', 'Please select a model to start prediction.');
         return;
       }
+
       updateTitle(currentExample, currentBackend, currentPrefer, um);
       updateBackend(us === 'camera', true);
     });
@@ -579,12 +596,16 @@ if (skeletonDetectionPath <= -1) {
         currentBackend = 'WebML';
         currentPrefer = webnnId;
       }
+
+      updateNativeBackend();
+
       strsearch = `?prefer=${currentPrefer}&b=${currentBackend}&m=${um}&s=${us}&d=${ud}`;
       window.history.pushState(null, null, strsearch);
       if (um === 'none') {
         showError('No model selected', 'Please select a model to start prediction.');
         return;
       }
+
       updateTitle(currentExample, currentBackend, currentPrefer, um);
       updateBackend(us === 'camera', true);
     });
