@@ -1,9 +1,6 @@
 version: 2 
 jobs:
   build:
-    branches:
-      ignore:
-        - gh-pages
     working_directory: ~
     docker:
         - image: circleci/node:12.1.0-browsers
@@ -17,3 +14,7 @@ workflows:
   build-and-deploy:
     jobs:
       - build
+          filters:
+            branches:
+              ignore:
+                - gh-pages
