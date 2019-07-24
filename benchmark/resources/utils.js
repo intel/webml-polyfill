@@ -149,8 +149,7 @@ async function loadModelAndLabels(model, label=null) {
 }
 
 function summarize(results) {
-  let len = results.length;
-  if (len !== 0) {
+  if (results.length !== 0) {
     // remove first run, which is regarded as "warming up" execution
     results.shift();
     let d = results.reduce((d, v) => {
@@ -161,8 +160,8 @@ function summarize(results) {
       sum: 0,
       sum2: 0
     });
-    let mean = d.sum / len;
-    let std = Math.sqrt((d.sum2 - len * mean * mean) / (len - 1));
+    let mean = d.sum / results.length;
+    let std = Math.sqrt((d.sum2 - results.length * mean * mean) / (results.length - 1));
     return {
       mean: mean,
       std: std
