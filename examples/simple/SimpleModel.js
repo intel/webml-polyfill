@@ -1,7 +1,8 @@
-const nn = navigator.ml.getNeuralNetworkContext();
 
+var nn = navigator.ml_polyfill.getNeuralNetworkContext();
 const TENSOR_SIZE = 200;
 const FLOAT_EPISILON = 1e-6;
+
 
 class SimpleModel {
   constructor(arrayBuffer) {
@@ -13,10 +14,7 @@ class SimpleModel {
 
   async createCompiledModel() {
     let operandIndex = 0;
-  
-    // create a Model.
-    this.model_ = await nn.createModel();
-
+    this.model_ = await nn.createModel({backend:selectedBackend});
     let float32TensorType = {type: nn.TENSOR_FLOAT32, dimensions: [TENSOR_SIZE]};
     let scalarInt32Type = {type: nn.INT32};
 
@@ -85,7 +83,6 @@ class SimpleModel {
     // The values of constant and intermediate operands cannot be altered after
     // the finish function is called.
     await this.model_.finish();
-
     // Create a Compilation object for the constructed this.model_.
     this.compilation_ = await this.model_.createCompilation();
 
@@ -93,8 +90,7 @@ class SimpleModel {
     // can make better decisions.
     // Here we prefer to get the answer quickly, so we choose
     // PREFER_FAST_SINGLE_ANSWER.
-    this.compilation_.setPreference(nn.PREFER_FAST_SINGLE_ANSWER);
-
+    this.compilation_.setPreference(selectedPrefer);
     // Finish the compilation.
     return await this.compilation_.finish();
   }
