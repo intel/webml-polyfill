@@ -1,6 +1,6 @@
 {
     "Version": {
-        "chromium": "77b2865",
+        "chromium": "79fdab0",
         "polyfill": "83d9d19"
     },
     "Android-Polyfill-Fast-WASM": {
@@ -77,8 +77,8 @@
     },
     "Win-WebNN-Sustained-DML": {
         "total": 717,
-        "pass": 402,
-        "fail": 315,
+        "pass": 397,
+        "fail": 320,
         "block": 0
     },
     "Win-WebNN-Sustained-clDNN": {
@@ -113,8 +113,8 @@
     },
     "macOS-WebNN-Sustained-MPS": {
         "total": 717,
-        "pass": 278,
-        "fail": 439,
+        "pass": 288,
+        "fail": 429,
         "block": 0
     }
 }
