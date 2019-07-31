@@ -35,7 +35,7 @@ let begin = `
   <script src="../dist/webml-polyfill.js"></script>
   <script src="./utils.js"></script>
   <script>
-    window.onload = setOptions;
+    setOptions();
   </script>
   <script>
     mocha.setup('bdd');

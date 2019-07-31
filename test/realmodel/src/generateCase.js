@@ -82,6 +82,7 @@ async function getOperands(ids) {
   }
 }
 
+let result = [];
 async function splitContext(context) {
   let inputFile = context[1][0];
   let inputDims = (await gettensorTypes(inputFile));
@@ -105,10 +106,11 @@ async function splitContext(context) {
         count ++;
       }
     };
+    let layer = result.length + 1;
     let caseSample = `describe('CTS Real Model Test', function() {
     const assert = chai.assert;
     const nn = navigator.ml.getNeuralNetworkContext();
-    it('Check result for AVERAGE_POOL_2D example/${count} of ${JSON_DATA.getModelName()} model', async function() {
+    it('Check result for layer-${layer} AVERAGE_POOL_2D example/${count} of ${JSON_DATA.getModelName()} model', async function() {
       this.timeout(120000);
       let model = await nn.createModel(options);
       let operandIndex = 0;
@@ -166,13 +168,17 @@ async function splitContext(context) {
       execution.setInput(0, i0_input);
       let output_output = new Float32Array(type2_length);
       execution.setOutput(0, output_output);
+      let tStart = performance.now();
       await execution.startCompute();
+      let computeTime = performance.now() - tStart;
+      console.log('layer-${layer} AVERAGE_POOL_2D of ${JSON_DATA.getModelName()} model, compute time: %f ms, input dimensions: [${inputDims}], output dimensions: [${outputDims}], stride: [${stride}], filter: [${filter}], padding: [${padding}], activation: [${activation}]', computeTime)
       for (let i = 0; i < type2_length; ++i) {
         assert.isTrue(almostEqualCTS(output_output[i], output_expect[i]));
       }
     });
   });`;
     await saveCaseToLocal(caseSample, `${JSON_DATA.getModelName()}-averagepool-${count}.js`);
+    result.push(`${JSON_DATA.getModelName()}-averagepool-${count}.js`);
   } break;
   case 17:{
     let padding = (await getOperands(context[1][1]))[0];
@@ -189,10 +195,11 @@ async function splitContext(context) {
         count ++;
       }
     };
+    let layer = result.length + 1;
     let caseSample = `describe('CTS Real Model Test', function() {
   const assert = chai.assert;
   const nn = navigator.ml.getNeuralNetworkContext();
-  it('Check result for MAX_POOL_2D example/${count} of ${JSON_DATA.getModelName()} model', async function() {
+  it('Check result for layer-${layer} MAX_POOL_2D example/${count} of ${JSON_DATA.getModelName()} model', async function() {
     this.timeout(120000);
     let model = await nn.createModel(options);
     let operandIndex = 0;
@@ -250,13 +257,17 @@ async function splitContext(context) {
     execution.setInput(0, i0_input);
     let output_output = new Float32Array(type2_length);
     execution.setOutput(0, output_output);
+    let tStart = performance.now();
     await execution.startCompute();
+    let computeTime = performance.now() - tStart;
+    console.log('layer-${layer} MAX_POOL_2D of ${JSON_DATA.getModelName()} model, compute time: %f ms, input dimensions: [${inputDims}], output dimensions: [${outputDims}], stride: [${stride}], filter: [${filter}], padding: [${padding}], activation: [${activation}]', computeTime)
     for (let i = 0; i < type2_length; ++i) {
       assert.isTrue(almostEqualCTS(output_output[i], output_expect[i]));
     }
   });
 });`;
     await saveCaseToLocal(caseSample, `${JSON_DATA.getModelName()}-maxpool-${count}.js`);
+    result.push(`${JSON_DATA.getModelName()}-maxpool-${count}.js`)
   } break;
   case 2: {
     let inputFile1 = context[1][1];
@@ -273,10 +284,11 @@ async function splitContext(context) {
         count ++;
       }
     };
+    let layer = result.length + 1;
     let caseSample = `describe('CTS Real Model Test', function() {
   const assert = chai.assert;
   const nn = navigator.ml.getNeuralNetworkContext();
-  it('Check result for CONCATENATION example/${count} of ${JSON_DATA.getModelName()} model', async function() {
+  it('Check result for layer-${layer} CONCATENATION example/${count} of ${JSON_DATA.getModelName()} model', async function() {
     this.timeout(120000);
     let model = await nn.createModel(options);
     let operandIndex = 0;
@@ -341,13 +353,17 @@ async function splitContext(context) {
     execution.setInput(0, input1_input);
     let output_output = new Float32Array(type3_length);
     execution.setOutput(0, output_output);
+    let tStart = performance.now();
     await execution.startCompute();
+    let computeTime = performance.now() - tStart;
+    console.log('layer-${layer} CONCATENATION of ${JSON_DATA.getModelName()} model, compute time: %f ms, input dimensions: [${inputDims}], output dimensions: [${outputDims}], axis: [${axis}]', computeTime)
     for (let i = 0; i < type3_length; ++i) {
       assert.isTrue(almostEqualCTS(output_output[i], output_expect[i]));
     }
   });
 });`;
     await saveCaseToLocal(caseSample, `${JSON_DATA.getModelName()}-concatenation-${count}.js`);
+    result.push(`${JSON_DATA.getModelName()}-concatenation-${count}.js`);
   } break;
   case 3: {
     let weightFile = context[1][1];
@@ -369,10 +385,11 @@ async function splitContext(context) {
         count ++;
       }
     };
+    let layer = result.length + 1;
     let caseSample = `describe('CTS Real Model Test', function() {
   const assert = chai.assert;
   const nn = navigator.ml.getNeuralNetworkContext();
-  it('Check result for CONV_2D example/${count} of ${JSON_DATA.getModelName()} model', async function() {
+  it('Check result for layer-${layer} CONV_2D example/${count} of ${JSON_DATA.getModelName()} model', async function() {
     this.timeout(120000);
     let model = await nn.createModel(options);
     let operandIndex = 0;
@@ -458,13 +475,17 @@ async function splitContext(context) {
     execution.setInput(0, op1_input);
     let op4_output = new Float32Array(type1_length);
     execution.setOutput(0, op4_output);
+    let tStart = performance.now();
     await execution.startCompute();
+    let computeTime = performance.now() - tStart;
+    console.log('layer-${layer} CONV_2D of ${JSON_DATA.getModelName()} model, compute time: %f ms, bias: [${bias}], weight: [${weight}], input dimensions: [${inputDims}], output dimensions: [${outputDims}], pad: [${pad}], act: [${act}], stride: [${stride}]', computeTime)
     for (let i = 0; i < type1_length; ++i) {
       assert.isTrue(almostEqualCTS(op4_output[i], op4_expect[i]));
     }
   });
 });`;
     await saveCaseToLocal(caseSample, `${JSON_DATA.getModelName()}-conv2d-${count}.js`);
+    result.push(`${JSON_DATA.getModelName()}-conv2d-${count}.js`)
   } break;
   case 22: {
     let shapeDic = await getOperands(context[1][1]);
@@ -480,10 +501,11 @@ async function splitContext(context) {
         count ++;
       }
     };
+    let layer = result.length + 1;
     let caseSample = `describe('CTS Real Model Test', function() {
   const assert = chai.assert;
   const nn = navigator.ml.getNeuralNetworkContext();
-  it('Check result for RESHAPE example/${count} of ${JSON_DATA.getModelName()} model', async function() {
+  it('Check result for layer-${layer} RESHAPE example/${count} of ${JSON_DATA.getModelName()} model', async function() {
     this.timeout(120000);
     let model = await nn.createModel(options);
     let operandIndex = 0;
@@ -533,29 +555,27 @@ async function splitContext(context) {
     execution.setInput(0, op1_input);
     let op3_output = new Float32Array(type2_length);
     execution.setOutput(0, op3_output);
+    let tStart = performance.now();
     await execution.startCompute();
+    let computeTime = performance.now() - tStart;
+    console.log('layer-${layer} RESHAPE of ${JSON_DATA.getModelName()} model, compute time: %f ms, input dimensions: [${inputDims}], output dimensions: [${outputDims}], shapeLen: [${shapeLen}], shapeValues: [${shapeValues}]', computeTime)
     for (let i = 0; i < type2_length; ++i) {
       assert.isTrue(almostEqualCTS(op3_output[i], op3_expect[i]));
     }
   });
 });`;
     await saveCaseToLocal(caseSample, `${JSON_DATA.getModelName()}-reshape-${count}.js`);
+    result.push(`${JSON_DATA.getModelName()}-reshape-${count}.js`)
   }break;
   }
 }
 
 async function findSync(startPath) {
-  let result=[];
   String.prototype.endWith = function (endStr) {
     let d = this.length - endStr.length;
     return (d >= 0 && this.lastIndexOf(endStr) == d);
   };
   let files = fs.readdirSync(startPath);
-  files.forEach((val,index) => {
-    if ((val.indexOf(JSON_DATA.getModelName()) == 0 ) && val.endsWith('.js')) {
-      result.push(val);
-    }
-  });
   let saveFileDirs = path.join(__dirname, '..', 'testcase', `${JSON_DATA.getModelName()}`);
   let saveStream = fs.createWriteStream(
     path.join(saveFileDirs, `${JSON_DATA.getModelName()}.txt`),
