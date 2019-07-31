@@ -43,8 +43,9 @@ let begin = `
 
 
  let end = ` <script>
+    window.mochaFinish = false;
     mocha.globals(['jQuery']);
-    mocha.run();
+    mocha.run(function() {window.mochaFinish = true});
   </script>
 </body>
 </html>
