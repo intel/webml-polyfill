@@ -505,7 +505,7 @@ async function splitContext(context) {
     let caseSample = `describe('CTS Real Model Test', function() {
   const assert = chai.assert;
   const nn = navigator.ml.getNeuralNetworkContext();
-  it('Check result layer-${layer} for RESHAPE example/${count} of ${JSON_DATA.getModelName()} model', async function() {
+  it('Check result for layer-${layer} RESHAPE example/${count} of ${JSON_DATA.getModelName()} model', async function() {
     this.timeout(120000);
     let model = await nn.createModel(options);
     let operandIndex = 0;
