@@ -3,10 +3,13 @@ let currentModel = getSearchParamsModel();
 let currentPrefer = getSearchParamsPrefer();
 let currentExample = getExampleDirectoryName();
 
+const audioElement = document.getElementById('audio');
+const recordElement = document.getElementById('recorder');
 const videoElement = document.getElementById('video');
 const imageElement = document.getElementById('image');
 const inputElement = document.getElementById('input');
 const progressBar = document.getElementById('progressBar');
+const recordeButton = document.getElementById('record');
 
 let streaming = false;
 let stats = new Stats();
