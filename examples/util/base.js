@@ -761,7 +761,7 @@ facialLandmarkDetectionModels: [{
 }],
 
 emotionAnalysisModels: [{
-  modelName: 'Simple CNN 7(TFlite)',
+  modelName: 'Simple CNN 7 (TFlite)',
   format: 'TFLite',
   modelId: 'emotion_analysis_tflite',
   modelSize: '7.3MB',
@@ -774,6 +774,20 @@ emotionAnalysisModels: [{
   },
   intro: 'A simple CNN model uses regression methods to map human facial features to seven different types of emotion class.',
   paperUrl: ''
+}],
+
+speechCommandModels: [{
+  modelName: 'KWS CNN (TFLite)',
+  format: 'TFLite',
+  modelId: 'kws_cnn_tflite',
+  modelSize: '3.4MB',
+  inputSize: [1, 16000],
+  outputSize: [1, 1, 12],
+  sampleRate: 16000,
+  modelFile: '../speech_commands/model/kws_cnn.tflite',
+  labelsFile: '../speech_commands/model/labels.txt',
+  intro: 'Use Convolutional Neural Networks (CNNs) for a small-footprint keyword spotting (KWS) task.',
+  paperUrl: 'https://www.isca-speech.org/archive/interspeech_2015/papers/i15_1478.pdf'
 }]
 
 };
