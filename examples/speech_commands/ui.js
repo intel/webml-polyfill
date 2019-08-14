@@ -27,7 +27,7 @@ $(document).ready(() => {
   //   utilsPredict(audioElement, currentBackend, currentPrefer);
   // }, false);
 
-  recordeButton.addEventListener('click', () => {
+  recordButton.addEventListener('click', () => {
     utilsPredictMicrophone();
   }, false);
 });
