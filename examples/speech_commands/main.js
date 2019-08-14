@@ -21,6 +21,13 @@ const updateResult = (result) => {
       labelElement.innerHTML = `${c.label}`;
       probElement.innerHTML = `${c.prob}%`;
     });
+    if (result.classes[0].prob > 50) {
+      $('#speechcommands #scresult svg').removeClass('current');
+      $(`#r${result.classes[0].label}`).addClass('current');
+      $('#speechcommands #scresult #rtext').html(`${result.classes[0].label}`);
+    } else {
+      $('#speechcommands #scresult #rtext').html(`Unknown`);
+    }
   }
   catch (e) {
     console.log(e);
