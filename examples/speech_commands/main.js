@@ -21,6 +21,14 @@ const updateResult = (result) => {
       labelElement.innerHTML = `${c.label}`;
       probElement.innerHTML = `${c.prob}%`;
     });
+    if (result.classes[0].prob > 50) {
+      $('#speechcommands #scresult svg').removeClass('current');
+      $(`#r${result.classes[0].label}`).addClass('current');
+      $('#speechcommands #scresult #rtext').html(`${result.classes[0].label}`);
+    } else {
+      $('#speechcommands #scresult svg').removeClass('current');
+      $('#speechcommands #scresult #rtext').html(`Unknown`);
+    }
   }
   catch (e) {
     console.log(e);
@@ -61,7 +69,7 @@ const utilsPredict = async (audioElement, backend, prefer) => {
 
 const utilsPredictMicrophone = async (backend, prefer) => {
   streaming = true;
-  await showProgress('done', 'done', 'current');
+  // await showProgress('done', 'done', 'current');
   try {
     let stream = await navigator.mediaDevices.getUserMedia({ audio: true});
     await recordAndPredict(stream);
@@ -78,7 +86,7 @@ const recordAndPredict = async (stream) => {
   audioRecorder.start();
   setTimeout(function() {
     audioRecorder.stop();
-  }, 1100);
+  }, 1000);
 }
 
 const handleDataAvailable = (e) => {
@@ -89,6 +97,7 @@ const handleDataAvailable = (e) => {
   startPredictMicrophone(recordElement);
   showProgress('done', 'done', 'done');
   showResults();
+  recordElement.play();
 }
 
 const predictPath = (microphone) => {

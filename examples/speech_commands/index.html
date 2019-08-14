@@ -32,7 +32,7 @@
   <link href='../static/css/style.css' rel='stylesheet'>
 </head>
 
-<body id='imageclassification'>
+<body id='speechcommands'>
   <header id='header'>
     <div class='container'>
       <div id='logo' class='pull-left'>
@@ -71,6 +71,7 @@
               <li><a href='../facial_landmark_detection/'>Facial Landmark Detection</a></li>
               <li><a href='../super_resolution/'>Super Resolution</a></li>
               <li><a href='../emotion_analysis/'>Emotion Analysis</a></li>
+              <li><a href='../speech_commands/'>Speech Commands</a></li>
             </ul>
           </li>
           <li><a href='../model.html'>Models</a></li>
@@ -86,9 +87,9 @@
           <tr class='backend'>
             <th class='text-center backendtitle'>Backend</th>
             <td>
-              <div class="custom-control custom-switch">
-                  <input type="checkbox" class="custom-control-input" id="backendswitch">
-                  <label class="custom-control-label" for="backendswitch">Dual</label>
+              <div class='custom-control custom-switch'>
+                <input type='checkbox' class='custom-control-input' id='backendswitch'>
+                <label class='custom-control-label' for='backendswitch'>Dual</label>
               </div>
               <div class='g b-polyfill'>
                 <span id='backendpolyfilltitle'>Polyfill</span>
@@ -124,11 +125,11 @@
     <div class='container' id='container'>
       <a id='extra' href='#' class='mb-1 mt-3'>
         <h3 class='text-center ex' id='ictitle'>
-          Image Classification
+          Speech Commands
         </h3>
         <span class='fa chevron-up'>
           <svg aria-hidden='true' data-prefix='fas' data-icon='chevron-up' class='svg-inline--fa fa-chevron-up fa-w-14'
-            role='img' viewBox='0 0 448 512'>
+            viewBox='0 0 448 512'>
             <path fill='currentColor'
               d='M240.971 130.524l194.343 194.343c9.373 9.373 9.373 24.569 0 33.941l-22.667 22.667c-9.357 9.357-24.522 9.375-33.901.04L224 227.495 69.255 381.516c-9.379 9.335-24.544 9.317-33.901-.04l-22.667-22.667c-9.373-9.373-9.373-24.569 0-33.941L207.03 130.525c9.372-9.373 24.568-9.373 33.941-.001z'>
             </path>
@@ -136,7 +137,7 @@
         </span>
         <span class='fa chevron-down' style='display:none;'>
           <svg aria-hidden='true' data-prefix='fas' data-icon='chevron-down'
-            class='svg-inline--fa fa-chevron-down fa-w-14' role='img' viewBox='0 0 448 512'>
+            class='svg-inline--fa fa-chevron-down fa-w-14' viewBox='0 0 448 512'>
             <path fill='currentColor'
               d='M207.029 381.476L12.686 187.132c-9.373-9.373-9.373-24.569 0-33.941l22.667-22.667c9.357-9.357 24.522-9.375 33.901-.04L224 284.505l154.745-154.021c9.379-9.335 24.544-9.317 33.901.04l22.667 22.667c9.373 9.373 9.373 24.569 0 33.941L240.971 381.476c-9.373 9.372-24.569 9.372-33.942 0z'>
             </path>
@@ -192,23 +193,112 @@
           <div class='icdisplay' style='display: none;'>
             <div class='col-lg-12 col-xs-12 text-center'>
               <!-- <figure class='item'> -->
-                <!-- <div class='inner'> -->
-                  <audio id="audio" src="audio/yes.wav" controls="controls"></audio>
-                <!-- </div> -->
+              <!-- <div class='inner'> -->
+              <audio id='audio' src='audio/yes.wav' controls='controls'></audio>
+              <!-- </div> -->
               <!-- </figure> -->
-              <div class='row mt-1'>
+
+              <div id='controller'>
+                <div>
+                  <svg id='on' aria-hidden='true' focusable='false' data-prefix='fas' data-icon='toggle-on'
+                    class='svg-inline--fa fa-toggle-on fa-w-18' viewBox='0 0 576 512'>
+                    <title>On</title>
+                    <path fill='currentColor'
+                      d='M384 64H192C86 64 0 150 0 256s86 192 192 192h192c106 0 192-86 192-192S490 64 384 64zm0 320c-70.8 0-128-57.3-128-128 0-70.8 57.3-128 128-128 70.8 0 128 57.3 128 128 0 70.8-57.3 128-128 128z'>
+                    </path>
+                  </svg>
+
+                  <svg id='off' aria-hidden='true' focusable='false' data-prefix='fas' data-icon='toggle-off'
+                    class='svg-inline--fa fa-toggle-off fa-w-18' viewBox='0 0 576 512'>
+                    <title>Off</title>
+                    <path fill='currentColor'
+                      d='M384 64H192C85.961 64 0 149.961 0 256s85.961 192 192 192h192c106.039 0 192-85.961 192-192S490.039 64 384 64zM64 256c0-70.741 57.249-128 128-128 70.741 0 128 57.249 128 128 0 70.741-57.249 128-128 128-70.741 0-128-57.249-128-128zm320 128h-48.905c65.217-72.858 65.236-183.12 0-256H384c70.741 0 128 57.249 128 128 0 70.74-57.249 128-128 128z'>
+                    </path>
+                  </svg>
+                </div>
+                <div>
+                  <svg id='yes' class='current' aria-hidden='true' focusable='false' data-prefix='far' data-icon='check-circle'
+                    class='svg-inline--fa fa-check-circle fa-w-16' viewBox='0 0 512 512'>
+                    <title>Yes</title>
+                    <path fill='currentColor'
+                      d='M256 8C119.033 8 8 119.033 8 256s111.033 248 248 248 248-111.033 248-248S392.967 8 256 8zm0 48c110.532 0 200 89.451 200 200 0 110.532-89.451 200-200 200-110.532 0-200-89.451-200-200 0-110.532 89.451-200 200-200m140.204 130.267l-22.536-22.718c-4.667-4.705-12.265-4.736-16.97-.068L215.346 303.697l-59.792-60.277c-4.667-4.705-12.265-4.736-16.97-.069l-22.719 22.536c-4.705 4.667-4.736 12.265-.068 16.971l90.781 91.516c4.667 4.705 12.265 4.736 16.97.068l172.589-171.204c4.704-4.668 4.734-12.266.067-16.971z'>
+                    </path>
+                  </svg>
+
+                  <svg id='no' aria-hidden='true' focusable='false' data-prefix='far' data-icon='times-circle'
+                    class='svg-inline--fa fa-times-circle fa-w-16' viewBox='0 0 512 512'>
+                    <title>No</title>
+                    <path fill='currentColor'
+                      d='M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm0 448c-110.5 0-200-89.5-200-200S145.5 56 256 56s200 89.5 200 200-89.5 200-200 200zm101.8-262.2L295.6 256l62.2 62.2c4.7 4.7 4.7 12.3 0 17l-22.6 22.6c-4.7 4.7-12.3 4.7-17 0L256 295.6l-62.2 62.2c-4.7 4.7-12.3 4.7-17 0l-22.6-22.6c-4.7-4.7-4.7-12.3 0-17l62.2-62.2-62.2-62.2c-4.7-4.7-4.7-12.3 0-17l22.6-22.6c4.7-4.7 12.3-4.7 17 0l62.2 62.2 62.2-62.2c4.7-4.7 12.3-4.7 17 0l22.6 22.6c4.7 4.7 4.7 12.3 0 17z'>
+                    </path>
+                  </svg>
+
+                  <svg id='go' aria-hidden='true' focusable='false' data-prefix='far' data-icon='play-circle'
+                    class='svg-inline--fa fa-play-circle fa-w-16' viewBox='0 0 512 512'>
+                    <title>Go</title>
+                    <path fill='currentColor'
+                      d='M371.7 238l-176-107c-15.8-8.8-35.7 2.5-35.7 21v208c0 18.4 19.8 29.8 35.7 21l176-101c16.4-9.1 16.4-32.8 0-42zM504 256C504 119 393 8 256 8S8 119 8 256s111 248 248 248 248-111 248-248zm-448 0c0-110.5 89.5-200 200-200s200 89.5 200 200-89.5 200-200 200S56 366.5 56 256z'>
+                    </path>
+                  </svg>
+
+                  <svg id='stop' aria-hidden='true' focusable='false' data-prefix='far' data-icon='stop-circle'
+                    class='svg-inline--fa fa-stop-circle fa-w-16' viewBox='0 0 512 512'>
+                    <title>Stop</title>
+                    <path fill='currentColor'
+                      d='M504 256C504 119 393 8 256 8S8 119 8 256s111 248 248 248 248-111 248-248zm-448 0c0-110.5 89.5-200 200-200s200 89.5 200 200-89.5 200-200 200S56 366.5 56 256zm296-80v160c0 8.8-7.2 16-16 16H176c-8.8 0-16-7.2-16-16V176c0-8.8 7.2-16 16-16h160c8.8 0 16 7.2 16 16z'>
+                    </path>
+                  </svg>
+                </div>
+                <div>
+                  <svg id='up' aria-hidden='true' focusable='false' data-prefix='far' data-icon='arrow-alt-circle-up'
+                    class='svg-inline--fa fa-arrow-alt-circle-up fa-w-16' viewBox='0 0 512 512'>
+                    <title>Up</title>
+                    <path fill='currentColor'
+                      d='M256 504c137 0 248-111 248-248S393 8 256 8 8 119 8 256s111 248 248 248zm0-448c110.5 0 200 89.5 200 200s-89.5 200-200 200S56 366.5 56 256 145.5 56 256 56zm20 328h-40c-6.6 0-12-5.4-12-12V256h-67c-10.7 0-16-12.9-8.5-20.5l99-99c4.7-4.7 12.3-4.7 17 0l99 99c7.6 7.6 2.2 20.5-8.5 20.5h-67v116c0 6.6-5.4 12-12 12z'>
+                    </path>
+                  </svg>
+
+                  <svg id='down' aria-hidden='true' focusable='false' data-prefix='far' data-icon='arrow-alt-circle-down'
+                    class='svg-inline--fa fa-arrow-alt-circle-down fa-w-16' viewBox='0 0 512 512'>
+                    <title>Down</title>
+                    <path fill='currentColor'
+                      d='M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm0 448c-110.5 0-200-89.5-200-200S145.5 56 256 56s200 89.5 200 200-89.5 200-200 200zm-32-316v116h-67c-10.7 0-16 12.9-8.5 20.5l99 99c4.7 4.7 12.3 4.7 17 0l99-99c7.6-7.6 2.2-20.5-8.5-20.5h-67V140c0-6.6-5.4-12-12-12h-40c-6.6 0-12 5.4-12 12z'>
+                    </path>
+                  </svg>
+
+                  <svg id='left' aria-hidden='true' focusable='false' data-prefix='far' data-icon='arrow-alt-circle-left'
+                    class='svg-inline--fa fa-arrow-alt-circle-left fa-w-16' viewBox='0 0 512 512'>
+                    <title>Left</title>
+                    <path fill='currentColor'
+                      d='M8 256c0 137 111 248 248 248s248-111 248-248S393 8 256 8 8 119 8 256zm448 0c0 110.5-89.5 200-200 200S56 366.5 56 256 145.5 56 256 56s200 89.5 200 200zm-72-20v40c0 6.6-5.4 12-12 12H256v67c0 10.7-12.9 16-20.5 8.5l-99-99c-4.7-4.7-4.7-12.3 0-17l99-99c7.6-7.6 20.5-2.2 20.5 8.5v67h116c6.6 0 12 5.4 12 12z'>
+                    </path>
+                  </svg>
+
+                  <svg id='right' aria-hidden='true' focusable='false' data-prefix='far' data-icon='arrow-alt-circle-right'
+                    class='svg-inline--fa fa-arrow-alt-circle-right fa-w-16' viewBox='0 0 512 512'>
+                    <title>Right</title>
+                    <path fill='currentColor'
+                      d='M504 256C504 119 393 8 256 8S8 119 8 256s111 248 248 248 248-111 248-248zm-448 0c0-110.5 89.5-200 200-200s200 89.5 200 200-89.5 200-200 200S56 366.5 56 256zm72 20v-40c0-6.6 5.4-12 12-12h116v-67c0-10.7 12.9-16 20.5-8.5l99 99c4.7 4.7 4.7 12.3 0 17l-99 99c-7.6 7.6-20.5 2.2-20.5-8.5v-67H140c-6.6 0-12-5.4-12-12z'>
+                    </path>
+                  </svg>
+                </div>
+              </div>
+
+              <div class='row mt-3'>
                 <div class='col'>
                   <div class='box'>
                     <input type='file' name='f[]' id='input' accept='audio/*' class='inputfile inputf' />
                     <label for='input'>
                       <svg width='20' height='17' viewBox='0 0 20 17'>
-                        <path d='M10 0l-5.2 4.9h3.3v5.1h3.8v-5.1h3.3l-5.2-4.9zm9.3 11.5l-3.2-2.1h-2l3.4 2.6h-3.5c-.1 0-.2.1-.2.1l-.8 2.3h-6l-.8-2.2c-.1-.1-.1-.2-.2-.2h-3.6l3.4-2.6h-2l-3.2 2.1c-.4.3-.7 1-.6 1.5l.6 3.1c.1.5.7.9 1.2.9h16.3c.6 0 1.1-.4 1.3-.9l.6-3.1c.1-.5-.2-1.2-.7-1.5z' />
+                        <path
+                          d='M10 0l-5.2 4.9h3.3v5.1h3.8v-5.1h3.3l-5.2-4.9zm9.3 11.5l-3.2-2.1h-2l3.4 2.6h-3.5c-.1 0-.2.1-.2.1l-.8 2.3h-6l-.8-2.2c-.1-.1-.1-.2-.2-.2h-3.6l3.4-2.6h-2l-3.2 2.1c-.4.3-.7 1-.6 1.5l.6 3.1c.1.5.7.9 1.2.9h16.3c.6 0 1.1-.4 1.3-.9l.6-3.1c.1-.5-.2-1.2-.7-1.5z' />
                       </svg>
                       <span>Select Audio</span>
                     </label>
                   </div>
                 </div>
               </div>
+
               <canvas id='canvas' width=224 height=224></canvas>
             </div>
           </div>
@@ -216,33 +306,105 @@
         <div class='tab-pane text-center col-sm' id='cameratab'>
           <div class='icdisplay' style='display: none;'>
             <div id='fps'></div>
-            <!-- <div id='fullscreen'>
-              <i class='fa expand'>
-                <svg aria-hidden='true' data-prefix='fas' data-icon='expand' class='svg-inline--fa fa-expand fa-w-14'
-                  role='img' viewBox='0 0 448 512'>
-                  <path fill='currentColor'
-                    d='M0 180V56c0-13.3 10.7-24 24-24h124c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12H64v84c0 6.6-5.4 12-12 12H12c-6.6 0-12-5.4-12-12zM288 44v40c0 6.6 5.4 12 12 12h84v84c0 6.6 5.4 12 12 12h40c6.6 0 12-5.4 12-12V56c0-13.3-10.7-24-24-24H300c-6.6 0-12 5.4-12 12zm148 276h-40c-6.6 0-12 5.4-12 12v84h-84c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12h124c13.3 0 24-10.7 24-24V332c0-6.6-5.4-12-12-12zM160 468v-40c0-6.6-5.4-12-12-12H64v-84c0-6.6-5.4-12-12-12H12c-6.6 0-12 5.4-12 12v124c0 13.3 10.7 24 24 24h124c6.6 0 12-5.4 12-12z'>
-                  </path>
-                </svg>
-              </i>
-              <i class='fa compress' style='display:none;'>
-                <svg aria-hidden='true' data-prefix='fas' data-icon='compress'
-                  class='svg-inline--fa fa-compress fa-w-14' role='img' viewBox='0 0 448 512'>
-                  <path fill='currentColor'
-                    d='M436 192H312c-13.3 0-24-10.7-24-24V44c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v84h84c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12zm-276-24V44c0-6.6-5.4-12-12-12h-40c-6.6 0-12 5.4-12 12v84H12c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12h124c13.3 0 24-10.7 24-24zm0 300V344c0-13.3-10.7-24-24-24H12c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12h84v84c0 6.6 5.4 12 12 12h40c6.6 0 12-5.4 12-12zm192 0v-84h84c6.6 0 12-5.4 12-12v-40c0-6.6-5.4-12-12-12H312c-13.3 0-24 10.7-24 24v124c0 6.6 5.4 12 12 12h40c6.6 0 12-5.4 12-12z'>
-                  </path>
-                </svg>
-              </i>
-            </div> -->
-            <!-- <video id='video' autoplay playsinline></video> -->
-            <audio id="recorder" src="audio/yes.wav" controls="controls"></audio>
-            <label>Please read the words from the following list: Stop, Down, Off, Right, Up, Go, On, Yes, Left, No</label>
-            <button id='record'>Record</button>
+            <audio id='recorder' src='audio/yes.wav' controls='controls'></audio>
+            <div id='record'>
+              <svg aria-hidden='true' focusable='false' data-prefix='fas' data-icon='microphone'
+                class='svg-inline--fa fa-microphone fa-w-11' viewBox='0 0 352 512'>
+                <title>Please read following words by clicking microphone icon</title>
+                <path fill='currentColor'
+                  d='M176 352c53.02 0 96-42.98 96-96V96c0-53.02-42.98-96-96-96S80 42.98 80 96v160c0 53.02 42.98 96 96 96zm160-160h-16c-8.84 0-16 7.16-16 16v48c0 74.8-64.49 134.82-140.79 127.38C96.71 376.89 48 317.11 48 250.3V208c0-8.84-7.16-16-16-16H16c-8.84 0-16 7.16-16 16v40.16c0 89.64 63.97 169.55 152 181.69V464H96c-8.84 0-16 7.16-16 16v16c0 8.84 7.16 16 16 16h160c8.84 0 16-7.16 16-16v-16c0-8.84-7.16-16-16-16h-56v-33.77C285.71 418.47 352 344.9 352 256v-48c0-8.84-7.16-16-16-16z'>
+                </path>
+              </svg>
+            </div>
+            <label class='labelblock'>On, Off, Yes, No, Go, Stop, Up, Down, Left, Right</label>
           </div>
         </div>
 
         <div id='inference' class='shoulddisplay col-sm' style='display: none;'>
+
           <div class='row text-center tc' id='inferencetitle'>
+              <div id='scresult'>
+                    <svg id='ron' aria-hidden='true' focusable='false' data-prefix='fas' data-icon='toggle-on'
+                      class='svg-inline--fa fa-toggle-on fa-w-18' viewBox='0 0 576 512'>
+                      <title>On</title>
+                      <path fill='currentColor'
+                        d='M384 64H192C86 64 0 150 0 256s86 192 192 192h192c106 0 192-86 192-192S490 64 384 64zm0 320c-70.8 0-128-57.3-128-128 0-70.8 57.3-128 128-128 70.8 0 128 57.3 128 128 0 70.8-57.3 128-128 128z'>
+                      </path>
+                    </svg>
+  
+                    <svg id='roff' aria-hidden='true' focusable='false' data-prefix='fas' data-icon='toggle-off'
+                      class='svg-inline--fa fa-toggle-off fa-w-18' viewBox='0 0 576 512'>
+                      <title>Off</title>
+                      <path fill='currentColor'
+                        d='M384 64H192C85.961 64 0 149.961 0 256s85.961 192 192 192h192c106.039 0 192-85.961 192-192S490.039 64 384 64zM64 256c0-70.741 57.249-128 128-128 70.741 0 128 57.249 128 128 0 70.741-57.249 128-128 128-70.741 0-128-57.249-128-128zm320 128h-48.905c65.217-72.858 65.236-183.12 0-256H384c70.741 0 128 57.249 128 128 0 70.74-57.249 128-128 128z'>
+                      </path>
+                    </svg>
+
+                    <svg id='ryes' aria-hidden='true' focusable='false' data-prefix='far' data-icon='check-circle'
+                      class='svg-inline--fa fa-check-circle fa-w-16' viewBox='0 0 512 512'>
+                      <title>Yes</title>
+                      <path fill='currentColor'
+                        d='M256 8C119.033 8 8 119.033 8 256s111.033 248 248 248 248-111.033 248-248S392.967 8 256 8zm0 48c110.532 0 200 89.451 200 200 0 110.532-89.451 200-200 200-110.532 0-200-89.451-200-200 0-110.532 89.451-200 200-200m140.204 130.267l-22.536-22.718c-4.667-4.705-12.265-4.736-16.97-.068L215.346 303.697l-59.792-60.277c-4.667-4.705-12.265-4.736-16.97-.069l-22.719 22.536c-4.705 4.667-4.736 12.265-.068 16.971l90.781 91.516c4.667 4.705 12.265 4.736 16.97.068l172.589-171.204c4.704-4.668 4.734-12.266.067-16.971z'>
+                      </path>
+                    </svg>
+  
+                    <svg id='rno' aria-hidden='true' focusable='false' data-prefix='far' data-icon='times-circle'
+                      class='svg-inline--fa fa-times-circle fa-w-16' viewBox='0 0 512 512'>
+                      <title>No</title>
+                      <path fill='currentColor'
+                        d='M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm0 448c-110.5 0-200-89.5-200-200S145.5 56 256 56s200 89.5 200 200-89.5 200-200 200zm101.8-262.2L295.6 256l62.2 62.2c4.7 4.7 4.7 12.3 0 17l-22.6 22.6c-4.7 4.7-12.3 4.7-17 0L256 295.6l-62.2 62.2c-4.7 4.7-12.3 4.7-17 0l-22.6-22.6c-4.7-4.7-4.7-12.3 0-17l62.2-62.2-62.2-62.2c-4.7-4.7-4.7-12.3 0-17l22.6-22.6c4.7-4.7 12.3-4.7 17 0l62.2 62.2 62.2-62.2c4.7-4.7 12.3-4.7 17 0l22.6 22.6c4.7 4.7 4.7 12.3 0 17z'>
+                      </path>
+                    </svg>
+  
+                    <svg id='rgo' aria-hidden='true' focusable='false' data-prefix='far' data-icon='play-circle'
+                      class='svg-inline--fa fa-play-circle fa-w-16' viewBox='0 0 512 512'>
+                      <title>Go</title>
+                      <path fill='currentColor'
+                        d='M371.7 238l-176-107c-15.8-8.8-35.7 2.5-35.7 21v208c0 18.4 19.8 29.8 35.7 21l176-101c16.4-9.1 16.4-32.8 0-42zM504 256C504 119 393 8 256 8S8 119 8 256s111 248 248 248 248-111 248-248zm-448 0c0-110.5 89.5-200 200-200s200 89.5 200 200-89.5 200-200 200S56 366.5 56 256z'>
+                      </path>
+                    </svg>
+  
+                    <svg id='rstop' aria-hidden='true' focusable='false' data-prefix='far' data-icon='stop-circle'
+                      class='svg-inline--fa fa-stop-circle fa-w-16' viewBox='0 0 512 512'>
+                      <title>Stop</title>
+                      <path fill='currentColor'
+                        d='M504 256C504 119 393 8 256 8S8 119 8 256s111 248 248 248 248-111 248-248zm-448 0c0-110.5 89.5-200 200-200s200 89.5 200 200-89.5 200-200 200S56 366.5 56 256zm296-80v160c0 8.8-7.2 16-16 16H176c-8.8 0-16-7.2-16-16V176c0-8.8 7.2-16 16-16h160c8.8 0 16 7.2 16 16z'>
+                      </path>
+                    </svg>
+
+                    <svg id='rup' aria-hidden='true' focusable='false' data-prefix='far' data-icon='arrow-alt-circle-up'
+                      class='svg-inline--fa fa-arrow-alt-circle-up fa-w-16' viewBox='0 0 512 512'>
+                      <title>Up</title>
+                      <path fill='currentColor'
+                        d='M256 504c137 0 248-111 248-248S393 8 256 8 8 119 8 256s111 248 248 248zm0-448c110.5 0 200 89.5 200 200s-89.5 200-200 200S56 366.5 56 256 145.5 56 256 56zm20 328h-40c-6.6 0-12-5.4-12-12V256h-67c-10.7 0-16-12.9-8.5-20.5l99-99c4.7-4.7 12.3-4.7 17 0l99 99c7.6 7.6 2.2 20.5-8.5 20.5h-67v116c0 6.6-5.4 12-12 12z'>
+                      </path>
+                    </svg>
+  
+                    <svg id='rdown' aria-hidden='true' focusable='false' data-prefix='far' data-icon='arrow-alt-circle-down'
+                      class='svg-inline--fa fa-arrow-alt-circle-down fa-w-16' viewBox='0 0 512 512'>
+                      <title>Down</title>
+                      <path fill='currentColor'
+                        d='M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm0 448c-110.5 0-200-89.5-200-200S145.5 56 256 56s200 89.5 200 200-89.5 200-200 200zm-32-316v116h-67c-10.7 0-16 12.9-8.5 20.5l99 99c4.7 4.7 12.3 4.7 17 0l99-99c7.6-7.6 2.2-20.5-8.5-20.5h-67V140c0-6.6-5.4-12-12-12h-40c-6.6 0-12 5.4-12 12z'>
+                      </path>
+                    </svg>
+  
+                    <svg id='rleft' aria-hidden='true' focusable='false' data-prefix='far' data-icon='arrow-alt-circle-left'
+                      class='svg-inline--fa fa-arrow-alt-circle-left fa-w-16' viewBox='0 0 512 512'>
+                      <title>Left</title>
+                      <path fill='currentColor'
+                        d='M8 256c0 137 111 248 248 248s248-111 248-248S393 8 256 8 8 119 8 256zm448 0c0 110.5-89.5 200-200 200S56 366.5 56 256 145.5 56 256 56s200 89.5 200 200zm-72-20v40c0 6.6-5.4 12-12 12H256v67c0 10.7-12.9 16-20.5 8.5l-99-99c-4.7-4.7-4.7-12.3 0-17l99-99c7.6-7.6 20.5-2.2 20.5 8.5v67h116c6.6 0 12 5.4 12 12z'>
+                      </path>
+                    </svg>
+  
+                    <svg id='rright' aria-hidden='true' focusable='false' data-prefix='far' data-icon='arrow-alt-circle-right'
+                      class='svg-inline--fa fa-arrow-alt-circle-right fa-w-16' viewBox='0 0 512 512'>
+                      <title>Right</title>
+                      <path fill='currentColor'
+                        d='M504 256C504 119 393 8 256 8S8 119 8 256s111 248 248 248 248-111 248-248zm-448 0c0-110.5 89.5-200 200-200s200 89.5 200 200-89.5 200-200 200S56 366.5 56 256zm72 20v-40c0-6.6 5.4-12 12-12h116v-67c0-10.7 12.9-16 20.5-8.5l99 99c4.7 4.7 4.7 12.3 0 17l-99 99c-7.6 7.6-20.5 2.2-20.5-8.5v-67H140c-6.6 0-12-5.4-12-12z'>
+                      </path>
+                    </svg>
+                    <div id='rtext'>Unknown</div>
+                </div>
             <div id='inferenceTime'></div>
           </div>
           <div class='row text-center' id='inferenceresult'>
@@ -274,8 +436,8 @@
             </table>
           </div>
           <div id='cameraswitcher' class='custom-control custom-switch'>
-              <input type='checkbox' class='custom-control-input' id='cameraswitch'>
-              <label class='custom-control-label' for='cameraswitch'>Front-facing</label>
+            <input type='checkbox' class='custom-control-input' id='cameraswitch'>
+            <label class='custom-control-label' for='cameraswitch'>Front-facing</label>
           </div>
         </div>
       </div>
@@ -320,28 +482,28 @@
 
   <a class='scrolltop' href='#'>
     <svg aria-hidden='true' data-prefix='fas' data-icon='chevron-up' class='svg-inline--fa fa-chevron-up fa-w-14'
-      role='img' viewBox='0 0 448 512'>
+      viewBox='0 0 448 512'>
       <path fill='currentColor'
         d='M240.971 130.524l194.343 194.343c9.373 9.373 9.373 24.569 0 33.941l-22.667 22.667c-9.357 9.357-24.522 9.375-33.901.04L224 227.495 69.255 381.516c-9.379 9.335-24.544 9.317-33.901-.04l-22.667-22.667c-9.373-9.373-9.373-24.569 0-33.941L207.03 130.525c9.372-9.373 24.568-9.373 33.941-.001z'>
       </path>
     </svg>
   </a>
 
-  <div class="modal fade" id="subgraphModal" tabindex="-1" role="dialog" aria-labelledby="subgraphModalTitle"
-    aria-hidden="true">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="modaltitle">Subgraphs Summary</h5>
+  <div class='modal fade' id='subgraphModal' tabindex='-1' role='dialog' aria-labelledby='subgraphModalTitle'
+    aria-hidden='true'>
+    <div class='modal-dialog' role='document'>
+      <div class='modal-content'>
+        <div class='modal-header'>
+          <h5 class='modal-title' id='modaltitle'>Subgraphs Summary</h5>
         </div>
-        <div class="modal-body">
-          <div id="timeline">
-            <ul class="timeline" id="subgraph">
+        <div class='modal-body'>
+          <div id='timeline'>
+            <ul class='timeline' id='subgraph'>
             </ul>
           </div>
         </div>
-        <div class="modal-footer">
-          <button type="button" class="modal-btn" data-dismiss="modal">Close</button>
+        <div class='modal-footer'>
+          <button type='button' class='modal-btn' data-dismiss='modal'>Close</button>
         </div>
       </div>
     </div>
@@ -363,11 +525,6 @@
   <script src='../util/tflite/TfLiteModelUtils.js'></script>
   <script src='../util/tflite/TFliteModelImporter.js'></script>
   <script src='../util/onnx/onnx.js'></script>
-  <script src='../util/onnx/OnnxModelUtils.js'></script>
-  <script src='../util/onnx/OnnxModelImporter.js'></script>
-  <script src='../util/openvino/openvino.js'></script>
-  <script src='../util/openvino/OpenVINOModelUtils.js'></script>
-  <script src='../util/openvino/OpenVINOModelImporter.js'></script>
   <script src='utils.js'></script>
   <script src='../static/js/main.common.js'></script>
   <script src='main.js'></script>

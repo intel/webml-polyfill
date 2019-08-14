@@ -1,6 +1,6 @@
 $(document).ready(() => {
 
-  updateTitle('Image Classification', ub, up, um);
+  updateTitle('Speech Commands', ub, up, um);
   constructModelTable(speechCommandModels);
 
   inputElement.addEventListener('change', (e) => {
@@ -10,13 +10,24 @@ $(document).ready(() => {
       audioElement.src = URL.createObjectURL(files[0]);
     }
     utilsPredict(audioElement, currentBackend, currentPrefer);
+    $('#controller svg').removeClass('current');
+
   }, false);
+
+  $('#controller svg').click(function(){
+    let t = $(this).attr('id');
+    audioElement.src = `audio/${t}.wav`;
+    audioElement.play();
+    utilsPredict(audioElement, currentBackend, currentPrefer);
+    $('#controller svg').removeClass('current');
+    $(`#${t}`).addClass('current');
+  });
 
   // audioElement.addEventListener('load', () => {
   //   utilsPredict(audioElement, currentBackend, currentPrefer);
   // }, false);
 
-  recordeButton.addEventListener('click', () => {
+  recordButton.addEventListener('click', () => {
     utilsPredictMicrophone();
   }, false);
 });

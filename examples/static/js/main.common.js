@@ -9,7 +9,7 @@ const videoElement = document.getElementById('video');
 const imageElement = document.getElementById('image');
 const inputElement = document.getElementById('input');
 const progressBar = document.getElementById('progressBar');
-const recordeButton = document.getElementById('record');
+const recordButton = document.getElementById('record');
 
 let streaming = false;
 let stats = new Stats();
