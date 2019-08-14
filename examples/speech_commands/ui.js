@@ -29,7 +29,6 @@ $(document).ready(() => {
 
   recordeButton.addEventListener('click', () => {
     utilsPredictMicrophone();
-    audioElement.play();
   }, false);
 });
 
