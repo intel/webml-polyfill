@@ -10,16 +10,16 @@ $(document).ready(() => {
       audioElement.src = URL.createObjectURL(files[0]);
     }
     utilsPredict(audioElement, currentBackend, currentPrefer);
-    $('#controller svg').removeClass('current');
+    $('#controller div').removeClass('current');
 
   }, false);
 
-  $('#controller svg').click(function(){
+  $('#controller div').click(function(){
     let t = $(this).attr('id');
     audioElement.src = `audio/${t}.wav`;
     audioElement.play();
     utilsPredict(audioElement, currentBackend, currentPrefer);
-    $('#controller svg').removeClass('current');
+    $('#controller div').removeClass('current');
     $(`#${t}`).addClass('current');
   });
 

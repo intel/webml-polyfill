@@ -1,8 +1,6 @@
 # Prerequisites
 
-Download 
-kws_cnn
-and put them here.
+Download [KWS_CNN](https://drive.google.com/open?id=195qDe5xaz6VmIegg5OPE6Ih7UinWVhnf) and put them here.
 
 The model files are:
 
