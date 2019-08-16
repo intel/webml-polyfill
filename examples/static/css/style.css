@@ -220,7 +220,7 @@ section {
   padding: 85px 0;
 }
 
-#imageclassification section, #posenet section, #semanticsegmentation section, #objectdetection section, #superresolution section, #faciallandmarkdetection section, #emotionanalysis section {
+#imageclassification section, #posenet section, #semanticsegmentation section, #objectdetection section, #superresolution section, #faciallandmarkdetection section, #emotionanalysis section, #speechcommands section {
   padding: 0px 0;
 }
 
@@ -1339,6 +1339,10 @@ video.fullscreen, #canvasvideo.fullscreen, #canvasshow.fullscreen {
 #fps.fullscreen:hover {
   color: rgba(255, 255, 255, 0.9);
   background: rgba(25, 190, 225, 0.9);
+}
+
+#speechcommands #fps {
+  display: none;
 }
 
 #fullscreen i.fullscreen svg {
@@ -2874,4 +2878,105 @@ button.xclose {
   box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.2);
   text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.5);
   background: linear-gradient(to bottom right, rgba(255, 213, 188, 1.0), rgba(255, 110, 97, 1.0));
+}
+
+#controller {
+  margin-top: 1rem;
+}
+
+#controller div {
+  color: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  width: 60px;
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  margin: 0.1rem 0.1rem;
+  font-size: 13px;
+  text-align: center;
+}
+
+#controller div:hover {
+  color: rgba(25, 190, 225, 1.0);
+  cursor: pointer;
+  border: 1px solid rgba(25, 190, 225, 1.0);
+}
+
+#controller div:current {
+  color: rgba(255, 110, 97, 1.0);
+  border: 1px solid rgba(255, 110, 97, 1.0);
+}
+
+#speechcommands #controller svg {
+  width: 30px;
+  height: 30px;
+  color: rgba(0, 0, 0, 0.2);
+  margin: 0 0.5rem;
+}
+
+#speechcommands #controller svg:hover {
+  color: rgba(25, 190, 225, 1.0);
+  cursor: pointer;
+}
+
+#speechcommands #controller svg.current {
+  color: rgba(255, 110, 97, 1.0);
+}
+
+#speechcommands #record {
+  margin: 1rem auto;
+  text-align: center;
+  color: rgba(0, 0, 0, 0.2);
+}
+
+#speechcommands #record:hover {
+  color: rgba(25, 190, 225, 1.0);
+  cursor: pointer;
+}
+#speechcommands #record svg {
+  width: 80px;
+  height: 80px;
+}
+
+#speechcommands audio {
+  height: 34px;
+  border-radius: 0;
+  }
+  
+
+.labelblock {
+  display: block;
+  font-size: 13px;
+}
+
+#speechcommands #scresult {
+  width: 100%;
+  margin: 0 auto;
+  text-align: center;
+}
+
+#speechcommands #scresult svg {
+  display: none;
+}
+
+#speechcommands #scresult svg.current {
+  display: block;
+  margin: 0 auto;
+  width: 50px;
+  color: rgba(255, 110, 97, 1.0);
+}
+
+#speechcommands #scresult #rtext {
+  background-color: rgba(255, 110, 97, 0.9);
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0.5rem auto;
+  width: 80px;
+}
+
+#speechcommands #scresult #rtext:hover {
+  background-color: rgba(255, 110, 97, 1.0);
+  color: rgba(255, 255, 255, 1.0);
+}
+
+#rtext {
+  text-transform: capitalize;
 }
