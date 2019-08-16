@@ -1,0 +1,12 @@
+silence
+unknown
+stop
+down
+off
+right
+up
+go
+on
+yes
+left
+no
