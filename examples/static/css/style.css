@@ -2980,3 +2980,7 @@ button.xclose {
 #rtext {
   text-transform: capitalize;
 }
+
+#speechcommands #cameraswitcher, #speechcommands #cameraswitcher.fullscreen {
+  display: none !important;
+}
