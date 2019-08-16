@@ -42,7 +42,6 @@ const startPredictMicrophone = async () => {
       let ret = await utils.predict(recordElement);
       updateResult(ret);
       stats.end();
-      // setTimeout(startPredictCamera, 0);
     } catch (e) {
       errorHandler(e);
     }
@@ -51,10 +50,6 @@ const startPredictMicrophone = async () => {
 
 const utilsPredict = async (audioElement, backend, prefer) => {
   streaming = false;
-  // Stop webcam opened by navigator.getUserMedia if user visits 'LIVE CAMERA' tab before ？？？？？？
-  if (track) {
-    track.stop();
-  }
   await showProgress('done', 'done', 'current');
   try {
     let ret = await utils.predict(audioElement);
@@ -71,21 +66,26 @@ const utilsPredictMicrophone = async (backend, prefer) => {
   streaming = true;
   // await showProgress('done', 'done', 'current');
   try {
-    let stream = await navigator.mediaDevices.getUserMedia({ audio: true});
-    await recordAndPredict(stream);
+    let stream = await navigator.mediaDevices.getUserMedia({audio: true});
     track = stream.getTracks()[0];
+    // start recording after 0.5s
+    setTimeout(recordAndPredictMicrophone(stream), 500);
   }
   catch (e) {
     errorHandler(e);
   }
 }
 
-const recordAndPredict = async (stream) => {
+const recordAndPredictMicrophone = (stream) => {
   let audioRecorder = new MediaRecorder(stream, {audio:true});
   audioRecorder.ondataavailable = handleDataAvailable;
   audioRecorder.start();
   setTimeout(function() {
     audioRecorder.stop();
+    // Stop webmic opened by navigator.getUserMedia after record
+    if (track) {
+      track.stop();
+    }
   }, 1000);
 }
 
