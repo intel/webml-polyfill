@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>WebNN Benchmark</title>
+    <link rel="stylesheet" href="../examples/third_party/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <style>
+      body {
+        font-size: 13px;
+      }
+      #showCanvas {
+        width: 60%;
+      }
+      .top-margin {
+        margin-top:10px;
+      }
+      h1, h4 {
+        margin: 24px 0 0;
+      }
+      h1 {
+        font-size: 2.0em;
+      }
+      h4 {
+        font-size: 1.2em;
+      }
+      pre {
+        font-family: 'Consolas', 'Monaco', monospace, serif;
+        font-size: 12px;
+        tab-size: 2;
+      }
+      input[type=checkbox] {
+        vertical-align: middle;
+      }
+      .prefer-show {
+        display: block;
+      }
+      .prefer-hidden {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container" id="container">
+      <div class="row">
+        <div class="col-12">
+          <h1>WebNN Benchmark</h1>
+          <div>
+            <h4>Category</h4>
+            <select id="categoryName">
+              <option class="imageClassificationModels" id="image_classification" selected>Image Classification</option>
+              <option class="objectDetectionModels" id="object_detection">Object Detection</option>
+              <option class="humanPoseEstimationModels" id="skeleton_detection">Skeleton Detection</option>
+              <option class="semanticSegmentationModels" id="semantic_segmentation"> Semantic Segmentation</option>
+              <option class="superResolutionModels" id="super_resolution">Super Resolution</option>
+              <option class="faceDetectionModels" id="facial_landmark_detection">Facial Landmark Detection</option>
+              <option class="faceDetectionModels" id="emotion_analysis">Emotion Analysis</option>
+            </select>
+          </div>
+          <div>
+            <h4>Model</h4>
+            <select id="modelName"></select>
+          </div>
+          <div>
+            <h4>Backend</h4>
+            <select id="configurations"></select>
+          </div>
+          <div id="preferDiv" class="prefer-show">
+            <h4>Preference</h4>
+            <select id="preferSelect">
+              <option value="sustained">SUSTAINED_SPEED</option>
+              <option value="fast">FAST_SINGLE_ANSWER</option>
+              <option value="low">LOW_POWER</option>
+              <option value="none" selected>None</option>
+            </select>
+          </div>
+          <div>
+            <h4>Iterations</h4>
+            1(warming up) + <input type="number" id="iterations" min="1" size="4" value="200"/>
+          </div>
+          <div class="row top-margin">
+            <div class="col-4" id="supported-ops-select" style="visibility: hidden">
+              <label><input id="eagerMode" type="checkbox"> Eager Mode</label>
+              <br><br>
+              <button id="selectAllOps">Select All</button>
+              <button id="uncheckAllOps">Uncheck All</button>
+              <br><br>
+              <label><input type="checkbox" name="supportedOp" value="0"> ADD</label>
+              <br>
+              <label><input type="checkbox" name="supportedOp" value="10003"> ATROUS_CONV_2D</label>
+              <br>
+              <label><input type="checkbox" name="supportedOp" value="10004"> ATROUS_DEPTHWISE_CONV_2D</label>
+              <br>
+              <label><input type="checkbox" name="supportedOp" value="1"> AVERAGE_POOL_2D</label>
+              <br>
+              <label><input type="checkbox" name="supportedOp" value="2"> CONCATENATION</label>
+              <br>
+              <label><input type="checkbox" name="supportedOp" value="3"> CONV_2D</label>
+              <br>
+              <label><input type="checkbox" name="supportedOp" value="4"> DEPTHWISE_CONV_2D</label>
+              <br>
+              <label><input type="checkbox" name="supportedOp" value="9"> FULLY_CONNECTED</label>
+              <br>
+              <label><input type="checkbox" name="supportedOp" value="17"> MAX_POOL_2D</label>
+              <br>
+              <label><input type="checkbox" name="supportedOp" value="18"> MUL</label>
+              <br>
+              <label><input type="checkbox" name="supportedOp" value="22"> RESHAPE</label>
+              <br>
+              <label><input type="checkbox" name="supportedOp" value="23"> RESIZE_BILINEAR</label>
+              <br>
+              <label><input type="checkbox" name="supportedOp" value="25"> SOFTMAX</label>
+            </div>
+            <div class="col-8" align="center">
+              <canvas id="showCanvas"></canvas>
+              <img id="image" crossorigin="anonymous" class="img-fluid" alt="Responsive image" src="../examples/image_classification/img/test.jpg" hidden>
+              <div class='row labels-wrapper' id='labelitem' align="left" style="position: relative; left: 20%"></div>
+              <div class="col" style="padding-top: 10px">
+                <label id="pickButton" class="btn btn-primary">Pick Image
+                  <input type="file" id="input" accept="image/*" hidden>
+                </label>
+              </div>
+            </div>
+          </div>
+          <button type="button" id="runButton" class="btn btn-primary">Run</button>
+            (It will take several minutes)
+          <div>
+            <pre id="log"></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="../dist/webml-polyfill.js"></script>
+    <script src="../examples/util/base.js"></script>
+    <script src="../examples/util/faceDetector.js"></script>
+    <script src="../examples/third_party/protobuf.min.js"></script>
+    <script src="../examples/util/tflite/flatbuffers/js/flatbuffers.js"></script>
+    <script src="../examples/util/tflite/schema/schema_generated.js"></script>
+    <script src="../examples/util/tflite/TfLiteModelUtils.js"></script>
+    <script src="../examples/util/tflite/TFliteModelImporter.js"></script>
+    <script src="../examples/util/onnx/onnx.js"></script>
+    <script src="../examples/util/onnx/OnnxModelUtils.js"></script>
+    <script src="../examples/util/onnx/OnnxModelImporter.js"></script>
+    <script src='../examples/util/openvino/openvino.js'></script>
+    <script src='../examples/util/openvino/OpenVINOModelUtils.js'></script>
+    <script src='../examples/util/openvino/OpenVINOModelImporter.js'></script>
+    <script src="../examples/skeleton_detection/src/decodePose.js"></script>
+    <script src="../examples/skeleton_detection/src/helperFunc.js"></script>
+    <script src="../examples/skeleton_detection/utils.js"></script>
+    <script src="../examples/skeleton_detection/src/PoseNet.js"></script>
+    <script src="../examples/skeleton_detection/src/DrawOutputs.js"></script>
+    <script src="../examples/util/decoders/SsdDecoder.js"></script>
+    <script src="../examples/util/decoders/Yolo2Decoder.js"></script>
+    <script src='../examples/semantic_segmentation/src/WebGLUtils.js'></script>
+    <script src='../examples/semantic_segmentation/src/Shader.js'></script>
+    <script src='../examples/semantic_segmentation/src/GuidedFilter.js'></script>
+    <script src="../examples/semantic_segmentation/src/DrawOutputs.js"></script>
+    <script src='../examples/static/lib/jquery/jquery.min.js'></script>
+    <script src="./resources/ui.js"></script>
+    <script src="./resources/utils.js"></script>
+    <script src="./resources/utils_ic.js"></script>
+    <script src="./resources/utils_od.js"></script>
+    <script src="./resources/utils_sd.js"></script>
+    <script src="./resources/utils_ss.js"></script>
+    <script src="./resources/utils_fld.js"></script>
+    <script src="./resources/utils_sr.js"></script>
+    <script src="./resources/utils_ea.js"></script>
+    <script src="./resources/main.js"></script>
+  </body>
+</html>
