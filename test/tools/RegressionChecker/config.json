@@ -4,5 +4,8 @@
     "IEMYRIAD": false,
     "supportSwitch": false,
     "webmlPolyfill": true,
-    "webnn": false
+    "webnn": true,
+    "remoteURL": "https://brucedai.github.io/webnnt/test/index-local.html",
+    "needCheckRealModelTC": true,
+    "localServerURL": "http://localhost:8080/test/squeezenet1.1.html"
 }

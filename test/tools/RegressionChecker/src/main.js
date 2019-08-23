@@ -60,7 +60,8 @@ function jsonTypeCheck (json, field, expectType) {
     }
 }
 
-var testPlatform, chromiumPath, preferIEMYRIAD, supportSwitch, webmlPolyfill, webnn;
+var testPlatform, chromiumPath, preferIEMYRIAD, supportSwitch, remoteURL,
+    webmlPolyfill, webnn, needCheckRealModelTC, localServerURL;
 var RCjson = JSON.parse(fs.readFileSync("./config.json"));
 if (jsonTypeCheck(RCjson, "platform", "string")) {
     testPlatform = RCjson.platform;
@@ -84,6 +85,18 @@ if (jsonTypeCheck(RCjson, "webmlPolyfill", "boolean")) {
 
 if (jsonTypeCheck(RCjson, "webnn", "boolean")) {
     webnn = RCjson.webnn;
+}
+
+if (jsonTypeCheck(RCjson, "remoteURL", "string")) {
+    remoteURL = RCjson.remoteURL;
+}
+
+if (jsonTypeCheck(RCjson, "needCheckRealModelTC", "boolean")) {
+    needCheckRealModelTC = RCjson.needCheckRealModelTC;
+}
+
+if (jsonTypeCheck(RCjson, "localServerURL", "string")) {
+    localServerURL = RCjson.localServerURL;
 }
 
 var getLDLibraryPath = function() {
@@ -168,6 +181,10 @@ if (testPlatform == "Linux") {
 
 RClog("console", "prefers: " + testPrefers);
 
+var testURLs = new Map();
+testURLs.set("general", remoteURL);
+if (needCheckRealModelTC) testURLs.set("realModel", localServerURL);
+
 RClog("time", "mark");
 RClog("console", "checking baseline files....");
 
@@ -209,12 +226,27 @@ for (let [key1, value1] of Object.entries(baselinejson)) {
     } else {
         if (testPrefers.includes(key1)) {
             pageData.set(key1, new Map([["pass2fail", new Array()], ["fail2pass", new Array()]]));
+
+            let generalTotal = 0, generalPass = 0, generalFail = 0, generalBlock = 0,
+                realModelTotal = 0, realModelPass = 0, realModelFail = 0, realModelBlock = 0;
+            generalTotal = baselinejson[key1]["total"];
+            generalPass = baselinejson[key1]["pass"];
+            generalFail = baselinejson[key1]["fail"];
+            generalBlock = baselinejson[key1]["block"];
+
+            if (needCheckRealModelTC) {
+                realModelTotal = baselinejson[key1]["realModel"]["total"];
+                realModelPass = baselinejson[key1]["realModel"]["pass"];
+                realModelFail = baselinejson[key1]["realModel"]["fail"];
+                realModelBlock = baselinejson[key1]["realModel"]["block"];
+            }
+
             pageDataTotal.set(key1, new Map([["Baseline", new Array(
-                baselinejson[key1]["total"],
-                baselinejson[key1]["pass"],
-                baselinejson[key1]["fail"],
-                baselinejson[key1]["block"],
-                Math.round((baselinejson[key1]["pass"] / baselinejson[key1]["total"]) * 100).toString() + "%"
+                generalTotal + realModelTotal,
+                generalPass + realModelPass,
+                generalFail + realModelFail,
+                generalBlock + realModelBlock,
+                Math.round(((generalPass + realModelPass) / (generalTotal + realModelTotal)) * 100).toString() + "%"
             )], ["grasp", new Array()]]));
         }
     }
@@ -483,7 +515,7 @@ if (testPlatform == "Android") {
 
 RClog("time", "mark");
 
-var remoteURL, driver, chromeOption, testPrefer;
+var keyWord, driver, chromeOption, testPrefer, logPath, logFilePath;
 var continueFlag = false;
 var numberPasstoFail = 0;
 var numberFailtoPass = 0;
@@ -844,20 +876,21 @@ var numberTotal = 0;
             resultHTMLStream.write(space + "<h3>NOTE: This is test case logs, not chromium runtime logs, because 'Permission denied'.</h3>\n");
         }
 
+        resultHTMLStream.write(space + "<h3>General test cases:</h3>\n");
         resultHTMLStream.write(space + "<table class='box-table-log'><br />\n");
         resultHTMLStream.write(space + "  <tbody>\n");
 
         let logPath;
         if (os.type() == "Windows_NT") {
-            logPath = debugPath + "\\debug-" + prefer + ".log";
+            logPath = debugPath + "\\debug-general-" + prefer + ".log";
         } else {
-            logPath = debugPath + "/debug-" + prefer + ".log";
+            logPath = debugPath + "/debug-general-" + prefer + ".log";
         }
 
         let fRead = fs.readFileSync(logPath);
         let fReadArray = fRead.toString().split("\n");
 
-        for (let i = 1; i < fReadArray.length; i++) {
+        for (let i = 0; i < fReadArray.length; i++) {
             resultHTMLStream.write(space + "    <tr>\n");
             resultHTMLStream.write(space + "      <td class='box-table-log-number'>" + i + "</td>\n");
             resultHTMLStream.write(space + "      <td class='box-table-log-text'>" + fReadArray[i] + "</td>\n");
@@ -865,7 +898,32 @@ var numberTotal = 0;
         }
 
         resultHTMLStream.write(space + "  </tbody>\n");
-        resultHTMLStream.write(space + "</table><br /><br />\n");
+        resultHTMLStream.write(space + "</table><br />\n");
+
+        if (needCheckRealModelTC) {
+            resultHTMLStream.write(space + "<h3>Real model test cases:</h3>\n");
+            resultHTMLStream.write(space + "<table class='box-table-log'><br />\n");
+            resultHTMLStream.write(space + "  <tbody>\n");
+
+            if (os.type() == "Windows_NT") {
+                logPath = debugPath + "\\debug-realModel-" + prefer + ".log";
+            } else {
+                logPath = debugPath + "/debug-realModel-" + prefer + ".log";
+            }
+
+            let fRead = fs.readFileSync(logPath);
+            let fReadArray = fRead.toString().split("\n");
+
+            for (let i = 0; i < fReadArray.length; i++) {
+                resultHTMLStream.write(space + "    <tr>\n");
+                resultHTMLStream.write(space + "      <td class='box-table-log-number'>" + i + "</td>\n");
+                resultHTMLStream.write(space + "      <td class='box-table-log-text'>" + fReadArray[i] + "</td>\n");
+                resultHTMLStream.write(space + "    </tr>\n");
+            }
+
+            resultHTMLStream.write(space + "  </tbody>\n");
+            resultHTMLStream.write(space + "</table><br />\n");
+        }
     }
 
     var bodyContainerBoxTable =  function(space) {
@@ -957,508 +1015,541 @@ var numberTotal = 0;
     RClog("time", "mark");
 
     for (let prefer of testPrefers) {
-        chromeOption = new Chrome.Options();
-        testPrefer = prefer;
-        graspDataSummary["total"] = 0;
-        graspDataSummary["pass"] = 0;
-        graspDataSummary["fail"] = 0;
-        graspDataSummary["block"] = 0;
-        continueFlag = false;
-        remoteURL = "https://brucedai.github.io/webnnt/test/index-local.html";
+        for (let [key, testURL] of testURLs.entries()) {
+            keyWord = key;
+            chromeOption = new Chrome.Options();
+            testPrefer = prefer;
+            graspDataSummary["total"] = 0;
+            graspDataSummary["pass"] = 0;
+            graspDataSummary["fail"] = 0;
+            graspDataSummary["block"] = 0;
+            continueFlag = false;
 
-        // Categories filter
-        if (testPrefer === "macOS-Polyfill-Fast-WASM") {
-            if (testPlatform === "Mac" && webmlPolyfill) {
-                remoteURL = remoteURL + "?prefer=fast";
-                chromeOption = chromeOption
-                    .setChromeBinaryPath(chromiumPath)
-                    .addArguments("--disable-features=WebML");
-            } else {
-                continue;
+            // Categories filter
+            if (testPrefer === "macOS-Polyfill-Fast-WASM") {
+                if (testPlatform === "Mac" && webmlPolyfill) {
+                    testURL = testURL + "?prefer=fast";
+                    chromeOption = chromeOption
+                        .setChromeBinaryPath(chromiumPath)
+                        .addArguments("--disable-features=WebML");
+                } else {
+                    continue;
+                }
+            } else if (testPrefer === "macOS-Polyfill-Sustained-WebGL") {
+                if (testPlatform === "Mac" && webmlPolyfill) {
+                    testURL = testURL + "?prefer=sustained";
+                    chromeOption = chromeOption
+                        .setChromeBinaryPath(chromiumPath)
+                        .addArguments("--disable-features=WebML");
+                } else {
+                    continue;
+                }
+            } else if (testPrefer === "macOS-WebNN-Fast-BNNS") {
+                if (testPlatform === "Mac" && webnn) {
+                    testURL = testURL + "?prefer=fast";
+                    chromeOption = chromeOption
+                        .setChromeBinaryPath(chromiumPath)
+                        .addArguments("--enable-features=WebML");
+                } else {
+                    continue;
+                }
+            } else if (testPrefer === "macOS-WebNN-Fast-MKLDNN") {
+                if (testPlatform === "Mac" && webnn && supportSwitch) {
+                    testURL = testURL + "?prefer=fast";
+                    chromeOption = chromeOption
+                        .setChromeBinaryPath(chromiumPath)
+                        .addArguments("--use-mkldnn")
+                        .addArguments("--no-sandbox")
+                        .addArguments("--enable-features=WebML");
+                } else {
+                    continue;
+                }
+            } else if (testPrefer === "macOS-WebNN-Sustained-MPS") {
+                if (testPlatform === "Mac" && webnn) {
+                    testURL = testURL + "?prefer=sustained";
+                    chromeOption = chromeOption
+                        .setChromeBinaryPath(chromiumPath)
+                        .addArguments("--enable-features=WebML");
+                } else {
+                    continue;
+                }
+            } else if (testPrefer === "Android-Polyfill-Fast-WASM") {
+                if (testPlatform === "Android" && webmlPolyfill) {
+                    testURL = testURL + "?prefer=fast";
+                    chromeOption = chromeOption
+                        .androidPackage("org.chromium.chrome")
+                        .addArguments("--disable-features=WebML")
+                        .androidDeviceSerial(androidSN);
+                } else {
+                    continue;
+                }
+            } else if (testPrefer === "Android-Polyfill-Sustained-WebGL") {
+                if (testPlatform === "Android" && webmlPolyfill) {
+                    testURL = testURL + "?prefer=sustained";
+                    chromeOption = chromeOption
+                        .androidPackage("org.chromium.chrome")
+                        .addArguments("--disable-features=WebML")
+                        .androidDeviceSerial(androidSN);
+                } else {
+                    continue;
+                }
+            } else if (testPrefer === "Android-WebNN-Sustained-NNAPI") {
+                if (testPlatform === "Android" && webnn) {
+                    testURL = testURL + "?prefer=sustained";
+                    chromeOption = chromeOption
+                        .androidPackage("org.chromium.chrome")
+                        .addArguments("--enable-features=WebML")
+                        .androidDeviceSerial(androidSN);
+                } else {
+                    continue;
+                }
+            } else if (testPrefer === "Win-Polyfill-Fast-WASM") {
+                if (testPlatform === "Windows" && webmlPolyfill) {
+                    testURL = testURL + "?prefer=fast";
+                    chromeOption = chromeOption
+                        .setChromeBinaryPath(chromiumPath)
+                        .addArguments("--disable-features=WebML")
+                } else {
+                    continue;
+                }
+            } else if (testPrefer === "Win-Polyfill-Sustained-WebGL") {
+                if (testPlatform === "Windows" && webmlPolyfill) {
+                    testURL = testURL + "?prefer=sustained";
+                    chromeOption = chromeOption
+                        .setChromeBinaryPath(chromiumPath)
+                        .addArguments("--disable-features=WebML")
+                } else {
+                    continue;
+                }
+            } else if (testPrefer === "Win-WebNN-Fast-MKLDNN") {
+                if (testPlatform === "Windows" && webnn) {
+                    testURL = testURL + "?prefer=fast";
+                    chromeOption = chromeOption
+                        .setChromeBinaryPath(chromiumPath)
+                        .addArguments("--enable-features=WebML");
+                } else {
+                    continue;
+                }
+            } else if (testPrefer === "Win-WebNN-Sustained-DML") {
+                if (testPlatform === "Windows" && webnn && supportSwitch) {
+                    testURL = testURL + "?prefer=sustained";
+                    chromeOption = chromeOption
+                        .setChromeBinaryPath(chromiumPath)
+                        .addArguments("--use-dml")
+                        .addArguments("--enable-features=WebML");
+                } else {
+                    continue;
+                }
+            } else if (testPrefer === "Win-WebNN-Sustained-clDNN") {
+                if (testPlatform === "Windows" && webnn) {
+                    testURL = testURL + "?prefer=sustained";
+                    chromeOption = chromeOption
+                        .setChromeBinaryPath(chromiumPath)
+                        .addArguments("--enable-features=WebML");
+                } else {
+                    continue;
+                }
+            } else if (testPrefer === "Win-WebNN-Low-DML") {
+                if (testPlatform === "Windows" && webnn && supportSwitch) {
+                    testURL = testURL + "?prefer=low";
+                    chromeOption = chromeOption
+                        .setChromeBinaryPath(chromiumPath)
+                        .addArguments("--use-dml")
+                        .addArguments("--enable-features=WebML");
+                } else {
+                    continue;
+                }
+            } else if (testPrefer === "Linux-Polyfill-Fast-WASM") {
+                if (testPlatform === "Linux" && webmlPolyfill) {
+                    testURL = testURL + "?prefer=fast";
+                    chromeOption = chromeOption
+                        .setChromeBinaryPath(chromiumPath)
+                        .addArguments("--disable-features=WebML");
+                } else {
+                    continue;
+                }
+            } else if (testPrefer === "Linux-Polyfill-Sustained-WebGL") {
+                if (testPlatform === "Linux" && webmlPolyfill) {
+                    testURL = testURL + "?prefer=sustained";
+                    chromeOption = chromeOption
+                        .setChromeBinaryPath(chromiumPath)
+                        .addArguments("--disable-features=WebML");
+                } else {
+                    continue;
+                }
+            } else if (testPrefer === "Linux-WebNN-Fast-MKLDNN") {
+                if (testPlatform === "Linux" && webnn) {
+                    testURL = testURL + "?prefer=fast";
+                    chromeOption = chromeOption
+                        .setChromeBinaryPath(chromiumPath)
+                        .addArguments("--enable-features=WebML")
+                        .addArguments("--no-sandbox");
+                } else {
+                    continue;
+                }
+            } else if (testPrefer === "Linux-WebNN-Sustained-clDNN") {
+                if (testPlatform === "Linux" && webnn) {
+                    testURL = testURL + "?prefer=sustained";
+                    chromeOption = chromeOption
+                        .setChromeBinaryPath(chromiumPath)
+                        .addArguments("--enable-features=WebML")
+                        .addArguments("--no-sandbox");
+                } else {
+                    continue;
+                }
+            } else if (testPrefer === "Linux-WebNN-Fast-IE-MKLDNN") {
+                if (testPlatform === "Linux" && webnn && supportSwitch) {
+                    testURL = testURL + "?prefer=fast";
+                    chromeOption = chromeOption
+                        .setChromeBinaryPath(chromiumPath)
+                        .addArguments("--enable-features=WebML")
+                        .addArguments("--use-inference-engine")
+                        .addArguments("--no-sandbox");
+                } else {
+                    continue;
+                }
+            } else if (testPrefer === "Linux-WebNN-Sustained-IE-clDNN") {
+                if (testPlatform === "Linux" && webnn && supportSwitch) {
+                    testURL = testURL + "?prefer=sustained";
+                    chromeOption = chromeOption
+                        .setChromeBinaryPath(chromiumPath)
+                        .addArguments("--enable-features=WebML")
+                        .addArguments("--use-inference-engine")
+                        .addArguments("--no-sandbox");
+                } else {
+                    continue;
+                }
+            } else if (testPrefer === "Linux-WebNN-Low-IE-MYRIAD") {
+                if (testPlatform === "Linux" && webnn && supportSwitch) {
+                    testURL = testURL + "?prefer=low";
+                    chromeOption = chromeOption
+                        .setChromeBinaryPath(chromiumPath)
+                        .addArguments("--enable-features=WebML")
+                        .addArguments("--use-inference-engine")
+                        .addArguments("--no-sandbox");
+                } else {
+                    continue;
+                }
             }
-        } else if (testPrefer === "macOS-Polyfill-Sustained-WebGL") {
-            if (testPlatform === "Mac" && webmlPolyfill) {
-                remoteURL = remoteURL + "?prefer=sustained";
-                chromeOption = chromeOption
-                    .setChromeBinaryPath(chromiumPath)
-                    .addArguments("--disable-features=WebML");
-            } else {
-                continue;
-            }
-        } else if (testPrefer === "macOS-WebNN-Fast-BNNS") {
-            if (testPlatform === "Mac" && webnn) {
-                remoteURL = remoteURL + "?prefer=fast";
-                chromeOption = chromeOption
-                    .setChromeBinaryPath(chromiumPath)
-                    .addArguments("--enable-features=WebML");
-            } else {
-                continue;
-            }
-        } else if (testPrefer === "macOS-WebNN-Fast-MKLDNN") {
-            if (testPlatform === "Mac" && webnn && supportSwitch) {
-                remoteURL = remoteURL + "?prefer=fast";
-                chromeOption = chromeOption
-                    .setChromeBinaryPath(chromiumPath)
-                    .addArguments("--use-mkldnn")
-                    .addArguments("--no-sandbox")
-                    .addArguments("--enable-features=WebML");
-            } else {
-                continue;
-            }
-        } else if (testPrefer === "macOS-WebNN-Sustained-MPS") {
-            if (testPlatform === "Mac" && webnn) {
-                remoteURL = remoteURL + "?prefer=sustained";
-                chromeOption = chromeOption
-                    .setChromeBinaryPath(chromiumPath)
-                    .addArguments("--enable-features=WebML");
-            } else {
-                continue;
-            }
-        } else if (testPrefer === "Android-Polyfill-Fast-WASM") {
-            if (testPlatform === "Android" && webmlPolyfill) {
-                remoteURL = remoteURL + "?prefer=fast";
-                chromeOption = chromeOption
-                    .androidPackage("org.chromium.chrome")
-                    .addArguments("--disable-features=WebML")
-                    .androidDeviceSerial(androidSN);
-            } else {
-                continue;
-            }
-        } else if (testPrefer === "Android-Polyfill-Sustained-WebGL") {
-            if (testPlatform === "Android" && webmlPolyfill) {
-                remoteURL = remoteURL + "?prefer=sustained";
-                chromeOption = chromeOption
-                    .androidPackage("org.chromium.chrome")
-                    .addArguments("--disable-features=WebML")
-                    .androidDeviceSerial(androidSN);
-            } else {
-                continue;
-            }
-        } else if (testPrefer === "Android-WebNN-Sustained-NNAPI") {
-            if (testPlatform === "Android" && webnn) {
-                remoteURL = remoteURL + "?prefer=sustained";
-                chromeOption = chromeOption
-                    .androidPackage("org.chromium.chrome")
-                    .addArguments("--enable-features=WebML")
-                    .androidDeviceSerial(androidSN);
-            } else {
-                continue;
-            }
-        } else if (testPrefer === "Win-Polyfill-Fast-WASM") {
-            if (testPlatform === "Windows" && webmlPolyfill) {
-                remoteURL = remoteURL + "?prefer=fast";
-                chromeOption = chromeOption
-                    .setChromeBinaryPath(chromiumPath)
-                    .addArguments("--disable-features=WebML")
-            } else {
-                continue;
-            }
-        } else if (testPrefer === "Win-Polyfill-Sustained-WebGL") {
-            if (testPlatform === "Windows" && webmlPolyfill) {
-                remoteURL = remoteURL + "?prefer=sustained";
-                chromeOption = chromeOption
-                    .setChromeBinaryPath(chromiumPath)
-                    .addArguments("--disable-features=WebML")
-            } else {
-                continue;
-            }
-        } else if (testPrefer === "Win-WebNN-Fast-MKLDNN") {
-            if (testPlatform === "Windows" && webnn) {
-                remoteURL = remoteURL + "?prefer=fast";
-                chromeOption = chromeOption
-                    .setChromeBinaryPath(chromiumPath)
-                    .addArguments("--enable-features=WebML");
-            } else {
-                continue;
-            }
-        } else if (testPrefer === "Win-WebNN-Sustained-DML") {
-            if (testPlatform === "Windows" && webnn && supportSwitch) {
-                remoteURL = remoteURL + "?prefer=sustained";
-                chromeOption = chromeOption
-                    .setChromeBinaryPath(chromiumPath)
-                    .addArguments("--use-dml")
-                    .addArguments("--enable-features=WebML");
-            } else {
-                continue;
-            }
-        } else if (testPrefer === "Win-WebNN-Sustained-clDNN") {
-            if (testPlatform === "Windows" && webnn) {
-                remoteURL = remoteURL + "?prefer=sustained";
-                chromeOption = chromeOption
-                    .setChromeBinaryPath(chromiumPath)
-                    .addArguments("--enable-features=WebML");
-            } else {
-                continue;
-            }
-        } else if (testPrefer === "Win-WebNN-Low-DML") {
-            if (testPlatform === "Windows" && webnn && supportSwitch) {
-                remoteURL = remoteURL + "?prefer=low";
-                chromeOption = chromeOption
-                    .setChromeBinaryPath(chromiumPath)
-                    .addArguments("--use-dml")
-                    .addArguments("--enable-features=WebML");
-            } else {
-                continue;
-            }
-        } else if (testPrefer === "Linux-Polyfill-Fast-WASM") {
-            if (testPlatform === "Linux" && webmlPolyfill) {
-                remoteURL = remoteURL + "?prefer=fast";
-                chromeOption = chromeOption
-                    .setChromeBinaryPath(chromiumPath)
-                    .addArguments("--disable-features=WebML");
-            } else {
-                continue;
-            }
-        } else if (testPrefer === "Linux-Polyfill-Sustained-WebGL") {
-            if (testPlatform === "Linux" && webmlPolyfill) {
-                remoteURL = remoteURL + "?prefer=sustained";
-                chromeOption = chromeOption
-                    .setChromeBinaryPath(chromiumPath)
-                    .addArguments("--disable-features=WebML");
-            } else {
-                continue;
-            }
-        } else if (testPrefer === "Linux-WebNN-Fast-MKLDNN") {
-            if (testPlatform === "Linux" && webnn) {
-                remoteURL = remoteURL + "?prefer=fast";
-                chromeOption = chromeOption
-                    .setChromeBinaryPath(chromiumPath)
-                    .addArguments("--enable-features=WebML")
-                    .addArguments("--no-sandbox");
-            } else {
-                continue;
-            }
-        } else if (testPrefer === "Linux-WebNN-Sustained-clDNN") {
-            if (testPlatform === "Linux" && webnn) {
-                remoteURL = remoteURL + "?prefer=sustained";
-                chromeOption = chromeOption
-                    .setChromeBinaryPath(chromiumPath)
-                    .addArguments("--enable-features=WebML")
-                    .addArguments("--no-sandbox");
-            } else {
-                continue;
-            }
-        } else if (testPrefer === "Linux-WebNN-Fast-IE-MKLDNN") {
-            if (testPlatform === "Linux" && webnn && supportSwitch) {
-                remoteURL = remoteURL + "?prefer=fast";
-                chromeOption = chromeOption
-                    .setChromeBinaryPath(chromiumPath)
-                    .addArguments("--enable-features=WebML")
-                    .addArguments("--use-inference-engine")
-                    .addArguments("--no-sandbox");
-            } else {
-                continue;
-            }
-        } else if (testPrefer === "Linux-WebNN-Sustained-IE-clDNN") {
-            if (testPlatform === "Linux" && webnn && supportSwitch) {
-                remoteURL = remoteURL + "?prefer=sustained";
-                chromeOption = chromeOption
-                    .setChromeBinaryPath(chromiumPath)
-                    .addArguments("--enable-features=WebML")
-                    .addArguments("--use-inference-engine")
-                    .addArguments("--no-sandbox");
-            } else {
-                continue;
-            }
-        } else if (testPrefer === "Linux-WebNN-Low-IE-MYRIAD") {
-            if (testPlatform === "Linux" && webnn && supportSwitch) {
-                remoteURL = remoteURL + "?prefer=low";
-                chromeOption = chromeOption
-                    .setChromeBinaryPath(chromiumPath)
-                    .addArguments("--enable-features=WebML")
-                    .addArguments("--use-inference-engine")
-                    .addArguments("--no-sandbox");
-            } else {
-                continue;
-            }
-        }
 
-        let logPath;
-        if (testPlatform !== "Android") {
-            if (os.type() == "Windows_NT") {
-                logPath = process.cwd() + "\\output\\debug\\tmp";
+            // Set test cases log path
+            if (testPlatform == "Android") {
+                if (os.type() == "Windows_NT") {
+                    logPath = process.cwd() + "\\output\\debug\\" + keyWord + "-" + testPrefer;
+                    logFilePath = process.cwd() + "\\output\\debug\\debug-" + keyWord + "-" + testPrefer + ".log";
+                } else {
+                    logFilePath = process.cwd() + "/output/debug/debug-" + keyWord + "-" + testPrefer + ".log";
+                }
+            } else if (testPlatform == "Windows") {
+                logPath = process.cwd() + "\\output\\debug\\" + keyWord + "-" + testPrefer;
+                logFilePath = process.cwd() + "\\output\\debug\\debug-" + keyWord + "-" + testPrefer + ".log";
                 chromeOption = chromeOption.addArguments("--user-data-dir=" + logPath);
 
                 if (!fs.existsSync(logPath)) {
                     fs.mkdirSync(logPath);
                 }
             } else {
-                logPath = process.cwd() + "/output/debug/debug-" + testPrefer + ".log";
-                chromeOption = chromeOption.setChromeLogFile(logPath);
+                logFilePath = process.cwd() + "/output/debug/debug-" + keyWord + "-" + testPrefer + ".log";
+                chromeOption = chromeOption.setChromeLogFile(logFilePath);
             }
-        }
 
-        driver = new Builder()
-            .forBrowser("chrome")
-            .setChromeOptions(chromeOption)
-            .build();
+            driver = new Builder()
+                .forBrowser("chrome")
+                .setChromeOptions(chromeOption)
+                .build();
 
-        await driver.get(remoteURL);
-        await driver.wait(Until.elementLocated(By.xpath("//*[@id='mocha-stats']/li[1]/canvas")), 200000).then(function() {
-            RClog("console", "open remote URL: " + remoteURL);
-        }).catch(function() {
-            throw new Error("failed to load web page");
-        });
-
-        RClog("time", "mark");
-
-        // Wait mocha test finished
-        await driver.wait(async function() {
-            return driver.executeScript("return window.mochaFinish;").catch(function(err) {
-                throw err;
+            await driver.get(testURL);
+            await driver.wait(Until.elementLocated(By.xpath("//*[@id='mocha-stats']/li[1]/canvas")), 200000).then(function() {
+                RClog("console", "open remote URL: " + testURL);
+            }).catch(function() {
+                throw new Error("failed to load web page");
             });
-        }, 500000).then(async function() {
-            RClog("console", "load remote URL is completed, no crash");
 
-            // Output log file
-            if (testPlatform == "Android") {
-                let logPath;
-                if (os.type() == "Windows_NT") {
-                    logPath = process.cwd() + "\\output\\debug\\debug-" + testPrefer + ".log";
+            RClog("time", "mark");
+
+            // Wait mocha test finished
+            await driver.wait(async function() {
+                return driver.executeScript("return window.mochaFinish;").catch(function(err) {
+                    throw err;
+                });
+            }, 500000).then(async function() {
+                RClog("console", "load remote URL is completed, no crash");
+
+                // Output log file
+                if (testPlatform == "Android") {
+                    await driver.manage().logs().get("browser").then(function(Entrys) {
+                        if (fs.existsSync(logFilePath)) {
+                            fs.unlinkSync(logFilePath);
+                        }
+
+                        for (let entry of Entrys) {
+                            fs.createWriteStream(logFilePath, {flags: "a"}).write(entry.message + "\n");
+                        }
+
+                        RClog("console", "dowload log file to " + logFilePath);
+                    });
+                } else if (testPlatform == "Windows") {
+                    let readLogFile = logPath + "\\chrome_debug.log";
+                    fs.writeFileSync(logFilePath, fs.readFileSync(readLogFile));
+                }
+            }).catch(function(err) {
+                RClog("debug", err);
+
+                // Handler: page crashed -- 1
+                if (err.message.search("session deleted because of page crash") != -1) {
+                    continueFlag = true;
+                    crashData.push(testPrefer);
+                    RClog("console", "remote URL is crashed");
                 } else {
-                    logPath = process.cwd() + "/output/debug/debug-" + testPrefer + ".log";
+                    throw err;
+                }
+            });
+
+            RClog("time", "mark");
+
+            // Handler: page crashed -- 2
+            if (continueFlag) {
+                await driver.sleep(2000);
+                await driver.quit();
+                await driver.sleep(2000);
+
+                continue;
+            }
+
+            RClog("console", "checking with '" + testPrefer + "' prefer is start");
+            RClog("console", "checking....\n");
+
+            await driver.executeScript("return document.documentElement.outerHTML").then(async function(html) {
+                let graspTotal, graspPass, graspFail;
+                let actions = 0;
+                let countPasses = 0;
+                let countFailures = 0;
+                let countTotal = 0;
+                let matchFlag = null;
+
+                await driver.findElement(By.xpath("//ul[@id='mocha-stats']/li[@class='passes']//em")).getText().then(function(message) {
+                    RClog("debug", "passes: " + message);
+                    graspPass = message >> 0;
+                });
+
+                await driver.findElement(By.xpath("//ul[@id='mocha-stats']/li[@class='failures']//em")).getText().then(function(message) {
+                    RClog("debug", "failures: " + message);
+                    graspFail = message >> 0;
+                });
+
+                graspTotal = graspPass + graspFail;
+
+                let baselineNum;
+                if (keyWord == "realModel") {
+                    baselineNum = baselinejson[testPrefer]["realModel"]["total"];
+                } else {
+                    baselineNum = baselinejson[testPrefer]["total"];
                 }
 
-                await driver.manage().logs().get("browser").then(function(Entrys) {
-                    if (fs.existsSync(logPath)) {
-                        fs.unlinkSync(logPath);
+                if (graspTotal == baselineNum) {
+                    matchFlag = "macth";
+                } else if (graspTotal > baselineNum){
+                    matchFlag = "add";
+                } else if (graspTotal < baselineNum) {
+                    matchFlag = "delete";
+                }
+
+                let $ = cheerio.load(html);
+
+                function getSuiteName($, suiteElement) {
+                    return $(suiteElement).children("h1").children("a").text();
+                }
+
+                function checkSuiteOrCase($, suiteElement) {
+                    let checkPoint = "case";
+                    $(suiteElement).children("ul").children().each(function(i, element) {
+                        if ($(element).attr("class") === "suite") checkPoint = "suite";
+                    });
+
+                    return checkPoint;
+                }
+
+                function getCaseStatus($, caseElement) {
+                    let caseStatus = $(caseElement).attr("class");
+                    let resultStatus = null;
+                    if (caseStatus == "test pass pending") {
+                        resultStatus = "N/A";
+                    } else if (caseStatus == "test pass fast" || caseStatus == "test pass slow" || caseStatus == "test pass medium") {
+                        resultStatus = "Pass";
+                    } else if (caseStatus == "test fail") {
+                        resultStatus = "Fail";
+                    } else {
+                        throw new Error("not support case status");
                     }
 
-                    for (let entry of Entrys) {
-                        fs.createWriteStream(logPath, {flags: "a"}).write(entry.message + "\n");
-                    }
+                    return resultStatus;
+                }
 
-                    RClog("console", "dowload log file to " + logPath);
+                function getCaseName($, caseElement) {
+                    let caseName = $(caseElement).children("h2").text();
+                    let length = caseName.length - 1;
+                    $(caseElement).children("h2").children().each(function(i, element) {
+                        length = length - $(element).text().length;
+                    });
+                    return caseName.slice(0, length).trim();
+                }
+
+                function checkResult(titleName, moduleName, caseName, caseStatus) {
+                    let key = titleName + "-" + moduleName + "-" + caseName;
+
+                    if (baseLineData.has(key)) {
+                        graspDataSummary["total"] = graspDataSummary["total"] + 1;
+                        if (caseStatus == "Pass") {
+                            graspDataSummary["pass"] = graspDataSummary["pass"] + 1;
+                        } else if (caseStatus == "Fail") {
+                            graspDataSummary["fail"] = graspDataSummary["fail"] + 1;
+                        } else if (caseStatus == "N/A") {
+                            graspDataSummary["block"] = graspDataSummary["block"] + 1;
+                        }
+
+                        let baseLineStatus = baseLineData.get(key).get(testPrefer);
+                        if (caseStatus !== baseLineStatus) {
+                            if (baseLineStatus == "Pass" && caseStatus == "Fail") {
+                                pageData.get(testPrefer).get("pass2fail").push([titleName, moduleName + "-" + caseName]);
+                            } else {
+                                pageData.get(testPrefer).get("fail2pass").push([titleName, moduleName + "-" + caseName]);
+                            }
+
+                            RClog("debug", key);
+                            RClog("debug", "baseLineStatus: " + baseLineStatus + " - caseStatus: " + caseStatus);
+                        }
+                    } else {
+                        RClog("debug", "no match test case: " + key);
+
+                        if (matchFlag == "macth" || matchFlag == "delete") {
+                            throw new Error("no match test case: " + key);
+                        } else {
+                            if (!newTestCaseData.get("prefers").has(testPrefer)) {
+                                newTestCaseData.get("prefers").set(testPrefer, true);
+                            }
+
+                            if (!newTestCaseData.has(key)) {
+                                newTestCaseData.set(key, new Map());
+                                newTestCaseData.get(key).set("title", titleName);
+                                newTestCaseData.get(key).set("caseID", moduleName + "-" + caseName);
+                                newTestCaseData.get(key).set("prefer", new Map());
+                                newTestCaseData.set("caseCount", newTestCaseData.get("caseCount") + 1);
+                            }
+
+                            newTestCaseData.get(key).get("prefer").set(testPrefer, caseStatus);
+                        }
+                    }
+                }
+
+                // title suite
+                $("#mocha-report").children(".suite").each(function(i, titleElement) {
+                    let titleName = getSuiteName($, titleElement);
+
+                    if (checkSuiteOrCase($, titleElement) == "case") {
+                        let moduleName = titleName;
+
+                        // test case
+                        $(titleElement).children("ul").children("li").each(function(j, caseElement) {
+                            let caseStatus = getCaseStatus($, caseElement);
+                            let caseName = getCaseName($, caseElement);
+
+                            checkResult(titleName, moduleName, caseName, caseStatus);
+
+                            if (caseStatus == "Pass") {
+                                countPasses = countPasses + 1;
+                            } else {
+                                countFailures = countFailures + 1;
+                            }
+
+                            actions = actions + 1;
+                            RClog("console", "\033[1A\033[50D\033[K    grasping: " + actions + "/" + graspTotal);
+                        });
+                    } else {
+                        // module suite
+                        $(titleElement).children("ul").children(".suite").each(function(j, moduleElement) {
+                            let moduleName = getSuiteName($, moduleElement).split("#")[1];
+
+                            if (checkSuiteOrCase($, moduleElement) == "case") {
+                                // test case
+                                $(moduleElement).children("ul").children("li").each(function(k, caseElement) {
+                                    let caseStatus = getCaseStatus($, caseElement);
+                                    let caseName = getCaseName($, caseElement);
+
+                                    checkResult(titleName, moduleName, caseName, caseStatus);
+
+                                    if (caseStatus == "Pass") {
+                                        countPasses = countPasses + 1;
+                                    } else {
+                                        countFailures = countFailures + 1;
+                                    }
+
+                                    actions = actions + 1;
+                                    RClog("console", "\033[1A\033[50D\033[K    grasping: " + actions + "/" + graspTotal);
+                                });
+                            }
+                        });
+                    }
                 });
-            } else if (testPlatform == "Windows") {
-                let readLogFile = process.cwd() + "\\output\\debug\\tmp\\chrome_debug.log";
-                let writeLogFile = process.cwd() + "\\output\\debug\\debug-" + testPrefer + ".log";
-                fs.writeFileSync(writeLogFile, fs.readFileSync(readLogFile));
-            }
-        }).catch(function(err) {
-            RClog("debug", err);
 
-            // Handler: page crashed -- 1
-            if (err.message.search("session deleted because of page crash") != -1) {
-                continueFlag = true;
-                crashData.push(testPrefer);
-                RClog("console", "remote URL is crashed");
+                if (graspPass != countPasses) {
+                    RClog("console", graspPass + " : " + countPasses);
+                    throw new Error("It's wrong to passed result!");
+                }
+
+                if (graspFail != countFailures) {
+                    RClog("console", graspFail + " : " + countFailures);
+                    throw new Error("It's wrong to failed result!");
+                }
+
+                countTotal = countPasses + countFailures;
+                RClog("console", "grasp all test case: " + countTotal);
+                RClog("debug", "    Web passes: " + graspPass);
+                RClog("debug", "  Check passes: " + countPasses);
+                RClog("debug", "  Web failures: " + graspFail);
+                RClog("debug", "Check failures: " + countFailures);
+                RClog("debug", "         TOTAL: " + graspTotal);
+            });
+
+            RClog("time", "mark");
+
+            let value;
+            if (pageDataTotal.get(testPrefer).get("grasp")[0]) {
+                value = pageDataTotal.get(testPrefer).get("grasp")[0] + graspDataSummary["total"];
             } else {
-                throw err;
+                value = graspDataSummary["total"];
             }
-        });
+            pageDataTotal.get(testPrefer).get("grasp")[0] = value;
 
-        RClog("time", "mark");
+            if (pageDataTotal.get(testPrefer).get("grasp")[1]) {
+                value = pageDataTotal.get(testPrefer).get("grasp")[1] + graspDataSummary["pass"];
+            } else {
+                value = graspDataSummary["pass"];
+            }
+            pageDataTotal.get(testPrefer).get("grasp")[1] = value;
 
-        // Handler: page crashed -- 2
-        if (continueFlag) {
+            if (pageDataTotal.get(testPrefer).get("grasp")[2]) {
+                value = pageDataTotal.get(testPrefer).get("grasp")[2] + graspDataSummary["fail"];
+            } else {
+                value = graspDataSummary["fail"];
+            }
+            pageDataTotal.get(testPrefer).get("grasp")[2] = value;
+
+            if (pageDataTotal.get(testPrefer).get("grasp")[3]) {
+                value = pageDataTotal.get(testPrefer).get("grasp")[3] + graspDataSummary["block"];
+            } else {
+                value = graspDataSummary["block"];
+            }
+            pageDataTotal.get(testPrefer).get("grasp")[3] = value;
+
+            value = Math.round((pageDataTotal.get(testPrefer).get("grasp")[1] / pageDataTotal.get(testPrefer).get("grasp")[0]) * 100).toString() + "%";
+            pageDataTotal.get(testPrefer).get("grasp")[4] = value;
+
             await driver.sleep(2000);
             await driver.quit();
             await driver.sleep(2000);
 
-            continue;
+            RClog("console", "checking with '" + testPrefer + "' prefer is completed");
         }
-
-        RClog("console", "checking with '" + testPrefer + "' prefer is start");
-        RClog("console", "checking....\n");
-
-        await driver.executeScript("return document.documentElement.outerHTML").then(async function(html) {
-            let graspTotal, graspPass, graspFail;
-            let actions = 0;
-            let countPasses = 0;
-            let countFailures = 0;
-            let countTotal = 0;
-            let matchFlag = null;
-
-            await driver.findElement(By.xpath("//ul[@id='mocha-stats']/li[@class='passes']//em")).getText().then(function(message) {
-                RClog("debug", "passes: " + message);
-                graspPass = message >> 0;
-            });
-
-            await driver.findElement(By.xpath("//ul[@id='mocha-stats']/li[@class='failures']//em")).getText().then(function(message) {
-                RClog("debug", "failures: " + message);
-                graspFail = message >> 0;
-            });
-
-            graspTotal = graspPass + graspFail;
-
-            if (graspTotal == baselinejson[testPrefer]["total"]) {
-                matchFlag = "macth";
-            } else if (graspTotal > baselinejson[testPrefer]["total"]){
-                matchFlag = "add";
-            } else if (graspTotal < baselinejson[testPrefer]["total"]) {
-                matchFlag = "delete";
-            }
-
-            let $ = cheerio.load(html);
-
-            function getSuiteName($, suiteElement) {
-                return $(suiteElement).children("h1").children("a").text();
-            }
-
-            function checkSuiteOrCase($, suiteElement) {
-                let checkPoint = "case";
-                $(suiteElement).children("ul").children().each(function(i, element) {
-                    if ($(element).attr("class") === "suite") checkPoint = "suite";
-                });
-
-                return checkPoint;
-            }
-
-            function getCaseStatus($, caseElement) {
-                let caseStatus = $(caseElement).attr("class");
-                let resultStatus = null;
-                if (caseStatus == "test pass pending") {
-                    resultStatus = "N/A";
-                } else if (caseStatus == "test pass fast" || caseStatus == "test pass slow" || caseStatus == "test pass medium") {
-                    resultStatus = "Pass";
-                } else if (caseStatus == "test fail") {
-                    resultStatus = "Fail";
-                } else {
-                    throw new Error("not support case status");
-                }
-
-                return resultStatus;
-            }
-
-            function getCaseName($, caseElement) {
-                let caseName = $(caseElement).children("h2").text();
-                let length = caseName.length - 1;
-                $(caseElement).children("h2").children().each(function(i, element) {
-                    length = length - $(element).text().length;
-                });
-                return caseName.slice(0, length).trim();
-            }
-
-            function checkResult(titleName, moduleName, caseName, caseStatus) {
-                let key = titleName + "-" + moduleName + "-" + caseName;
-
-                if (baseLineData.has(key)) {
-                    graspDataSummary["total"] = graspDataSummary["total"] + 1;
-                    if (caseStatus == "Pass") {
-                        graspDataSummary["pass"] = graspDataSummary["pass"] + 1;
-                    } else if (caseStatus == "Fail") {
-                        graspDataSummary["fail"] = graspDataSummary["fail"] + 1;
-                    } else if (caseStatus == "N/A") {
-                        graspDataSummary["block"] = graspDataSummary["block"] + 1;
-                    }
-
-                    let baseLineStatus = baseLineData.get(key).get(testPrefer);
-                    if (caseStatus !== baseLineStatus) {
-                        if (baseLineStatus == "Pass" && caseStatus == "Fail") {
-                            pageData.get(testPrefer).get("pass2fail").push([titleName, moduleName + "-" + caseName]);
-                        } else {
-                            pageData.get(testPrefer).get("fail2pass").push([titleName, moduleName + "-" + caseName]);
-                        }
-
-                        RClog("debug", key);
-                        RClog("debug", "baseLineStatus: " + baseLineStatus + " - caseStatus: " + caseStatus);
-                    }
-                } else {
-                    RClog("debug", "no match test case: " + key);
-
-                    if (matchFlag == "macth" || matchFlag == "delete") {
-                        throw new Error("no match test case: " + key);
-                    } else {
-                        if (!newTestCaseData.get("prefers").has(testPrefer)) {
-                            newTestCaseData.get("prefers").set(testPrefer, true);
-                        }
-
-                        if (!newTestCaseData.has(key)) {
-                            newTestCaseData.set(key, new Map());
-                            newTestCaseData.get(key).set("title", titleName);
-                            newTestCaseData.get(key).set("caseID", moduleName + "-" + caseName);
-                            newTestCaseData.get(key).set("prefer", new Map());
-                            newTestCaseData.set("caseCount", newTestCaseData.get("caseCount") + 1);
-                        }
-
-                        newTestCaseData.get(key).get("prefer").set(testPrefer, caseStatus);
-                    }
-                }
-            }
-
-            // title suite
-            $("#mocha-report").children(".suite").each(function(i, titleElement) {
-                let titleName = getSuiteName($, titleElement);
-
-                if (checkSuiteOrCase($, titleElement) == "case") {
-                    let moduleName = titleName;
-
-                    // test case
-                    $(titleElement).children("ul").children("li").each(function(j, caseElement) {
-                        let caseStatus = getCaseStatus($, caseElement);
-                        let caseName = getCaseName($, caseElement);
-
-                        checkResult(titleName, moduleName, caseName, caseStatus);
-
-                        if (caseStatus == "Pass") {
-                            countPasses = countPasses + 1;
-                        } else {
-                            countFailures = countFailures + 1;
-                        }
-
-                        actions = actions + 1;
-                        RClog("console", "\033[1A\033[50D\033[K    grasping: " + actions + "/" + graspTotal);
-                    });
-                } else {
-                    // module suite
-                    $(titleElement).children("ul").children(".suite").each(function(j, moduleElement) {
-                        let moduleName = getSuiteName($, moduleElement).split("#")[1];
-
-                        if (checkSuiteOrCase($, moduleElement) == "case") {
-                            // test case
-                            $(moduleElement).children("ul").children("li").each(function(k, caseElement) {
-                                let caseStatus = getCaseStatus($, caseElement);
-                                let caseName = getCaseName($, caseElement);
-
-                                checkResult(titleName, moduleName, caseName, caseStatus);
-
-                                if (caseStatus == "Pass") {
-                                    countPasses = countPasses + 1;
-                                } else {
-                                    countFailures = countFailures + 1;
-                                }
-
-                                actions = actions + 1;
-                                RClog("console", "\033[1A\033[50D\033[K    grasping: " + actions + "/" + graspTotal);
-                            });
-                        }
-                    });
-                }
-            });
-
-            if (graspPass != countPasses) {
-                RClog("console", graspPass + " : " + countPasses);
-                throw new Error("It's wrong to passed result!");
-            }
-
-            if (graspFail != countFailures) {
-                RClog("console", graspFail + " : " + countFailures);
-                throw new Error("It's wrong to failed result!");
-            }
-
-            countTotal = countPasses + countFailures;
-            RClog("console", "grasp all test case: " + countTotal);
-            RClog("debug", "    Web passes: " + graspPass);
-            RClog("debug", "  Check passes: " + countPasses);
-            RClog("debug", "  Web failures: " + graspFail);
-            RClog("debug", "Check failures: " + countFailures);
-            RClog("debug", "         TOTAL: " + graspTotal);
-        });
-
-        RClog("time", "mark");
-
-        pageDataTotal.get(testPrefer).get("grasp").push(graspDataSummary["total"]);
-        pageDataTotal.get(testPrefer).get("grasp").push(graspDataSummary["pass"]);
-        pageDataTotal.get(testPrefer).get("grasp").push(graspDataSummary["fail"]);
-        pageDataTotal.get(testPrefer).get("grasp").push(graspDataSummary["block"]);
-        pageDataTotal.get(testPrefer).get("grasp").push(Math.round((graspDataSummary["pass"] / graspDataSummary["total"]) * 100).toString() + "%");
-
-        await driver.sleep(2000);
-        await driver.quit();
-        await driver.sleep(2000);
-
-        RClog("console", "checking with '" + testPrefer + "' prefer is completed");
     }
 
     if (testPlatform == "Android") {
