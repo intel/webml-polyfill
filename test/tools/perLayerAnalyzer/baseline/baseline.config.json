@@ -1,0 +1,120 @@
+{
+    "Version": {
+        "chromium": "79fdab0",
+        "polyfill": "83d9d19"
+    },
+    "Android-Polyfill-Fast-WASM": {
+        "total": 717,
+        "pass": 462,
+        "fail": 255,
+        "block": 0
+    },
+    "Android-Polyfill-Sustained-WebGL": {
+        "total": 717,
+        "pass": 462,
+        "fail": 255,
+        "block": 0
+    },
+    "Android-WebNN-Sustained-NNAPI": {
+        "total": 717,
+        "pass": 435,
+        "fail": 282,
+        "block": 0
+    },
+    "Linux-Polyfill-Fast-WASM": {
+        "total": 717,
+        "pass": 462,
+        "fail": 255,
+        "block": 0
+    },
+    "Linux-Polyfill-Sustained-WebGL": {
+        "total": 717,
+        "pass": 462,
+        "fail": 255,
+        "block": 0
+    },
+    "Linux-WebNN-Fast-IE-MKLDNN": {
+        "total": 717,
+        "pass": 318,
+        "fail": 399,
+        "block": 0
+    },
+    "Linux-WebNN-Fast-MKLDNN": {
+        "total": 717,
+        "pass": 315,
+        "fail": 402,
+        "block": 0
+    },
+    "Linux-WebNN-Sustained-IE-clDNN": {
+        "total": 717,
+        "pass": 316,
+        "fail": 401,
+        "block": 0
+    },
+    "Linux-WebNN-Sustained-clDNN": {
+        "total": 717,
+        "pass": 407,
+        "fail": 310,
+        "block": 0
+    },
+    "Win-Polyfill-Fast-WASM": {
+        "total": 717,
+        "pass": 462,
+        "fail": 255,
+        "block": 0
+    },
+    "Win-Polyfill-Sustained-WebGL": {
+        "total": 717,
+        "pass": 462,
+        "fail": 255,
+        "block": 0
+    },
+    "Win-WebNN-Fast-MKLDNN": {
+        "total": 717,
+        "pass": 315,
+        "fail": 402,
+        "block": 0
+    },
+    "Win-WebNN-Sustained-DML": {
+        "total": 717,
+        "pass": 397,
+        "fail": 320,
+        "block": 0
+    },
+    "Win-WebNN-Sustained-clDNN": {
+        "total": 717,
+        "pass": 407,
+        "fail": 310,
+        "block": 0
+    },
+    "macOS-Polyfill-Fast-WASM": {
+        "total": 717,
+        "pass": 462,
+        "fail": 255,
+        "block": 0
+    },
+    "macOS-Polyfill-Sustained-WebGL": {
+        "total": 717,
+        "pass": 462,
+        "fail": 255,
+        "block": 0
+    },
+    "macOS-WebNN-Fast-BNNS": {
+        "total": 717,
+        "pass": 280,
+        "fail": 437,
+        "block": 0
+    },
+    "macOS-WebNN-Fast-MKLDNN": {
+        "total": 717,
+        "pass": 315,
+        "fail": 402,
+        "block": 0
+    },
+    "macOS-WebNN-Sustained-MPS": {
+        "total": 717,
+        "pass": 288,
+        "fail": 429,
+        "block": 0
+    }
+}

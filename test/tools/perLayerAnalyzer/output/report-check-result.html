@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <title>PR Submission Checking Summary</title>
+    <style>
+    h2 {text-align:center}
+    .container {margin: 20px 20px}
+    .suggest {color:green}
+    .notsuggest {color:red}
+    .box-menu {margin: 10px 0px -10px 0px;}
+    .box-menu ul {height:30px;border-bottom:1px solid gray;list-style:none;padding-left:0;}
+    .box-menu ul li {float:left;width:150px;margin-right:3px;color:#000;border:solid 1px gray;border-bottom:none; text-align:center;line-height:30px;}
+    .box-menu ul li.active {background-color: #007bc7;color: #fff;}
+    .box-menu ul li:hover {cursor: pointer;}
+    .box-menu ul ul {height:30px;border-bottom:1px solid gray;list-style:none;padding-left:0;}
+    .box-menu ul ul li {float:right;width:150px;margin-right:3px;color:#000;border:solid 1px gray;border-bottom:none; text-align:center;line-height:30px;}
+    .box-menu ul ul li.active {background-color: #007bc7;color: #fff;}
+    .box-menu ul ul li:hover {cursor: pointer;}
+    .box-table div {display:none;}
+    .box-table div.active {display:block;}
+    .box-table div.box-table-all {display:block;}
+    .box-table div.box-table-new {display:block;}
+    table {border: 1px solid #ddd; border-spacing:0;}
+    table tr th {border: 1px solid #000;background-color: #B0C4DE;}
+    table tr td {border: 1px solid #ddd}
+    table tr:nth-child(even){background: #F0F0F0;}
+    table tr td.box-table-log-number {width:20px;overflow:hidden;text-align: center;text-overflow: ellipsis;border: 2px solid #FFFFFF;        border-top: none;border-bottom: none;border-left: none;}
+    table tr td.box-table-log-text {overflow:hidden;border:none;}
+    table.box-table-log {border:1px solid #ddd;}
+    .warnning {color:red}
+    .pass {color:green}
+    .fail {color:red}
+    </style>
+    <script>
+      function click_box_menu(data) {
+        var keyWord = data.getAttribute('data-info');
+        var keyWordsAll = new Array();
+        keyWordsAll.push('pass2fail');
+        keyWordsAll.push('fail2pass');
+        let prefers = [undefined];
+        for (let prefer of prefers) {
+            keyWordsAll.push(prefer);
+        }
+        for (let key of keyWordsAll) {
+            let boxMenuKey = 'box-menu-' + key;
+            let boxTableKey = 'box-table-' + key;
+            if (key == keyWord) {
+                document.getElementById(boxMenuKey).classList.add('active');
+                document.getElementById(boxTableKey).classList.add('active');
+            } else {
+                document.getElementById(boxMenuKey).classList.remove('active');
+                document.getElementById(boxTableKey).classList.remove('active');
+            }
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <div class='container'>
+      <div>
+        <h2>PR Submission Checking Summary</h2>
+        <hr />
+        <h3>Baseline Information:</h3>
+          <div>Chromium version: 79fdab0</div>
+          <div>Webml-polyfill version: 83d9d19</div>
+      </div>
+      <hr />
+      <div>
+        <h3>PR Submission Proposal:</h3>
+        <h3>PR Submission Message:</h3>
+          <div>Total Test Cases: 0</div>
+          <div>Pass to Fail: 0</div>
+          <div>Fail to Pass: 0</div>
+        <hr />
+      </div>
+      <h3>Result:</h3>
+      <div class='box-menu'>
+        <ul>
+          <li class='active' id='box-menu-pass2fail' data-info='pass2fail' onclick='javascript:click_box_menu(this)'>Pass2Fail</li>
+          <li id='box-menu-fail2pass' data-info='fail2pass' onclick='javascript:click_box_menu(this)'>Fail2Pass</li>
+          <ul>
+          </ul>
+        </ul>
+      </div>
+      <div class='box-table'>
+        <div class='active' id='box-table-pass2fail'>
+        </div>
+        <div id='box-table-fail2pass'>
+        </div>
+        <div class='box-table-all'>
+          <table>
+            <thead>
+              <tr>
+                <th rowspan='2'>Summary
+                </th>
+              </tr>
+              <tr>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th>Total
+                </th>
+              </tr>
+              <tr>
+                <th>Pass
+                </th>
+              </tr>
+              <tr>
+                <th>Fail
+                </th>
+              </tr>
+              <tr>
+                <th>Block
+                </th>
+              </tr>
+              <tr>
+                <th>PassRate%
+                </th>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
