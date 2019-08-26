@@ -23,7 +23,7 @@ This is an automation tool kit to automatically test the realmodel and generate 
      "modelName": ["squeezenet1.1"],
      "platform": "Mac",
      "chromiumPath": "/Users/test/Downloads/Chromium.app/Contents/MacOS/Chromium",
-     "supportSwitch": false,S
+     "supportSwitch": false,
      "API": "polyfill",
      "preference": "fast"
      "iterations": "200"
@@ -78,6 +78,7 @@ $ npm start
 |  :---:  |  :---:  |   :---:   |   :---:   |
 |  PASS   |   PASS  |    PASS   |    PASS   |
 
-## Special Description
+## Special Description(How to use the template.html)
 
-If you want to deploy locally to run ,you can use the template html file.On  **line 54** of this file ,you can import your generated realmodel case file name here . What modelname do you need for this modelname generated caes file use  **<src**in template.html.
+If you want to deploy locally to run ,you can use the template.html file On  **line 54** of this file ,you can import your generated realmodel case file name here . What modelname do you need for this modelname generated caes file ,For example : 
+**<script src="./realmodel/testcase/squeezenet1.1/squeezenet1.1-conv2d-1.js"></script>** in template.html.
