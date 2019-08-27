@@ -996,7 +996,7 @@ var numberTotal = 0;
         // Categories filter
         if (testPrefer === "macOS-Polyfill-Fast-WASM") {
             if (testPlatform === "Mac" && API === "polyfill") {
-                remoteURL = remoteURL + `?prefer=fast&iterations=${RCjson.iterations}&API=${API}&platform=${testPlatform}&supportSwitch=${supportSwitch}&supportSwitch=${supportSwitch}supportSwitch=${supportSwitch}`;
+                remoteURL = remoteURL + `?prefer=fast&iterations=${RCjson.iterations}&API=${API}&platform=${testPlatform}&supportSwitch=${supportSwitch}`;
                 chromeOption = chromeOption
                     .setChromeBinaryPath(chromiumPath)
                     .addArguments("--disable-features=WebML");
@@ -1005,7 +1005,7 @@ var numberTotal = 0;
             }
         } else if (testPrefer === "macOS-Polyfill-Sustained-WebGL") {
             if (testPlatform === "Mac" && API === "polyfill") {
-                remoteURL = remoteURL + `?prefer=sustained&iterations=${RCjson.iterations}&API=${API}&platform=${testPlatform}&supportSwitch=${supportSwitch}&supportSwitch=${supportSwitch}`;
+                remoteURL = remoteURL + `?prefer=sustained&iterations=${RCjson.iterations}&API=${API}&platform=${testPlatform}&supportSwitch=${supportSwitch}`;
                 chromeOption = chromeOption
                     .setChromeBinaryPath(chromiumPath)
                     .addArguments("--disable-features=WebML");
@@ -1014,7 +1014,7 @@ var numberTotal = 0;
             }
         } else if (testPrefer === "macOS-WebNN-Fast-BNNS") {
             if (testPlatform === "Mac" && API === "webnn") {
-                remoteURL = remoteURL + `?prefer=fast&iterations=${RCjson.iterations}&API=${API}&platform=${testPlatform}&supportSwitch=${supportSwitch}&supportSwitch=${supportSwitch}`;
+                remoteURL = remoteURL + `?prefer=fast&iterations=${RCjson.iterations}&API=${API}&platform=${testPlatform}&supportSwitch=${supportSwitch}`;
                 chromeOption = chromeOption
                     .setChromeBinaryPath(chromiumPath)
                     .addArguments("--enable-features=WebML");
@@ -1023,7 +1023,7 @@ var numberTotal = 0;
             }
         } else if (testPrefer === "macOS-WebNN-Fast-MKLDNN") {
             if (testPlatform === "Mac" && API === "webnn" && supportSwitch) {
-                remoteURL = remoteURL + `?prefer=fast&iterations=${RCjson.iterations}&API=${API}&platform=${testPlatform}&supportSwitch=${supportSwitch}&supportSwitch=${supportSwitch}`;
+                remoteURL = remoteURL + `?prefer=fast&iterations=${RCjson.iterations}&API=${API}&platform=${testPlatform}&supportSwitch=${supportSwitch}`;
                 chromeOption = chromeOption
                     .setChromeBinaryPath(chromiumPath)
                     .addArguments("--use-mkldnn")
@@ -1034,7 +1034,7 @@ var numberTotal = 0;
             }
         } else if (testPrefer === "macOS-WebNN-Sustained-MPS") {
             if (testPlatform === "Mac" && API === "webnn") {
-                remoteURL = remoteURL + `?prefer=sustained&iterations=${RCjson.iterations}&API=${API}&platform=${testPlatform}&supportSwitch=${supportSwitch}&supportSwitch=${supportSwitch}`;
+                remoteURL = remoteURL + `?prefer=sustained&iterations=${RCjson.iterations}&API=${API}&platform=${testPlatform}&supportSwitch=${supportSwitch}`;
                 chromeOption = chromeOption
                     .setChromeBinaryPath(chromiumPath)
                     .addArguments("--enable-features=WebML");
@@ -1043,7 +1043,7 @@ var numberTotal = 0;
             }
         } else if (testPrefer === "Android-Polyfill-Fast-WASM") {
             if (testPlatform === "Android" && API === "polyfill") {
-                remoteURL = remoteURL + `?prefer=fast&iterations=${RCjson.iterations}&API=${API}&platform=${testPlatform}&supportSwitch=${supportSwitch}&supportSwitch=${supportSwitch}`;
+                remoteURL = remoteURL + `?prefer=fast&iterations=${RCjson.iterations}&API=${API}&platform=${testPlatform}&supportSwitch=${supportSwitch}`;
                 chromeOption = chromeOption
                     .androidPackage("org.chromium.chrome")
                     .addArguments("--disable-features=WebML")
@@ -1053,7 +1053,7 @@ var numberTotal = 0;
             }
         } else if (testPrefer === "Android-Polyfill-Sustained-WebGL") {
             if (testPlatform === "Android" && API === "polyfill") {
-                remoteURL = remoteURL + `?prefer=sustained&iterations=${RCjson.iterations}&API=${API}&platform=${testPlatform}&supportSwitch=${supportSwitch}&supportSwitch=${supportSwitch}`;
+                remoteURL = remoteURL + `?prefer=sustained&iterations=${RCjson.iterations}&API=${API}&platform=${testPlatform}&supportSwitch=${supportSwitch}`;
                 chromeOption = chromeOption
                     .androidPackage("org.chromium.chrome")
                     .addArguments("--disable-features=WebML")
@@ -1063,7 +1063,7 @@ var numberTotal = 0;
             }
         } else if (testPrefer === "Android-WebNN-Sustained-NNAPI") {
             if (testPlatform === "Android" && API === "webnn") {
-                remoteURL = remoteURL + `?prefer=sustained&iterations=${RCjson.iterations}&API=${API}&platform=${testPlatform}&supportSwitch=${supportSwitch}&supportSwitch=${supportSwitch}`;
+                remoteURL = remoteURL + `?prefer=sustained&iterations=${RCjson.iterations}&API=${API}&platform=${testPlatform}&supportSwitch=${supportSwitch}`;
                 chromeOption = chromeOption
                     .androidPackage("org.chromium.chrome")
                     .addArguments("--enable-features=WebML")
@@ -1073,7 +1073,7 @@ var numberTotal = 0;
             }
         } else if (testPrefer === "Win-Polyfill-Fast-WASM") {
             if (testPlatform === "Windows" && API === "polyfill") {
-                remoteURL = remoteURL + `?prefer=fast&iterations=${RCjson.iterations}&API=${API}&platform=${testPlatform}&supportSwitch=${supportSwitch}&supportSwitch=${supportSwitch}`;
+                remoteURL = remoteURL + `?prefer=fast&iterations=${RCjson.iterations}&API=${API}&platform=${testPlatform}&supportSwitch=${supportSwitch}`;
                 chromeOption = chromeOption
                     .setChromeBinaryPath(chromiumPath)
                     .addArguments("--disable-features=WebML")
@@ -1082,7 +1082,7 @@ var numberTotal = 0;
             }
         } else if (testPrefer === "Win-Polyfill-Sustained-WebGL") {
             if (testPlatform === "Windows" && API === "polyfill") {
-                remoteURL = remoteURL + `?prefer=sustained&iterations=${RCjson.iterations}&API=${API}&platform=${testPlatform}&supportSwitch=${supportSwitch}&supportSwitch=${supportSwitch}`;
+                remoteURL = remoteURL + `?prefer=sustained&iterations=${RCjson.iterations}&API=${API}&platform=${testPlatform}&supportSwitch=${supportSwitch}`;
                 chromeOption = chromeOption
                     .setChromeBinaryPath(chromiumPath)
                     .addArguments("--disable-features=WebML")
@@ -1091,7 +1091,7 @@ var numberTotal = 0;
             }
         } else if (testPrefer === "Win-WebNN-Fast-MKLDNN") {
             if (testPlatform === "Windows" && API === "webnn") {
-                remoteURL = remoteURL + `?prefer=fast&iterations=${RCjson.iterations}&API=${API}&platform=${testPlatform}&supportSwitch=${supportSwitch}&supportSwitch=${supportSwitch}`;
+                remoteURL = remoteURL + `?prefer=fast&iterations=${RCjson.iterations}&API=${API}&platform=${testPlatform}&supportSwitch=${supportSwitch}`;
                 chromeOption = chromeOption
                     .setChromeBinaryPath(chromiumPath)
                     .addArguments("--enable-features=WebML");
@@ -1100,7 +1100,7 @@ var numberTotal = 0;
             }
         } else if (testPrefer === "Win-WebNN-Sustained-DML") {
             if (testPlatform === "Windows" && API === "webnn" && supportSwitch) {
-                remoteURL = remoteURL + `?prefer=sustained&iterations=${RCjson.iterations}&API=${API}&platform=${testPlatform}&supportSwitch=${supportSwitch}&supportSwitch=${supportSwitch}`;
+                remoteURL = remoteURL + `?prefer=sustained&iterations=${RCjson.iterations}&API=${API}&platform=${testPlatform}&supportSwitch=${supportSwitch}`;
                 chromeOption = chromeOption
                     .setChromeBinaryPath(chromiumPath)
                     .addArguments("--use-dml")
@@ -1110,7 +1110,7 @@ var numberTotal = 0;
             }
         } else if (testPrefer === "Win-WebNN-Sustained-clDNN") {
             if (testPlatform === "Windows" && API === "webnn") {
-                remoteURL = remoteURL + `?prefer=sustained&iterations=${RCjson.iterations}&API=${API}&platform=${testPlatform}&supportSwitch=${supportSwitch}&supportSwitch=${supportSwitch}`;
+                remoteURL = remoteURL + `?prefer=sustained&iterations=${RCjson.iterations}&API=${API}&platform=${testPlatform}&supportSwitch=${supportSwitch}`;
                 chromeOption = chromeOption
                     .setChromeBinaryPath(chromiumPath)
                     .addArguments("--enable-features=WebML");
