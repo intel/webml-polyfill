@@ -6,16 +6,19 @@ This is an automation tool kit to automatically test the realmodel and generate 
 * For checking PRs relevant to Android platform, host pc needs install chrome or chromium browser firstly.
 
 # Here Are Two Ways To Run This TOOL
-One Way:
+# One Way:
+
 1. If you want to use the environment we've already deployed,you can go directly to git clone and go to the perLayerAnayzer directory.
 2. Then you can type **$ npm install** in Terminal and change some Settings in the **config.json** fill of the current directory,
 See **## Install** and **## Set Configurations** for more tips.
 3. Finally,execute the command **$ npm start** in the current directory.See **## Run Tests** for more tips.
-Second Way:
+
+# Second Way:
+
 1. First of all,you generate the realmodel related testcase locally according to different modelNames,you can click this link(https://github.com/intel/webml-polyfill/blob/master/test/realmodel/README.md)
 2. You can  import your newly generated realmodel testcase file name in the **line 54** of **template.html** file in the current directory.
 For example : **<script src="./realmodel/testcase/squeezenet1.1/squeezenet1.1-conv2d-1.js"></script>**  in the code of **template.html**.
-3.One thing to note,if you want to test **squeezenet1.1**,you should change the **template.html** file name to **real_squeezenet1.1.html**,
+3. One thing to note,if you want to test **squeezenet1.1**,you should change the **template.html** file name to **real_squeezenet1.1.html**,
 if you want to test **mobilenetv2-1.0**,you should change the **template.html** file name to **real_mobilenetv2-1.0.html**,
 if you want to test **mobilenetv2-1.0** and **squeezenet1.1**,you should change the **template.html** file name to **realmodel.html**,
 4. Finally you can perform the **One Way** step.
