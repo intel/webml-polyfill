@@ -20,7 +20,7 @@
     <p id = "iterations">Iterations: 1(warming up) + </p>
     <table>
       <tr>
-      <th>Layer</th>
+      <th>Layer</th>  
       <th>Model_name</th>
       <th>Ops</th>
       <th>Avg_time(ms)</th>
@@ -46,28 +46,24 @@
   <script src="../dist/webml-polyfill.js"></script>
   <script src="./utils.js"></script>
   <script>
-    setOptions();
+    setOptions_perLayer();
   </script>
   <script>
     mocha.setup('bdd');
   </script>
-
+ 
   <!-- Add some real-model-test-case here -->
   <!-- <script src="<real-model-test-case-js-file>"></script> -->
 
  <script>
     mocha.globals(['jQuery']);
-    mocha.run(function() {
-      document.getElementById("avg").insertAdjacentText("beforeend","]");
-      document.getElementById("avg").insertAdjacentText("afterbegin","[");
+    mocha.run(async function() {
       var obj = document.getElementById("avg");
-      avg_text = obj.innerHTML;
-      console.log(avg_text);
-      let avg_data = JSON.parse(avg_text);
+      var avg_text = obj.innerHTML;
+      avg_text = '[' + avg_text.slice(0,-1) + ']';
+      avg_data = JSON.parse(avg_text);
       setTimeout(() => {
-        console.log(avg_data);
         var table = document.getElementsByTagName ('table')[0];
-        console.log(avg_data.length);
         for(var i = 0; i < avg_data.length; i++) {
           var tr = table.insertRow (table.rows.length);
           var obj = avg_data[i];
@@ -88,34 +84,31 @@
         var API = unescape(r[4]).toLowerCase();
         var testPlatform = unescape(r[5])
         var supportSwitch = unescape(r[6]).toLowerCase();
-      }
-      console.log(prefer);
-      document.getElementById("iterations").insertAdjacentText("beforeend",iterations);
-      document.getElementById("result").style.display = "block";
 
-    if (supportSwitch === "true") {
-      if (testPlatform === "Mac" && API === "webnn" && prefer==="fast") {
-        document.getElementById("testPlatform").insertAdjacentText("beforeend",testPlatform + ' / ' + API + ' / ' + prefer + ' / ' + 'MKLDNN');
       };
-      if (testPlatform === "Windows" && API === "webnn" && prefer==="sustained") {
-        document.getElementById("testPlatform").insertAdjacentText("beforeend",testPlatform + ' / ' + API + ' / ' + prefer + ' / ' + 'DML');
-      };
-      if (testPlatform === "Windows" && API === "webnn" && prefer==="low") {
-        document.getElementById("testPlatform").insertAdjacentText("beforeend",testPlatform + ' / ' + API + ' / ' + prefer + ' / ' + 'DML');
-      };
-      if (testPlatform === "Linux" && API === "webnn" && prefer==="fast") {
-        document.getElementById("testPlatform").insertAdjacentText("beforeend",testPlatform + ' / ' + API + ' / ' + prefer + ' / ' + 'IE-MKLDNN');
-      };
-      if (testPlatform === "Linux" && API === "webnn" && prefer==="sustained") {
-        document.getElementById("testPlatform").insertAdjacentText("beforeend",testPlatform + ' / ' + API + ' / ' + prefer + ' / ' + 'IE-clDNN');
-      };
-      if (testPlatform === "Linux" && API === "webnn" && prefer==="low") {
-        document.getElementById("testPlatform").insertAdjacentText("beforeend",testPlatform + ' / ' + API + ' / ' + prefer + ' / ' + 'IE-MYRIAD');
-      };
-  } else {
-    document.getElementById("testPlatform").insertAdjacentText("beforeend",testPlatform +' / '+ API +' / '+ prefer);
-  }
+      document.getElementById("iterations").insertAdjacentText("beforeend",iterations);
+      if (supportSwitch === "true") {
+        if (testPlatform === "Mac" && API === "webnn" && prefer==="fast") {
+          document.getElementById("testPlatform").insertAdjacentText("beforeend",testPlatform +' / '+ API +' / '+prefer+' / '+'MKLDNN');
+        } else if (testPlatform === "Windows" && API === "webnn" && prefer==="sustained") {
+          document.getElementById("testPlatform").insertAdjacentText("beforeend",testPlatform +' / '+ API +' / '+prefer+' / '+'DML');
+        } else if (testPlatform === "Windows" && API === "webnn" && prefer==="low") {
+          document.getElementById("testPlatform").insertAdjacentText("beforeend",testPlatform +' / '+ API +' / '+prefer+' / '+'DML');
+        } else if (testPlatform === "Linux" && API === "webnn" && prefer==="fast") {
+          document.getElementById("testPlatform").insertAdjacentText("beforeend",testPlatform +' / '+ API +' / '+prefer+' / '+'IE-MKLDNN');
+        } else if (testPlatform === "Linux" && API === "webnn" && prefer==="sustained") {
+          document.getElementById("testPlatform").insertAdjacentText("beforeend",testPlatform +' / '+ API +' / '+prefer+' / '+'IE-clDNN');
+        } else if (testPlatform === "Linux" && API === "webnn" && prefer==="low") {
+          document.getElementById("testPlatform").insertAdjacentText("beforeend",testPlatform +' / '+ API +' / '+prefer+' / '+'IE-MYRIAD');
+        } else {
+          document.getElementById("testPlatform").insertAdjacentText("beforeend",testPlatform +' / '+ API +' / '+prefer);
+        }
+      } else {
+        document.getElementById("testPlatform").insertAdjacentText("beforeend",testPlatform +' / '+ API +' / '+prefer);
+      }
+      document.getElementById("result").style.display = "block";
     });
+    
   </script>
   
 </body>

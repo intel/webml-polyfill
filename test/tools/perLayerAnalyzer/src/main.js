@@ -186,16 +186,8 @@ if (testPlatform == "Linux") {
 RClog("console", "prefers: " + testPrefers);
 
 RClog("time", "mark");
-RClog("console", "checking baseline files....");
 
-var baselinejson = JSON.parse(fs.readFileSync("./baseline/baseline.config.json"));
 
-for (let prefer of testPrefers) {
-    if (!Object.keys(baselinejson).includes(prefer)) {
-        let str = "No baseline data in baseline.config.json file: " + prefer;
-        throw new Error(str);
-    }
-}
 
 /**
  * pageData = {
@@ -214,28 +206,7 @@ var pageData = new Map();
  *     }
  * }
  */
-var pageDataTotal = new Map();
-var versionChromium, versionPolyfill;
 
-for (let [key1, value1] of Object.entries(baselinejson)) {
-    if (key1 == "Version") {
-        for (let key2 of Object.keys(value1)) {
-            if (key2 == "chromium") versionChromium = baselinejson[key1][key2];
-            if (key2 == "polyfill") versionPolyfill = baselinejson[key1][key2];
-        }
-    } else {
-        if (testPrefers.includes(key1)) {
-            pageData.set(key1, new Map([["pass2fail", new Array()], ["fail2pass", new Array()]]));
-            pageDataTotal.set(key1, new Map([["Baseline", new Array(
-                baselinejson[key1]["total"],
-                baselinejson[key1]["pass"],
-                baselinejson[key1]["fail"],
-                baselinejson[key1]["block"],
-                Math.round((baselinejson[key1]["pass"] / baselinejson[key1]["total"]) * 100).toString() + "%"
-            )], ["grasp", new Array()]]));
-        }
-    }
-}
 
 /**
  * baseLineData = {
@@ -271,49 +242,6 @@ for (let [key1, value1] of Object.entries(baselinejson)) {
  */
 var baseLineData = new Map();
 
-csv.fromPath("./baseline/unitTestsBaseline.csv", {headers: true})
-.on("data", function(data) {
-    let keyArray = new Array();
-    let valueArray = new Array();
-
-    for (let [key, value] of Object.entries(data)) {
-        keyArray.push(key);
-        valueArray.push(value);
-    }
-
-    for (let prefer of testPrefers) {
-        if (!keyArray.includes(prefer)) {
-            let str = "No baseline data in unitTestsBaseline.csv file: " + prefer;
-            throw new Error(str);
-        }
-    }
-
-    let newData = valueArray[1].split("/")[0];
-    let dataArray = valueArray[1].split("/");
-
-    if (dataArray.length > 2) {
-        for (let dataCount = 1; dataCount < dataArray.length - 1; dataCount++) {
-            newData = newData + "/" + dataArray[dataCount];
-        }
-    }
-
-    baseLineData.set(valueArray[0] + "-" + newData + "-" + valueArray[2], new Map());
-
-    for (let x in keyArray) {
-        if (keyArray[x] == "Case Id") {
-            baseLineData.get(valueArray[0] + "-" + newData + "-" + valueArray[2]).set("CaseId", newData);
-        } else if (keyArray[x] == "Test Case") {
-            baseLineData.get(valueArray[0] + "-" + newData + "-" + valueArray[2]).set("TestCase", valueArray[x]);
-        } else {
-            baseLineData.get(valueArray[0] + "-" + newData + "-" + valueArray[2]).set(keyArray[x], valueArray[x]);
-        }
-    }
-})
-.on("end", function() {
-    for (let key of baseLineData.keys()) {
-        RClog("debug", "key: " + key);
-    }
-});
 
 var crashData = new Array();
 /**
@@ -984,7 +912,11 @@ var numberTotal = 0;
         var modelName = RCjson.modelName;
         var urlServer = RCjson.urlServer
         if (modelName.length == 2) {
-            remoteURL = `http://${urlServer}/webml-polyfill/test/realmodel.html`;
+            if (modelName[0] === "squeezenet1.1") {
+                remoteURL = `http://${urlServer}/webml-polyfill/test/squ_realmodel.html`;
+            } else if (modelName[0] === "mobilenetv2-1.0") {
+                remoteURL = `http://${urlServer}/webml-polyfill/test/mob_realmodel.html`;
+            }
         }else if (modelName.length == 1) {
             if (modelName[0] === "squeezenet1.1") {
                 remoteURL = `http://${urlServer}/webml-polyfill/test/real_squeezenet1.1.html`;
@@ -1289,189 +1221,6 @@ var numberTotal = 0;
         RClog("console", "checking with '" + testPrefer + "' prefer is start");
         RClog("console", "checking....\n");
 
-        await driver.executeScript("return document.documentElement.outerHTML").then(async function(html) {
-            let graspTotal, graspPass, graspFail;
-            let actions = 0;
-            let countPasses = 0;
-            let countFailures = 0;
-            let countTotal = 0;
-            let matchFlag = null;
-
-            await driver.findElement(By.xpath("//ul[@id='mocha-stats']/li[@class='passes']//em")).getText().then(function(message) {
-                RClog("debug", "passes: " + message);
-                graspPass = message >> 0;
-            });
-
-            await driver.findElement(By.xpath("//ul[@id='mocha-stats']/li[@class='failures']//em")).getText().then(function(message) {
-                RClog("debug", "failures: " + message);
-                graspFail = message >> 0;
-            });
-
-            graspTotal = graspPass + graspFail;
-
-            if (graspTotal == baselinejson[testPrefer]["total"]) {
-                matchFlag = "macth";
-            } else if (graspTotal > baselinejson[testPrefer]["total"]){
-                matchFlag = "add";
-            } else if (graspTotal < baselinejson[testPrefer]["total"]) {
-                matchFlag = "delete";
-            }
-
-            let $ = cheerio.load(html);
-
-            function getSuiteName($, suiteElement) {
-                return $(suiteElement).children("h1").children("a").text();
-            }
-
-            function checkSuiteOrCase($, suiteElement) {
-                let checkPoint = "case";
-                $(suiteElement).children("ul").children().each(function(i, element) {
-                    if ($(element).attr("class") === "suite") checkPoint = "suite";
-                });
-
-                return checkPoint;
-            }
-
-            function getCaseStatus($, caseElement) {
-                let caseStatus = $(caseElement).attr("class");
-                let resultStatus = null;
-                if (caseStatus == "test pass pending") {
-                    resultStatus = "N/A";
-                } else if (caseStatus == "test pass fast" || caseStatus == "test pass slow" || caseStatus == "test pass medium") {
-                    resultStatus = "Pass";
-                } else if (caseStatus == "test fail") {
-                    resultStatus = "Fail";
-                } else {
-                    throw new Error("not support case status");
-                }
-
-                return resultStatus;
-            }
-
-            function getCaseName($, caseElement) {
-                let caseName = $(caseElement).children("h2").text();
-                let length = caseName.length - 1;
-                $(caseElement).children("h2").children().each(function(i, element) {
-                    length = length - $(element).text().length;
-                });
-                return caseName.slice(0, length).trim();
-            }
-
-            function checkResult(titleName, moduleName, caseName, caseStatus) {
-                let key = titleName + "-" + moduleName + "-" + caseName;
-
-                if (baseLineData.has(key)) {
-                    graspDataSummary["total"] = graspDataSummary["total"] + 1;
-                    if (caseStatus == "Pass") {
-                        graspDataSummary["pass"] = graspDataSummary["pass"] + 1;
-                    } else if (caseStatus == "Fail") {
-                        graspDataSummary["fail"] = graspDataSummary["fail"] + 1;
-                    } else if (caseStatus == "N/A") {
-                        graspDataSummary["block"] = graspDataSummary["block"] + 1;
-                    }
-
-                    let baseLineStatus = baseLineData.get(key).get(testPrefer);
-                    if (caseStatus !== baseLineStatus) {
-                        if (baseLineStatus == "Pass" && caseStatus == "Fail") {
-                            pageData.get(testPrefer).get("pass2fail").push([titleName, moduleName + "-" + caseName]);
-                        } else {
-                            pageData.get(testPrefer).get("fail2pass").push([titleName, moduleName + "-" + caseName]);
-                        }
-
-                        RClog("debug", key);
-                        RClog("debug", "baseLineStatus: " + baseLineStatus + " - caseStatus: " + caseStatus);
-                    }
-                } else {
-                    RClog("debug", "no match test case: " + key);
-
-                    if (matchFlag == "macth" || matchFlag == "delete") {
-                        throw new Error("no match test case: " + key);
-                    } else {
-                        if (!newTestCaseData.get("prefers").has(testPrefer)) {
-                            newTestCaseData.get("prefers").set(testPrefer, true);
-                        }
-
-                        if (!newTestCaseData.has(key)) {
-                            newTestCaseData.set(key, new Map());
-                            newTestCaseData.get(key).set("title", titleName);
-                            newTestCaseData.get(key).set("caseID", moduleName + "-" + caseName);
-                            newTestCaseData.get(key).set("prefer", new Map());
-                            newTestCaseData.set("caseCount", newTestCaseData.get("caseCount") + 1);
-                        }
-
-                        newTestCaseData.get(key).get("prefer").set(testPrefer, caseStatus);
-                    }
-                }
-            }
-
-            // title suite
-            $("#mocha-report").children(".suite").each(function(i, titleElement) {
-                let titleName = getSuiteName($, titleElement);
-
-                if (checkSuiteOrCase($, titleElement) == "case") {
-                    let moduleName = titleName;
-
-                    // test case
-                    $(titleElement).children("ul").children("li").each(function(j, caseElement) {
-                        let caseStatus = getCaseStatus($, caseElement);
-                        let caseName = getCaseName($, caseElement);
-
-                        checkResult(titleName, moduleName, caseName, caseStatus);
-
-                        if (caseStatus == "Pass") {
-                            countPasses = countPasses + 1;
-                        } else {
-                            countFailures = countFailures + 1;
-                        }
-
-                        actions = actions + 1;
-                        RClog("console", "\033[1A\033[50D\033[K    grasping: " + actions + "/" + graspTotal);
-                    });
-                } else {
-                    // module suite
-                    $(titleElement).children("ul").children(".suite").each(function(j, moduleElement) {
-                        let moduleName = getSuiteName($, moduleElement).split("#")[1];
-
-                        if (checkSuiteOrCase($, moduleElement) == "case") {
-                            // test case
-                            $(moduleElement).children("ul").children("li").each(function(k, caseElement) {
-                                let caseStatus = getCaseStatus($, caseElement);
-                                let caseName = getCaseName($, caseElement);
-
-                                checkResult(titleName, moduleName, caseName, caseStatus);
-
-                                if (caseStatus == "Pass") {
-                                    countPasses = countPasses + 1;
-                                } else {
-                                    countFailures = countFailures + 1;
-                                }
-
-                                actions = actions + 1;
-                                RClog("console", "\033[1A\033[50D\033[K    grasping: " + actions + "/" + graspTotal);
-                            });
-                        }
-                    });
-                }
-            });
-
-            if (graspPass != countPasses) {
-                RClog("console", graspPass + " : " + countPasses);
-                throw new Error("It's wrong to passed result!");
-            }
-
-            if (graspFail != countFailures) {
-                RClog("console", graspFail + " : " + countFailures);
-                throw new Error("It's wrong to failed result!");
-            }
-
-            countTotal = countPasses + countFailures;
-            RClog("console", "grasp all test case: " + countTotal);
-            RClog("debug", "    Web passes: " + graspPass);
-            RClog("debug", "  Check passes: " + countPasses);
-            RClog("debug", "  Web failures: " + graspFail);
-            RClog("debug", "Check failures: " + countFailures);
-            RClog("debug", "         TOTAL: " + graspTotal);
-        });
 
         RClog("time", "mark");
 
