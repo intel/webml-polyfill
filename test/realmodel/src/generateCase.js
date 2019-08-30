@@ -26,6 +26,7 @@ function mkdirsSync(dirname) {
   }
 }
 mkdirsSync(case_path);
+
 async function saveToLocalFile(input) {
   let output = input.toString();
   let dataString;
@@ -87,7 +88,7 @@ async function splitContext(context) {
   let inputDims = (await gettensorTypes(inputFile));
   let outputFile = context[2][0];
   let outputDims = (await gettensorTypes(outputFile));
-  await saveToLocalFile(inputFile);  
+  await saveToLocalFile(inputFile);
   await saveToLocalFile(outputFile);
   switch(context[0]) {
   case 1: {
@@ -168,14 +169,14 @@ async function splitContext(context) {
       let output_output = new Float32Array(type2_length);
       execution.setOutput(0, output_output);
       let list = [];
-      iterations = Number(options.iterations) + 1
+      iterations = Number(options.iterations) + 1;
       for (let i = 0; i < iterations; i++) {
         let tStart = performance.now();
         await execution.startCompute();
         let computeTime = performance.now() - tStart;
         list.push(computeTime);
       };
-      list.shift()
+      list.shift();
       let d = list.reduce((d, v) => {
         d.sum += v;
         return d;
@@ -183,7 +184,7 @@ async function splitContext(context) {
         sum: 0,
       });
       let avg = d.sum/list.length;
-      let data = {"layer": "layer-${layer}","Model": "${JSON_DATA.getModelName()}","Ops": "AVERAGE_POOL_2D", "avg": avg, "bias": "null", "weight": "null", "input dimensions": [${inputDims}], "output dimensions": [${outputDims}], "stride": [${stride}], "filter": [${filter}], "padding": [${padding}], "activation": [${activation}], "axis": "null", "shapeLen": "null", "shapeValues": "null"}
+      let data = {"layer": "layer-${layer}", "Model": "${JSON_DATA.getModelName()}", "Ops": "AVERAGE_POOL_2D", "avg": avg, "bias": "null", "weight": "null", "input dimensions": [${inputDims}], "output dimensions": [${outputDims}], "stride": [${stride}], "filter": [${filter}], "padding": [${padding}], "activation": [${activation}], "axis": "null", "shapeLen": "null", "shapeValues": "null"}
       data = JSON.stringify(data);
       document.getElementById("avg").insertAdjacentText("beforeend", data);
       document.getElementById("avg").insertAdjacentText("beforeend", ",");
@@ -273,7 +274,7 @@ async function splitContext(context) {
     let output_output = new Float32Array(type2_length);
     execution.setOutput(0, output_output);
     let list = [];
-    iterations = Number(options.iterations) + 1
+    iterations = Number(options.iterations) + 1;
     for (let i = 0; i < iterations ; i++) {
       let tStart = performance.now();
       await execution.startCompute();
@@ -281,7 +282,7 @@ async function splitContext(context) {
       list.push(computeTime);
     };
     let sum = 0;
-    list.shift()
+    list.shift();
     let d = list.reduce((d, v) => {
       d.sum += v;
       return d;
@@ -386,7 +387,7 @@ async function splitContext(context) {
     let output_output = new Float32Array(type3_length);
     execution.setOutput(0, output_output);
     let list = [];
-    iterations = Number(options.iterations) + 1
+    iterations = Number(options.iterations) + 1;
     for (let i = 0; i < iterations; i++) {
       let tStart = performance.now();
       await execution.startCompute();
@@ -394,7 +395,7 @@ async function splitContext(context) {
       list.push(computeTime);
     };
     let sum = 0;
-    list.shift()
+    list.shift();
     let d = list.reduce((d, v) => {
       d.sum += v;
       return d;
@@ -525,7 +526,7 @@ async function splitContext(context) {
     let op4_output = new Float32Array(type1_length);
     execution.setOutput(0, op4_output);
     let list = [];
-    iterations = Number(options.iterations) + 1
+    iterations = Number(options.iterations) + 1;
     for (let i = 0; i < iterations; i++) {
       let tStart = performance.now();
       await execution.startCompute();
@@ -533,7 +534,7 @@ async function splitContext(context) {
       list.push(computeTime);
     };
     let sum = 0;
-    list.shift()
+    list.shift();
     let d = list.reduce((d, v) => {
       d.sum += v;
       return d;
@@ -622,7 +623,7 @@ async function splitContext(context) {
     let op3_output = new Float32Array(type2_length);
     execution.setOutput(0, op3_output);
     let list = [];
-    iterations = Number(options.iterations) + 1
+    iterations = Number(options.iterations) + 1;
     for (let i = 0; i < iterations; i++) {
       let tStart = performance.now();
       await execution.startCompute();
@@ -630,7 +631,7 @@ async function splitContext(context) {
       list.push(computeTime);
     };
     let sum = 0;
-    list.shift()
+    list.shift();
     let d = list.reduce((d, v) => {
       d.sum += v;
       return d;

@@ -36,12 +36,11 @@ function almostEqualCTS(a, b) {
   return almostEqual(a, b, episilonCTS)
 }
 
-function setOptions_perLayer() {
+function setOptions_PerLayer() {
     // visit URL(http://domain-name/test/index.html?prefer=fast/sustained/low)
     var parameterStr = window.location.search.substr(1);
     var reg = new RegExp("(^|&)prefer=([^&]*)&iterations=([^&]*)&API=([^&]*)&platform=([^&]*)&supportSwitch=([^&]*)(&|$)", "i");
     var r = parameterStr.match(reg);
-    // console.log('r:',r);
     var macosPlatforms = ['Macintosh', 'MacIntel', 'MacPPC', 'Mac68K'];
     var windowsPlatforms = ['Win32', 'Win64', 'Windows', 'WinCE'];
     if (r != null) {
@@ -99,27 +98,25 @@ function setOptions_perLayer() {
 function setOptions() {
   // visit URL(http://domain-name/test/index.html?prefer=fast/sustained/low)
   var parameterStr = window.location.search.substr(1);
-  var reg = new RegExp("(^|&)prefer=([^&]*)&iterations=([^&]*)(&|$)", "i");
+  var reg = new RegExp("(^|&)prefer=([^&]*)(&|$)", "i");
   var r = parameterStr.match(reg);
-  // console.log('r:',r);
   var macosPlatforms = ['Macintosh', 'MacIntel', 'MacPPC', 'Mac68K'];
   var windowsPlatforms = ['Win32', 'Win64', 'Windows', 'WinCE'];
   if (r != null) {
     var prefer = unescape(r[2]).toLowerCase();
-    var iterations = unescape(r[3]).toLowerCase();
     if(navigator.ml.isPolyfill) {
       if (prefer === "fast") {
         options = {
           "backend": 'WASM',
           "prefer": 'fast',
-          'iterations': iterations
+          'iterations': "1"
 
         };
       } else if (prefer === "sustained") {
         options = {
           "backend": 'WebGL',
           "prefer": 'sustained',
-          'iterations': iterations
+          'iterations': "1"
         };
       }
     } else {
@@ -129,7 +126,7 @@ function setOptions() {
         options = {
           "backend": 'WebML',
           "prefer": 'sustained',
-          'iterations': iterations
+          'iterations': "1"
         };
         // As MPS computes on FP16, use 5ULP of FP16 range
         if (macosPlatforms.indexOf(navigator.platform) !== -1 || windowsPlatforms.indexOf(navigator.platform) !== -1) {
@@ -142,14 +139,14 @@ function setOptions() {
         options = {
           "backend": 'WebML',
           "prefer": 'fast',
-          'iterations': iterations
+          'iterations': "1"
         };
       } else if (prefer === "low") {
         prefer = nn.PREFER_LOW_POWER;
         options = {
           "backend": 'WebML',
           "prefer": 'low',
-          'iterations': iterations
+          'iterations': "1"
         };
       }
     }

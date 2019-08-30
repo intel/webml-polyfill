@@ -913,9 +913,9 @@ var numberTotal = 0;
         var urlServer = RCjson.urlServer
         if (modelName.length == 2) {
             if (modelName[0] === "squeezenet1.1") {
-                remoteURL = `http://${urlServer}/webml-polyfill/test/squ_realmodel.html`;
+                remoteURL = `http://${urlServer}/webml-polyfill/test/real_squeezenet1.1_mobilenetv2-1.0.html`;
             } else if (modelName[0] === "mobilenetv2-1.0") {
-                remoteURL = `http://${urlServer}/webml-polyfill/test/mob_realmodel.html`;
+                remoteURL = `http://${urlServer}/webml-polyfill/test/real_mobilenetv2-1.0_squeezenet1.1.html`;
             }
         }else if (modelName.length == 1) {
             if (modelName[0] === "squeezenet1.1") {

@@ -22,23 +22,14 @@ stream.on('end', () => {
 let begin = `
 <html>
 <head>
-  <style type="text/css">
-  table {
-  border: 1px solid black;
-  border-collapse: collapse;
-  }
-  td,th {
-  border: 1px solid black;
-  }
-  </style>
   <meta charset="utf-8">
   <title>WebML Polyfill | Mocha Tests</title>
   <link href='./static/mocha/3.0.2/mocha.css' rel='stylesheet'>
 </head>
 <body>
-  <p id = "avg" style="display:none"></p>
+  <p id="avg" style="display:none"></p>
   </div>
-  <div id = "mocha"></div>
+  <div id="mocha"></div>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/mocha/4.0.1/mocha.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/chai/4.1.2/chai.min.js"></script>
@@ -52,8 +43,7 @@ let begin = `
     mocha.setup('bdd');
   </script>`
 
-
-  let end = ` <script>
+let end = ` <script>
   window.mochaFinish = false;
   mocha.globals(['jQuery']);
   mocha.run(function() {window.mochaFinish = true});

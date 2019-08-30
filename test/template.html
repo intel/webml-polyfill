@@ -14,10 +14,10 @@
   <link href='./static/mocha/3.0.2/mocha.css' rel='stylesheet'>
 </head>
 <body>
-  <p id = "avg" style="display:none"></p>
-  <div id = "result" style="display:none">
-    <p id = "testPlatform"></p>
-    <p id = "iterations">Iterations: 1(warming up) + </p>
+  <p id="avg" style="display:none"></p>
+  <div id="result" style="display:none">
+    <p id="testPlatform"></p>
+    <p id="iterations">Iterations: 1(warming up) + </p>
     <table>
       <tr>
       <th>Layer</th>  
@@ -38,7 +38,7 @@
       </tr>
     </table> 
   </div>
-  <div id = "mocha"></div>
+  <div id="mocha"></div>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/mocha/4.0.1/mocha.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/chai/4.1.2/chai.min.js"></script>
@@ -46,7 +46,7 @@
   <script src="../dist/webml-polyfill.js"></script>
   <script src="./utils.js"></script>
   <script>
-    setOptions_perLayer();
+    setOptions_PerLayer();
   </script>
   <script>
     mocha.setup('bdd');
@@ -63,15 +63,15 @@
       avg_text = '[' + avg_text.slice(0,-1) + ']';
       avg_data = JSON.parse(avg_text);
       setTimeout(() => {
-        var table = document.getElementsByTagName ('table')[0];
+        var table = document.getElementsByTagName('table')[0];
         for(var i = 0; i < avg_data.length; i++) {
-          var tr = table.insertRow (table.rows.length);
+          var tr = table.insertRow(table.rows.length);
           var obj = avg_data[i];
           for(var p in obj) {
             if(p == 'tenancy') {
               break;
             }
-            var td = tr.insertCell (tr.cells.length);
+            var td = tr.insertCell(tr.cells.length);
             td.innerText = obj[p];
           }
         };
@@ -82,29 +82,28 @@
         var prefer = unescape(r[2]).toLowerCase();
         var iterations = unescape(r[3]).toLowerCase();
         var API = unescape(r[4]).toLowerCase();
-        var testPlatform = unescape(r[5])
+        var testPlatform = unescape(r[5]);
         var supportSwitch = unescape(r[6]).toLowerCase();
-
       };
-      document.getElementById("iterations").insertAdjacentText("beforeend",iterations);
+      document.getElementById("iterations").insertAdjacentText("beforeend", iterations);
       if (supportSwitch === "true") {
-        if (testPlatform === "Mac" && API === "webnn" && prefer==="fast") {
-          document.getElementById("testPlatform").insertAdjacentText("beforeend",testPlatform +' / '+ API +' / '+prefer+' / '+'MKLDNN');
-        } else if (testPlatform === "Windows" && API === "webnn" && prefer==="sustained") {
-          document.getElementById("testPlatform").insertAdjacentText("beforeend",testPlatform +' / '+ API +' / '+prefer+' / '+'DML');
-        } else if (testPlatform === "Windows" && API === "webnn" && prefer==="low") {
-          document.getElementById("testPlatform").insertAdjacentText("beforeend",testPlatform +' / '+ API +' / '+prefer+' / '+'DML');
-        } else if (testPlatform === "Linux" && API === "webnn" && prefer==="fast") {
-          document.getElementById("testPlatform").insertAdjacentText("beforeend",testPlatform +' / '+ API +' / '+prefer+' / '+'IE-MKLDNN');
-        } else if (testPlatform === "Linux" && API === "webnn" && prefer==="sustained") {
-          document.getElementById("testPlatform").insertAdjacentText("beforeend",testPlatform +' / '+ API +' / '+prefer+' / '+'IE-clDNN');
-        } else if (testPlatform === "Linux" && API === "webnn" && prefer==="low") {
-          document.getElementById("testPlatform").insertAdjacentText("beforeend",testPlatform +' / '+ API +' / '+prefer+' / '+'IE-MYRIAD');
+        if (testPlatform === "Mac" && API === "webnn" && prefer === "fast") {
+          document.getElementById("testPlatform").insertAdjacentText("beforeend", testPlatform + ' / ' + API + ' / ' + prefer + ' / ' + 'MKLDNN');
+        } else if (testPlatform === "Windows" && API === "webnn" && prefer === "sustained") {
+          document.getElementById("testPlatform").insertAdjacentText("beforeend", testPlatform + ' / ' + API + ' / ' + prefer + ' / ' + 'DML');
+        } else if (testPlatform === "Windows" && API === "webnn" && prefer === "low") {
+          document.getElementById("testPlatform").insertAdjacentText("beforeend", testPlatform + ' / ' + API + ' / ' + prefer + ' / ' + 'DML');
+        } else if (testPlatform === "Linux" && API === "webnn" && prefer === "fast") {
+          document.getElementById("testPlatform").insertAdjacentText("beforeend", testPlatform + ' / ' + API + ' / ' + prefer + ' / ' + 'IE-MKLDNN');
+        } else if (testPlatform === "Linux" && API === "webnn" && prefer === "sustained") {
+          document.getElementById("testPlatform").insertAdjacentText("beforeend", testPlatform + ' / ' + API + ' / ' + prefer + ' / ' + 'IE-clDNN');
+        } else if (testPlatform === "Linux" && API === "webnn" && prefer === "low") {
+          document.getElementById("testPlatform").insertAdjacentText("beforeend", testPlatform + ' / ' + API + ' / ' + prefer + ' / ' + 'IE-MYRIAD');
         } else {
-          document.getElementById("testPlatform").insertAdjacentText("beforeend",testPlatform +' / '+ API +' / '+prefer);
+          document.getElementById("testPlatform").insertAdjacentText("beforeend", testPlatform + ' / ' + API + ' / ' + prefer);
         }
       } else {
-        document.getElementById("testPlatform").insertAdjacentText("beforeend",testPlatform +' / '+ API +' / '+prefer);
+        document.getElementById("testPlatform").insertAdjacentText("beforeend", testPlatform + ' / ' + API + ' / ' + prefer);
       }
       document.getElementById("result").style.display = "block";
     });
