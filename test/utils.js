@@ -36,7 +36,7 @@ function almostEqualCTS(a, b) {
   return almostEqual(a, b, episilonCTS)
 }
 
-function setOptions_PerLayer() {
+function setOptionsPerLayer() {
     // visit URL(http://domain-name/test/index.html?prefer=fast/sustained/low)
     var parameterStr = window.location.search.substr(1);
     var reg = new RegExp("(^|&)prefer=([^&]*)&iterations=([^&]*)&API=([^&]*)&platform=([^&]*)&supportSwitch=([^&]*)(&|$)", "i");
@@ -46,7 +46,7 @@ function setOptions_PerLayer() {
     if (r != null) {
       var prefer = unescape(r[2]).toLowerCase();
       var iterations = unescape(r[3]).toLowerCase();
-      if(navigator.ml.isPolyfill) {
+      if (navigator.ml.isPolyfill) {
         if (prefer === "fast") {
           options = {
             "backend": 'WASM',
@@ -104,7 +104,7 @@ function setOptions() {
   var windowsPlatforms = ['Win32', 'Win64', 'Windows', 'WinCE'];
   if (r != null) {
     var prefer = unescape(r[2]).toLowerCase();
-    if(navigator.ml.isPolyfill) {
+    if (navigator.ml.isPolyfill) {
       if (prefer === "fast") {
         options = {
           "backend": 'WASM',

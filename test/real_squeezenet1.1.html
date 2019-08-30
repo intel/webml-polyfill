@@ -2,11 +2,11 @@
 <head>
   <style type="text/css">
   table {
-  border: 1px solid black;
-  border-collapse: collapse;
+    border: 1px solid black;
+    border-collapse: collapse;
   }
   td,th {
-  border: 1px solid black;
+    border: 1px solid black;
   }
   </style>
   <meta charset="utf-8">
@@ -46,7 +46,7 @@
   <script src="../dist/webml-polyfill.js"></script>
   <script src="./utils.js"></script>
   <script>
-    setOptions_PerLayer();
+    setOptionsPerLayer();
   </script>
   <script>
     mocha.setup('bdd');
@@ -99,11 +99,11 @@
       avg_data = JSON.parse(avg_text);
       setTimeout(() => {
         var table = document.getElementsByTagName('table')[0];
-        for(var i = 0; i < avg_data.length; i++) {
+        for (var i = 0; i < avg_data.length; i++) {
           var tr = table.insertRow(table.rows.length);
           var obj = avg_data[i];
-          for(var p in obj) {
-            if(p == 'tenancy') {
+          for (var p in obj) {
+            if (p == 'tenancy') {
               break;
             }
             var td = tr.insertCell(tr.cells.length);

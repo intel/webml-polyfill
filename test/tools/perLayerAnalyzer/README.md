@@ -1,32 +1,55 @@
 ## PerLayerAnalyzer
-This is an automation tool kit to automatically test the realmodel and generate the display results on the page.
+This is an automation tool kit to automatically test the every layer of realmodel testcase and generate the display results on the page.
 
 ## Prerequisites
 * Chromium build is required to be installed on the target device before the test.
-* For checking PRs relevant to Android platform, host pc needs install chrome or chromium browser firstly.
+* For test Android platform, host pc needs install chrome or chromium browser firstly.
 
-## Here Are Two Ways To Run This TOOL:
+## Here Are Two Ways To Run This TOOL :
 
-#### The One Way (Depends on our server environment)
+#### The First Way ( Depends on our local server environment )
 
-* If you want to use the environment we've already deployed, you can go directly to git clone
-**$ git clone https://github.com/intel/webml-polyfill.git** and **$ cd  webml-polyfill/test/tools/perLayerAnayzer/** directory.
+* If you want to use the environment we've already deployed, you can run the following command 
+```sh
+   $  git clone https://github.com/intel/webml-polyfill.git
+```
+```sh
+   $  cd webml-polyfill/test/tools/perLayerAnayzer
+```
+```sh
+   $  npm install
+```
 
-* Then you can type **$ npm install** in Terminal and change some Settings in the **webml-polyfill/test/tools/perLayerAnayzer/config.json** fill   of the current directory. See **## Install** and **## Set Configurations** for more tips.
+* Then change Settings in the **webml-polyfill/test/tools/perLayerAnayzer/config.json** fill.
 
-* Finally, execute the command **$ npm start** in the current directory. See **## Run Tests** for more tips.
+* Finally, execute the command
+```sh
+   $  npm start
+```
 
-#### The Second Way (Create your own server and environment)
+#### The Second Way ( Create your own server and environment )
 
-* First of all, you generate the realmodel related testcase locally according to **TWO modelNames**, you can click this [link](https://github.com/intel/webml-polyfill/blob/master/test/realmodel/README.md) (Make sure the server always open)
+* First you need generate the realmodel related testcase locally according to **TWO modelNames**, you can click on this [link](https://github.com/intel/webml-polyfill/blob/master/test/realmodel/README.md) ( Make sure the server always open )
 
-* You need to modify the code of **webml-polyfill/test/tools/perLayerAnayzer/src/main.js** in **line 916,918,922,924** like: remoteURL = `http://${urlServer}/test/squ_realmodel.html`, (Remove **webml-polyfill** from inside)
+* You need to Remove **'/webml-polyfill'** from **webml-polyfill/test/tools/perLayerAnayzer/src/main.js** in **line 916,918,922,924** . Like: 
+```javascript
+   remoteURL = `http://${urlServer}/test/squ_realmodel.html`
+```
 
-* Finally you can perform **the One Way** steps two and three.
+* Finally, change the config.json file like first way and execute the command
+```sh
+   $  cd webml-polyfill/test/tools/perLayerAnayzer
+```
+```sh
+   $  npm install
+```
+```sh
+   $  npm start
+```
 
 ## Install
 ```sh
-   $ npm install
+   $  npm install
 ```
    You need modify chromedriver version to '2.45.0' in package.json when you run chromium 70 build. chromedriver 2.46.0 supports chromium >=71.
 
@@ -77,13 +100,13 @@ This is an automation tool kit to automatically test the realmodel and generate 
    }
 ```
    You need modify these eight fields for the different platforms:
-   + **_urlServer_**: `{string}`, Server IP address, port number 8080(if you use our environment, Server IP you can ask the developer concerned).
-   + **_modelName_**: `{array}`, There are three options **["squeezenet1.1"]**, **["mobilenetv2-1.0"]**, **["squeezenet1.1", "mobilenetv2-1.0"]** to dispaly the model data you want.
+   + **_urlServer_**: `{string}`, Server IP address, port number 8080.
+   + **_modelName_**: `{array}`, We support **squeezenet1.1**, **mobilenetv2-1.0** two models, you need choose **["squeezenet1.1"]** , **["mobilenetv2-1.0"]** , **["squeezenet1.1", "mobilenetv2-1.0"]** , **["mobilenetv2-1.0", "squeezenet1.1"]** .
    + **_platform_**: `{string}`, target platform, support **Android**, **Mac**, **Linux** and **Windows**.
    + **_chromiumPath_**: `{string}`, **Mac**/**Linux**/**Windows**: the target chromium path **Android**: the chrome or chromium path in above Prerequisites to show the final checking results.
    + **_supportSwitch_**: `{boolean}`, support **true** and **false**.
-   + **_API_**: `{string}`, choose to  **polyfill** , **webnn**.
-   + **_preference_**: `{string}`, choose to  **fast** , **sustained**, **low**.
+   + **_API_**: `{string}`, choose to **polyfill** and **webnn**.
+   + **_preference_**: `{string}`, choose to  **fast** , **sustained** and **low**.
    + **_iterations _**: `{string}`, set the number of times you want to run the realmodel case.
 
 |    |  Platform  |  Fast  |  Sustained  |  Low  |
@@ -98,12 +121,6 @@ This is an automation tool kit to automatically test the realmodel and generate 
 |  swith:false API:polyfill  |  macOS  |   WASM   |   WebGL   |      |
 |  swith:false API:polyfill  |  Linux  |   WASM   |   WebGL   |      |
 
-  
-## Run Tests
-
-```sh
-$ npm start
-```
 
 ## Support Platforms
 
@@ -112,21 +129,17 @@ $ npm start
 |  PASS   |   PASS  |    PASS   |    PASS   |
 
 
-## How TO Use Template.html File (If you use one of the above ways, you don`t follow these steps.)
+## How TO Use Template.html File ( If you use one of the above ways, you don`t  need follow these steps )
 
-* In the near future, We will add new modelName testcase. then, you can use **webml-polyfill/test/template.html** file to what you want to run.
-* Please Follow These Steps:
+* In the near future, We w add new modelName testcase. You can import names of your new generated realmodel testcase file in the **line 54-57** of **webml-polyfill/test/template.html** file. Like:
+```javascript
+   <script src="./realmodel/testcase/squeezenet1.1/squeezenet1.1-conv2d-1.js"></script>
+```
+* Then you should chang the name of **template.html** by modelname
 
-* You can import your generated realmodel testcase file name in the **line 54** of **webml-polyfill/test/template.html** file in the current directory.
-
-* For example: **<script src="./realmodel/testcase/squeezenet1.1/squeezenet1.1-conv2d-1.js"></script>**  in the code of **webml-polyfill/test/tools/perLayerAnayzer/template.html**.
-
-* you can **CP** to the **modelName.HTML** files generated by the realmodel, for example : **line 33-71** of **webml-polyfill/test/squeezenet1.1.html**.
-
-* if you want to test **squeezenet1.1**, you should change the **template.html** file name to **real_squeezenet1.1.html**.
-
-* if you want to test **mobilenetv2-1.0**, you should change the **template.html** file name to **real_mobilenetv2-1.0.html**.
-
-* if you want to test **mobilenetv2-1.0** and **squeezenet1.1**, you should change the **template.html** file name to **real_mobilenetv2-1.0_squeezenet1.1.html**.
-
-* if you want to test **squeezenet1.1** and **mobilenetv2-1.0**, you should change the **template.html** file name to **real_squeezenet1.1_mobilenetv2-1.0.html**.
+|  ModelName  |   OldFileName   |  NewFileName  |
+|  :-----  |  :-----:  |   :-------   |
+|  squeezenet1.1   |   template.html  |    real_squeezenet1.1.html   |
+|  mobilenetv2-1.0  |   template.html   |  real_mobilenetv2-1.0.html  |
+|  squeezenet1.1, mobilenetv2-1.0   |  template.html  |   real_squeezenet1.1_mobilenetv2-1.0.html   |
+|  mobilenetv2-1.0, squeezenet1.1   |   template.html  |    real_mobilenetv2-1.0_squeezenet1.1.html  |
