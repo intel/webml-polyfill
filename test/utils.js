@@ -52,7 +52,6 @@ function setOptionsPerLayer() {
             "backend": 'WASM',
             "prefer": 'fast',
             'iterations': iterations
-
           };
         } else if (prefer === "sustained") {
           options = {
@@ -110,7 +109,6 @@ function setOptions() {
           "backend": 'WASM',
           "prefer": 'fast',
           'iterations': "1"
-
         };
       } else if (prefer === "sustained") {
         options = {
@@ -152,7 +150,6 @@ function setOptions() {
     }
   }
 }
-
 
 function getPreferenceCode(preferenceStr) {
   let prefer;

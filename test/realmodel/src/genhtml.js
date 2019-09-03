@@ -43,7 +43,7 @@ let begin = `
   </script>`
 
 
-  let end = ` <script>
+let end = ` <script>
     window.mochaFinish = false;
     mocha.globals(['jQuery']);
     mocha.run(function() {window.mochaFinish = true});
