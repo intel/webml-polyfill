@@ -62,6 +62,8 @@ interface NeuralNetworkContext {
   const long MAXIMUM = 65;
   const long ATROUS_CONV_2D = 10003;
   const long ATROUS_DEPTHWISE_CONV_2D = 10004;
+  const long ARGMAX = 10005;
+  const long ARGMIN = 10006;
 
   // Fused activation function types.
   const long FUSED_NONE = 0;
