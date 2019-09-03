@@ -134,7 +134,7 @@
     mocha.run(async function() {
       var obj = document.getElementById("avg");
       var avg_text = obj.innerHTML;
-      avg_text = '[' + avg_text.slice(0,-1) + ']';
+      avg_text = '[' + avg_text.slice(0, -1) + ']';
       avg_data = JSON.parse(avg_text);
       setTimeout(() => {
         var table = document.getElementsByTagName('table')[0];
