@@ -59,11 +59,11 @@ interface NeuralNetworkContext {
   const long TANH = 28;
   const long BATCH_TO_SPACE_ND = 29;
   const long TRANSPOSE = 37;
+  const long ARGMAX = 39;
+  const long ARGMIN = 40;
   const long MAXIMUM = 65;
   const long ATROUS_CONV_2D = 10003;
   const long ATROUS_DEPTHWISE_CONV_2D = 10004;
-  const long ARGMAX = 10005;
-  const long ARGMIN = 10006;
 
   // Fused activation function types.
   const long FUSED_NONE = 0;

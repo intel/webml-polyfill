@@ -1245,6 +1245,42 @@ export const OperationCode = {
    */
   TRANSPOSE: 37,
 
+  /** Returns the index of the largest element along an axis.
+   *
+   * Supported tensor types:
+   * * {@link TENSOR_FLOAT32}
+   * * {@link TENSOR_INT32}
+   * * {@link TENSOR_QUANT8_ASYMM}
+   *
+   * Supported tensor rank: from 1
+   *
+   * Inputs:
+   * * 0: An n-D tensor specifying the input. Must be non-empty.
+   * * 1: An INT32 scalar specifying the axis to reduce across. Negative index is used to specify axis from the end (e.g. -1 for the last axis). Must be in the range [-n, n).
+   *
+   * Outputs:
+   * * 0: An (n - 1)-D TENSOR_INT32 tensor.
+   */
+  ARGMAX: 39,
+
+  /** Returns the index of the smallest element along an axis.
+   *
+   * Supported tensor types:
+   * * {@link TENSOR_FLOAT32}
+   * * {@link TENSOR_INT32}
+   * * {@link TENSOR_QUANT8_ASYMM}
+   *
+   * Supported tensor rank: from 1
+   *
+   * Inputs:
+   * * 0: An n-D tensor specifying the input. Must be non-empty.
+   * * 1: An INT32 scalar specifying the axis to reduce across. Negative index is used to specify axis from the end (e.g. -1 for the last axis). Must be in the range [-n, n).
+   *
+   * Outputs:
+   * * 0: An (n - 1)-D TENSOR_INT32 tensor.
+   */
+  ARGMIN: 40,
+
   /**
    * Returns the element-wise maximum of two tensors.
    *
@@ -1405,42 +1441,6 @@ export const OperationCode = {
    *      condition must be satisfied: output_scale > input_scale * filter_scale.
    */
   ATROUS_DEPTHWISE_CONV_2D: 10004,
-
-  /** Returns the index of the largest element along an axis.
-   *
-   * Supported tensor types:
-   * * {@link TENSOR_FLOAT32}
-   * * {@link TENSOR_INT32}
-   * * {@link TENSOR_QUANT8_ASYMM}
-   *
-   * Supported tensor rank: from 1
-   *
-   * Inputs:
-   * * 0: An n-D tensor specifying the input. Must be non-empty.
-   * * 1: An INT32 scalar specifying the axis to reduce across. Negative index is used to specify axis from the end (e.g. -1 for the last axis). Must be in the range [-n, n).
-   *
-   * Outputs:
-   * * 0: An (n - 1)-D TENSOR_INT32 tensor.
-   */
-   ARGMAX: 10005,
-
-  /** Returns the index of the smallest element along an axis.
-   *
-   * Supported tensor types:
-   * * {@link TENSOR_FLOAT32}
-   * * {@link TENSOR_INT32}
-   * * {@link TENSOR_QUANT8_ASYMM}
-   *
-   * Supported tensor rank: from 1
-   *
-   * Inputs:
-   * * 0: An n-D tensor specifying the input. Must be non-empty.
-   * * 1: An INT32 scalar specifying the axis to reduce across. Negative index is used to specify axis from the end (e.g. -1 for the last axis). Must be in the range [-n, n).
-   *
-   * Outputs:
-   * * 0: An (n - 1)-D TENSOR_INT32 tensor.
-   */
-  ARGMIN: 10006,
 };
 
 export const ResultCode = {
