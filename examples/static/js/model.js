@@ -12,7 +12,7 @@ function isONNX(modelname){
 }
 
 function showModel(div, modelcategory) {
-  let rowstring, row;  
+  let rowstring, row;
   modelcategory.map(model => {
     row = '<tr>';
     let name = '<td scope=\'col\' class=\'name\'>' + getModelName(model.modelId) + '</td>';
@@ -57,4 +57,5 @@ $(document).ready(function () {
   showModel('#modelcv-fld tbody', facialLandmarkDetectionModels)
   showModel('#modelcv-ea tbody', emotionAnalysisModels)
   showModel('#modelnoncv-sc tbody', speechCommandModels)
+  showModel('#modelcv-fr tbody', faceRecognitionModels)
 });

@@ -788,6 +788,23 @@ speechCommandModels: [{
   labelsFile: '../speech_commands/model/labels.txt',
   intro: 'Use Convolutional Neural Networks (CNNs) for a small-footprint keyword spotting (KWS) task.',
   paperUrl: 'https://www.isca-speech.org/archive/interspeech_2015/papers/i15_1478.pdf'
+}],
+
+faceRecognitionModels: [{
+  modelName: 'FaceNet (OpenVino)',
+  format: 'OpenVino',
+  modelId: 'facenet_OpenVino',
+  modelSize: '93.9MB',
+  modelFile: '../face_recognition/model/facenet.bin',
+  inputSize: [1, 160, 160, 3],
+  outputSize: [1, 512],
+  threshold: 1.26,
+  preOptions: {
+    channelScheme: 'BGR',
+    format: 'NHWC'
+  },
+  intro: 'A simple CNN model for face recognition which learns discriminative features of faces and produces embeddings for input face images.',
+  paperUrl: 'https://arxiv.org/abs/1503.03832'
 }]
 
 };
@@ -929,7 +946,7 @@ const operationTypes = {
    65: 'MAXIMUM',
    10003: 'ATROUS_CONV_2D',
    10004: 'ATROUS_DEPTHWISE_CONV_2D'
-} 
+}
 
 const getUrlParams = (prop) => {
   var params = {};
