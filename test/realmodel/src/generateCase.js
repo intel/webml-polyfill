@@ -168,10 +168,26 @@ async function splitContext(context) {
       execution.setInput(0, i0_input);
       let output_output = new Float32Array(type2_length);
       execution.setOutput(0, output_output);
-      let tStart = performance.now();
-      await execution.startCompute();
-      let computeTime = performance.now() - tStart;
-      console.log('layer-${layer} AVERAGE_POOL_2D of ${JSON_DATA.getModelName()} model, compute time: %f ms, input dimensions: [${inputDims}], output dimensions: [${outputDims}], stride: [${stride}], filter: [${filter}], padding: [${padding}], activation: [${activation}]', computeTime)
+      let list = [];
+      iterations = Number(options.iterations) + 1;
+      for (let i = 0; i < iterations; i++) {
+        let tStart = performance.now();
+        await execution.startCompute();
+        let computeTime = performance.now() - tStart;
+        list.push(computeTime);
+      };
+      list.shift();
+      let d = list.reduce((d, v) => {
+        d.sum += v;
+        return d;
+      }, {
+        sum: 0,
+      });
+      let avg = d.sum/list.length;
+      let data = {"layer": "layer-${layer}", "Model": "${JSON_DATA.getModelName()}", "Ops": "AVERAGE_POOL_2D", "avg": avg, "bias": "null", "weight": "null", "input dimensions": [${inputDims}], "output dimensions": [${outputDims}], "stride": [${stride}], "filter": [${filter}], "padding": [${padding}], "activation": [${activation}], "axis": "null", "shapeLen": "null", "shapeValues": "null"}
+      data = JSON.stringify(data);
+      document.getElementById("avg").insertAdjacentText("beforeend", data);
+      document.getElementById("avg").insertAdjacentText("beforeend", ",");
       for (let i = 0; i < type2_length; ++i) {
         assert.isTrue(almostEqualCTS(output_output[i], output_expect[i]));
       }
@@ -257,10 +273,27 @@ async function splitContext(context) {
     execution.setInput(0, i0_input);
     let output_output = new Float32Array(type2_length);
     execution.setOutput(0, output_output);
-    let tStart = performance.now();
-    await execution.startCompute();
-    let computeTime = performance.now() - tStart;
-    console.log('layer-${layer} MAX_POOL_2D of ${JSON_DATA.getModelName()} model, compute time: %f ms, input dimensions: [${inputDims}], output dimensions: [${outputDims}], stride: [${stride}], filter: [${filter}], padding: [${padding}], activation: [${activation}]', computeTime)
+    let list = [];
+    iterations = Number(options.iterations) + 1;
+    for (let i = 0; i < iterations ; i++) {
+      let tStart = performance.now();
+      await execution.startCompute();
+      let computeTime = performance.now() - tStart;
+      list.push(computeTime);
+    };
+    let sum = 0;
+    list.shift();
+    let d = list.reduce((d, v) => {
+      d.sum += v;
+      return d;
+    }, {
+      sum: 0,
+    });
+    let avg = d.sum/list.length;
+    let data = {"layer": "layer-${layer}", "Model": "${JSON_DATA.getModelName()}", "Ops": "MAX_POOL_2D", "avg": avg, "bias": "null", "weight": "null", "input dimensions": [${inputDims}], "output dimensions": [${outputDims}], "stride": [${stride}], "filter": [${filter}], "padding": [${padding}], "activation": [${activation}], "axis": "null", "shapeLen": "null", "shapeValues": "null"}
+    data = JSON.stringify(data);
+    document.getElementById("avg").insertAdjacentText("beforeend", data);
+    document.getElementById("avg").insertAdjacentText("beforeend", ",");
     for (let i = 0; i < type2_length; ++i) {
       assert.isTrue(almostEqualCTS(output_output[i], output_expect[i]));
     }
@@ -353,10 +386,27 @@ async function splitContext(context) {
     execution.setInput(0, input1_input);
     let output_output = new Float32Array(type3_length);
     execution.setOutput(0, output_output);
-    let tStart = performance.now();
-    await execution.startCompute();
-    let computeTime = performance.now() - tStart;
-    console.log('layer-${layer} CONCATENATION of ${JSON_DATA.getModelName()} model, compute time: %f ms, input dimensions: [${inputDims}], output dimensions: [${outputDims}], axis: [${axis}]', computeTime)
+    let list = [];
+    iterations = Number(options.iterations) + 1;
+    for (let i = 0; i < iterations; i++) {
+      let tStart = performance.now();
+      await execution.startCompute();
+      let computeTime = performance.now() - tStart;
+      list.push(computeTime);
+    };
+    let sum = 0;
+    list.shift();
+    let d = list.reduce((d, v) => {
+      d.sum += v;
+      return d;
+    }, {
+      sum: 0,
+    });
+    let avg = d.sum/list.length;
+    let data = {"layer": "layer-${layer}", "Model": "${JSON_DATA.getModelName()}", "Ops": "CONCATENATION", "avg": avg, "bias": "null", "weight": "null", "input dimensions": [${inputDims}], "output dimensions": [${outputDims}], "stride": "null", "filter": "null", "padding": "null", "activation": "null", "axis": [${axis}], "shapeLen": "null", "shapeValues": "null"}
+    data = JSON.stringify(data);
+    document.getElementById("avg").insertAdjacentText("beforeend", data);
+    document.getElementById("avg").insertAdjacentText("beforeend", ",");
     for (let i = 0; i < type3_length; ++i) {
       assert.isTrue(almostEqualCTS(output_output[i], output_expect[i]));
     }
@@ -475,10 +525,27 @@ async function splitContext(context) {
     execution.setInput(0, op1_input);
     let op4_output = new Float32Array(type1_length);
     execution.setOutput(0, op4_output);
-    let tStart = performance.now();
-    await execution.startCompute();
-    let computeTime = performance.now() - tStart;
-    console.log('layer-${layer} CONV_2D of ${JSON_DATA.getModelName()} model, compute time: %f ms, bias: [${bias}], weight: [${weight}], input dimensions: [${inputDims}], output dimensions: [${outputDims}], pad: [${pad}], act: [${act}], stride: [${stride}]', computeTime)
+    let list = [];
+    iterations = Number(options.iterations) + 1;
+    for (let i = 0; i < iterations; i++) {
+      let tStart = performance.now();
+      await execution.startCompute();
+      let computeTime = performance.now() - tStart;
+      list.push(computeTime);
+    };
+    let sum = 0;
+    list.shift();
+    let d = list.reduce((d, v) => {
+      d.sum += v;
+      return d;
+    }, {
+      sum: 0,
+    });
+    let avg = d.sum/list.length;
+    let data = {"layer": "layer-${layer}", "Model": "${JSON_DATA.getModelName()}", "Ops": "CONV_2D", "avg": avg, "bias": [${bias}], "weight": [${weight}], "input dimensions": [${inputDims}], "output dimensions": [${outputDims}], "stride": [${stride}], "filter": "null", "padding": [${pad}], "activation": [${act}], "axis": "null", "shapeLen": "null", "shapeValues": "null"}
+    data = JSON.stringify(data);
+    document.getElementById("avg").insertAdjacentText("beforeend", data);
+    document.getElementById("avg").insertAdjacentText("beforeend", ",");
     for (let i = 0; i < type1_length; ++i) {
       assert.isTrue(almostEqualCTS(op4_output[i], op4_expect[i]));
     }
@@ -555,10 +622,27 @@ async function splitContext(context) {
     execution.setInput(0, op1_input);
     let op3_output = new Float32Array(type2_length);
     execution.setOutput(0, op3_output);
-    let tStart = performance.now();
-    await execution.startCompute();
-    let computeTime = performance.now() - tStart;
-    console.log('layer-${layer} RESHAPE of ${JSON_DATA.getModelName()} model, compute time: %f ms, input dimensions: [${inputDims}], output dimensions: [${outputDims}], shapeLen: [${shapeLen}], shapeValues: [${shapeValues}]', computeTime)
+    let list = [];
+    iterations = Number(options.iterations) + 1;
+    for (let i = 0; i < iterations; i++) {
+      let tStart = performance.now();
+      await execution.startCompute();
+      let computeTime = performance.now() - tStart;
+      list.push(computeTime);
+    };
+    let sum = 0;
+    list.shift();
+    let d = list.reduce((d, v) => {
+      d.sum += v;
+      return d;
+    }, {
+      sum: 0,
+    });
+    let avg = d.sum/list.length;
+    let data = {"layer": "layer-${layer}", "Model": "${JSON_DATA.getModelName()}", "Ops": "RESHAPE", "avg": avg, "bias": "null", "weight": "null", "input dimensions": [${inputDims}], "output dimensions": [${outputDims}], "stride": "null", "filter": "null", "padding": "null", "activation": "null", "axis": "null", "shapeLen": [${shapeLen}], "shapeValues": [${shapeValues}]}
+    data = JSON.stringify(data);
+    document.getElementById("avg").insertAdjacentText("beforeend", data);
+    document.getElementById("avg").insertAdjacentText("beforeend", ",");
     for (let i = 0; i < type2_length; ++i) {
       assert.isTrue(almostEqualCTS(op3_output[i], op3_expect[i]));
     }

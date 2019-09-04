@@ -373,7 +373,7 @@ if (testPlatform == "Android") {
     var sys = os.type();
 
     if (sys == "Linux") {
-        adbPath = "./lib/adb-tool/Linux/adb";
+        adbPath = "../lib/adb-tool/Linux/adb";
 
         try {
             command = "killall adb";
@@ -384,7 +384,7 @@ if (testPlatform == "Android") {
             }
         }
     } else if (sys == "Darwin") {
-        adbPath = "./lib/adb-tool/Mac/adb";
+        adbPath = "../lib/adb-tool/Mac/adb";
 
         try {
             command = "killall adb";
@@ -395,7 +395,7 @@ if (testPlatform == "Android") {
             }
         }
     } else if (sys == "Windows_NT") {
-        adbPath = ".\\lib\\adb-tool\\Windows\\adb";
+        adbPath = "..\\lib\\adb-tool\\Windows\\adb";
 
         try {
             command = "taskkill /im adb.exe /f";

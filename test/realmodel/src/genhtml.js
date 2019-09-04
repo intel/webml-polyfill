@@ -27,6 +27,7 @@ let begin = `
   <link href='./static/mocha/3.0.2/mocha.css' rel='stylesheet'>
 </head>
 <body>
+  <p id="avg" style="display:none"></p>
   <div id="mocha"></div>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/mocha/4.0.1/mocha.min.js"></script>
@@ -42,7 +43,7 @@ let begin = `
   </script>`
 
 
- let end = ` <script>
+let end = ` <script>
     window.mochaFinish = false;
     mocha.globals(['jQuery']);
     mocha.run(function() {window.mochaFinish = true});

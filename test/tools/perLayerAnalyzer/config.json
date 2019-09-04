@@ -1,0 +1,10 @@
+{
+  "urlServer": "IP:8080",
+  "modelName": ["squeezenet1.1"],
+  "platform": "Linux",
+  "chromiumPath": "/usr/bin/chromium-browser-unstable",
+  "supportSwitch": false,
+  "API": "polyfill",
+  "preference": "fast",
+  "iterations": "200"
+}
