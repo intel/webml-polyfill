@@ -140,13 +140,13 @@ async function loadUrl(url, binary) {
 async function loadModelAndLabels(model, label=null) {
   let arrayBuffer, bytes, text;
   let url = '../examples/util/';
-  if(model.toLowerCase().startsWith("https://") || model.toLowerCase().startsWith("http://")) {
+  if (model.toLowerCase().startsWith("https://") || model.toLowerCase().startsWith("http://")) {
     arrayBuffer = await this.loadUrl(model, true);
   } else {
     arrayBuffer = await this.loadUrl(url + model, true);
   }
   bytes = new Uint8Array(arrayBuffer);
-  if(label.toLowerCase().startsWith("https://") || label.toLowerCase().startsWith("http://")) {
+  if (label.toLowerCase().startsWith("https://") || label.toLowerCase().startsWith("http://")) {
     text = await this.loadUrl(label);
   } else {
     text = label ? await this.loadUrl(url + label) : null;
