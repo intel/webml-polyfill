@@ -6,44 +6,25 @@ let caseList = '\n';
 let htmlValue
 var RCjson = JSON.parse(fs.readFileSync("./config.json"));
 var modelName = RCjson.modelName;
-if (modelName.length == 2) {
-  let filePath1 = path.join(__dirname, '..', '..', '..', 'realmodel', 'testcase', `${modelName[0]}`, `${modelName[0]}.txt`);
+let result = 'real';
+for (i = 0; i < modelName.length; i++) {
+  let filePath1 = path.join(__dirname, '..', '..', '..', 'realmodel', 'testcase', `${modelName[i]}`, `${modelName[i]}.txt`);
   if (!fs.existsSync(filePath1)) throw (`Can't get ${filePath1}`);
-  let data_squeezenet = fs.readFileSync(filePath1);
-  data_squeezenet = data_squeezenet.toString();
-  data_squeezenet = data_squeezenet.slice(1, -1);
-  let filePath2 = path.join(__dirname, '..', '..', '..', 'realmodel', 'testcase', `${modelName[1]}`, `${modelName[1]}.txt`);
-  if (!fs.existsSync(filePath2)) throw (`Can't get ${filePath2}`);
-  let data_mobilenetv = fs.readFileSync(filePath2);
-  data_mobilenetv = data_mobilenetv.toString();
-  data_mobilenetv = data_mobilenetv.slice(1, -1);
-  data = "[" + data_squeezenet + "," + data_mobilenetv + "]";
-  let filePath = path.join(__dirname, '..', '..', '..', `${modelName[0]}_${modelName[1]}.txt`);
-  fs.writeFileSync(filePath, data);
-  let stream = fs.createReadStream(filePath, {flags: 'r', encoding: 'utf-8'});
-  stream.on('data', function (d) {
-    buf += d.toString();
-  });
-  stream.on('end', () => {
-    buf = JSON.parse(buf);
-    generateHtml_real(buf);
-    htmlValue = begin + caseList + end;
-    saveHtml(htmlValue, `real_${modelName[0]}_${modelName[1]}.html`);
-  });
-} else if (modelName.length == 1) {
-  let filePath = path.join(__dirname, '..', '..', '..', 'realmodel', 'testcase', `${modelName[0]}`, `${modelName[0]}.txt`);
-  if (!fs.existsSync(filePath)) throw (`Can't get ${filePath}`);
-  let stream = fs.createReadStream(filePath, {flags: 'r', encoding: 'utf-8'});
-  stream.on('data', function (d) {
-    buf += d.toString();
-  });
-  stream.on('end', () => {
-    buf = JSON.parse(buf);
-    generateHtml(buf);
-    htmlValue = begin + caseList + end;
-    saveHtml(htmlValue, `real_${modelName[0]}.html`);
-  });
-}
+  let data_model = fs.readFileSync(filePath1);
+  data_model_length = JSON.parse(data_model);
+  generateHtml(data_model_length, i);
+  result += `_${modelName[i]}`
+};
+result += '.html'
+let filePath = path.join(__dirname, '..', '..', '..', 'realmodel', 'testcase', `${modelName[0]}`, `${modelName[0]}.txt`);
+let stream = fs.createReadStream(filePath, {flags: 'r', encoding: 'utf-8'});
+stream.on('data', function (d) {
+  buf += d.toString();
+});
+stream.on('end', () => {
+  htmlValue = begin + caseList + end;
+  saveHtml(htmlValue, result);
+});
 
 let begin = `
 <html>
@@ -171,20 +152,9 @@ async function saveHtml(input, output) {
   saveStream.end();
 }
 
-async function generateHtml_real(data) {
-  for (let i = 0; i < 39; i++) {
-    let str = ` <script src="./realmodel/testcase/${modelName[0]}/${data[i]}"></script>\n`
-    caseList += str;
-  };
-  for (let i = 39; i < 78; i++) {
-    let str = ` <script src="./realmodel/testcase/${modelName[1]}/${data[i]}"></script>\n`
-    caseList += str;
-  }
-}
-
-async function generateHtml(data) {
+async function generateHtml(data, number) {
   for (let i = 0; i < data.length; i++) {
-    let str = ` <script src="./realmodel/testcase/${modelName[0]}/${data[i]}"></script>\n`
+    let str = ` <script src="./realmodel/testcase/${modelName[number]}/${data[i]}"></script>\n`
     caseList += str;
   }
 }

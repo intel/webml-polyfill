@@ -29,7 +29,7 @@ This is an automation tool kit to automatically test the every layer of realmode
 
 #### The Second Way ( Deploy your own server and environment )
 
-* First of all, you need generate the realmodel related testcase locally according to:https://github.com/intel/webml-polyfill/blob/master/test/realmodel/README.md
+* First of all, you need generate the realmodel related testcase locally according to: [../../realmodel/README.md](https://github.com/intel/webml-polyfill/tree/master/test/realmodel/README.md)
 
 ```sh
    $  cd webml-polyfill/test/tools/perLayerAnayzer
@@ -59,7 +59,7 @@ This is an automation tool kit to automatically test the every layer of realmode
    There are eight fields in the config.json, for example:
 ```
    {
-     "urlServer": "IP:8081",
+     "urlServer": "IP:8080",
      "modelName": ["squeezenet1.1"],
      "platform": "Mac",
      "chromiumPath": "/Users/test/Downloads/Chromium.app/Contents/MacOS/Chromium",
@@ -73,7 +73,7 @@ This is an automation tool kit to automatically test the every layer of realmode
 
 ```
    {
-      "urlServer": "IP:8081",
+      "urlServer": "IP:8080",
       "modelName": ["squeezenet1.1"],
       "platform": "Linux",
       "chromiumPath": "/usr/bin/chromium-browser-unstable",
@@ -87,7 +87,7 @@ This is an automation tool kit to automatically test the every layer of realmode
 
 ```
    {
-     "urlServer": "IP:8081",
+     "urlServer": "IP:8080",
      "modelName": ["squeezenet1.1"],
      "platform": "Windows",
      "chromiumPath": "C:\\test\\win_x64_SUCCEED\\Chrome-bin\\chrome.exe",
@@ -98,7 +98,7 @@ This is an automation tool kit to automatically test the every layer of realmode
    }
 ```
    You need modify these eight fields for the different platforms:
-   + **_urlServer_**: `{string}`, Server IP address, port number 8081.
+   + **_urlServer_**: `{string}`, Server IP address, port number 8080.
    + **_modelName_**: `{array}`, We support **squeezenet1.1**, **mobilenetv2-1.0** two models, you need choose **["squeezenet1.1"]** , or **["mobilenetv2-1.0"]** , or **["squeezenet1.1", "mobilenetv2-1.0"]** , or **["mobilenetv2-1.0", "squeezenet1.1"]** .
    + **_platform_**: `{string}`, target platform, support **Android**, **Mac**, **Linux** and **Windows**.
    + **_chromiumPath_**: `{string}`, **Mac**/**Linux**/**Windows**: the target chromium path **Android**: the chrome or chromium path in above Prerequisites to show the final checking results.
