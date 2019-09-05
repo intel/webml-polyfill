@@ -72,7 +72,14 @@ class ICBenchmark extends Benchmark {
         break;
       case 'OpenVINO':
         const networkFile = this.modelInfoDict.modelFile.replace(/bin$/, 'xml');
-        const networkText = await loadUrl('../examples/util/' + networkFile, false);
+        let networkText;
+
+        if (networkFile.toLowerCase().startsWith("https://") || networkFile.toLowerCase().startsWith("http://")) {
+          networkText = await loadUrl(networkFile, false);
+        } else {
+          networkText = await loadUrl('../examples/util/' + networkFile, false);
+        }
+
         const weightsBuffer = loadResult.bytes.buffer;
         rawModel = new OpenVINOModel(networkText, weightsBuffer);
         importerClass = OpenVINOModelImporter;
