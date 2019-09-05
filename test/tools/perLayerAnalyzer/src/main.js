@@ -106,7 +106,7 @@ if (testPlatform == "Linux") {
             testPrefers.push("Android-Polyfill-Fast-WASM");
         } else if (preference === "sustained") {
             testPrefers.push("Android-Polyfill-Sustained-WebGL");
-        }    
+        }
     }
 
     if (API === "webnn") {
@@ -140,7 +140,7 @@ if (testPlatform == "Linux") {
             testPrefers.push("Win-Polyfill-Fast-WASM");
         } else if (preference === "sustained") {
             testPrefers.push("Win-Polyfill-Sustained-WebGL");
-        }  
+        }
     }
 
     if (API === "webnn") {
@@ -323,15 +323,15 @@ var continueFlag = false;
         var urlServer = RCjson.urlServer
         if (modelName.length == 2) {
             if (modelName[0] === "squeezenet1.1") {
-                remoteURL = `http://${urlServer}/webml-polyfill/test/real_squeezenet1.1_mobilenetv2-1.0.html`;
+                remoteURL = `http://${urlServer}/test/real_squeezenet1.1_mobilenetv2-1.0.html`;
             } else if (modelName[0] === "mobilenetv2-1.0") {
-                remoteURL = `http://${urlServer}/webml-polyfill/test/real_mobilenetv2-1.0_squeezenet1.1.html`;
+                remoteURL = `http://${urlServer}/test/real_mobilenetv2-1.0_squeezenet1.1.html`;
             }
         }else if (modelName.length == 1) {
             if (modelName[0] === "squeezenet1.1") {
-                remoteURL = `http://${urlServer}/webml-polyfill/test/real_squeezenet1.1.html`;
+                remoteURL = `http://${urlServer}/test/real_squeezenet1.1.html`;
             } else if (modelName[0] === "mobilenetv2-1.0") {
-                remoteURL = `http://${urlServer}/webml-polyfill/test/real_mobilenetv2-1.0.html`;
+                remoteURL = `http://${urlServer}/test/real_mobilenetv2-1.0.html`;
             }
         }
 
@@ -582,7 +582,7 @@ var continueFlag = false;
             await driver.sleep(2000);
             await driver.quit();
             await driver.sleep(2000);
-            
+
             continue;
         }
 

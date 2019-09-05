@@ -9,7 +9,7 @@ This is an automation tool kit to automatically test the every layer of realmode
 
 #### The First Way ( Depends on our local server environment )
 
-* If you want to use the environment we've already deployed, you can run the following command 
+* If you want to use the environment we've already deployed, you can run the following command
 ```sh
    $  git clone https://github.com/intel/webml-polyfill.git
 ```
@@ -20,28 +20,26 @@ This is an automation tool kit to automatically test the every layer of realmode
    $  npm install
 ```
 
-* Then change Settings in the **webml-polyfill/test/tools/perLayerAnayzer/config.json** fill.
+* Then change Settings in the **webml-polyfill/test/tools/perLayerAnayzer/config.json** file.
 
 * Finally, execute the command
 ```sh
    $  npm start
 ```
 
-#### The Second Way ( Create your own server and environment )
+#### The Second Way ( Deploy your own server and environment )
 
-* First you need generate the realmodel related testcase locally according to **TWO modelNames**, you can click on this [link](https://github.com/intel/webml-polyfill/blob/master/test/realmodel/README.md) ( Make sure the server always open )
+* First of all, you need generate the realmodel related testcase locally according to:https://github.com/intel/webml-polyfill/blob/master/test/realmodel/README.md
 
-* You need to Remove **'/webml-polyfill'** from **webml-polyfill/test/tools/perLayerAnayzer/src/main.js** in **line 916,918,922,924** . Like: 
-```javascript
-   remoteURL = `http://${urlServer}/test/squ_realmodel.html`
-```
-
-* Finally, change the config.json file like first way and execute the command
 ```sh
    $  cd webml-polyfill/test/tools/perLayerAnayzer
 ```
 ```sh
    $  npm install
+```
+* You need change the "urlServer" to you local server IP address and port,others settings likes those configuring on our local server.
+```sh
+   $  npm run getHtml
 ```
 ```sh
    $  npm start
@@ -61,7 +59,7 @@ This is an automation tool kit to automatically test the every layer of realmode
    There are eight fields in the config.json, for example:
 ```
    {
-     "urlServer": "IP:8080",
+     "urlServer": "IP:8081",
      "modelName": ["squeezenet1.1"],
      "platform": "Mac",
      "chromiumPath": "/Users/test/Downloads/Chromium.app/Contents/MacOS/Chromium",
@@ -75,7 +73,7 @@ This is an automation tool kit to automatically test the every layer of realmode
 
 ```
    {
-      "urlServer": "IP:8080",
+      "urlServer": "IP:8081",
       "modelName": ["squeezenet1.1"],
       "platform": "Linux",
       "chromiumPath": "/usr/bin/chromium-browser-unstable",
@@ -88,8 +86,8 @@ This is an automation tool kit to automatically test the every layer of realmode
    or
 
 ```
-   {  
-     "urlServer": "IP:8080",
+   {
+     "urlServer": "IP:8081",
      "modelName": ["squeezenet1.1"],
      "platform": "Windows",
      "chromiumPath": "C:\\test\\win_x64_SUCCEED\\Chrome-bin\\chrome.exe",
@@ -100,8 +98,8 @@ This is an automation tool kit to automatically test the every layer of realmode
    }
 ```
    You need modify these eight fields for the different platforms:
-   + **_urlServer_**: `{string}`, Server IP address, port number 8080.
-   + **_modelName_**: `{array}`, We support **squeezenet1.1**, **mobilenetv2-1.0** two models, you need choose **["squeezenet1.1"]** , **["mobilenetv2-1.0"]** , **["squeezenet1.1", "mobilenetv2-1.0"]** , **["mobilenetv2-1.0", "squeezenet1.1"]** .
+   + **_urlServer_**: `{string}`, Server IP address, port number 8081.
+   + **_modelName_**: `{array}`, We support **squeezenet1.1**, **mobilenetv2-1.0** two models, you need choose **["squeezenet1.1"]** , or **["mobilenetv2-1.0"]** , or **["squeezenet1.1", "mobilenetv2-1.0"]** , or **["mobilenetv2-1.0", "squeezenet1.1"]** .
    + **_platform_**: `{string}`, target platform, support **Android**, **Mac**, **Linux** and **Windows**.
    + **_chromiumPath_**: `{string}`, **Mac**/**Linux**/**Windows**: the target chromium path **Android**: the chrome or chromium path in above Prerequisites to show the final checking results.
    + **_supportSwitch_**: `{boolean}`, support **true** and **false**.
@@ -113,7 +111,7 @@ This is an automation tool kit to automatically test the every layer of realmode
 |  :-----:  |  :----:  |   :----:   |   :----:   |   :----:   |
 |  swith:true API:webnn  |  Windows   |    MKLDNN   |    DirectML   |   DirectML   |
 |  swith:true API:webnn  |  macOS  |  MKLDNN  |  MPS  |      |
-|  swith:true API:webnn  |  Linux  |   IE-MKLDNN	   |   IE-clDNN	   |   IE-MYRIAD  |
+|  swith:true API:webnn  |  Linux  |   IE-MKLDNN |   IE-clDNN	|   IE-MYRIAD  |
 |  swith:false API:webnn  |  Windows  |  MKLDNN  |  clDNN  |      |
 |  swith:false API:webnn  |  macOS  |   BNNS   |   MPS   |      |
 |  swith:false API:webnn  |  Linux   |    MKLDNN   |    clDNN   |      |
@@ -127,19 +125,3 @@ This is an automation tool kit to automatically test the every layer of realmode
 |  Linux  |   Mac   |  Android  |  Windows  |
 |  :---:  |  :---:  |   :---:   |   :---:   |
 |  PASS   |   PASS  |    PASS   |    PASS   |
-
-
-## How TO Use Template.html File ( If you use one of the above ways, you don`t  need follow these steps )
-
-* In the near future, We w add new modelName testcase. You can import names of your new generated realmodel testcase file in the **line 54-57** of **webml-polyfill/test/template.html** file. Like:
-```javascript
-   <script src="./realmodel/testcase/squeezenet1.1/squeezenet1.1-conv2d-1.js"></script>
-```
-* Then you should chang the name of **template.html** by modelname
-
-|  ModelName  |   OldFileName   |  NewFileName  |
-|  :-----  |  :-----:  |   :-------   |
-|  squeezenet1.1   |   template.html  |    real_squeezenet1.1.html   |
-|  mobilenetv2-1.0  |   template.html   |  real_mobilenetv2-1.0.html  |
-|  squeezenet1.1, mobilenetv2-1.0   |  template.html  |   real_squeezenet1.1_mobilenetv2-1.0.html   |
-|  mobilenetv2-1.0, squeezenet1.1   |   template.html  |    real_mobilenetv2-1.0_squeezenet1.1.html  |

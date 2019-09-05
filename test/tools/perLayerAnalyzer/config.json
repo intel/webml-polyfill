@@ -1,5 +1,5 @@
 {
-  "urlServer": "IP:8080",
+  "urlServer": "IP:8081",
   "modelName": ["squeezenet1.1"],
   "platform": "Linux",
   "chromiumPath": "/usr/bin/chromium-browser-unstable",
