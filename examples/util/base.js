@@ -803,7 +803,7 @@ faceRecognitionModels: [{
     channelScheme: 'BGR',
     format: 'NHWC'
   },
-  intro: 'A simple CNN model for face recognition which learns discriminative features of faces and produces embeddings for input face images.',
+  intro: 'This CNN model for face recognition which learns discriminative features of faces and produces embeddings for input face images.',
   paperUrl: 'https://arxiv.org/abs/1503.03832'
 }]
 
