@@ -4,7 +4,8 @@
   "description": "Use To Realmodel",
   "main": "./src/main.js",
   "scripts": {
-    "start": "node ./src/main.js"
+    "start": "node ./src/main.js",
+    "getHtml": "node ./src/gethtml.js"
   },
   "directories": {
     "output": "output",
