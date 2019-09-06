@@ -3,7 +3,7 @@ const path = require('path');
 
 let buf = '';
 let caseList = '\n';
-let htmlValue
+let htmlValue;
 var RCjson = JSON.parse(fs.readFileSync("./config.json"));
 var modelName = RCjson.modelName;
 let result = 'real';
@@ -13,9 +13,9 @@ for (i = 0; i < modelName.length; i++) {
   let data_model = fs.readFileSync(filePath1);
   data_model_length = JSON.parse(data_model);
   generateHtml(data_model_length, i);
-  result += `_${modelName[i]}`
+  result += `_${modelName[i]}`;
 };
-result += '.html'
+result += '.html';
 let filePath = path.join(__dirname, '..', '..', '..', 'realmodel', 'testcase', `${modelName[0]}`, `${modelName[0]}.txt`);
 let stream = fs.createReadStream(filePath, {flags: 'r', encoding: 'utf-8'});
 stream.on('data', function (d) {
@@ -154,7 +154,7 @@ async function saveHtml(input, output) {
 
 async function generateHtml(data, number) {
   for (let i = 0; i < data.length; i++) {
-    let str = ` <script src="./realmodel/testcase/${modelName[number]}/${data[i]}"></script>\n`
+    let str = ` <script src="./realmodel/testcase/${modelName[number]}/${data[i]}"></script>\n`;
     caseList += str;
   }
 }

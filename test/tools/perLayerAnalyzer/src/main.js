@@ -320,20 +320,12 @@ var continueFlag = false;
         testPrefer = prefer;
         continueFlag = false;
         var modelName = RCjson.modelName;
-        var urlServer = RCjson.urlServer
-        if (modelName.length == 2) {
-            if (modelName[0] === "squeezenet1.1") {
-                remoteURL = `http://${urlServer}/test/real_squeezenet1.1_mobilenetv2-1.0.html`;
-            } else if (modelName[0] === "mobilenetv2-1.0") {
-                remoteURL = `http://${urlServer}/test/real_mobilenetv2-1.0_squeezenet1.1.html`;
-            }
-        }else if (modelName.length == 1) {
-            if (modelName[0] === "squeezenet1.1") {
-                remoteURL = `http://${urlServer}/test/real_squeezenet1.1.html`;
-            } else if (modelName[0] === "mobilenetv2-1.0") {
-                remoteURL = `http://${urlServer}/test/real_mobilenetv2-1.0.html`;
-            }
-        }
+        var urlServer = RCjson.urlServer;
+        remoteURL = `http://${urlServer}/test/real`;
+        for (i = 0; i < modelName.length; i++) {
+            remoteURL += `_${modelName[i]}`;
+        };
+        remoteURL += '.html';
 
         // Categories filter
         if (testPrefer === "macOS-Polyfill-Fast-WASM") {
