@@ -1,6 +1,6 @@
-WebML Benchmark
+WebML Workload
 ======
-This benchmark loads:
+This workload loads:
 -   Image Classification Models
     - MobileNet v1 (TFLite)
     - MobileNet v1 Quant (TFLite)
@@ -64,16 +64,16 @@ This benchmark loads:
 
 Perpare Model
 -----------
-Before run this benchmark with **Image Classification Models**, you need to download those models. Please check out [README.md](../examples/image_classification/model/README.md) in ../examples/image_classification/model folder for details.
+Before run this workload with **Image Classification Models**, you need to download those models. Please check out [README.md](../examples/image_classification/model/README.md) in ../examples/image_classification/model folder for details.
 
-Before run this benchmark with **Object Detection Models**, please refer to [README.md](../examples/object_detection/model/README.md) in ../examples/object_detection/model folder for details.
+Before run this workload with **Object Detection Models**, please refer to [README.md](../examples/object_detection/model/README.md) in ../examples/object_detection/model folder for details.
 
-Before run this benchmark with **Skeleton Detection Models**, please refer to follow [README.md](../examples/skeleton_detection/model/README.md) in ../examples/skeleton_detection/model folder for details.
+Before run this workload with **Skeleton Detection Models**, please refer to follow [README.md](../examples/skeleton_detection/model/README.md) in ../examples/skeleton_detection/model folder for details.
 
-Before run this benchmark with **Semantic Segmentation Models**, please refer to follow [README.md](../examples/semantic_segmentation/model/README.md) in ../examples/semantic_segmentation/model folder for details.
+Before run this workload with **Semantic Segmentation Models**, please refer to follow [README.md](../examples/semantic_segmentation/model/README.md) in ../examples/semantic_segmentation/model folder for details.
 
-Before run this benchmark with **Super Resolution Models**, please refer to follow [README.md](../examples/super_resolution/model/README.md) in ../examples/super_resolution/model folder for details.
+Before run this workload with **Super Resolution Models**, please refer to follow [README.md](../examples/super_resolution/model/README.md) in ../examples/super_resolution/model folder for details.
 
-Before run this benchmark with **Facial Landmark Detection Models**, please refer to follow [README.md](../examples/facial_landmark_detection/model/README.md) in ../examples/facial_landmark_detection/model folder for details.
+Before run this workload with **Facial Landmark Detection Models**, please refer to follow [README.md](../examples/facial_landmark_detection/model/README.md) in ../examples/facial_landmark_detection/model folder for details.
 
-Before run this benchmark with **Emotion Analysis Models**, please refer to follow [README.md](../examples/emotion_analysis/model/README.md) in ../examples/emotion_analysis/model folder for details.
+Before run this workload with **Emotion Analysis Models**, please refer to follow [README.md](../examples/emotion_analysis/model/README.md) in ../examples/emotion_analysis/model folder for details.
