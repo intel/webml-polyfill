@@ -824,6 +824,20 @@ faceRecognitionModels: [{
     },
     intro: 'This is a lightweight network for the face re-identification scenario that is\
       based on MobileNet V2. The model produces feature vectors which should be close in cosine distance for similar faces and far for different faces.'
+}],
+      
+speechRecognitionModels: [{
+  modelName: 'Deep Speech (TFLite)',
+  format: 'TFLite',
+  modelId: 'deep_speech_tflite',
+  modelSize: '47.4MB',
+  inputSize: [1, 64, 19, 26],
+  outputSize: [64, 29],
+  sampleRate: 44100,
+  modelFile: '../speech_recognition/model/deep_speech_64.tflite',
+  labelsFile: '../speech_recognition/model/alphabet.txt',
+  intro: 'DeepSpeech is an open source Speech-To-Text engine, using a model trained by machine learning techniques based on Baidu Deep Speech research paper.',
+  paperUrl: 'https://arxiv.org/abs/1412.5567'
 }]
 
 };
