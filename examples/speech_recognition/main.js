@@ -4,6 +4,11 @@ let utils = new Utils(audioContext);
 utils.updateProgress = updateProgress;    //register updateProgress function if progressBar element exist
 let front = false;
 
+Module.onRuntimeInitialized = function () {
+  // runtime = true;
+  console.log('Runtime is initialized.');
+};
+
 const updateResult = (result) => {
   try {
     console.log(`Inference time: ${result.time} ms`);

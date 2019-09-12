@@ -196,16 +196,55 @@ class Utils {
     let audioFileData = await response.arrayBuffer();
     let audioDecodeData = await this.audioContext.decodeAudioData(audioFileData);
     let audioPCMData = audioDecodeData.getChannelData(0);
-    let inputTensor = this.downsampleAudioBuffer(audioPCMData, this.sampleRate);
-    if(inputTensor.length >= this.inputSize) {
-      for(let i = 0; i < this.inputSize; i++) {
-        tensor[i] = inputTensor[i];
-      }
-    } else {
-      for(let i = 0; i < inputTensor.length; i++) {
-        tensor[i] = inputTensor[i];
-      }
+
+    let audioMfccs = this.getAudioMfccs(audioPCMData);
+    let inputTensor = this.create_overlapping_windows(audioMfccs);
+    tensor = inputTensor.slice();
+    console.log(tensor);
+  }
+
+  getAudioMfccs(pcm) {
+    let mfccsLenPtr = Module._malloc(4);
+    let pcmPtr = Module._malloc(8 * pcm.length);
+    for(let i=0; i<pcm.length; i++) {
+      Module.HEAPF64[pcmPtr/8 + i] = pcm[i];
     }
+    let tfMfccs = Module.cwrap('tf_mfccs', 'number', ['number', 'number', 'number']);
+    let mfccsPtr = tfMfccs(pcmPtr, pcm.length, mfccsLenPtr);
+    let mfccsLen = Module.HEAP32[mfccsLenPtr >> 2];
+  
+    let audioMfccs = [mfccsLen];
+    for(let i=0; i<mfccsLen; i++) {
+      audioMfccs[i] = Module.HEAPF64[(mfccsPtr >> 3) + i];
+    }
+    Module._free(pcmPtr, mfccsLenPtr);
+  
+    return audioMfccs;
+  }
+
+  create_overlapping_windows(batch_x) {
+    let batch_size = 1;
+    let window_width = 2 * 9 + 1;
+    let num_channels = 26;
+  
+    batch_x = tf.reshape(batch_x, [126, 26]);
+    batch_x = tf.expandDims(batch_x, 0);
+  
+    // Create a constant convolution filter using an identity matrix, so that the
+    // convolution returns patches of the input tensor as is, and we can create
+    // overlapping windows over the MFCCs.
+    eye_tensor = tf.eye(window_width * num_channels);
+    let eye_filter = tf.reshape(eye_tensor, [window_width, num_channels, window_width * num_channels])
+  
+    // Create overlapping windows
+    batch_x = tf.conv1d(batch_x, eye_filter, 1, 'same');
+  
+    // Remove dummy depth dimension and reshape into [batch_size, n_windows, window_width, n_input]
+    batch_x = tf.reshape(batch_x, [batch_size, -1, window_width, num_channels]);
+  
+    batch_x = tf.slice(batch_x, [0,0,0,0], [1,64,19,26]);
+  
+    return batch_x.dataSync();
   }
 
   downsampleAudioBuffer(buffer, rate) {
