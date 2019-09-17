@@ -79,6 +79,7 @@ let begin = `
   </script>
   <script>
     mocha.setup('bdd');
+    mocha.setup({timeout:50000});
   </script>`
 
 
