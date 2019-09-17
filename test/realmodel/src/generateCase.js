@@ -112,9 +112,9 @@ async function splitContext(context) {
     it('Check result for layer-${layer} ADD example/${count} of ${JSON_DATA.getModelName()} model', async function() {
       let model = await nn.createModel(options);
       let operandIndex = 0;
-      let op1_value
-      let op2_value
-      let op3_expect
+      let op1_value;
+      let op2_value;
+      let op3_expect;
       await fetch('./realmodel/testcase/res/${JSON_DATA.getModelName()}/${inputFile}').then((res) => {
         return res.json();
       }).then((text) => {
