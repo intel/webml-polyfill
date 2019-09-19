@@ -1,5 +1,6 @@
 class OpenVINOModelImporter {
   constructor(kwargs) {
+    this._isQuantized = kwargs.isQuantized;
     this._rawModel = kwargs.rawModel;
     this._model = null;
     this._compilation = null;
@@ -92,7 +93,12 @@ class OpenVINOModelImporter {
       this._execution = await this._compilation.createExecution();
 
       const outputSize = output.shape().reduce((a, b) => a * b);
-      const outputTensor = new Float32Array(outputSize);
+      let outputTensor;
+      if (this._isQuantized) {
+        outputTensor = new Uint8Array(outputSize);
+      } else {
+        outputTensor = new Float32Array(outputSize);
+      }
       await this.compute(inputTensors, [outputTensor]);
       return {
         layerId: lastNodeIdx, outputName: lastNode.name, tensor: outputTensor,
