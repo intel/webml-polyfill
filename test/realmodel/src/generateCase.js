@@ -171,8 +171,8 @@ async function splitContext(context) {
       let op3_output = new Float32Array(type0_length);
       execution.setOutput(0, op3_output);
       let list = [];
-      iterations = Number(options.iterations) + 1;
-      for (let i = 0; i < iterations; i++) {
+      iterations_all = Number(options.iterations) + 1;
+      for (let i = 0; i < iterations_all; i++) {
         let tStart = performance.now();
         await execution.startCompute();
         let computeTime = performance.now() - tStart;
@@ -276,8 +276,8 @@ async function splitContext(context) {
       let output_output = new Float32Array(type2_length);
       execution.setOutput(0, output_output);
       let list = [];
-      iterations = Number(options.iterations) + 1;
-      for (let i = 0; i < iterations; i++) {
+      iterations_all = Number(options.iterations) + 1;
+      for (let i = 0; i < iterations_all; i++) {
         let tStart = performance.now();
         await execution.startCompute();
         let computeTime = performance.now() - tStart;
@@ -380,8 +380,8 @@ async function splitContext(context) {
     let output_output = new Float32Array(type2_length);
     execution.setOutput(0, output_output);
     let list = [];
-    iterations = Number(options.iterations) + 1;
-    for (let i = 0; i < iterations ; i++) {
+    iterations_all = Number(options.iterations) + 1;
+    for (let i = 0; i < iterations_all ; i++) {
       let tStart = performance.now();
       await execution.startCompute();
       let computeTime = performance.now() - tStart;
@@ -492,8 +492,8 @@ async function splitContext(context) {
     let output_output = new Float32Array(type3_length);
     execution.setOutput(0, output_output);
     let list = [];
-    iterations = Number(options.iterations) + 1;
-    for (let i = 0; i < iterations; i++) {
+    iterations_all = Number(options.iterations) + 1;
+    for (let i = 0; i < iterations_all; i++) {
       let tStart = performance.now();
       await execution.startCompute();
       let computeTime = performance.now() - tStart;
@@ -630,8 +630,8 @@ async function splitContext(context) {
     let op4_output = new Float32Array(type1_length);
     execution.setOutput(0, op4_output);
     let list = [];
-    iterations = Number(options.iterations) + 1;
-    for (let i = 0; i < iterations; i++) {
+    iterations_all = Number(options.iterations) + 1;
+    for (let i = 0; i < iterations_all; i++) {
       let tStart = performance.now();
       await execution.startCompute();
       let computeTime = performance.now() - tStart;
@@ -726,8 +726,8 @@ async function splitContext(context) {
     let op3_output = new Float32Array(type2_length);
     execution.setOutput(0, op3_output);
     let list = [];
-    iterations = Number(options.iterations) + 1;
-    for (let i = 0; i < iterations; i++) {
+    iterations_all = Number(options.iterations) + 1;
+    for (let i = 0; i < iterations_all; i++) {
       let tStart = performance.now();
       await execution.startCompute();
       let computeTime = performance.now() - tStart;
