@@ -18,7 +18,7 @@ export default class WebGLModel {
     this._model = model;
     this._subgraphs = [];
     this._operands = [];
-    this._nnOperands = [];  // copies of input/output tensors of WebNN subgraph 
+    this._nnOperands = [];  // copies of input/output tensors of WebNN subgraph
     this._preference = PreferenceCode.FAST_SINGLE_ANSWER;
     this._prepared = false;
     this._profiler = null;
@@ -70,18 +70,18 @@ export default class WebGLModel {
             const operand = this._model._operands[tensorId];
             if (utils.isTensor(operand.type)) {
               const type = this._getOperandType(operand.type);
-              if (operand.value !== null) {   
+              if (operand.value !== null) {
                 // constant tensor
                 this._operands[tensorId] =
                     tf.tensor(operand.value, operand.dimensions, type);
-              } else {                        
-                // variable tensor 
+              } else {
+                // variable tensor
                 const zeroTensor = tf.zeros(operand.dimensions, type);
                 this._operands[tensorId] = tf.variable(zeroTensor);
                 zeroTensor.dispose();
               }
             } else {
-              this._operands[tensorId] = operand;   
+              this._operands[tensorId] = operand;
             }
           }
           this._changeWeightsFormat(operation);
@@ -143,8 +143,8 @@ export default class WebGLModel {
   /**
    * Called in nn/Execution.js
    *
-   * @param {Map} inputs 
-   * @param {Map} outputs 
+   * @param {Map} inputs
+   * @param {Map} outputs
    */
   async execute(inputs, outputs) {
     if (!this._prepared) {
@@ -179,7 +179,7 @@ export default class WebGLModel {
 
     // fill output tensors
     outputs.forEach((output) => {
-      const operand = this._nnOperands[output.index];  
+      const operand = this._nnOperands[output.index];
       output.buffer.set(operand);
     });
   }
@@ -224,13 +224,13 @@ export default class WebGLModel {
         }
       }
 
-      // add the operation to the submodel 
+      // add the operation to the submodel
       const operationInputs = operation.inputs.map(i => globalIdToLocalId[i]);
       const operationOutputs = operation.outputs.map(i => globalIdToLocalId[i]);
       submodel.addOperation(operation.type, operationInputs, operationOutputs);
     }
 
-    // indentify the input and output tensors of the submodel 
+    // indentify the input and output tensors of the submodel
     const submodelInputs = inTensors.map(i => globalIdToLocalId[i]);
     const submodelOutputs = outTensors.map(i => globalIdToLocalId[i]);
     submodel.identifyInputsAndOutputs(submodelInputs, submodelOutputs);
@@ -520,7 +520,7 @@ export default class WebGLModel {
                   input.maxPool([filterH, filterW],
                                 [strideH, strideW],
                                 paddingLeft, 'floor')));
-            }            
+            }
           } else {
             if (op === OperationCode.AVERAGE_POOL_2D) {
               throw new Error(
@@ -629,8 +629,24 @@ export default class WebGLModel {
         const output = operands[outputs[0]];
         output.assign(tf.maximum(input1, input2));
       } break;
-      default: {	
-        throw new Error(`Operation ${op} is not supported`);	
+      case OperationCode.L2_NORMALIZATION: {
+        const input = operands[inputs[0]];
+        const output = operands[outputs[0]];
+        output.assign(input.div(input.square().sum().sqrt()));
+      } break;
+      case OperationCode.PRELU: {
+        const input1 = operands[inputs[0]];
+        const input2 = operands[inputs[1]];
+        const output = operands[outputs[0]];
+        output.assign(tf.prelu(input1, input2));
+      } break;
+      case OperationCode.LOGISTIC: {
+        const input1 = operands[inputs[0]];
+        const output = operands[outputs[0]];
+        output.assign(tf.sigmoid(input1));
+      } break;
+      default: {
+        throw new Error(`Operation ${op} is not supported`);
       }
     }
   }
@@ -695,7 +711,7 @@ export default class WebGLModel {
   }
 
   getSubgraphsSummary() {
-    return this._subgraphs.map((graph, i) => 
+    return this._subgraphs.map((graph, i) =>
         `Subgraph ${i}\t (${graph.backend}):\t{${graph.summary}}`);
   }
 
@@ -728,4 +744,3 @@ export default class WebGLModel {
     };
   }
 }
-

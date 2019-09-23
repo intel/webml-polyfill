@@ -107,7 +107,7 @@ export const OperationCode = {
   /** WebNN API Delegate
    *
    * WEBNN_SUBGRAPH is a pseudo op that will be offladed to the WebNN API.
-   * 
+   *
    * This op is experimental and is subject to change. It's only used for the
    * implementation of the WebNN polyfill and should not be invoked outside.
    *
@@ -1212,7 +1212,7 @@ export const OperationCode = {
    *
    * Inputs:
    * * 0: An n-D tensor, specifying the tensor to be reshaped.
-   * * 1: A 1-D Tensor of {@link TENSOR_INT32}, the block sizes for each 
+   * * 1: A 1-D Tensor of {@link TENSOR_INT32}, the block sizes for each
    *      spatial dimension of the input tensor. All values must be >= 1.
    *
    * Outputs:
@@ -1237,7 +1237,7 @@ export const OperationCode = {
    *
    * Inputs:
    * * 0: An n-D tensor, specifying the tensor to be transposed.
-   * * 1: An optional 1-D Tensor of {@link TENSOR_INT32}, the permutation of 
+   * * 1: An optional 1-D Tensor of {@link TENSOR_INT32}, the permutation of
    *      the dimensions of the input tensor.
    *
    * Outputs:
@@ -1263,6 +1263,43 @@ export const OperationCode = {
    *
    */
   MAXIMUM: 65,
+
+  /** Computes parametric rectified linear activation on the input tensor element-wise.
+   *
+   * The output is calculated using this formula:
+   *
+   *     x < 0:
+   *     output = alpha * x
+   *
+   *     x >= 0:
+   *     output = x
+   *
+   * Two dimensions are compatible when:
+   *     1. they are equal, or
+   *     2. one of them is 1
+   *
+   * The size of the output is the maximum size along each dimension of the input operands.
+   * It starts with the trailing dimensions, and works its way forward.
+   *
+   * Supported tensor types:
+   * * {@link TENSOR_FLOAT16}
+   * * {@link TENSOR_FLOAT32}
+   * * {@link TENSOR_QUANT8_ASYMM}
+   *
+   * Supported tensor rank: from 1.
+   *
+   * Inputs:
+   * * 0: A tensor, specifying the input.
+   * * 1: A tensor of the same OperandCode, and compatible dimensions as input0,
+   *      specifying the alpha.
+   *
+   * Outputs:
+   * * 0: A tensor of the same OperandCode as input0. For a
+   *      ANEURALNETWORKS_TENSOR_QUANT8_ASYMM tensor, the scale and zeroPoint
+   *      can be diffent from the input0 scale and zeroPoint.
+   *
+   */
+  PRELU: 71,
 
   /** Performs a atrous 2-D convolution operation.
    *

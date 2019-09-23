@@ -17,7 +17,7 @@ export default class NeuralNetworkContext {
 
   /**
    * Create a model object.
-   * 
+   *
    * @param {options} options.backend - model backend.
    */
   async createModel(options = {}) {
@@ -71,6 +71,7 @@ export default class NeuralNetworkContext {
     this.BATCH_TO_SPACE_ND = OperationCode.BATCH_TO_SPACE_ND;
     this.TRANSPOSE = OperationCode.TRANSPOSE;
     this.MAXIMUM = OperationCode.MAXIMUM;
+    this.PRELU = OperationCode.PRELU;
     this.ATROUS_CONV_2D = OperationCode.ATROUS_CONV_2D;
     this.ATROUS_DEPTHWISE_CONV_2D = OperationCode.ATROUS_DEPTHWISE_CONV_2D;
   }
