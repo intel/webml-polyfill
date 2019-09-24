@@ -212,6 +212,7 @@ class Utils {
     let iterators = [];
     for (let config of configs) {
       let model = await new TFliteModelImporter({
+        isQuantized: this.isQuantized,
         rawModel: this.tfModel,
         backend: config.backend,
         prefer: config.prefer || null,
