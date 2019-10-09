@@ -146,7 +146,7 @@ async function loadModelAndLabels(model, label=null) {
     arrayBuffer = await this.loadUrl(url + model, true);
   }
   bytes = new Uint8Array(arrayBuffer);
-  if (label.toLowerCase().startsWith("https://") || label.toLowerCase().startsWith("http://")) {
+  if (label != null && (label.toLowerCase().startsWith("https://") || label.toLowerCase().startsWith("http://"))) {
     text = await this.loadUrl(label);
   } else {
     text = label ? await this.loadUrl(url + label) : null;
