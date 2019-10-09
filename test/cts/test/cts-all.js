@@ -9132,7 +9132,7 @@ describe('CTS', function() {
 
     model.addOperation(nn.MAXIMUM, [op1, op2], [op3]);
 
-    model.identifyInputsAndOutputs([op1, op2], [op3]);
+    model.identifyInputsAndOutputs([op1], [op3]);
     await model.finish();
 
     let compilation = await model.createCompilation();
@@ -9177,7 +9177,7 @@ describe('CTS', function() {
 
     model.addOperation(nn.MAXIMUM, [op1, op2], [op3]);
 
-    model.identifyInputsAndOutputs([op1, op2], [op3]);
+    model.identifyInputsAndOutputs([op1], [op3]);
     await model.finish();
 
     let compilation = await model.createCompilation();
@@ -9224,7 +9224,7 @@ describe('CTS', function() {
 
     model.addOperation(nn.MAXIMUM, [op1, op2], [op3]);
 
-    model.identifyInputsAndOutputs([op1, op2], [op3]);
+    model.identifyInputsAndOutputs([op1], [op3]);
     await model.finish();
 
     let compilation = await model.createCompilation();
