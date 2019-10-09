@@ -9,7 +9,7 @@ const BenchmarkClass = {
 };
 
 async function main() {
-  let ctx = showCanvasElement.getContext("2d");  
+  let ctx = showCanvasElement.getContext("2d");
   ctx.drawImage(imageElement, 0, 0);
   inputElement.setAttribute('disabled', true);
   pickBtnElement.setAttribute('class', 'btn btn-primary disabled');
@@ -31,7 +31,7 @@ async function main() {
         let selectedOpt = preferSelectElement.options[preferSelectElement.selectedIndex];
         let backendName = configuration[key];
         if (configuration[key].indexOf('WebNN') === 0) {
-          backendName += ` + ${getNativeAPI(selectedOpt.value)}(${selectedOpt.text})`;
+          backendName += ` (Preference: ${selectedOpt.text})`;
         }
         logger.log(`${key.padStart(12)}: ${backendName}`);
       } else {
