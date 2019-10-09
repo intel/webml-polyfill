@@ -4,7 +4,7 @@ class EABenchmark extends Benchmark {
     super(...arguments);
     this.faceDetector = null;
     this.modelName = modelName;
-    this.modelInfoDict = getModelInfoDict(emotionAnalysisModels, 'Simple CNN 7(TFlite)');
+    this.modelInfoDict = getModelInfoDict(emotionAnalysisModels, 'Simple CNN 7 (TFlite)');
     this.model = null;
     this.inputTensor = null;
     this.inputSize = null;
@@ -18,18 +18,21 @@ class EABenchmark extends Benchmark {
     let model = faceDetectionModels.filter(f => f.modelName == this.modelName);
     inputCanvas.setAttribute("width", model[0].inputSize[1]);
     inputCanvas.setAttribute("height", model[0].inputSize[0]);
-    model[0].modelFile = '../examples' + model[0].modelFile.slice(2);
+    let modelFile = model[0].modelFile;
+    if (!modelFile.toLowerCase().startsWith("https://") && !modelFile.toLowerCase().startsWith("http://")) {
+      model[0].modelFile = '../examples/util/' + model[0].modelFile;
+    }
     this.faceDetector = new FaceDetecor(inputCanvas);
     await this.faceDetector.loadModel(model[0]);
     await this.faceDetector.init(this.backend.replace('WebNN', 'WebML'), preferSelect.value);
-    model[0].modelFile = '..' + model[0].modelFile.slice(11);
+    model[0].modelFile = modelFile;
   }
 
   async getFaceDetectResult() {
     let detectResult = await this.faceDetector.getFaceBoxes(imageElement);
     return detectResult;
   }
-  
+
   async setInputOutput(box) {
     let inputCanvas = document.createElement('canvas');
     let width = this.modelInfoDict.inputSize[1];
@@ -45,8 +48,8 @@ class EABenchmark extends Benchmark {
     inputCanvas.setAttribute("width", width);
     inputCanvas.setAttribute("height", height);
     let canvasContext = inputCanvas.getContext('2d');
-    canvasContext.drawImage(imageElement, box[0], box[2], 
-                            box[1] - box[0], box[3] - box[2], 0, 0, 
+    canvasContext.drawImage(imageElement, box[0], box[2],
+                            box[1] - box[0], box[3] - box[2], 0, 0,
                             width, height);
     let pixels = canvasContext.getImageData(0, 0, width, height).data;
     if (norm) {
@@ -143,7 +146,7 @@ class EABenchmark extends Benchmark {
     // drawImage
     let ctx = canvas.getContext('2d');
     ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
-  
+
     // drawFaceBox
     face_boxes.forEach((box, i) => {
       let xmin = box[0] / image.height * canvas.height;

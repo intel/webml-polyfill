@@ -17,11 +17,14 @@ class FLDBenchmark extends Benchmark {
     let model = faceDetectionModels.filter(f => f.modelName == this.modelName);
     inputCanvas.setAttribute("width", model[0].inputSize[1]);
     inputCanvas.setAttribute("height", model[0].inputSize[0]);
-    model[0].modelFile = '../examples' + model[0].modelFile.slice(2);
+    let modelFile = model[0].modelFile;
+    if (!modelFile.toLowerCase().startsWith("https://") && !modelFile.toLowerCase().startsWith("http://")) {
+       model[0].modelFile = '../examples/util/' + model[0].modelFile;
+    }
     this.faceDetector = new FaceDetecor(inputCanvas);
     await this.faceDetector.loadModel(model[0]);
     await this.faceDetector.init(this.backend.replace('WebNN', 'WebML'), preferSelect.value);
-    model[0].modelFile = '..' + model[0].modelFile.slice(11);
+    model[0].modelFile = modelFile;
   }
 
   async getFaceDetectResult() {
@@ -46,8 +49,8 @@ class FLDBenchmark extends Benchmark {
     inputCanvas.setAttribute("width", width);
     inputCanvas.setAttribute("height", height);
     let canvasContext = inputCanvas.getContext('2d');
-    canvasContext.drawImage(imageElement, box[0], box[2], 
-                            box[1]-box[0], box[3]-box[2], 0, 0, 
+    canvasContext.drawImage(imageElement, box[0], box[2],
+                            box[1]-box[0], box[3]-box[2], 0, 0,
                             inputCanvas.width,
                             inputCanvas.height);
     let pixels = canvasContext.getImageData(0, 0, width, height).data;
@@ -139,7 +142,7 @@ class FLDBenchmark extends Benchmark {
     // drawImage
     let ctx = canvas.getContext('2d');
     ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
-  
+
     // drawFaceBox
     face_boxes.forEach(box => {
       let xmin = box[0] / image.height * canvas.height;
