@@ -166,7 +166,7 @@ const main = async (camera = false) => {
   streaming = false;
 
   if (currentModel !== 'undefined') {
-    let currentModelArray = currentModel.split('+');
+    let currentModelArray = currentModel.split(/\s|\+/);
     for (let curtModel of currentModelArray) {
       if (recognitionModels.includes(curtModel)) {
         if (curtModel !== currentRecognitionModel) {
