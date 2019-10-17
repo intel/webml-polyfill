@@ -144,7 +144,7 @@ class Utils {
     let embeddingsNorm = new Float32Array(embeddings.length);
     for (let i = 0; i < embeddings.length; i++) {
       if (embeddings[i] !== 0) {
-        embeddingsNorm[i] = (embeddings[i] / L2).toFixed(16);
+        embeddingsNorm[i] = (embeddings[i] / L2).toFixed(10);
       } else {
         embeddingsNorm[i] = 0;
       }
@@ -187,6 +187,8 @@ class Utils {
 
         let distance;
         if (this.modelID === "facenet_recognition_openvino") {
+          let [...targetEmbeddingsTmp] = Float32Array.from(this.normalization(targetEmbeddings[i]));
+          let [...searchEmbeddingsTmp] = Float32Array.from(this.normalization(searchEmbeddings[j]));
           distance = this.getDistance(targetEmbeddings[i], searchEmbeddings[j]);
         } else if (this.modelID === "facereidentification_recognition_openvino") {
           distance = this.getCosine(targetEmbeddings[i], searchEmbeddings[j]);
