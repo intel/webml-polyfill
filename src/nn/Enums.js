@@ -1282,7 +1282,6 @@ export const OperationCode = {
    * It starts with the trailing dimensions, and works its way forward.
    *
    * Supported tensor types:
-   * * {@link TENSOR_FLOAT16}
    * * {@link TENSOR_FLOAT32}
    * * {@link TENSOR_QUANT8_ASYMM}
    *
