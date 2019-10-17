@@ -629,11 +629,6 @@ export default class WebGLModel {
         const output = operands[outputs[0]];
         output.assign(tf.maximum(input1, input2));
       } break;
-      case OperationCode.L2_NORMALIZATION: {
-        const input = operands[inputs[0]];
-        const output = operands[outputs[0]];
-        output.assign(input.div(input.square().sum().sqrt()));
-      } break;
       case OperationCode.PRELU: {
         const input1 = operands[inputs[0]];
         const input2 = operands[inputs[1]];
