@@ -189,7 +189,7 @@ class Utils {
         if (this.modelID === "facenet_recognition_openvino") {
           let [...targetEmbeddingsTmp] = Float32Array.from(this.normalization(targetEmbeddings[i]));
           let [...searchEmbeddingsTmp] = Float32Array.from(this.normalization(searchEmbeddings[j]));
-          distance = this.getDistance(targetEmbeddings[i], searchEmbeddings[j]);
+          distance = this.getDistance(targetEmbeddingsTmp, searchEmbeddingsTmp);
         } else if (this.modelID === "facereidentification_recognition_openvino") {
           distance = this.getCosine(targetEmbeddings[i], searchEmbeddings[j]);
         }
