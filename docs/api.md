@@ -60,6 +60,7 @@ interface NeuralNetworkContext {
   const long BATCH_TO_SPACE_ND = 29;
   const long TRANSPOSE = 37;
   const long MAXIMUM = 65;
+  const long PRELU = 71;
   const long ATROUS_CONV_2D = 10003;
   const long ATROUS_DEPTHWISE_CONV_2D = 10004;
 
@@ -139,7 +140,7 @@ const nn = navigator.ml.getNeuralNetworkContext();
 ```js
 const TENSOR_SIZE = 200;
 let operandIndex = 0;
-  
+
 // Create a Model object.
 let model = await nn.createModel();
 
