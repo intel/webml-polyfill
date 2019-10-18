@@ -1264,15 +1264,13 @@ export const OperationCode = {
    */
   MAXIMUM: 65,
 
-  /** Computes parametric rectified linear activation on the input tensor element-wise.
+  /** Parametric Rectified Linear Unit.
    *
-   * The output is calculated using this formula:
+   * It follows:
+   *   f(x) = alpha * x for x < 0, f(x) = x for x >= 0,
    *
-   *     x < 0:
-   *     output = alpha * x
-   *
-   *     x >= 0:
-   *     output = x
+   * where alpha is a learned array with the same OperandCode and
+   * compatible dimensions as input x.
    *
    * Two dimensions are compatible when:
    *     1. they are equal, or
@@ -1294,7 +1292,7 @@ export const OperationCode = {
    *
    * Outputs:
    * * 0: A tensor of the same OperandCode as input0. For a
-   *      ANEURALNETWORKS_TENSOR_QUANT8_ASYMM tensor, the scale and zeroPoint
+   *      TENSOR_QUANT8_ASYMM tensor, the scale and zeroPoint
    *      can be diffent from the input0 scale and zeroPoint.
    *
    */
