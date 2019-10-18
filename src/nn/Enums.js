@@ -1269,7 +1269,7 @@ export const OperationCode = {
    * It follows:
    *   f(x) = alpha * x for x < 0, f(x) = x for x >= 0,
    *
-   * where alpha is a learned array with the same OperandCode and
+   * where alpha is a learned array with the same {@link OperandCode} and
    * compatible dimensions as input x.
    *
    * Two dimensions are compatible when:
@@ -1279,7 +1279,7 @@ export const OperationCode = {
    * The size of the output is the maximum size along each dimension of the input operands.
    * It starts with the trailing dimensions, and works its way forward.
    *
-   * Supported tensor types:
+   * Supported tensor {@link OperandCode}:
    * * {@link TENSOR_FLOAT32}
    * * {@link TENSOR_QUANT8_ASYMM}
    *
@@ -1287,12 +1287,12 @@ export const OperationCode = {
    *
    * Inputs:
    * * 0: A tensor, specifying the input.
-   * * 1: A tensor of the same OperandCode, and compatible dimensions as input0,
+   * * 1: A tensor of the same {@link OperandCode}, and compatible dimensions as input0,
    *      specifying the alpha.
    *
    * Outputs:
-   * * 0: A tensor of the same OperandCode as input0. For a
-   *      TENSOR_QUANT8_ASYMM tensor, the scale and zeroPoint
+   * * 0: A tensor of the same {@link OperandCode} as input0. For a
+   *      {@link TENSOR_QUANT8_ASYMM} tensor, the scale and zeroPoint
    *      can be diffent from the input0 scale and zeroPoint.
    *
    */
