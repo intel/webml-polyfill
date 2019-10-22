@@ -64,8 +64,6 @@ logistic_float_1.mod.py
 logistic_float_2.mod.py
 logistic_quant8_1.mod.py
 logistic_quant8_2.mod.py
-logistic_float_1_relaxed.mod.py
-logistic_float_2_relaxed.mod.py
 max_pool_float_1.mod.py
 max_pool_float_2.mod.py
 max_pool_float_3.mod.py
