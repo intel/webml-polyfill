@@ -60,7 +60,6 @@ interface NeuralNetworkContext {
   const long BATCH_TO_SPACE_ND = 29;
   const long TRANSPOSE = 37;
   const long ARGMAX = 39;
-  const long ARGMIN = 40;
   const long MAXIMUM = 65;
   const long ATROUS_CONV_2D = 10003;
   const long ATROUS_DEPTHWISE_CONV_2D = 10004;
