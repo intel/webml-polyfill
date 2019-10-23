@@ -807,14 +807,14 @@ class OpenVINOModelImporter {
           console.log(`  inputs shape: ` +
               `[${node.inputs.map((input) => input.shape()).join('], [')}]`);
 
-          const operation = node.getString('type');
-          console.log(`  operation: ${operation}`);
-          switch (operation) {
+          const type = node.getString('type');
+          console.log(`  type: ${type}`);
+          switch (type) {
             case 'sigmoid':
               opCode = this._nn.LOGISTIC;
               break;
             default:
-              throw new Error(`Operation ${operation} is not supported`);
+              throw new Error(`The type ${type} of Activation is not supported`);
           }
 
           // Add outputs
