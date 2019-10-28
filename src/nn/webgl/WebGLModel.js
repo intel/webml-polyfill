@@ -279,6 +279,9 @@ export default class WebGLModel {
   }
 
   async _executeGlSubgraph(subgraph) {
+    tf.webgl.forceHalfFloat();
+    console.info('WEBGL_FORCE_F16_TEXTURES : ',tf.ENV.getBool('WEBGL_FORCE_F16_TEXTURES'));
+    console.info('floatPercision : ',tf.backend().floatPrecision());    
     for (const operation of subgraph.operations) {
       tf.tidy(() => this._executeGlOperation(operation));
     }

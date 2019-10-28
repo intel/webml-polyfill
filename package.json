@@ -43,6 +43,6 @@
     "npmlog": "^4.1.2",
     "globby": "^8.0.1",
     "rimraf": "^2.6.2",
-    "@tensorflow/tfjs-core": "1.2.2"
+    "@tensorflow/tfjs-core": "1.2.11"
   }
 }
