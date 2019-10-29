@@ -27,7 +27,7 @@ export default class PreparedModel {
 
   /**
    * Prepare for model execution.
-   * 
+   *
    * @param {Object} model - A model object built by user.
    */
   async prepare(model) {
@@ -43,7 +43,7 @@ export default class PreparedModel {
     if (model._operands[modelInputs[0]].type === OperandCode.TENSOR_QUANT8_ASYMM) {
         this._nn_ops.set_gemm_context_threads_num(1);
     }
- 
+
     // allocate runtime operands
     for (let i = 0; i < model._operands.length; ++i) {
       const operand = model._operands[i];
@@ -120,7 +120,7 @@ export default class PreparedModel {
 
   /**
    * Launches an asynchronous execution on a prepared model.
-   * 
+   *
    * @param {Array} inputs - Inputs provided by user.
    * @param {Array} outputs - Outputs will receive results.
    */
@@ -186,13 +186,13 @@ export default class PreparedModel {
         }
       }
 
-      // add the operation to the submodel 
+      // add the operation to the submodel
       const operationInputs = operation.inputs.map(i => globalIdToLocalId[i]);
       const operationOutputs = operation.outputs.map(i => globalIdToLocalId[i]);
       submodel.addOperation(operation.type, operationInputs, operationOutputs);
     }
 
-    // indentify the input and output tensors of the submodel 
+    // indentify the input and output tensors of the submodel
     const submodelInputs = inTensors.map(i => globalIdToLocalId[i]);
     const submodelOutputs = outTensors.map(i => globalIdToLocalId[i]);
     submodel.identifyInputsAndOutputs(submodelInputs, submodelOutputs);
@@ -335,7 +335,7 @@ export default class PreparedModel {
     }
 
     // reference: https://android.googlesource.com/platform/frameworks/ml/+/refs/heads/master/nn/common/OperationsUtils.cpp#213
-    function GetQuantizedConvolutionMultipler(input_scale, filter_scale, 
+    function GetQuantizedConvolutionMultipler(input_scale, filter_scale,
                                               bias_scale, output_scale) {
       let input_product_scale = input_scale * filter_scale;
 
@@ -392,7 +392,7 @@ export default class PreparedModel {
     // reference: https://android.googlesource.com/platform/frameworks/ml/+/refs/heads/master/nn/common/OperationsUtils.cpp#281
     function CalculateInputRadius(input_integer_bits, input_left_shift) {
       let max_input_rescaled = 1.0 * ((1 << input_integer_bits) - 1) *
-                               (1 << (31 - input_integer_bits)) / 
+                               (1 << (31 - input_integer_bits)) /
                                (1 << input_left_shift);
       // Tighten bound using floor.  Suppose that we could use the exact value.
       // After scaling the difference, the result would be at the maximum.  Thus we
@@ -410,7 +410,7 @@ export default class PreparedModel {
         const log2 = Math.log2 || function log2 (n) { return Math.log(n) * Math.LOG2E }
         let exp = Math.max(-1023, Math.floor(log2(absArg)) + 1)
         let x = absArg * Math.pow(2, -exp)
-    
+
         // These while loops compensate for rounding errors that sometimes occur because of ECMAScript's Math.log2's undefined precision
         // and also works around the issue of Math.pow(2, -exp) === Infinity when exp <= -1024
         while (x < 0.5) {
@@ -421,7 +421,7 @@ export default class PreparedModel {
           x *= 0.5
           exp++
         }
-    
+
         if (arg < 0) {
           x = -x
         }
@@ -432,7 +432,7 @@ export default class PreparedModel {
     }
 
     function sameShape(input1, input2) {
-      if (input1.type != input2.type || 
+      if (input1.type != input2.type ||
         input1.runtimeshape.DimensionsCount() != input2.runtimeshape.DimensionsCount()) {
         return false;
       }
@@ -632,9 +632,9 @@ export default class PreparedModel {
 
           let inputWidth = input.runtimeshape.Dims(2);
           let inputHeight = input.runtimeshape.Dims(1);
-          [paddingLeft, paddingRight] = 
+          [paddingLeft, paddingRight] =
             calculateExplicitPadding(inputWidth, strideWidth, filterWidth, dilationWidth, paddingCode);
-          [paddingTop, paddingBottom] = 
+          [paddingTop, paddingBottom] =
             calculateExplicitPadding(inputHeight, strideHeight, filterHeight, dilationHeight, paddingCode);
         }
         let output = operands[outputs[0]];
@@ -647,7 +647,7 @@ export default class PreparedModel {
         let output_multiplier = 0, output_shift = 0;
         let typedArray = Float32Array;
         if (output.type === OperandCode.TENSOR_QUANT8_ASYMM) {
-          let real_multiplier = GetQuantizedConvolutionMultipler(input.scale, filter.scale, 
+          let real_multiplier = GetQuantizedConvolutionMultipler(input.scale, filter.scale,
                                                                  bias.scale, output.scale);
           [output_multiplier, output_shift] = QuantizeMultiplierSmallerThanOne(real_multiplier);
           typedArray = Uint8Array;
@@ -709,17 +709,17 @@ export default class PreparedModel {
         }
 
         if (output.type === OperandCode.TENSOR_FLOAT32) {
-          nn_ops.convFloat32(convParams, 
-                             input.runtimeshape, input.value, 
-                             filter.runtimeshape, filter.value, 
-                             bias.runtimeshape, bias.value, 
+          nn_ops.convFloat32(convParams,
+                             input.runtimeshape, input.value,
+                             filter.runtimeshape, filter.value,
+                             bias.runtimeshape, bias.value,
                              output.runtimeshape, output.value,
                              im2colShape, im2colData);
         } else if (output.type === OperandCode.TENSOR_QUANT8_ASYMM) {
-          nn_ops.convUint8(convParams, 
-                           input.runtimeshape, input.value, 
-                           filter.runtimeshape, filter.value, 
-                           bias.runtimeshape, bias.value, 
+          nn_ops.convUint8(convParams,
+                           input.runtimeshape, input.value,
+                           filter.runtimeshape, filter.value,
+                           bias.runtimeshape, bias.value,
                            output.runtimeshape, output.value,
                            im2colShape, im2colData);
         }
@@ -778,16 +778,16 @@ export default class PreparedModel {
           let filterWidth = filter.runtimeshape.Dims(2);
           let filterHeight = filter.runtimeshape.Dims(1);
 
-          [paddingLeft, paddingRight] = 
+          [paddingLeft, paddingRight] =
             calculateExplicitPadding(inputWidth, strideWidth, filterWidth, dilationWidth, paddingCode);
-          [paddingTop, paddingBottom] = 
+          [paddingTop, paddingBottom] =
             calculateExplicitPadding(inputHeight, strideHeight, filterHeight, dilationHeight, paddingCode);
         }
         let output = operands[outputs[0]];
 
         let output_multiplier = 0, output_shift = 0;
         if (output.type === OperandCode.TENSOR_QUANT8_ASYMM) {
-          let real_multiplier = GetQuantizedConvolutionMultipler(input.scale, filter.scale, 
+          let real_multiplier = GetQuantizedConvolutionMultipler(input.scale, filter.scale,
                                                                  bias.scale, output.scale);
           [output_multiplier, output_shift] = QuantizeMultiplierSmallerThanOne(real_multiplier);
         }
@@ -832,16 +832,16 @@ export default class PreparedModel {
           quantized_activation_max: quantized_activation_max
         }
         if (output.type === OperandCode.TENSOR_FLOAT32) {
-          nn_ops.depthwiseConvFloat32(depthwiseParams, 
-                                      input.runtimeshape, input.value, 
-                                      filter.runtimeshape, filter.value, 
-                                      bias.runtimeshape, bias.value, 
+          nn_ops.depthwiseConvFloat32(depthwiseParams,
+                                      input.runtimeshape, input.value,
+                                      filter.runtimeshape, filter.value,
+                                      bias.runtimeshape, bias.value,
                                       output.runtimeshape, output.value);
         } else if (output.type === OperandCode.TENSOR_QUANT8_ASYMM) {
-          nn_ops.depthwiseConvUint8(depthwiseParams, 
-                                    input.runtimeshape, input.value, 
-                                    filter.runtimeshape, filter.value, 
-                                    bias.runtimeshape, bias.value, 
+          nn_ops.depthwiseConvUint8(depthwiseParams,
+                                    input.runtimeshape, input.value,
+                                    filter.runtimeshape, filter.value,
+                                    bias.runtimeshape, bias.value,
                                     output.runtimeshape, output.value);
         }
       } break;
@@ -879,9 +879,9 @@ export default class PreparedModel {
 
           let inputWidth = input.runtimeshape.Dims(2);
           let inputHeight = input.runtimeshape.Dims(1);
-          [paddingLeft, paddingRight] = 
+          [paddingLeft, paddingRight] =
             calculateExplicitPadding(inputWidth, strideWidth, filterWidth, 1, paddingCode);
-          [paddingTop, paddingBottom] = 
+          [paddingTop, paddingBottom] =
             calculateExplicitPadding(inputHeight, strideHeight, filterHeight, 1, paddingCode);
         }
         let output = operands[outputs[0]];
@@ -912,21 +912,21 @@ export default class PreparedModel {
 
         if (op === OperationCode.AVERAGE_POOL_2D) {
           if (output.type === OperandCode.TENSOR_FLOAT32) {
-            nn_ops.averagePoolFloat32(poolParams, 
+            nn_ops.averagePoolFloat32(poolParams,
                                       input.runtimeshape, input.value,
                                       output.runtimeshape, output.value);
           } else if (output.type === OperandCode.TENSOR_QUANT8_ASYMM) {
-            nn_ops.averagePoolUint8(poolParams, 
+            nn_ops.averagePoolUint8(poolParams,
                                     input.runtimeshape, input.value,
                                     output.runtimeshape, output.value);
           }
         } else if (op === OperationCode.MAX_POOL_2D) {
           if (output.type === OperandCode.TENSOR_FLOAT32) {
-            nn_ops.maxPoolFloat32(poolParams, 
+            nn_ops.maxPoolFloat32(poolParams,
                                   input.runtimeshape, input.value,
                                   output.runtimeshape, output.value);
           } else if (output.type === OperandCode.TENSOR_QUANT8_ASYMM) {
-            nn_ops.maxPoolUint8(poolParams, 
+            nn_ops.maxPoolUint8(poolParams,
                                 input.runtimeshape, input.value,
                                 output.runtimeshape, output.value);
           }
@@ -964,19 +964,19 @@ export default class PreparedModel {
           diff_min: diffMin
         }
         if (output.type === OperandCode.TENSOR_FLOAT32) {
-          nn_ops.softmaxFloat32(softmaxParams, 
-                                input.runtimeshape, input.value, 
+          nn_ops.softmaxFloat32(softmaxParams,
+                                input.runtimeshape, input.value,
                                 output.runtimeshape, output.value);
         } else if (output.type === OperandCode.TENSOR_QUANT8_ASYMM) {
-          nn_ops.softmaxUint8(softmaxParams, 
-                              input.runtimeshape, input.value, 
+          nn_ops.softmaxUint8(softmaxParams,
+                              input.runtimeshape, input.value,
                               output.runtimeshape, output.value);
         }
       } break;
       case OperationCode.RESHAPE: {
         allParametersPresent(2, 1);
         let input = operands[inputs[0]];
-        let targetShape = operands[inputs[1]];  // Dont use targetShape since 
+        let targetShape = operands[inputs[1]];  // Dont use targetShape since
                                                 // outputShape has been set at first
         let output = operands[outputs[0]];
 
@@ -995,10 +995,10 @@ export default class PreparedModel {
         OPS_CHECK(numInputElements === numOutputElements);
 
         if (output.type === OperandCode.TENSOR_FLOAT32) {
-          nn_ops.reshapeFloat32(input.runtimeshape, input.value,  
+          nn_ops.reshapeFloat32(input.runtimeshape, input.value,
                                 output.runtimeshape, output.value);
         } else if (output.type === OperandCode.TENSOR_QUANT8_ASYMM) {
-          nn_ops.reshapeUint8(input.runtimeshape, input.value, 
+          nn_ops.reshapeUint8(input.runtimeshape, input.value,
                               output.runtimeshape, output.value);
         }
       } break;
@@ -1050,10 +1050,10 @@ export default class PreparedModel {
         }
 
         if (output.type === OperandCode.TENSOR_FLOAT32) {
-          nn_ops.concatenationFloat32(concatenationParams, inputShapes, inputValues, 
+          nn_ops.concatenationFloat32(concatenationParams, inputShapes, inputValues,
                                       output.runtimeshape, output.value);
         } else if (output.type === OperandCode.TENSOR_QUANT8_ASYMM) {
-          nn_ops.concatenationUint8(concatenationParams, inputShapes, inputValues, 
+          nn_ops.concatenationUint8(concatenationParams, inputShapes, inputValues,
                                     inputScale, inputZeroPint,
                                     output.runtimeshape, output.value);
         }
@@ -1070,7 +1070,7 @@ export default class PreparedModel {
 
         let output_multiplier = 0, output_shift = 0;
         if (output.type === OperandCode.TENSOR_QUANT8_ASYMM) {
-          let real_multiplier = GetQuantizedConvolutionMultipler(input.scale, weights.scale, 
+          let real_multiplier = GetQuantizedConvolutionMultipler(input.scale, weights.scale,
                                                                 bias.scale, output.scale);
           [output_multiplier, output_shift] = QuantizeMultiplier(real_multiplier);
         }
@@ -1095,16 +1095,16 @@ export default class PreparedModel {
         }
 
         if (output.type === OperandCode.TENSOR_FLOAT32) {
-          nn_ops.fullyConnectedFloat32(fullyConnectedParams, 
-                                       input.runtimeshape, input.value, 
-                                       weights.runtimeshape, weights.value, 
-                                       bias.runtimeshape, bias.value, 
+          nn_ops.fullyConnectedFloat32(fullyConnectedParams,
+                                       input.runtimeshape, input.value,
+                                       weights.runtimeshape, weights.value,
+                                       bias.runtimeshape, bias.value,
                                        output.runtimeshape, output.value);
         } else if (output.type === OperandCode.TENSOR_QUANT8_ASYMM) {
-          nn_ops.fullyConnectedUint8(fullyConnectedParams, 
-                                     input.runtimeshape, input.value, 
-                                     weights.runtimeshape, weights.value, 
-                                     bias.runtimeshape, bias.value, 
+          nn_ops.fullyConnectedUint8(fullyConnectedParams,
+                                     input.runtimeshape, input.value,
+                                     weights.runtimeshape, weights.value,
+                                     bias.runtimeshape, bias.value,
                                      output.runtimeshape, output.value);
         }
       } break;
@@ -1146,9 +1146,9 @@ export default class PreparedModel {
         OPS_CHECK(input.runtimeshape.DimensionsCount() <= 4);
         OPS_CHECK(output.runtimeshape.DimensionsCount() <= 4);
 
-        nn_ops.resizeBilinearFloat32(resizeBilinearParams, 
-                                     input.runtimeshape, input.value, 
-                                     outSizeShape, outSizeData,   
+        nn_ops.resizeBilinearFloat32(resizeBilinearParams,
+                                     input.runtimeshape, input.value,
+                                     outSizeShape, outSizeData,
                                      output.runtimeshape, output.value);
         outSizeShape.delete();
         nn_ops._free(outSizeData);
@@ -1158,7 +1158,7 @@ export default class PreparedModel {
         let input = operands[inputs[0]];
         let output = operands[outputs[0]];
 
-        nn_ops.tanhFloat32(input.runtimeshape, input.value, 
+        nn_ops.tanhFloat32(input.runtimeshape, input.value,
                            output.runtimeshape, output.value);
       } break;
       case OperationCode.MAXIMUM: {
@@ -1195,7 +1195,7 @@ export default class PreparedModel {
         OPS_CHECK(input.runtimeshape.DimensionsCount() <= 4);
         OPS_CHECK(output.runtimeshape.DimensionsCount() <= 4);
 
-        nn_ops.batchToSpaceNDFloat32(input.runtimeshape, input.value, 
+        nn_ops.batchToSpaceNDFloat32(input.runtimeshape, input.value,
                                      blockShape.runtimeshape, blockShape.value,
                                      cropsShape, cropsData,
                                      output.runtimeshape, output.value);
@@ -1232,9 +1232,27 @@ export default class PreparedModel {
           perm_count: perm.length
         }
 
-        nn_ops.transposeFloat32(transposeParams, 
-                                input.runtimeshape, input.value, 
+        nn_ops.transposeFloat32(transposeParams,
+                                input.runtimeshape, input.value,
                                 output.runtimeshape, output.value);
+      } break;
+      case OperationCode.ARGMAX: {
+        allParametersPresent(2, 1);
+        let input1 = operands[inputs[0]];
+        let input2 = operands[inputs[1]];
+        let operand = {
+          type: OperandCode.TENSOR_INT32,
+          dimensions: [1],
+          numberOfConsumers: 0,
+          lifetime: OperandLifetime.CONSTANT_REFERENCE,
+          value: [input2.value[0]]
+        };
+        let axisData = this._allocateTensor(operand);
+        let output = operands[outputs[0]];
+
+        nn_ops.argMaxFloat32(input1.runtimeshape, input1.value,
+                             axisData, output.runtimeshape, output.value);
+        nn_ops._free(axisData);
       } break;
       default: {
         throw new Error(`Operation ${op} is not supported`);
@@ -1316,7 +1334,7 @@ export default class PreparedModel {
   }
 
   getSubgraphsSummary() {
-    return this._subgraphs.map((graph, i) => 
+    return this._subgraphs.map((graph, i) =>
         `Subgraph ${i}\t (${graph.backend}):\t{${graph.summary}}`);
   }
 

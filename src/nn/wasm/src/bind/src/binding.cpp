@@ -371,6 +371,16 @@ namespace binding_utils {
                              unextended_input_shape, (const float*) input_data,
                              unextended_output_shape, (float*) output_data);
   }
+
+  void argMaxFloat32Wrapper(const RuntimeShape& input1_shape,
+                            const intptr_t input1_data,
+                            const intptr_t input2_data,
+                            const RuntimeShape& output_shape,
+                            intptr_t output_data) {
+    optimized_ops::ArgMax(input1_shape, (const float*) input1_data,
+                          (const int32_t*) input2_data, output_shape,
+                          (int32_t*) output_data);
+  }
 }
 
 EMSCRIPTEN_BINDINGS(nn)
@@ -554,6 +564,7 @@ EMSCRIPTEN_BINDINGS(nn)
   function("maximumFloat32", &binding_utils::maximumFloat32Wrapper, allow_raw_pointers());
   function("batchToSpaceNDFloat32", &binding_utils::batchToSpaceNDFloat32Wrapper, allow_raw_pointers());
   function("transposeFloat32", &binding_utils::transposeFloat32Wrapper, allow_raw_pointers());
+  function("argMaxFloat32", &binding_utils::argMaxFloat32Wrapper, allow_raw_pointers());
 
   // TODO: operation wrappers
   /*
