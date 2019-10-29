@@ -1926,6 +1926,241 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for ARGMAX with 2D tensor using axis 0 example', async function() {
+    let model = await nn.createModel(options);
+    let operandIndex = 0;
+
+    let op1_value = [1.0, 2.0, 4.0, 3.0];
+    let op2_value = 0;
+    let op3_expect = [1, 1];
+
+    let type1 = {type: nn.INT32};
+    let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2]};
+    let type2 = {type: nn.TENSOR_INT32, dimensions: [2]};
+    let type2_length = product(type2.dimensions);
+
+    let op1 = operandIndex++;
+    model.addOperand(type0);
+    let op2 = operandIndex++;
+    model.addOperand(type1);
+    let op3 = operandIndex++;
+    model.addOperand(type2);
+
+    let op2_input = new Int32Array([op2_value]);
+    model.setOperandValue(op2, op2_input);
+
+    model.addOperation(nn.ARGMAX, [op1, op2], [op3]);
+
+    model.identifyInputsAndOutputs([op1], [op3]);
+    await model.finish();
+
+    let compilation = await model.createCompilation();
+    compilation.setPreference(getPreferenceCode(options.prefer));
+    await compilation.finish();
+
+    let execution = await compilation.createExecution();
+
+    let op1_input = new Float32Array(op1_value);
+    execution.setInput(0, op1_input);
+
+    let op3_output = new Int32Array(type2_length);
+    execution.setOutput(0, op3_output);
+
+    await execution.startCompute();
+
+    for (let i = 0; i < type2_length; ++i) {
+      assert.isTrue(almostEqualCTS(op3_output[i], op3_expect[i]));
+    }
+  });
+
+  it('check result for ARGMAX with 2D tensor using axis 1 example', async function() {
+    let model = await nn.createModel(options);
+    let operandIndex = 0;
+
+    let op1_value = [1.0, 2.0, 4.0, 3.0];
+    let op2_value = 1;
+    let op3_expect = [1, 0];
+
+    let type1 = {type: nn.INT32};
+    let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2]};
+    let type2 = {type: nn.TENSOR_INT32, dimensions: [2]};
+    let type2_length = product(type2.dimensions);
+
+    let op1 = operandIndex++;
+    model.addOperand(type0);
+    let op2 = operandIndex++;
+    model.addOperand(type1);
+    let op3 = operandIndex++;
+    model.addOperand(type2);
+
+    let op2_input = new Int32Array([op2_value]);
+    model.setOperandValue(op2, op2_input);
+
+    model.addOperation(nn.ARGMAX, [op1, op2], [op3]);
+
+    model.identifyInputsAndOutputs([op1], [op3]);
+    await model.finish();
+
+    let compilation = await model.createCompilation();
+    compilation.setPreference(getPreferenceCode(options.prefer));
+    await compilation.finish();
+
+    let execution = await compilation.createExecution();
+
+    let op1_input = new Float32Array(op1_value);
+    execution.setInput(0, op1_input);
+
+    let op3_output = new Int32Array(type2_length);
+    execution.setOutput(0, op3_output);
+
+    await execution.startCompute();
+
+    for (let i = 0; i < type2_length; ++i) {
+      assert.isTrue(almostEqualCTS(op3_output[i], op3_expect[i]));
+    }
+  });
+
+  it('check result for ARGMAX with 3D tensor using axis 2 example', async function() {
+    let model = await nn.createModel(options);
+    let operandIndex = 0;
+
+    let op1_value = [1.0, 2.0, 4.0, 3.0, 5.0, 6.0, 7.0, 8.0];
+    let op2_value = 2;
+    let op3_expect = [1, 0, 1, 1];
+
+    let type1 = {type: nn.INT32};
+    let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2]};
+    let type2 = {type: nn.TENSOR_INT32, dimensions: [2, 2]};
+    let type2_length = product(type2.dimensions);
+
+    let op1 = operandIndex++;
+    model.addOperand(type0);
+    let op2 = operandIndex++;
+    model.addOperand(type1);
+    let op3 = operandIndex++;
+    model.addOperand(type2);
+
+    let op2_input = new Int32Array([op2_value]);
+    model.setOperandValue(op2, op2_input);
+
+    model.addOperation(nn.ARGMAX, [op1, op2], [op3]);
+
+    model.identifyInputsAndOutputs([op1], [op3]);
+    await model.finish();
+
+    let compilation = await model.createCompilation();
+    compilation.setPreference(getPreferenceCode(options.prefer));
+    await compilation.finish();
+
+    let execution = await compilation.createExecution();
+
+    let op1_input = new Float32Array(op1_value);
+    execution.setInput(0, op1_input);
+
+    let op3_output = new Int32Array(type2_length);
+    execution.setOutput(0, op3_output);
+
+    await execution.startCompute();
+
+    for (let i = 0; i < type2_length; ++i) {
+      assert.isTrue(almostEqualCTS(op3_output[i], op3_expect[i]));
+    }
+  });
+
+  it('check result for ARGMAX with 4D tensor using axis 3 example/1', async function() {
+    let model = await nn.createModel(options);
+    let operandIndex = 0;
+
+    let op1_value = [0.1, 0.9, 0.7, 0.3];
+    let op2_value = 3;
+    let op3_expect = [1];
+
+    let type1 = {type: nn.INT32};
+    let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 1, 1, 4]};
+    let type2 = {type: nn.TENSOR_INT32, dimensions: [1, 1, 1]};
+    let type2_length = product(type2.dimensions);
+
+    let op1 = operandIndex++;
+    model.addOperand(type0);
+    let op2 = operandIndex++;
+    model.addOperand(type1);
+    let op3 = operandIndex++;
+    model.addOperand(type2);
+
+    let op2_input = new Int32Array([op2_value]);
+    model.setOperandValue(op2, op2_input);
+
+    model.addOperation(nn.ARGMAX, [op1, op2], [op3]);
+
+    model.identifyInputsAndOutputs([op1], [op3]);
+    await model.finish();
+
+    let compilation = await model.createCompilation();
+    compilation.setPreference(getPreferenceCode(options.prefer));
+    await compilation.finish();
+
+    let execution = await compilation.createExecution();
+
+    let op1_input = new Float32Array(op1_value);
+    execution.setInput(0, op1_input);
+
+    let op3_output = new Int32Array(type2_length);
+    execution.setOutput(0, op3_output);
+
+    await execution.startCompute();
+
+    for (let i = 0; i < type2_length; ++i) {
+      assert.isTrue(almostEqualCTS(op3_output[i], op3_expect[i]));
+    }
+  });
+
+  it('check result for ARGMAX with 4D tensor using axis 3 example/2', async function() {
+    let model = await nn.createModel(options);
+    let operandIndex = 0;
+
+    let op1_value = [1, 2, 7, 8, 1, 9, 7, 3];
+    let op2_value = 3;
+    let op3_expect = [3, 1];
+
+    let type1 = {type: nn.INT32};
+    let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 1, 2, 4]};
+    let type2 = {type: nn.TENSOR_INT32, dimensions: [1, 1, 2]};
+    let type2_length = product(type2.dimensions);
+
+    let op1 = operandIndex++;
+    model.addOperand(type0);
+    let op2 = operandIndex++;
+    model.addOperand(type1);
+    let op3 = operandIndex++;
+    model.addOperand(type2);
+
+    let op2_input = new Int32Array([op2_value]);
+    model.setOperandValue(op2, op2_input);
+
+    model.addOperation(nn.ARGMAX, [op1, op2], [op3]);
+
+    model.identifyInputsAndOutputs([op1], [op3]);
+    await model.finish();
+
+    let compilation = await model.createCompilation();
+    compilation.setPreference(getPreferenceCode(options.prefer));
+    await compilation.finish();
+
+    let execution = await compilation.createExecution();
+
+    let op1_input = new Float32Array(op1_value);
+    execution.setInput(0, op1_input);
+
+    let op3_output = new Int32Array(type2_length);
+    execution.setOutput(0, op3_output);
+
+    await execution.startCompute();
+
+    for (let i = 0; i < type2_length; ++i) {
+      assert.isTrue(almostEqualCTS(op3_output[i], op3_expect[i]));
+    }
+  });
+
   it('check result for ATROUS_CONV_2D 1 h3 w2 implicit padding same example-1', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
@@ -6267,6 +6502,300 @@ describe('CTS Supplement Test', function() {
                          30,  60,  90, 120,  40,  80, 120, 160];
     for (let i = 0; i < length; ++i) {
       assert.isTrue(almostEqualCTS(outputData[i], expectedData[i]));
+    }
+  });
+
+  it('check result for PRELU float broadcasting 2D example', async function() {
+    let model = await nn.createModel(options);
+    let operandIndex = 0;
+
+    let op1_value = [1.1, -2.2, -3.3, 4.4];
+    let op2_value = [2];
+    let op3_expect = [1.1, -4.4, -6.6, 4.4];
+
+    let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2]};
+    let type0_length = product(type0.dimensions);
+    let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [1]};
+    let type1_length = product(type1.dimensions);
+
+    let op1 = operandIndex++;
+    model.addOperand(type0);
+    let op2 = operandIndex++;
+    model.addOperand(type1);
+    let op3 = operandIndex++;
+    model.addOperand(type0);
+
+    let op2_input = new Float32Array(op2_value);
+    model.setOperandValue(op2, op2_input);
+
+    model.addOperation(nn.PRELU, [op1, op2], [op3]);
+
+    model.identifyInputsAndOutputs([op1], [op3]);
+    await model.finish();
+
+    let compilation = await model.createCompilation();
+    compilation.setPreference(getPreferenceCode(options.prefer));
+    await compilation.finish();
+
+    let execution = await compilation.createExecution();
+
+    let op1_input = new Float32Array(op1_value);
+    execution.setInput(0, op1_input);
+
+    let op3_output = new Float32Array(type0_length);
+    execution.setOutput(0, op3_output);
+
+    await execution.startCompute();
+
+    for (let i = 0; i < type0_length; ++i) {
+      assert.isTrue(almostEqualCTS(op3_output[i], op3_expect[i]));
+    }
+  });
+
+  it('check result for PRELU float broadcasting 3D example', async function() {
+    let model = await nn.createModel(options);
+    let operandIndex = 0;
+
+    let op1_value = [1.1, 2.2, 3.3, 4.4, -5.5, -6.6, -7.7, -8.8];
+    let op2_value = [2];
+    let op3_expect = [1.1, 2.2, 3.3, 4.4, -11.0, -13.2, -15.4, -17.6];
+
+    let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2]};
+    let type0_length = product(type0.dimensions);
+    let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [1]};
+    let type1_length = product(type1.dimensions);
+
+    let op1 = operandIndex++;
+    model.addOperand(type0);
+    let op2 = operandIndex++;
+    model.addOperand(type1);
+    let op3 = operandIndex++;
+    model.addOperand(type0);
+
+    let op2_input = new Float32Array(op2_value);
+    model.setOperandValue(op2, op2_input);
+
+    model.addOperation(nn.PRELU, [op1, op2], [op3]);
+
+    model.identifyInputsAndOutputs([op1], [op3]);
+    await model.finish();
+
+    let compilation = await model.createCompilation();
+    compilation.setPreference(getPreferenceCode(options.prefer));
+    await compilation.finish();
+
+    let execution = await compilation.createExecution();
+
+    let op1_input = new Float32Array(op1_value);
+    execution.setInput(0, op1_input);
+
+    let op3_output = new Float32Array(type0_length);
+    execution.setOutput(0, op3_output);
+
+    await execution.startCompute();
+
+    for (let i = 0; i < type0_length; ++i) {
+      assert.isTrue(almostEqualCTS(op3_output[i], op3_expect[i]));
+    }
+  });
+
+  it('check result for PRELU float broadcasting 4D example', async function() {
+    let model = await nn.createModel(options);
+    let operandIndex = 0;
+
+    let op1_value = [1.1, 2.2, 3.3, 4.4,
+                     -5.5, -6.6, -7.7, -8.8,
+                     -1.1, -2.2, -3.3, -4.4,
+                     5.5, 6.6, 7.7, 8.8];
+    let op2_value = [2];
+    let op3_expect = [1.1, 2.2, 3.3, 4.4,
+                      -11.0, -13.2, -15.4, -17.6,
+                      -2.2, -4.4, -6.6, -8.8,
+                      5.5, 6.6, 7.7, 8.8];
+
+    let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2, 2]};
+    let type0_length = product(type0.dimensions);
+    let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [1]};
+    let type1_length = product(type1.dimensions);
+
+    let op1 = operandIndex++;
+    model.addOperand(type0);
+    let op2 = operandIndex++;
+    model.addOperand(type1);
+    let op3 = operandIndex++;
+    model.addOperand(type0);
+
+    let op2_input = new Float32Array(op2_value);
+    model.setOperandValue(op2, op2_input);
+
+    model.addOperation(nn.PRELU, [op1, op2], [op3]);
+
+    model.identifyInputsAndOutputs([op1], [op3]);
+    await model.finish();
+
+    let compilation = await model.createCompilation();
+    compilation.setPreference(getPreferenceCode(options.prefer));
+    await compilation.finish();
+
+    let execution = await compilation.createExecution();
+
+    let op1_input = new Float32Array(op1_value);
+    execution.setInput(0, op1_input);
+
+    let op3_output = new Float32Array(type0_length);
+    execution.setOutput(0, op3_output);
+
+    await execution.startCompute();
+
+    for (let i = 0; i < type0_length; ++i) {
+      assert.isTrue(almostEqualCTS(op3_output[i], op3_expect[i]));
+    }
+  });
+
+  it('check result for PRELU quant8 broadcasting 2D example', async function() {
+    let model = await nn.createModel(options);
+    let operandIndex = 0;
+
+    let op1_value = [0, -1, -2, 127];
+    let op2_value = [2];
+    let op3_expect = [1, -2, -4, 127];
+
+    let type0 = {type: nn.TENSOR_QUANT8_ASYMM, dimensions: [2, 2], scale: 0.5, zeroPoint: 0};
+    let type0_length = product(type0.dimensions);
+    let type1 = {type: nn.TENSOR_QUANT8_ASYMM, dimensions: [1], scale: 0.5, zeroPoint: 0};
+    let type1_length = product(type1.dimensions);
+
+    let op1 = operandIndex++;
+    model.addOperand(type0);
+    let op2 = operandIndex++;
+    model.addOperand(type1);
+    let op3 = operandIndex++;
+    model.addOperand(type0);
+
+    let op2_input = new Uint8Array(op2_value);
+    model.setOperandValue(op2, op2_input);
+
+    model.addOperation(nn.PRELU, [op1, op2], [op3]);
+
+    model.identifyInputsAndOutputs([op1], [op3]);
+    await model.finish();
+
+    let compilation = await model.createCompilation();
+    compilation.setPreference(getPreferenceCode(options.prefer));
+    await compilation.finish();
+
+    let execution = await compilation.createExecution();
+
+    let op1_input = new Uint8Array(op1_value);
+    execution.setInput(0, op1_input);
+
+    let op3_output = new Uint8Array(type0_length);
+    execution.setOutput(0, op3_output);
+
+    await execution.startCompute();
+
+    for (let i = 0; i < type0_length; ++i) {
+      assert.isTrue(almostEqualCTS(op3_output[i], op3_expect[i]));
+    }
+  });
+
+  it('check result for PRELU quant8 broadcasting 3D example', async function() {
+    let model = await nn.createModel(options);
+    let operandIndex = 0;
+
+    let op1_value = [0, -1, -2, 127, -10, 100, -100, 10];
+    let op2_value = [2];
+    let op3_expect = [1, -2, -4, 127, -20, 100, -200, 10];
+
+    let type0 = {type: nn.TENSOR_QUANT8_ASYMM, dimensions: [2, 2, 2], scale: 0.5, zeroPoint: 0};
+    let type0_length = product(type0.dimensions);
+    let type1 = {type: nn.TENSOR_QUANT8_ASYMM, dimensions: [1], scale: 0.5, zeroPoint: 0};
+    let type1_length = product(type1.dimensions);
+
+    let op1 = operandIndex++;
+    model.addOperand(type0);
+    let op2 = operandIndex++;
+    model.addOperand(type1);
+    let op3 = operandIndex++;
+    model.addOperand(type0);
+
+    let op2_input = new Uint8Array(op2_value);
+    model.setOperandValue(op2, op2_input);
+
+    model.addOperation(nn.PRELU, [op1, op2], [op3]);
+
+    model.identifyInputsAndOutputs([op1], [op3]);
+    await model.finish();
+
+    let compilation = await model.createCompilation();
+    compilation.setPreference(getPreferenceCode(options.prefer));
+    await compilation.finish();
+
+    let execution = await compilation.createExecution();
+
+    let op1_input = new Uint8Array(op1_value);
+    execution.setInput(0, op1_input);
+
+    let op3_output = new Uint8Array(type0_length);
+    execution.setOutput(0, op3_output);
+
+    await execution.startCompute();
+
+    for (let i = 0; i < type0_length; ++i) {
+      assert.isTrue(almostEqualCTS(op3_output[i], op3_expect[i]));
+    }
+  });
+
+  it('check result for PRELU quant8 broadcasting 4D example', async function() {
+    let model = await nn.createModel(options);
+    let operandIndex = 0;
+
+    let op1_value = [1, 2, 3, 4,
+                     -5, -6, -7, -8,
+                     -1, -2, -3, -4,
+                     5, 6, 7, 8];
+    let op2_value = [2];
+    let op3_expect = [1, 2, 3, 4,
+                      -10, -12, -14, -16,
+                      -2, -4, -6, -8,
+                      5, 6, 7, 8];
+
+    let type0 = {type: nn.TENSOR_QUANT8_ASYMM, dimensions: [2, 2, 2, 2], scale: 0.5, zeroPoint: 0};
+    let type0_length = product(type0.dimensions);
+    let type1 = {type: nn.TENSOR_QUANT8_ASYMM, dimensions: [1], scale: 0.5, zeroPoint: 0};
+    let type1_length = product(type1.dimensions);
+
+    let op1 = operandIndex++;
+    model.addOperand(type0);
+    let op2 = operandIndex++;
+    model.addOperand(type1);
+    let op3 = operandIndex++;
+    model.addOperand(type0);
+
+    let op2_input = new Uint8Array(op2_value);
+    model.setOperandValue(op2, op2_input);
+
+    model.addOperation(nn.PRELU, [op1, op2], [op3]);
+
+    model.identifyInputsAndOutputs([op1], [op3]);
+    await model.finish();
+
+    let compilation = await model.createCompilation();
+    compilation.setPreference(getPreferenceCode(options.prefer));
+    await compilation.finish();
+
+    let execution = await compilation.createExecution();
+
+    let op1_input = new Uint8Array(op1_value);
+    execution.setInput(0, op1_input);
+
+    let op3_output = new Uint8Array(type0_length);
+    execution.setOutput(0, op3_output);
+
+    await execution.startCompute();
+
+    for (let i = 0; i < type0_length; ++i) {
+      assert.isTrue(almostEqualCTS(op3_output[i], op3_expect[i]));
     }
   });
 

@@ -60,6 +60,10 @@ fully_connected_quant8_2.mod.py
 fully_connected_quant8_large.mod.py
 fully_connected_quant8_large_weights_as_inputs.mod.py
 fully_connected_quant8_weights_as_inputs.mod.py
+logistic_float_1.mod.py
+logistic_float_2.mod.py
+logistic_quant8_1.mod.py
+logistic_quant8_2.mod.py
 max_pool_float_1.mod.py
 max_pool_float_2.mod.py
 max_pool_float_3.mod.py

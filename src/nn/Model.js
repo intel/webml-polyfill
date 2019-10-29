@@ -5,17 +5,17 @@ import Compilation from './Compilation';
 export default class Model {
   /**
    * Create an empty model.
-   * 
+   *
    * @typedef  {'WebGL' | 'WASM'} Backend
-   * 
+   *
    * @typedef  {Object}      ModelOptions  Options for polyfill only
    * @property {Backend}     backend       Backend selection
    * @property {boolean}     [eager=false] Eagerly partition
    * @property {Set<number>} [supportedOps=new Set()] OperationCode to be
    *                                       offloaded to WebNN. If the given set
    *                                       is empty or undefined, all ops will
-   *                                       be executed by the polyfill.               
-   * 
+   *                                       be executed by the polyfill.
+   *
    * @param {ModelOptions}   [options={}]  Configurations for model
    */
   constructor(options = {}) {
@@ -31,7 +31,7 @@ export default class Model {
 
   /**
    * Create a compilation from model.
-   * 
+   *
    * @returns {Compilation} - the compilation object.
    */
   async createCompilation() {
@@ -60,7 +60,7 @@ export default class Model {
 
   /**
    * Add an operand to a model.
-   * 
+   *
    * @param {number} options.type -  The data type, e.g OperandCode.FLOAT32.
    * @param {number[]} options.dimensions - The dimensions of the tensor. It should be nullptr for scalars.
    * @param {number} options.scale - Only for quantized tensors whose value is defined by (value - zeroPoint) * scale.
@@ -90,7 +90,7 @@ export default class Model {
 
   /**
    * Sets an operand to a constant value.
-   * 
+   *
    * @param {number} index - The index of the model operand we're setting.
    * @param {TypedArray} value - The typed array containing data.
    */
@@ -113,7 +113,7 @@ export default class Model {
 
   /**
    * Add an operation to a model.
-   * 
+   *
    * @param {number} type - The type of the operation.
    * @param {number[]} inputs - An array of indexes identifying the input operands.
    * @param {number[]} outputs - An array of indexes identifying the output operands.
@@ -122,7 +122,7 @@ export default class Model {
     if (this._completed) {
       throw new Error('addOperation cant modify after model finished');
     }
-    
+
     if (!this._validateOperationCode(type)) {
       throw new Error(`Invalid operation code ${type}`);
     }
@@ -146,7 +146,7 @@ export default class Model {
 
   /**
    * Specfifies which operands will be the model's inputs and outputs.
-   * 
+   *
    * @param {number[]} inputs - An array of indexes identifying the input operands.
    * @param {number[]} outputs - An array of indexes identifying the output operands.
    */
