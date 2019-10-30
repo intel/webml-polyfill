@@ -394,10 +394,7 @@ EMSCRIPTEN_BINDINGS(nn)
   constant("INT32_MAX", std::numeric_limits<int32_t>::max());
 
   class_<RuntimeShape>("RuntimeShape")
-    .constructor<int>(select_overload<RuntimeShape(int)>([](int dimensions_count) {
-        return RuntimeShape(dimensions_count);
-      }
-    ))
+    .constructor<int>()
     .function("DimensionsCount", &RuntimeShape::DimensionsCount)
     .function("Dims", &RuntimeShape::Dims)
     .function("SetDim", &RuntimeShape::SetDim)
