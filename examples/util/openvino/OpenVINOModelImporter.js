@@ -743,40 +743,8 @@ class OpenVINOModelImporter {
 
           opCode = this._nn.SOFTMAX;
         } break;
-        case 'Normalize': {
-          const input = node.inputs[0];
-          const inDims = input.shape();
-          const inputId = this._getTensorId(input);
-          console.log(`  input shape: [${input.shape()}]`);
-
-          const acrossSpatial = node.getInt('across_spatial');
-          const channelShared = node.getInt('channel_shared');
-          const eps = node.getFloat('eps');
-
-          if (acrossSpatial !== 0 || channelShared !== 0) {
-            throw new Error(`Normalize not support across_spatial ${across_spatial} channel_shared ${channel_shared}.`);
-          }
-
-          inputs.push(inputId);
-
-          const output = node.outputs[0];
-
-          if (i === graph.nodes.length - 1) {
-            this._tensorIds[output.graphId()] = inputId;
-            console.log(`  skip last op: Normalize`);
-          } else {
-            const outDims = output.shape();
-            const outputType = {
-              type: this._getTypeCode(output.dataType()), dimensions: outDims
-            };
-            const outputId = this._addNamedOperand(output.graphId(), outputType);
-            outputs.push(outputId);
-            console.log(`  output shape: [${outDims}]`);
-
-            opCode = this._nn.L2_NORMALIZATION;
-          }
-        } break;
         case 'PReLU': {
+          // Now, we don't support 'channel_shared' parameter of OpenVINO's PReLU.
           const input = node.inputs[0];
           const inDims = input.shape();
           console.log(`  input shape: [${input.shape()}]`);
