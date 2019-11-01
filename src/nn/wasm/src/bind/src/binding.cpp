@@ -6,6 +6,9 @@
 #include "external/tensorflow/tensorflow/lite/kernels/internal/reference/reference_ops.h"
 #include "external/tensorflow/tensorflow/lite/kernels/internal/optimized/depthwiseconv_float.h"
 #include "external/tensorflow/tensorflow/lite/kernels/internal/optimized/depthwiseconv_uint8.h"
+#include "external/tensorflow/tensorflow/lite/kernels/internal/optimized/legacy_optimized_ops.h"
+#include "external/tensorflow/tensorflow/lite/kernels/cpu_backend_context.h"
+#include "external/tensorflow/tensorflow/lite/kernels/internal/optimized/cpu_check.h"
 #include "fixedpoint/fixedpoint.h"
 #include "public/gemmlowp.h"
 
@@ -18,10 +21,20 @@ using namespace tflite;
 
 namespace binding_utils {
   static gemmlowp::GemmContext gemm_context;
+  static CpuBackendContext cpu_backend_context;
+  static CpuFlags cpu_flags;
   
   // help functions
   void set_gemm_context_threads_num(int threads_num) {
     gemm_context.set_max_num_threads(threads_num);
+  }
+
+  void set_cpu_context_threads_num(int max_num_threads) {
+    cpu_backend_context.SetMaxNumThreads(max_num_threads);
+  }
+
+  void get_cpu_flags(CpuBackendContext* cpu_backend_context, CpuFlags* cpu_flags) {
+    tflite::GetCpuFlags(cpu_backend_context, cpu_flags);
   }
 
   // Operation Implements.	
@@ -119,11 +132,12 @@ namespace binding_utils {
                                    const intptr_t biasData, 
                                    const RuntimeShape& outputShape, 
                                    intptr_t outputData) {
-    optimized_ops::DepthwiseConv(op_params,
-                                 inputShape, (const float*)inputData, 
-                                 filterShape, (const float*)filterData, 
-                                 biasShape, (const float*)biasData, 
-                                 outputShape, (float*)outputData);
+    binding_utils::get_cpu_flags(&cpu_backend_context, &cpu_flags);
+    optimized_ops::DepthwiseConv(op_params, inputShape,
+                                 (const float*)inputData, filterShape,
+                                 (const float*)filterData, biasShape,
+                                 (const float*)biasData, outputShape,
+                                 (float*)outputData, cpu_flags);
   }
 
   void depthwiseConvUint8Wrapper(const DepthwiseParams& op_params,
@@ -135,11 +149,12 @@ namespace binding_utils {
                                  const intptr_t biasData, 
                                  const RuntimeShape& outputShape, 
                                  intptr_t outputData) {
-    optimized_ops::DepthwiseConv(op_params,
-                                 inputShape, (const uint8_t*)inputData, 
-                                 filterShape, (const uint8_t*)filterData, 
-                                 biasShape, (const int32_t*)biasData, 
-                                 outputShape, (uint8_t*)outputData);
+    binding_utils::get_cpu_flags(&cpu_backend_context, &cpu_flags);
+    optimized_ops::DepthwiseConv(op_params, inputShape, 
+                                 (const uint8_t*)inputData, filterShape,
+                                 (const uint8_t*)filterData, biasShape, 
+                                 (const int32_t*)biasData, outputShape,
+                                 (uint8_t*)outputData, &gemm_context);
   }
 
   void convFloat32Wrapper(const ConvParams& op_params, 
@@ -153,12 +168,12 @@ namespace binding_utils {
                           intptr_t outputData,
                           const RuntimeShape& im2colShape, 
                           intptr_t im2colData) {
-    optimized_ops::Conv(op_params, 
-                        inputShape, (const float*)inputData, 
-                        filterShape, (const float*)filterData, 
-                        biasShape, (const float*)biasData, 
-                        outputShape, (float*)outputData, 
-                        im2colShape, (float*)im2colData);
+    optimized_ops::Conv(op_params, inputShape,
+                        (const float*)inputData, filterShape,
+                        (const float*)filterData, biasShape,
+                        (const float*)biasData, outputShape,
+                        (float*)outputData, im2colShape,
+                        (float*)im2colData, &cpu_backend_context);
   }
 
   void convUint8Wrapper(const ConvParams& op_params, 
@@ -172,12 +187,12 @@ namespace binding_utils {
                         intptr_t outputData,
                         const RuntimeShape& im2colShape, 
                         intptr_t im2colData) {
-    optimized_ops::Conv(op_params, 
-                        inputShape, (const uint8_t*)inputData, 
-                        filterShape, (const uint8_t*)filterData, 
-                        biasShape, (const int32_t*)biasData, 
-                        outputShape, (uint8_t*)outputData, 
-                        im2colShape, (uint8_t*)im2colData, &gemm_context);
+    optimized_ops::Conv(op_params, inputShape,
+                        (const uint8_t*)inputData, filterShape,
+                        (const uint8_t*)filterData, biasShape,
+                        (const int32_t*)biasData, outputShape,
+                        (uint8_t*)outputData, im2colShape, 
+                        (uint8_t*)im2colData, &cpu_backend_context);
   }
 
   void averagePoolFloat32Wrapper(const PoolParams op_params,
@@ -293,11 +308,11 @@ namespace binding_utils {
                                     const intptr_t biasData, 
                                     const RuntimeShape& outputShape, 
                                     intptr_t outputData) {
-    optimized_ops::FullyConnected(op_params, 
-                                  inputShape, (const float*)inputData, 
-                                  weightsShape, (const float*)weightsData, 
-                                  biasShape, (const float*)biasData,
-                                  outputShape, (float*)outputData);
+    optimized_ops::FullyConnected(op_params, inputShape,
+                                  (const float*)inputData, weightsShape,
+                                  (const float*)weightsData, biasShape,
+                                  (const float*)biasData, outputShape,
+                                  (float*)outputData, &cpu_backend_context);
   }
 
   void fullyConnectedUint8Wrapper(const FullyConnectedParams op_params,
@@ -309,11 +324,11 @@ namespace binding_utils {
                                   const intptr_t biasData, 
                                   const RuntimeShape& outputShape, 
                                   intptr_t outputData) {
-    optimized_ops::FullyConnected(op_params, 
-                                  inputShape, (const uint8_t*)inputData, 
-                                  weightsShape, (const uint8_t*)weightsData, 
-                                  biasShape, (const int32_t*)biasData,
-                                  outputShape, (uint8_t*)outputData, &gemm_context);
+    optimized_ops::FullyConnected(op_params, inputShape,
+                                  (const uint8_t*)inputData, weightsShape,
+                                  (const uint8_t*)weightsData, biasShape,
+                                  (const int32_t*)biasData, outputShape,
+                                  (uint8_t*)outputData, &cpu_backend_context);
   }
 
   void resizeBilinearFloat32Wrapper(const ResizeBilinearParams op_params,
