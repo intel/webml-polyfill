@@ -1,14 +1,14 @@
 #include <emscripten/bind.h>
 #include <emscripten/val.h>
 
+#include "external/tensorflow/tensorflow/lite/kernels/cpu_backend_context.h"
 #include "external/tensorflow/tensorflow/lite/kernels/internal/types.h"
+#include "external/tensorflow/tensorflow/lite/kernels/internal/optimized/cpu_check.h"
 #include "external/tensorflow/tensorflow/lite/kernels/internal/optimized/optimized_ops.h"
 #include "external/tensorflow/tensorflow/lite/kernels/internal/reference/reference_ops.h"
 #include "external/tensorflow/tensorflow/lite/kernels/internal/optimized/depthwiseconv_float.h"
 #include "external/tensorflow/tensorflow/lite/kernels/internal/optimized/depthwiseconv_uint8.h"
 #include "external/tensorflow/tensorflow/lite/kernels/internal/optimized/legacy_optimized_ops.h"
-#include "external/tensorflow/tensorflow/lite/kernels/cpu_backend_context.h"
-#include "external/tensorflow/tensorflow/lite/kernels/internal/optimized/cpu_check.h"
 #include "fixedpoint/fixedpoint.h"
 #include "public/gemmlowp.h"
 
@@ -31,10 +31,6 @@ namespace binding_utils {
 
   void set_cpu_context_threads_num(int max_num_threads) {
     cpu_backend_context.SetMaxNumThreads(max_num_threads);
-  }
-
-  void get_cpu_flags(CpuBackendContext* cpu_backend_context, CpuFlags* cpu_flags) {
-    tflite::GetCpuFlags(cpu_backend_context, cpu_flags);
   }
 
   // Operation Implements.	
@@ -132,7 +128,7 @@ namespace binding_utils {
                                    const intptr_t biasData, 
                                    const RuntimeShape& outputShape, 
                                    intptr_t outputData) {
-    binding_utils::get_cpu_flags(&cpu_backend_context, &cpu_flags);
+    tflite::GetCpuFlags(&cpu_backend_context, &cpu_flags);
     optimized_ops::DepthwiseConv(op_params, inputShape,
                                  (const float*)inputData, filterShape,
                                  (const float*)filterData, biasShape,
@@ -149,7 +145,6 @@ namespace binding_utils {
                                  const intptr_t biasData, 
                                  const RuntimeShape& outputShape, 
                                  intptr_t outputData) {
-    binding_utils::get_cpu_flags(&cpu_backend_context, &cpu_flags);
     optimized_ops::DepthwiseConv(op_params, inputShape, 
                                  (const uint8_t*)inputData, filterShape,
                                  (const uint8_t*)filterData, biasShape, 
@@ -547,6 +542,8 @@ EMSCRIPTEN_BINDINGS(nn)
 
   // help functions
   function("set_gemm_context_threads_num", &binding_utils::set_gemm_context_threads_num);
+  function("set_cpu_context_threads_num", &binding_utils::set_cpu_context_threads_num);
+  
 
   // Operations.
   function("addFloat32", &binding_utils::addFloat32Wrapper, allow_raw_pointers());
