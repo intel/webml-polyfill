@@ -17,9 +17,9 @@ include_directories(
 set(SOURCES
     bind/src/binding.cpp
     external/tensorflow/tensorflow/lite/kernels/cpu_backend_context.cc
+    external/tensorflow/tensorflow/lite/kernels/cpu_backend_gemm_eigen.cc
     external/tensorflow/tensorflow/lite/experimental/ruy/allocator.cc
     external/tensorflow/tensorflow/lite/experimental/ruy/thread_pool.cc
-    external/tensorflow/tensorflow/lite/kernels/cpu_backend_gemm_eigen.cc
    )
 
 add_executable(nn_ops ${SOURCES})
