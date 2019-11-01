@@ -788,6 +788,42 @@ speechCommandModels: [{
   labelsFile: '../speech_commands/model/labels.txt',
   intro: 'Use Convolutional Neural Networks (CNNs) for a small-footprint keyword spotting (KWS) task.',
   paperUrl: 'https://www.isca-speech.org/archive/interspeech_2015/papers/i15_1478.pdf'
+}],
+
+faceRecognitionModels: [{
+    modelName: 'FaceNet Recognition (OpenVino)',
+    format: 'OpenVino',
+    modelId: 'facenet_recognition_openvino',
+    modelSize: '93.9MB',
+    modelFile: '../face_recognition/model/facenet.bin',
+    inputSize: [1, 160, 160, 3],
+    outputSize: [1, 512],
+    threshold: 1.26,
+    preOptions: {
+      mean: [0, 0, 0, 0],
+      std: [1, 1, 1, 1],
+      channelScheme: 'BGR',
+      format: 'NHWC'
+    },
+    intro: 'This is a CNN model for face recognition which learns discriminative features of faces and produces embeddings for input face images.',
+    paperUrl: 'https://arxiv.org/abs/1503.03832'
+  }, {
+    modelName: 'FaceReidentification Recognition (OpenVino)',
+    format: 'OpenVino',
+    modelId: 'facereidentification_recognition_openvino',
+    modelSize: '4.4MB',
+    modelFile: '../face_recognition/model/face-reidentification-retail-0095.bin',
+    inputSize: [1, 128, 128, 3],
+    outputSize: [1, 1, 1, 256],
+    threshold: 0.8,
+    preOptions: {
+      mean: [0, 0, 0, 0],
+      std: [1, 1, 1, 1],
+      channelScheme: 'BGR',
+      format: 'NHWC'
+    },
+    intro: 'This is a lightweight network for the face re-identification scenario that is\
+      based on MobileNet V2. The model produces feature vectors which should be close in cosine distance for similar faces and far for different faces.'
 }]
 
 };
@@ -929,7 +965,7 @@ const operationTypes = {
    65: 'MAXIMUM',
    10003: 'ATROUS_CONV_2D',
    10004: 'ATROUS_DEPTHWISE_CONV_2D'
-} 
+}
 
 const getUrlParams = (prop) => {
   var params = {};
