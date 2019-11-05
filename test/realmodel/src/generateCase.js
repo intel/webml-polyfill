@@ -16,50 +16,16 @@ function mkdirsSync(dirname) {
 mkdirsSync(case_path);
 
 let regexmodel = /resnet/;
-let matchFlatmodel = regexmodel.test(`${JSON_DATA.getModelName()}`);
+global.matchFlatmodel = regexmodel.test(`${JSON_DATA.getModelName()}`);
 if (matchFlatmodel) {
-  let filePath = path.join(__dirname, '..', 'model', JSON_DATA.getModelName(), `${JSON_DATA.getModelName()}.json`);
-  if (!fs.existsSync(filePath)) throw (`Can't get ${filePath}`);
-
-  let filePath1 = path.join(__dirname, '..', 'model', JSON_DATA.getModelName(), `${JSON_DATA.getModelName()}-1.json`);
-  if (!fs.existsSync(filePath1)) throw (`Can't get ${filePath1}`);
-
-  let filePath2 = path.join(__dirname, '..', 'model', JSON_DATA.getModelName(), `${JSON_DATA.getModelName()}-2.json`);
-  if (!fs.existsSync(filePath2)) throw (`Can't get ${filePath2}`);
-
-  let filePath3 = path.join(__dirname, '..', 'model', JSON_DATA.getModelName(), `${JSON_DATA.getModelName()}-3.json`);
-  if (!fs.existsSync(filePath3)) throw (`Can't get ${filePath3}`);
-
-  let filePath4 = path.join(__dirname, '..', 'model', JSON_DATA.getModelName(), `${JSON_DATA.getModelName()}-4.json`);
-  if (!fs.existsSync(filePath4)) throw (`Can't get ${filePath4}`);
-
-  let filePath5 = path.join(__dirname, '..', 'model', JSON_DATA.getModelName(), `${JSON_DATA.getModelName()}-5.json`);
-  if (!fs.existsSync(filePath5)) throw (`Can't get ${filePath5}`);
-
-  let filePath6 = path.join(__dirname, '..', 'model', JSON_DATA.getModelName(), `${JSON_DATA.getModelName()}-6.json`);
-  if (!fs.existsSync(filePath6)) throw (`Can't get ${filePath6}`);
-
-  let contentText = fs.readFileSync(filePath,'utf-8');
-  global.buf = JSON.parse(contentText);
-
-  let contentText1 = fs.readFileSync(filePath1,'utf-8');
-  global.buf1 = JSON.parse(contentText1);
-
-  let contentText2 = fs.readFileSync(filePath2,'utf-8');
-  global.buf2 = JSON.parse(contentText2);
-
-  let contentText3 = fs.readFileSync(filePath3,'utf-8');
-  global.buf3 = JSON.parse(contentText3);
-
-  let contentText4 = fs.readFileSync(filePath4,'utf-8');
-  global.buf4 = JSON.parse(contentText4);
-
-  let contentText5 = fs.readFileSync(filePath5,'utf-8');
-  global.buf5 = JSON.parse(contentText5);
-
-  let contentText6 = fs.readFileSync(filePath6,'utf-8');
-  global.buf6 = JSON.parse(contentText6);
-  generateCase(buf);
+  global.arr = [];
+  for (i = 0; i < 7; i++) {
+    let filePath = path.join(__dirname, '..', 'model', JSON_DATA.getModelName(), `${JSON_DATA.getModelName()}-${i}.json`);
+    if (!fs.existsSync(filePath)) throw (`Can't get ${filePath}`);
+    let contentText = fs.readFileSync(filePath,'utf-8');
+    arr[i] = JSON.parse(contentText);
+  }
+  generateCase(arr[0]);
 } else {
   let filePath = path.join(__dirname, '..', 'model', JSON_DATA.getModelName(), `${JSON_DATA.getModelName()}.json`);
   if (!fs.existsSync(filePath)) throw (`Can't get ${filePath}`);
@@ -71,26 +37,14 @@ if (matchFlatmodel) {
 async function saveToLocalFile(input) {
   let output = input.toString();
   let dataString;
-  let regexmodelname = /resnet/;
-  let matchFlatname = regexmodelname.test(`${JSON_DATA.getModelName()}`);
-  if (matchFlatname) {
+  if (matchFlatmodel) {
     input = parseInt(input);
-    if (buf.operation[input]) {
-      dataString = buf.operation[input];
-    } else if (buf1.operands[input]) {
-      dataString = buf1.operands[input];
-    } else if (buf2.operands[input]) {
-      dataString = buf2.operands[input];
-    } else if (buf3.operands[input]) {
-      dataString = buf3.operands[input];
-    } else if (buf4.operands[input]) {
-      dataString = buf4.operands[input];
-    } else if (buf5.operands[input]) {
-      dataString = buf5.operands[input];
-    } else if (buf6.operands[input]) {
-      dataString = buf6.operands[input];
-    } else {
-      throw ('please check input data');
+    for (i = 1; i < 7; i++) {
+      if (arr[0].operation[input]) {
+        dataString = arr[0].operation[input];
+      } else if (arr[i].operands[input]) {
+        dataString = arr[i].operands[input];
+      }
     }
   } else {
     if (buf.operation.hasOwnProperty(input)) {
@@ -135,44 +89,39 @@ async function saveCaseToLocal(input, output) {
 }
 
 async function gettensorTypes(ids) {
-  if (buf.tensorTypes.hasOwnProperty(ids)) {
-    if (Array.isArray(buf.tensorTypes[ids].dimensions) == false) {
-      let arr = Object.keys(buf.tensorTypes[ids].dimensions);
-      let array = [];
-      for (i = 0; i < arr.length; i++) {
-        array.push(buf.tensorTypes[ids].dimensions[i]);
-      }
-      return array;
-    } else {
-      return buf.tensorTypes[ids].dimensions;
+  if (matchFlatmodel) {
+    if (arr[0].tensorTypes.hasOwnProperty(ids)) {
+        if (Array.isArray(arr[0].tensorTypes[ids].dimensions) == false) {
+          let arr_model = Object.keys(arr[0].tensorTypes[ids].dimensions);
+          let array = [];
+          for (i = 0; i < arr_model.length; i++) {
+            array.push(arr[0].tensorTypes[ids].dimensions[i]);
+          }
+          return array;
+        } else {
+          return arr[0].tensorTypes[ids].dimensions;
+        }
+    } 
+  } else {
+    if (buf.tensorTypes.hasOwnProperty(ids)) {
+      return buf.tensorTypes[ids].dimensions
     }
   }
 }
 
 async function getOperands(ids) {
-  let regexmodelname = /resnet/;
-  let matchFlatOperands = regexmodelname.test(`${JSON_DATA.getModelName()}`);
-  if (matchFlatOperands) {
+  if (matchFlatmodel) {
     ids = parseInt(ids);
-    if (buf1.operands[ids]) {
-      return buf1.operands[ids];
-    } else if (buf2.operands[ids]) {
-      return buf2.operands[ids];
-    } else if (buf3.operands[ids]) {
-      return buf3.operands[ids];
-    } else if (buf4.operands[ids]) {
-      return buf4.operands[ids];
-    } else if (buf5.operands[ids]) {
-      return buf5.operands[ids];
-    } else if (buf6.operands[ids]) {
-      return buf6.operands[ids];
+    for (i = 1; i < 7; i++) {
+      if (arr[i].operands[ids]){
+        return arr[i].operands[ids];
+      }
     }
   } else {
     if (buf.operands.hasOwnProperty(ids)) {
       return buf.operands[ids];
     }
   }
-
 }
 
 let result = [];

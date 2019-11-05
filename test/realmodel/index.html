@@ -66,7 +66,8 @@
         a.dispatchEvent(e)
       }
 
-      async function downloadSeconedResnet(data, filename, number1, number2) {
+      async function downloadSecondResnet(data, filename, number1, number2) {
+        // The number1 and number2 represent the beginning and end of the half-open interval
         if (!data) {
           console.error("downloadjson: No data");
           return;
@@ -84,7 +85,7 @@
               data_all_first += ",";
             }
           }
-          data_all_first = data_all_first.slice(0,-1);
+          data_all_first = data_all_first.slice(0, -1);
           data_all_first += "}";
           data = `{"operands": ${data_all_first}}`;
         }
@@ -136,13 +137,14 @@
           regex = /resnet/;
           matchFlat = regex.test(`${modelName}`);
           if (matchFlat) {
-            await downloadFirstResnet(params, `${modelName}.json`);
-            await downloadSeconedResnet(params, `${modelName}-1.json`, 1, 200);
-            await downloadSeconedResnet(params, `${modelName}-2.json`, 200, 240);
-            await downloadSeconedResnet(params, `${modelName}-3.json`, 240, 255);
-            await downloadSeconedResnet(params, `${modelName}-4.json`, 255, 280);
-            await downloadSeconedResnet(params, `${modelName}-5.json`, 280, 400);
-            await downloadSeconedResnet(params, `${modelName}-6.json`, 400, params.operands.length);
+            await downloadFirstResnet(params, `${modelName}-0.json`);
+            // Since the size of the operands is not evenly distributed, number1 and number2 are the values taken after the experiment
+            await downloadSecondResnet(params, `${modelName}-1.json`, 1, 200);
+            await downloadSecondResnet(params, `${modelName}-2.json`, 200, 240);
+            await downloadSecondResnet(params, `${modelName}-3.json`, 240, 255);
+            await downloadSecondResnet(params, `${modelName}-4.json`, 255, 280);
+            await downloadSecondResnet(params, `${modelName}-5.json`, 280, 400);
+            await downloadSecondResnet(params, `${modelName}-6.json`, 400, params.operands.length);
           } else {
             await downloadjson(params, `${modelName}.json`);
           }
