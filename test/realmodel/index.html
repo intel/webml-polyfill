@@ -24,7 +24,7 @@
           request.send();
         });
       }
-      
+
       async function downloadjson(data, filename) {
         if (!data) {
           console.error("downloadjson: No data");
@@ -44,15 +44,50 @@
         a.dispatchEvent(e)
       }
 
-
-      async function downloadjson(data, filename) {
+      async function downloadOperationDataForResnet(data, filename) {
         if (!data) {
           console.error("downloadjson: No data");
           return;
         }
         if (!filename) filename = "casePrototypeData.json";
         if (typeof data === "object") {
-          data = JSON.stringify(data);
+          data_tensor = JSON.stringify(data.tensorTypes);
+          data_operation = JSON.stringify(data.operation);
+          data_operations = JSON.stringify(data.operations);
+          data = `{"operation": ${data_operation}, "tensorTypes": ${data_tensor}, "operations": ${data_operations}}`;
+        }
+        var blob = new Blob([data], {type: 'text/json'}),
+            e = document.createEvent('MouseEvents'),
+            a = document.createElement('a');
+        a.download = filename;
+        a.href = window.URL.createObjectURL(blob);
+        a.dataset.downloadurl = ['text/json', a.download, a.href].join(':');
+        e.initMouseEvent('click', true, false, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
+        a.dispatchEvent(e)
+      }
+
+      async function downloadOperandsDataForResnet(data, filename, number1, number2) {
+        // This function is used to get the data of the operands from the first parameter 'data', operands index intervals [number1, number2).
+        if (!data) {
+          console.error("downloadjson: No data");
+          return;
+        }
+        if (!filename) filename = "casePrototypeData.json";
+        if (typeof data === "object") {
+          let data_all_first = "{"
+          for (i = number1; i < number2; i++) {
+            data_operands = JSON.stringify(data.operands[i])
+            if (data_operands === undefined) {
+              continue
+            } else {
+              data_operands_all = `"${i}": ${data_operands}`;
+              data_all_first += data_operands_all;
+              data_all_first += ",";
+            }
+          }
+          data_all_first = data_all_first.slice(0, -1);
+          data_all_first += "}";
+          data = `{"operands": ${data_all_first}}`;
         }
         var blob = new Blob([data], {type: 'text/json'}),
             e = document.createEvent('MouseEvents'),
@@ -75,9 +110,9 @@
       function almostEqual(a, b, episilon=1e-5) {
         return Math.abs(a - b) < episilon;
       }
-      
+
       let modelName;
-      let Backend = 'WASM';     
+      let Backend = 'WASM';
       await fetch('./config.json').then((res) => {
         return res.json();
       }).then((text) => {
@@ -99,7 +134,20 @@
         let wasmnext = await wasmGen.next();
         if (wasmnext.done) {
           params.operation['0'] = input;
-          await downloadjson(params, `${modelName}.json`);
+          regex = /resnet/;
+          matchFlat = regex.test(`${modelName}`);
+          if (matchFlat) {
+            await downloadOperationDataForResnet(params, `${modelName}-0.json`);
+            // Since the size of the operands is not evenly distributed, number1 and number2 are the values taken after the experiment
+            await downloadOperandsDataForResnet(params, `${modelName}-1.json`, 1, 200);
+            await downloadOperandsDataForResnet(params, `${modelName}-2.json`, 200, 240);
+            await downloadOperandsDataForResnet(params, `${modelName}-3.json`, 240, 255);
+            await downloadOperandsDataForResnet(params, `${modelName}-4.json`, 255, 280);
+            await downloadOperandsDataForResnet(params, `${modelName}-5.json`, 280, 400);
+            await downloadOperandsDataForResnet(params, `${modelName}-6.json`, 400, params.operands.length);
+          } else {
+            await downloadjson(params, `${modelName}.json`);
+          }
           break;
         }
         if (!params.hasOwnProperty('operation')) params.operation = {};

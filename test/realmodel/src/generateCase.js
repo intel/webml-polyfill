@@ -1,19 +1,7 @@
 require('../lib/jsonOperation.js');
 const fs = require('fs');
 const path = require('path');
-let filePath = path.join(__dirname, '..', 'model', JSON_DATA.getModelName(), `${JSON_DATA.getModelName()}.json`);
-if (!fs.existsSync(filePath)) throw (`Can't get ${filePath}`);
-let stream = fs.createReadStream(filePath, {flags: 'r', encoding: 'utf-8'});
-let buf = '';
 let case_path = path.join(__dirname, '..', 'testcase', `${JSON_DATA.getModelName()}`);
-
-stream.on('data', function (d) {
-  buf += d.toString();
-});
-stream.on('end', () => {
-  buf = JSON.parse(buf);
-  generateCase(buf);
-});
 
 function mkdirsSync(dirname) {
   if (fs.existsSync(dirname)) {
@@ -27,15 +15,54 @@ function mkdirsSync(dirname) {
 }
 mkdirsSync(case_path);
 
+let regexmodel = /resnet/;
+global.matchFlatmodel = regexmodel.test(`${JSON_DATA.getModelName()}`);
+if (matchFlatmodel) {
+  global.arr = [];
+  for (i = 0; i < 7; i++) {
+    let filePath = path.join(__dirname, '..', 'model', JSON_DATA.getModelName(), `${JSON_DATA.getModelName()}-${i}.json`);
+    if (!fs.existsSync(filePath)) throw (`Can't get ${filePath}`);
+    let contentText = fs.readFileSync(filePath,'utf-8');
+    arr[i] = JSON.parse(contentText);
+  }
+  generateCase(arr[0]);
+} else {
+  let filePath = path.join(__dirname, '..', 'model', JSON_DATA.getModelName(), `${JSON_DATA.getModelName()}.json`);
+  if (!fs.existsSync(filePath)) throw (`Can't get ${filePath}`);
+  let contentText = fs.readFileSync(filePath,'utf-8');
+  global.buf = JSON.parse(contentText);
+  generateCase(buf);
+}
+
 async function saveToLocalFile(input) {
   let output = input.toString();
   let dataString;
-  if (buf.operation.hasOwnProperty(input)) {
-    dataString = buf.operation[input];
-  } else if (buf.operands.hasOwnProperty(input)) {
-    dataString = buf.operands[input];
+  if (matchFlatmodel) {
+    input = parseInt(input);
+    let b = true;
+    if (arr[0].operation[input]) {
+      dataString = arr[0].operation[input];
+      b = false;
+    } 
+    if (b) {
+      for (i = 1; i < 7; i++) {
+        if (arr[i].operands[input]) {
+          dataString = arr[i].operands[input]
+          break;
+        }
+      }
+    }
+    if (dataString === undefined) {
+      throw ('please check input data');
+    }
   } else {
-    throw ('please check input data');
+    if (buf.operation.hasOwnProperty(input)) {
+      dataString = buf.operation[input];
+    } else if (buf.operands.hasOwnProperty(input)) {
+      dataString = buf.operands[input];
+    } else {
+      throw ('please check input data');
+    }
   }
 
   let dataArray = [];
@@ -71,14 +98,38 @@ async function saveCaseToLocal(input, output) {
 }
 
 async function gettensorTypes(ids) {
-  if (buf.tensorTypes.hasOwnProperty(ids)) {
-    return buf.tensorTypes[ids].dimensions;
+  if (matchFlatmodel) {
+    if (arr[0].tensorTypes.hasOwnProperty(ids)) {
+        if (Array.isArray(arr[0].tensorTypes[ids].dimensions) == false) {
+          let arr_model = Object.keys(arr[0].tensorTypes[ids].dimensions);
+          let array = [];
+          for (i = 0; i < arr_model.length; i++) {
+            array.push(arr[0].tensorTypes[ids].dimensions[i]);
+          }
+          return array;
+        } else {
+          return arr[0].tensorTypes[ids].dimensions;
+        }
+    }
+  } else {
+    if (buf.tensorTypes.hasOwnProperty(ids)) {
+      return buf.tensorTypes[ids].dimensions
+    }
   }
 }
 
 async function getOperands(ids) {
-  if (buf.operands.hasOwnProperty(ids)) {
-    return buf.operands[ids];
+  if (matchFlatmodel) {
+    ids = parseInt(ids);
+    for (i = 1; i < 7; i++) {
+      if (arr[i].operands[ids]){
+        return arr[i].operands[ids];
+      }
+    }
+  } else {
+    if (buf.operands.hasOwnProperty(ids)) {
+      return buf.operands[ids];
+    }
   }
 }
 
@@ -93,8 +144,9 @@ async function splitContext(context) {
   switch(context[0]) {
   case 0: {
     let inputFile1 = context[1][1];
-    console.log('add_inputFile1',inputFile1)
+    let inputDims1 = (await gettensorTypes(inputFile1));
     await saveToLocalFile(inputFile1);
+    let activation = (await getOperands(context[1][2]))[0];
     let savePath = path.join(__dirname, '..', 'testcase', `${JSON_DATA.getModelName()}`);
     var readDir = fs.readdirSync(savePath);
     let count = 1;
@@ -146,7 +198,7 @@ async function splitContext(context) {
         op2_value = file_data;
       });
       let type1 = {type: nn.INT32};
-      let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [${outputDims}]};
+      let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [${inputDims1}]};
       let type0_length = product(type0.dimensions);
       let op1 = operandIndex++;
       model.addOperand(type0);
@@ -158,7 +210,7 @@ async function splitContext(context) {
       model.addOperand(type0);
       let op2_input = new Float32Array(op2_value);
       model.setOperandValue(op2, op2_input);
-      model.setOperandValue(act, new Int32Array([0]));
+      model.setOperandValue(act, new Int32Array([${activation}]));
       model.addOperation(nn.ADD, [op1, op2, act], [op3]);
       model.identifyInputsAndOutputs([op1], [op3]);
       await model.finish();
@@ -187,7 +239,7 @@ async function splitContext(context) {
         sum: 0,
       });
       let avg = d.sum/list.length;
-      let data = {"layer": "layer-${layer}", "Model": "${JSON_DATA.getModelName()}", "Ops": "ADD", "avg": avg, "bias": "null", "weight": "null", "input dimensions": [${inputDims}], "output dimensions": [${outputDims}], "stride": "null", "filter": "null", "padding": "null", "activation": "null", "axis": "null", "shapeLen": "null", "shapeValues": "null"}
+      let data = {"layer": "layer-${layer}", "Model": "${JSON_DATA.getModelName()}", "Ops": "ADD", "avg": avg, "bias": "null", "weight": "null", "input dimensions": [${inputDims}], "output dimensions": [${outputDims}], "stride": "null", "filter": "null", "padding": "null", "activation": "[${activation}]", "axis": "null", "shapeLen": "null", "shapeValues": "null"}
       data = JSON.stringify(data);
       document.getElementById("avg").insertAdjacentText("beforeend", data);
       document.getElementById("avg").insertAdjacentText("beforeend", ",");
@@ -727,7 +779,7 @@ async function splitContext(context) {
       model.addOperand(type3);
       let stride = operandIndex++;
       model.addOperand(type3);
-      let channelMultiplier = operandIndex++; 
+      let channelMultiplier = operandIndex++;
       model.addOperand(type3);
       let op4 = operandIndex++;
       model.addOperand(type1);
@@ -798,6 +850,144 @@ async function splitContext(context) {
   });`;
     await saveCaseToLocal(caseSample, `${JSON_DATA.getModelName()}-depthwish_conv_2d-${count}.js`);
     result.push(`${JSON_DATA.getModelName()}-depthwish_conv_2d-${count}.js`)
+  } break;
+  case 9:{
+    let weightFile = context[1][1];
+    let biasFile = context[1][2];
+    let weight = (await gettensorTypes(weightFile));
+    let bias = (await gettensorTypes(biasFile));
+    await saveToLocalFile(weightFile);
+    await saveToLocalFile(biasFile);
+    let activation = (await getOperands(context[1][3]))[0];
+    let savePath = path.join(__dirname, '..', 'testcase', `${JSON_DATA.getModelName()}`);
+    var readDir = fs.readdirSync(savePath);
+    let count = 1;
+    for (let i in readDir) {
+      regex = /fully-connected/;
+      matchFlat = regex.test(readDir[i]);
+      if (matchFlat) {
+        count ++;
+      }
+    };
+    let layer = result.length + 1;
+    let caseSample = `describe('CTS Real Model Test', function() {
+    const assert = chai.assert;
+    const nn = navigator.ml.getNeuralNetworkContext();
+    it('Check result for layer-${layer} FULLY_CONNECTED example/${count} of ${JSON_DATA.getModelName()} model', async function() {
+      let model = await nn.createModel(options);
+      let operandIndex = 0;
+      let op1_value;
+      let output_expect;
+      await fetch('./realmodel/testcase/res/${JSON_DATA.getModelName()}/${inputFile}').then((res) => {
+        return res.json();
+      }).then((text) => {
+        let file_data = new Float32Array(text.length);
+        for (let j in text) {
+          let b = parseFloat(text[j]);
+          file_data[j] = b;
+        }
+        op1_value = file_data;
+      });
+      await fetch('./realmodel/testcase/res/${JSON_DATA.getModelName()}/${outputFile}').then((res) => {
+        return res.json();
+      }).then((text) => {
+        let file_data = new Float32Array(text.length);
+        for (let j in text) {
+          let b = parseFloat(text[j]);
+          file_data[j] = b;
+        }
+        output_expect = file_data;
+      });
+      let type4 = {type: nn.INT32};
+      let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [${weight}]};
+      let type1_length = product(type1.dimensions);
+      let type2 = {type: nn.TENSOR_FLOAT32, dimensions: [${bias}]};
+      let type2_length = product(type2.dimensions);
+      let type3 = {type: nn.TENSOR_FLOAT32, dimensions: [${outputDims}]};
+      let type3_length = product(type3.dimensions);
+      let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [${inputDims}]};
+      let type0_length = product(type0.dimensions);
+
+      let op1 = operandIndex++;
+      model.addOperand(type0);
+      let op2 = operandIndex++;
+      model.addOperand(type1);
+      let b0 = operandIndex++;
+      model.addOperand(type2);
+      let op3 = operandIndex++;
+      model.addOperand(type3);
+      let act = operandIndex++;
+      model.addOperand(type4);
+      let op2value;
+      await fetch('./realmodel/testcase/res/${JSON_DATA.getModelName()}/${weightFile}').then((res) => {
+        return res.json();
+      }).then((text) => {
+        let file_data = new Float32Array(text.length);
+        for (let j in text) {
+          let b = parseFloat(text[j]);
+          file_data[j] = b;
+        }
+        op2value = file_data;
+      });
+      let op3value;
+      await fetch('./realmodel/testcase/res/${JSON_DATA.getModelName()}/${biasFile}').then((res) => {
+        return res.json();
+      }).then((text) => {
+        let file_data = new Float32Array(text.length);
+        for (let j in text) {
+          let b = parseFloat(text[j]);
+          file_data[j] = b;
+        }
+        op3value = file_data;
+      });
+
+      model.setOperandValue(op2, new Float32Array(op2value));
+      model.setOperandValue(b0, new Float32Array(op3value));
+      model.setOperandValue(act, new Int32Array([${activation}]));
+      model.addOperation(nn.FULLY_CONNECTED, [op1, op2, b0, act], [op3]);
+
+      model.identifyInputsAndOutputs([op1], [op3]);
+      await model.finish();
+
+      let compilation = await model.createCompilation();
+      compilation.setPreference(getPreferenceCode(options.prefer));
+      await compilation.finish();
+
+      let execution = await compilation.createExecution();
+
+      let op1_input = new Float32Array(op1_value);
+      execution.setInput(0, op1_input);
+
+      let op3_output = new Float32Array(type3_length);
+      execution.setOutput(0, op3_output);
+      let list = [];
+      iterations_all = Number(options.iterations) + 1;
+      for (let i = 0; i < iterations_all ; i++) {
+        let tStart = performance.now();
+        await execution.startCompute();
+        let computeTime = performance.now() - tStart;
+        list.push(computeTime);
+      };
+      let sum = 0;
+      list.shift();
+      let d = list.reduce((d, v) => {
+        d.sum += v;
+        return d;
+      }, {
+        sum: 0,
+      });
+      let avg = d.sum/list.length;
+      let data = {"layer": "layer-${layer}", "Model": "${JSON_DATA.getModelName()}", "Ops": "FULLY_CONNECTED", "avg": avg, "bias": "null", "weight": "null", "input dimensions": [${inputDims}], "output dimensions": [${outputDims}], "stride": "null", "filter": "null", "padding": "null", "activation": [${activation}], "axis": "null", "shapeLen": "null", "shapeValues": "null"}
+      data = JSON.stringify(data);
+      document.getElementById("avg").insertAdjacentText("beforeend", data);
+      document.getElementById("avg").insertAdjacentText("beforeend", ",");
+      for (let i = 0; i < type2_length; ++i) {
+        assert.isTrue(almostEqualCTS(op3_output[i], output_expect[i]));
+      }
+    });
+  });`;
+    await saveCaseToLocal(caseSample, `${JSON_DATA.getModelName()}-fully-connected-${count}.js`);
+    result.push(`${JSON_DATA.getModelName()}-fully-connected-${count}.js`)
   } break;
   case 22: {
     let shapeDic = await getOperands(context[1][1]);

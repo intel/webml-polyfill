@@ -6,7 +6,7 @@
   "dependencies": {
     "download": "^7.1.0",
     "node-wget": "^0.4.3",
-    "puppeteer": "^1.14.0",
+    "puppeteer": "^2.0.0",
     "targz": "^1.0.1",
     "unzip": "^0.1.11"
   },
@@ -15,7 +15,7 @@
     "downloadModel": "node ./src/downloadModelFile.js",
     "unzipTar": "node ./src/unzipModel.js",
     "getTCRes": "node ./src/getCaseOriginData.js",
-    "genTC": "node ./src/generateCase.js",
+    "genTC": "node --max_old_space_size=4096 ./src/generateCase.js",
     "genHtml": "node ./src/genhtml.js"
   }
 }
