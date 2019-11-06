@@ -39,12 +39,21 @@ async function saveToLocalFile(input) {
   let dataString;
   if (matchFlatmodel) {
     input = parseInt(input);
-    for (i = 1; i < 7; i++) {
-      if (arr[0].operation[input]) {
-        dataString = arr[0].operation[input];
-      } else if (arr[i].operands[input]) {
-        dataString = arr[i].operands[input];
+    let b = true;
+    if (arr[0].operation[input]) {
+      dataString = arr[0].operation[input];
+      b = false;
+    } 
+    if (b) {
+      for (i = 1; i < 7; i++) {
+        if (arr[i].operands[input]) {
+          dataString = arr[i].operands[input]
+          break;
+        }
       }
+    }
+    if (dataString === undefined) {
+      throw ('please check input data');
     }
   } else {
     if (buf.operation.hasOwnProperty(input)) {
@@ -101,7 +110,7 @@ async function gettensorTypes(ids) {
         } else {
           return arr[0].tensorTypes[ids].dimensions;
         }
-    } 
+    }
   } else {
     if (buf.tensorTypes.hasOwnProperty(ids)) {
       return buf.tensorTypes[ids].dimensions

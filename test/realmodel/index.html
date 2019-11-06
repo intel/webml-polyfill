@@ -67,7 +67,7 @@
       }
 
       async function downloadSecondResnet(data, filename, number1, number2) {
-        // The number1 and number2 represent the beginning and end of the half-open interval
+        // This function is used to get the data value of the operands in the input between the intervals [number1, number2).
         if (!data) {
           console.error("downloadjson: No data");
           return;
