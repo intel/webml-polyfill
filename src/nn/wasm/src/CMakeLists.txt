@@ -24,4 +24,4 @@ set(SOURCES
 
 add_executable(nn_ops ${SOURCES})
 set_property(TARGET nn_ops PROPERTY CXX_STANDARD 11)
-set_target_properties(nn_ops PROPERTIES LINK_FLAGS "-s WASM=1 -s NO_FILESYSTEM=1 -s ALLOW_MEMORY_GROWTH=1 -s SINGLE_FILE=1 -s MODULARIZE=1 -s ASSERTIONS=1 --memory-init-file 0 --bind")
+set_target_properties(nn_ops PROPERTIES LINK_FLAGS "-s WASM=1 -s NO_FILESYSTEM=1 -s ALLOW_MEMORY_GROWTH=1 -s SINGLE_FILE=1 -s MODULARIZE=1 --memory-init-file 0 --bind")
