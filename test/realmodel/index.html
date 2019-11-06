@@ -44,7 +44,7 @@
         a.dispatchEvent(e)
       }
 
-      async function downloadFirstResnet(data, filename) {
+      async function downloadOperationDataForResnet(data, filename) {
         if (!data) {
           console.error("downloadjson: No data");
           return;
@@ -66,8 +66,8 @@
         a.dispatchEvent(e)
       }
 
-      async function downloadSecondResnet(data, filename, number1, number2) {
-        // This function is used to get the data value of the operands in the input between the intervals [number1, number2).
+      async function downloadOperandsDataForResnet(data, filename, number1, number2) {
+        // This function is used to get the data of the operands from the first parameter 'data', operands index intervals [number1, number2).
         if (!data) {
           console.error("downloadjson: No data");
           return;
@@ -137,14 +137,14 @@
           regex = /resnet/;
           matchFlat = regex.test(`${modelName}`);
           if (matchFlat) {
-            await downloadFirstResnet(params, `${modelName}-0.json`);
+            await downloadOperationDataForResnet(params, `${modelName}-0.json`);
             // Since the size of the operands is not evenly distributed, number1 and number2 are the values taken after the experiment
-            await downloadSecondResnet(params, `${modelName}-1.json`, 1, 200);
-            await downloadSecondResnet(params, `${modelName}-2.json`, 200, 240);
-            await downloadSecondResnet(params, `${modelName}-3.json`, 240, 255);
-            await downloadSecondResnet(params, `${modelName}-4.json`, 255, 280);
-            await downloadSecondResnet(params, `${modelName}-5.json`, 280, 400);
-            await downloadSecondResnet(params, `${modelName}-6.json`, 400, params.operands.length);
+            await downloadOperandsDataForResnet(params, `${modelName}-1.json`, 1, 200);
+            await downloadOperandsDataForResnet(params, `${modelName}-2.json`, 200, 240);
+            await downloadOperandsDataForResnet(params, `${modelName}-3.json`, 240, 255);
+            await downloadOperandsDataForResnet(params, `${modelName}-4.json`, 255, 280);
+            await downloadOperandsDataForResnet(params, `${modelName}-5.json`, 280, 400);
+            await downloadOperandsDataForResnet(params, `${modelName}-6.json`, 400, params.operands.length);
           } else {
             await downloadjson(params, `${modelName}.json`);
           }
