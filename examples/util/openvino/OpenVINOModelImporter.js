@@ -640,38 +640,25 @@ class OpenVINOModelImporter {
             if (order.length === 4) {
               console.log(`  input shape: [${inDims}]`);
 
-              // step 1: NHWC -> NCWH
-              inputs.push(inputId);
-              inputs.push(this._addTensorInt32([0, 3, 1, 2], [4]));
-
-              const step1OutputDims = [inDims[0], inDims[3], inDims[1], inDims[2]];
-              const step1OutputType = {type: this._nn.TENSOR_FLOAT32, dimensions: step1OutputDims};
-              const step1OutputId = this._addOperand(step1OutputType);
-
-              outputs.push(step1OutputId);
-              this._addOperation(this._nn.TRANSPOSE, inputs, outputs);
-
-              // step 2: transpose to order
-              inputs = [];
-              outputs = [];
-              inputs.push(step1OutputId);
-              inputs.push(this._addTensorInt32(order, [order.length]));
-
-              let step2OutputDims = [];
-              for (let number in order) {
-                step2OutputDims[number] = step1OutputDims[order[number]];
+              // Converte order data: NCHW -> NHWC
+              let orderTmp = [];
+              for (let i = 0; i < order.length; i++) {
+                if (order[i] === 0) {
+                  orderTmp[i] = order[i];
+                } else if (order[i] === 1) {
+                  orderTmp[i] = 3;
+                } else if (order[i] === 2) {
+                  orderTmp[i] = 1;
+                } else {
+                  orderTmp[i] = 2;
+                }
               }
-              const step2OutputType = {type: this._nn.TENSOR_FLOAT32, dimensions: step2OutputDims};
-              const step2OutputId = this._addOperand(step2OutputType);
 
-              outputs.push(step2OutputId);
-              this._addOperation(this._nn.TRANSPOSE, inputs, outputs);
+              // Converte order data format: NCHW -> NHWC
+              const newOrder = [orderTmp[0], orderTmp[2], orderTmp[3], orderTmp[1]];
 
-              // step 3: NCWH -> NHWC
-              inputs = [];
-              outputs = [];
-              inputs.push(step2OutputId);
-              inputs.push(this._addTensorInt32([0, 2, 3, 1], [4]));
+              inputs.push(inputId);
+              inputs.push(this._addTensorInt32(newOrder, [4]));
 
               const outDims = output.shape();
               const outputType = {
