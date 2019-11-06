@@ -6,9 +6,9 @@ describe('CTS Supplement Test', function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
-    let op1_value = [0, -1, -2, 127, -10, 100, -100, 10];
+    let op1_value = [0, 1, 2, 127, 10, 100, 100, 10];
     let op2_value = [2];
-    let op3_expect = [1, -2, -4, 127, -20, 100, -200, 10];
+    let op3_expect = [0, 1, 2, 127, 10, 100, 100, 10];
 
     let type0 = {type: nn.TENSOR_QUANT8_ASYMM, dimensions: [2, 2, 2], scale: 0.5, zeroPoint: 0};
     let type0_length = product(type0.dimensions);
