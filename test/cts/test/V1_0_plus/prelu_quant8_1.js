@@ -6,9 +6,9 @@ describe('CTS', function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
-    let op1_value = [1, -2, -4, 8];
+    let op1_value = [1, 2, 4, 8];
     let op2_value = [1, 2, 3, 4];
-    let op3_expect = [1, -4, -12, 8];
+    let op3_expect = [1, 2, 4, 8];
 
     let type0 = {type: nn.TENSOR_QUANT8_ASYMM, dimensions: [1, 2, 2, 1], scale: 0.5, zeroPoint: 0};
     let type0_length = product(type0.dimensions);

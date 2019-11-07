@@ -6656,9 +6656,9 @@ describe('CTS Supplement Test', function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
-    let op1_value = [0, -1, -2, 127];
+    let op1_value = [0, 1, 2, 127];
     let op2_value = [2];
-    let op3_expect = [1, -2, -4, 127];
+    let op3_expect = [0, 1, 2, 127];
 
     let type0 = {type: nn.TENSOR_QUANT8_ASYMM, dimensions: [2, 2], scale: 0.5, zeroPoint: 0};
     let type0_length = product(type0.dimensions);
@@ -6703,9 +6703,9 @@ describe('CTS Supplement Test', function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
-    let op1_value = [0, -1, -2, 127, -10, 100, -100, 10];
+    let op1_value = [0, 1, 2, 127, 10, 100, 100, 10];
     let op2_value = [2];
-    let op3_expect = [1, -2, -4, 127, -20, 100, -200, 10];
+    let op3_expect = [0, 1, 2, 127, 10, 100, 100, 10];
 
     let type0 = {type: nn.TENSOR_QUANT8_ASYMM, dimensions: [2, 2, 2], scale: 0.5, zeroPoint: 0};
     let type0_length = product(type0.dimensions);
@@ -6751,14 +6751,14 @@ describe('CTS Supplement Test', function() {
     let operandIndex = 0;
 
     let op1_value = [1, 2, 3, 4,
-                     -5, -6, -7, -8,
-                     -1, -2, -3, -4,
-                     5, 6, 7, 8];
+                     5, 6, 7, 8,
+                     10, 20, 30, 40,
+                     50, 60, 70, 80];
     let op2_value = [2];
     let op3_expect = [1, 2, 3, 4,
-                      -10, -12, -14, -16,
-                      -2, -4, -6, -8,
-                      5, 6, 7, 8];
+                      5, 6, 7, 8,
+                      10, 20, 30, 40,
+                      50, 60, 70, 80];
 
     let type0 = {type: nn.TENSOR_QUANT8_ASYMM, dimensions: [2, 2, 2, 2], scale: 0.5, zeroPoint: 0};
     let type0_length = product(type0.dimensions);
