@@ -17,7 +17,7 @@ const puppeteer = require('puppeteer');
         behavior: 'allow',
         downloadPath: savePath,
       });
-      await page.waitFor(120000);
+      await page.waitFor(300000);
     } finally{
       await browser.close();
     }
