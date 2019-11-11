@@ -44,9 +44,7 @@ export default class PreparedModel {
         this._nn_ops.set_gemm_context_threads_num(1);
     }
 
-    if (model._operands[modelInputs[0]].type === OperandCode.TENSOR_QUANT8_ASYMM) {
-      this._nn_ops.set_cpu_context_threads_num(1);
-    }
+    this._nn_ops.set_cpu_context_threads_num(1);
 
     // allocate runtime operands
     for (let i = 0; i < model._operands.length; ++i) {
