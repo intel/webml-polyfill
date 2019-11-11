@@ -105,16 +105,26 @@ const formatToLogo = {
 };
 
 const trademarks = (allFormats) => {
-  let trademarknote;
-  for (const format of allFormats) {
+  let trademarknote = '';
+
+  for (let format of allFormats) {
+    let trademark = '';
+
     if (format.toLowerCase() === 'tflite') {
-      trademarknote = 'TensorFlow, the TensorFlow logo and any related marks are trademarks of Google Inc.';
-    } else if (format.toLowerCase() === 'onnx') {
-      trademarknote += ' ONNX is a community project created by Facebook and Microsoft. ONNX is a trademark of Facebook, Inc.';
-    } else if (format.toLowerCase() === 'openvino') {
-      trademarknote += ' OpenVINO and the OpenVINO logo are trademarks of Intel Corporation or its subsidiaries in the U.S. and/or other countries.';
+      trademark = 'TensorFlow, the TensorFlow logo and any related marks are trademarks of Google Inc.';
     }
+    
+    if (format.toLowerCase() === 'onnx') {
+      trademark += 'ONNX is a community project created by Facebook and Microsoft. ONNX is a trademark of Facebook, Inc.';
+    }
+    
+    if (format.toLowerCase() === 'openvino') {
+      trademark += 'OpenVINO and the OpenVINO logo are trademarks of Intel Corporation or its subsidiaries in the U.S. and/or other countries.';
+    }
+
+    trademarknote += trademark;
   }
+
   if(trademarknote) {
     $('#trademark').html(trademarknote);
   }
@@ -345,6 +355,15 @@ const disableModel = () => {
         $('#' + modelName).attr('disabled', true);
         $('#l-' + modelName).addClass('cursordefault');
       }
+    } else if (um.includes(' ')) {
+      let umArray = um.split(' ');
+      for (let modelName of umArray) {
+        let modelClass = $('#' + modelName).parent().parent().attr('id');
+        $('.model[id=' + modelClass + '] input').attr('disabled', false);
+        $('.model[id=' + modelClass + '] label').removeClass('cursordefault');
+        $('#' + modelName).attr('disabled', true);
+        $('#l-' + modelName).addClass('cursordefault');
+      }
     } else {
       $('.model input').attr('disabled', false);
       $('.model label').removeClass('cursordefault');
@@ -358,6 +377,15 @@ const checkedModelStyle = () => {
   if (um) {
     if (um.includes('+')) {
       let umArray = um.split('+');
+      for (let modelName of umArray) {
+        let modelClass = $('#' + modelName).parent().parent().attr('id');
+        $('.model[id=' + modelClass + '] input').removeAttr('checked');
+        $('.model[id=' + modelClass + '] label').removeClass('checked');
+        $('#' + modelName).attr('checked', 'checked');
+        $('#l-' + modelName).addClass('checked');
+      }
+    } else if (um.includes(' ')) {
+      let umArray = um.split(' ');
       for (let modelName of umArray) {
         let modelClass = $('#' + modelName).parent().parent().attr('id');
         $('.model[id=' + modelClass + '] input').removeAttr('checked');

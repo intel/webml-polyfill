@@ -220,7 +220,7 @@ section {
   padding: 85px 0;
 }
 
-#imageclassification section, #posenet section, #semanticsegmentation section, #objectdetection section, #superresolution section, #faciallandmarkdetection section, #emotionanalysis section, #speechcommands section {
+#imageclassification section, #posenet section, #semanticsegmentation section, #objectdetection section, #superresolution section, #faciallandmarkdetection section, #emotionanalysis section, #speechcommands section, #facerecognition section {
   padding: 0px 0;
 }
 
@@ -2983,4 +2983,8 @@ button.xclose {
 
 #speechcommands #cameraswitcher, #speechcommands #cameraswitcher.fullscreen {
   display: none !important;
+}
+
+tr.model th {
+  text-transform: capitalize;
 }

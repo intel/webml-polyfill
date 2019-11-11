@@ -11,8 +11,8 @@ $(document).ready(() => {
   }
 
   let models = {
-    faceDetection: faceDetectionModels,
-    faceRecognition: faceRecognitionModels
+    faceRecognition: faceRecognitionModels,
+    faceDetection: faceDetectionModels
   };
 
   updateTitle('Face Recognition', ub, up, um);
