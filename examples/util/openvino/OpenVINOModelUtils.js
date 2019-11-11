@@ -9,7 +9,7 @@ class OpenVINOModel {
 
     const version = parseInt(this._network._graphs[0]._version);
     if (version < 5) {
-      throw new Error(`IR version ${version} is not supported. ` + 
+      throw new Error(`IR version ${version} is not supported. ` +
           `Please convert the model using the latest OpenVINO model optimizer`);
     }
 
@@ -31,7 +31,7 @@ class OpenVINOModel {
   _verifyAndParse(networkText) {
     const parser = new DOMParser({ errorHandler: () => { errors = true; } });
     const xml = parser.parseFromString(networkText, 'text/xml');
-  
+
     if (xml.documentElement == null ||
         xml.getElementsByTagName('parsererror').length > 0) {
       throw new openvino.Error('File format is not OpenVINO XML');
@@ -45,7 +45,7 @@ class OpenVINOModel {
 
     // don't use metadata
     const metadata = new openvino.Metadata(null);
-    return new openvino.Model(metadata, net); 
+    return new openvino.Model(metadata, net);
   }
 
   _bindHelperFunctions() {
@@ -154,11 +154,13 @@ class OpenVINOModel {
   }
   // End of helper functions for openvino.Node
 
-  // Helper functions for openvino.Tensor  
+  // Helper functions for openvino.Tensor
   _getConstructorFromType(type) {
     switch (type) {
-      case 'float32': 
+      case 'float32':
         return Float32Array;
+      case 'I32':
+        return Int32Array;
       default:
         throw new Error(`Tensor type ${type} is not supported`);
     }
@@ -170,7 +172,7 @@ class OpenVINOModel {
    * dimHints?: number[] (NHWC)
    * OpenVino doesn't contain shape info for initializers. It needs to be
    * inferred from the given operators. `dimHints` is used for NCHW to NHWC
-   * reordering. No reordering will be performed if the value is undefined.  
+   * reordering. No reordering will be performed if the value is undefined.
    */
   getTensorInitializer(arg, dimHints) {
     const tensor = arg.connections[0].initializer;
@@ -242,7 +244,7 @@ class OpenVINOModel {
   _getTensorType(arg) {
     return arg.connections[0].type;
   }
-  // End of helper functions for openvino.Tensor 
+  // End of helper functions for openvino.Tensor
 }
 
 
