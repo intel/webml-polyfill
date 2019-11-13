@@ -172,7 +172,7 @@ const constructModelTable = (modelLists, multiple=false) => {
   let formatTypes = [];
   if (multiple) {
     for (let [key, value] of Object.entries(modelLists)) {
-      let formats = singleModelTable(value, key, key + ' Model');
+      let formats = singleModelTable(value, key, key);
       formatTypes.push(...formats);
       formatTypes = [...new Set(formatTypes)];
     }
@@ -229,8 +229,13 @@ const updateTitle = (name, backend, prefer, modelId) => {
   }
 
   let modelShow = null;
-  if (modelId.includes('+')) {
-    let modelIdArray = modelId.split('+');
+  let modelIdArray;
+  if (modelId.includes('+') || modelId.includes(' ')) {
+    if (modelId.includes('+')) {
+      modelIdArray = modelId.split('+');
+    } else if (modelId.includes(' ')) {
+      modelIdArray = modelId.split(' ');
+    }
     for (let model of modelIdArray) {
       if (modelShow === null) {
         modelShow = getModelById(model).modelName;
@@ -475,7 +480,7 @@ const changeModel = () => {
     if (modelClasss.length === umArray.length) {
       main(us === 'camera');
     } else {
-      showError('Model selected not enough', 'Please select ' + modelClasss.length + ' models to start prediction.');
+      showError('Not enough selected models', 'Please select ' + modelClasss.length + ' kinds of models to start prediction.');
     }
   } else {
     main(us === 'camera');
