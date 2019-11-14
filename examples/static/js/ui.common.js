@@ -110,16 +110,18 @@ const trademarks = (allFormats) => {
   for (let format of allFormats) {
     let trademark = '';
 
-    if (format.toLowerCase() === 'tflite') {
-      trademark = 'TensorFlow, the TensorFlow logo and any related marks are trademarks of Google Inc.';
-    }
-    
-    if (format.toLowerCase() === 'onnx') {
-      trademark += 'ONNX is a community project created by Facebook and Microsoft. ONNX is a trademark of Facebook, Inc.';
-    }
-    
-    if (format.toLowerCase() === 'openvino') {
-      trademark += 'OpenVINO and the OpenVINO logo are trademarks of Intel Corporation or its subsidiaries in the U.S. and/or other countries.';
+    switch(format.toLowerCase()) {
+      case 'tflite':
+        trademark = 'TensorFlow, the TensorFlow logo and any related marks are trademarks of Google Inc.';
+        break;
+      case 'onnx':
+        trademark += 'ONNX is a community project created by Facebook and Microsoft. ONNX is a trademark of Facebook, Inc.';
+        break;
+      case 'openvino':
+        trademark += 'OpenVINO and the OpenVINO logo are trademarks of Intel Corporation or its subsidiaries in the U.S. and/or other countries.';
+        break;
+      default:
+        break;
     }
 
     trademarknote += trademark;
