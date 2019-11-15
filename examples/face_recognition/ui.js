@@ -11,8 +11,8 @@ $(document).ready(() => {
   }
 
   let models = {
-    faceDetection: faceDetectionModels,
-    faceRecognition: faceRecognitionModels
+    faceRecognition: faceRecognitionModels,
+    faceDetection: faceDetectionModels
   };
 
   updateTitle('Face Recognition', ub, up, um);
@@ -69,7 +69,7 @@ $(document).ready(() => {
   });
 
   $('#fullscreen i svg').click(() => {
-    $('#canvasshow').toggleClass('fullscreen');
+    $('#cameraShow').toggleClass('fullscreen');
   });
 });
 
@@ -78,5 +78,13 @@ $(window).load(() => {
     showError('No model selected', 'Please select face detection and face recognition models to start prediction.');
     return;
   }
-  main(us === 'camera');
+  // Check if "+" shows in URL for dual models
+  let modelClasss = getModelClasss();
+  let seatModelClass = $('#' + um).parent().parent().attr('id');
+  if(um.indexOf(' ') < 0 && um.indexOf('+') < 0 && modelClasss.length > 1) { 
+    showError('Not enough selected models', 'Please select ' + modelClasss.length + ' kinds (detection and recognition) of models to start prediction.');
+    return;
+  } else {
+    main(us === 'camera');
+  }
 })

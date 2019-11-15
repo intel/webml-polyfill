@@ -791,7 +791,7 @@ speechCommandModels: [{
 }],
 
 faceRecognitionModels: [{
-    modelName: 'FaceNet Recognition (OpenVino)',
+    modelName: 'FaceNet (OpenVINO)',
     format: 'OpenVino',
     modelId: 'facenet_recognition_openvino',
     modelSize: '93.9MB',
@@ -808,7 +808,7 @@ faceRecognitionModels: [{
     intro: 'This is a CNN model for face recognition which learns discriminative features of faces and produces embeddings for input face images.',
     paperUrl: 'https://arxiv.org/abs/1503.03832'
   }, {
-    modelName: 'FaceReidentification Recognition (OpenVino)',
+    modelName: 'Face Reidentification (OpenVINO)',
     format: 'OpenVino',
     modelId: 'facereidentification_recognition_openvino',
     modelSize: '4.4MB',

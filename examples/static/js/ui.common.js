@@ -105,16 +105,28 @@ const formatToLogo = {
 };
 
 const trademarks = (allFormats) => {
-  let trademarknote;
-  for (const format of allFormats) {
-    if (format.toLowerCase() === 'tflite') {
-      trademarknote = 'TensorFlow, the TensorFlow logo and any related marks are trademarks of Google Inc.';
-    } else if (format.toLowerCase() === 'onnx') {
-      trademarknote += ' ONNX is a community project created by Facebook and Microsoft. ONNX is a trademark of Facebook, Inc.';
-    } else if (format.toLowerCase() === 'openvino') {
-      trademarknote += ' OpenVINO and the OpenVINO logo are trademarks of Intel Corporation or its subsidiaries in the U.S. and/or other countries.';
+  let trademarknote = '';
+
+  for (let format of allFormats) {
+    let trademark = '';
+
+    switch(format.toLowerCase()) {
+      case 'tflite':
+        trademark = 'TensorFlow, the TensorFlow logo and any related marks are trademarks of Google Inc.';
+        break;
+      case 'onnx':
+        trademark += 'ONNX is a community project created by Facebook and Microsoft. ONNX is a trademark of Facebook, Inc.';
+        break;
+      case 'openvino':
+        trademark += 'OpenVINO and the OpenVINO logo are trademarks of Intel Corporation or its subsidiaries in the U.S. and/or other countries.';
+        break;
+      default:
+        break;
     }
+
+    trademarknote += trademark;
   }
+
   if(trademarknote) {
     $('#trademark').html(trademarknote);
   }
@@ -162,7 +174,7 @@ const constructModelTable = (modelLists, multiple=false) => {
   let formatTypes = [];
   if (multiple) {
     for (let [key, value] of Object.entries(modelLists)) {
-      let formats = singleModelTable(value, key, key + ' Model');
+      let formats = singleModelTable(value, key, key);
       formatTypes.push(...formats);
       formatTypes = [...new Set(formatTypes)];
     }
@@ -219,8 +231,13 @@ const updateTitle = (name, backend, prefer, modelId) => {
   }
 
   let modelShow = null;
-  if (modelId.includes('+')) {
-    let modelIdArray = modelId.split('+');
+  let modelIdArray;
+  if (modelId.includes('+') || modelId.includes(' ')) {
+    if (modelId.includes('+')) {
+      modelIdArray = modelId.split('+');
+    } else if (modelId.includes(' ')) {
+      modelIdArray = modelId.split(' ');
+    }
     for (let model of modelIdArray) {
       if (modelShow === null) {
         modelShow = getModelById(model).modelName;
@@ -345,6 +362,15 @@ const disableModel = () => {
         $('#' + modelName).attr('disabled', true);
         $('#l-' + modelName).addClass('cursordefault');
       }
+    } else if (um.includes(' ')) {
+      let umArray = um.split(' ');
+      for (let modelName of umArray) {
+        let modelClass = $('#' + modelName).parent().parent().attr('id');
+        $('.model[id=' + modelClass + '] input').attr('disabled', false);
+        $('.model[id=' + modelClass + '] label').removeClass('cursordefault');
+        $('#' + modelName).attr('disabled', true);
+        $('#l-' + modelName).addClass('cursordefault');
+      }
     } else {
       $('.model input').attr('disabled', false);
       $('.model label').removeClass('cursordefault');
@@ -358,6 +384,15 @@ const checkedModelStyle = () => {
   if (um) {
     if (um.includes('+')) {
       let umArray = um.split('+');
+      for (let modelName of umArray) {
+        let modelClass = $('#' + modelName).parent().parent().attr('id');
+        $('.model[id=' + modelClass + '] input').removeAttr('checked');
+        $('.model[id=' + modelClass + '] label').removeClass('checked');
+        $('#' + modelName).attr('checked', 'checked');
+        $('#l-' + modelName).addClass('checked');
+      }
+    } else if (um.includes(' ')) {
+      let umArray = um.split(' ');
       for (let modelName of umArray) {
         let modelClass = $('#' + modelName).parent().parent().attr('id');
         $('.model[id=' + modelClass + '] input').removeAttr('checked');
@@ -447,7 +482,7 @@ const changeModel = () => {
     if (modelClasss.length === umArray.length) {
       main(us === 'camera');
     } else {
-      showError('Model selected not enough', 'Please select ' + modelClasss.length + ' models to start prediction.');
+      showError('Not enough selected models', 'Please select ' + modelClasss.length + ' kinds of models to start prediction.');
     }
   } else {
     main(us === 'camera');
