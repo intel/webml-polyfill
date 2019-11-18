@@ -1,6 +1,6 @@
 # Prerequisites
 
-Download all [DeepLab models](https://drive.google.com/open?id=1cMhKkGFc3DhJJWCWSPMGPLmfYZ3pVESW) to this directory. It should contain the following files:
+Download all [DeepLab models](https://drive.google.com/open?id=1hwsB3jxLbNpGuhUY5KHBW8xtxg1fZSq8) to this directory. It should contain the following files:
 
 ```txt
 deeplab_mobilenetv2_513_dilated.tflite
@@ -39,7 +39,7 @@ python -m tensorflow.python.tools.optimize_for_inference \
 --output=/path/to/frozen_inference_graph_stripped.pb \
 --frozen_graph=True \
 --input_names="sub_7" \
---output_names="ResizeBilinear_3"
+--output_names="ArgMax"
 ```
 
 ```sh
@@ -50,7 +50,7 @@ bazel-bin/tensorflow/python/tools/optimize_for_inference \
 --output=/path/to/frozen_inference_graph_stripped.pb \
 --frozen_graph=True \
 --input_names="sub_7" \
---output_names="ResizeBilinear_3"
+--output_names="ArgMax"
 ```
 
 3. Flatten atrous convolution
@@ -64,7 +64,7 @@ bazel-bin/tensorflow/tools/graph_transforms/transform_graph \
 --in_graph="/path/to/frozen_inference_graph_stripped.pb" \
 --out_graph="/path/to/frozen_inference_graph_flatten.pb" \
 --inputs='sub_7' \
---outputs='ResizeBilinear_3' \
+--outputs='ArgMax' \
 --transforms='flatten_atrous_conv'
 ```
 
@@ -80,7 +80,7 @@ tflite_convert \
 --output_format=TFLITE \
 --input_format=TENSORFLOW_GRAPHDEF \
 --input_arrays=sub_7 \
---output_arrays=ResizeBilinear_3
+--output_arrays=ArgMax
 ```
 
 ```sh
@@ -94,7 +94,7 @@ bazel-bin/tensorflow/lite/toco/toco \
 --inference_type=FLOAT \
 --input_type=FLOAT \
 --input_arrays=sub_7 \
---output_arrays=ResizeBilinear_3 \
+--output_arrays=ArgMax \
 --input_shapes=1,513,513,3
 ```
 

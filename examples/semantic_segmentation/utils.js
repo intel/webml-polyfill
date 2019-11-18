@@ -12,7 +12,6 @@ class Utils {
     this.outputSize;
     this.preOptions;
     this.postOptions;
-    // this.preprocessCanvas = new OffscreenCanvas(224, 224);
     this.preprocessCanvas = document.createElement('canvas');
     this.preprocessCtx = this.preprocessCanvas.getContext('2d');    
     this.loaded = false;
@@ -35,9 +34,8 @@ class Utils {
     this.labelsFile = newModel.labelsFile;
     this.preOptions = newModel.preOptions || {};
     this.postOptions = newModel.postOptions || {};
-    this.numClasses = newModel.numClasses;
     this.inputTensor = new Float32Array(newModel.inputSize.reduce((x,y) => x*y));
-    this.outputTensor = new Float32Array(newModel.outputSize.reduce((x,y) => x*y));
+    this.outputTensor = new Int32Array(newModel.outputSize.reduce((x,y) => x*y));
 
     let result = await this.loadModelAndLabels(this.modelFile, this.labelsFile);
     this.labels = result.text.split('\n');

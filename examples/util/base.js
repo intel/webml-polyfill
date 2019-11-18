@@ -535,7 +535,7 @@ semanticSegmentationModels: [{
     modelFile: '../semantic_segmentation/model/deeplab_mobilenetv2_224.tflite',
     labelsFile: '../semantic_segmentation/model/labels.txt',
     inputSize: [224, 224, 3],
-    outputSize: [224, 224, 21],
+    outputSize: [224, 224, 1],
     preOptions: {
       mean: [127.5, 127.5, 127.5],
       std: [127.5, 127.5, 127.5],
@@ -550,7 +550,7 @@ semanticSegmentationModels: [{
     modelFile: '../semantic_segmentation/model/deeplab_mobilenetv2_224_dilated.tflite',
     labelsFile: '../semantic_segmentation/model/labels.txt',
     inputSize: [224, 224, 3],
-    outputSize: [224, 224, 21],
+    outputSize: [224, 224, 1],
     preOptions: {
       mean: [127.5, 127.5, 127.5],
       std: [127.5, 127.5, 127.5],
@@ -565,7 +565,7 @@ semanticSegmentationModels: [{
     modelFile: '../semantic_segmentation/model/deeplab_mobilenetv2_257.tflite',
     labelsFile: '../semantic_segmentation/model/labels.txt',
     inputSize: [257, 257, 3],
-    outputSize: [257, 257, 21],
+    outputSize: [257, 257, 1],
     preOptions: {
       mean: [127.5, 127.5, 127.5],
       std: [127.5, 127.5, 127.5],
@@ -580,7 +580,7 @@ semanticSegmentationModels: [{
     modelFile: '../semantic_segmentation/model/deeplab_mobilenetv2_257_dilated.tflite',
     labelsFile: '../semantic_segmentation/model/labels.txt',
     inputSize: [257, 257, 3],
-    outputSize: [257, 257, 21],
+    outputSize: [257, 257, 1],
     preOptions: {
       mean: [127.5, 127.5, 127.5],
       std: [127.5, 127.5, 127.5],
@@ -595,7 +595,7 @@ semanticSegmentationModels: [{
     modelFile: '../semantic_segmentation/model/deeplab_mobilenetv2_321.tflite',
     labelsFile: '../semantic_segmentation/model/labels.txt',
     inputSize: [321, 321, 3],
-    outputSize: [321, 321, 21],
+    outputSize: [321, 321, 1],
     preOptions: {
       mean: [127.5, 127.5, 127.5],
       std: [127.5, 127.5, 127.5],
@@ -610,7 +610,7 @@ semanticSegmentationModels: [{
     modelFile: '../semantic_segmentation/model/deeplab_mobilenetv2_321_dilated.tflite',
     labelsFile: '../semantic_segmentation/model/labels.txt',
     inputSize: [321, 321, 3],
-    outputSize: [321, 321, 21],
+    outputSize: [321, 321, 1],
     preOptions: {
       mean: [127.5, 127.5, 127.5],
       std: [127.5, 127.5, 127.5],
@@ -625,7 +625,7 @@ semanticSegmentationModels: [{
     modelFile: '../semantic_segmentation/model/deeplab_mobilenetv2_513.tflite',
     labelsFile: '../semantic_segmentation/model/labels.txt',
     inputSize: [513, 513, 3],
-    outputSize: [513, 513, 21],
+    outputSize: [513, 513, 1],
     preOptions: {
       mean: [127.5, 127.5, 127.5],
       std: [127.5, 127.5, 127.5],
@@ -640,7 +640,7 @@ semanticSegmentationModels: [{
     modelFile: '../semantic_segmentation/model/deeplab_mobilenetv2_513_dilated.tflite',
     labelsFile: '../semantic_segmentation/model/labels.txt',
     inputSize: [513, 513, 3],
-    outputSize: [513, 513, 21],
+    outputSize: [513, 513, 1],
     preOptions: {
       mean: [127.5, 127.5, 127.5],
       std: [127.5, 127.5, 127.5],
@@ -902,21 +902,23 @@ const getDefaultSupportedOps = (backend, prefer) => {
   }
 
   // backend enums are defined in the `getNativeAPI` above
-  const backendEnums =        { NN: 0,    MPS: 1,  BNNS: 2,  clDNN: 3, mklDNN: 4 };
-  const supportedTable =
-  { ADD:                      [ true,     true,    true,     true,     false ],
-    ATROUS_CONV_2D:           [ false,    false,   false,    true,     true  ],
-    ATROUS_DEPTHWISE_CONV_2D: [ false,    false,   false,    true,     true  ],
-    AVERAGE_POOL_2D:          [ true,     true,    true,     true,     true  ],
-    CONCATENATION:            [ true,     true,    true,     true,     true  ],
-    CONV_2D:                  [ true,     true,    true,     true,     true  ],
-    DEPTHWISE_CONV_2D:        [ true,     true,    false,    true,     true  ],
-    FULLY_CONNECTED:          [ true,     true,    true,     true,     true  ],
-    MAX_POOL_2D:              [ true,     true,    true,     true,     true  ],
-    MUL:                      [ true,     true,    true,     true,     false ],
-    RESHAPE:                  [ true,     true,    true,     true,     true  ],
-    RESIZE_BILINEAR:          [ true,     false,   true,     true,     false ],
-    SOFTMAX:                  [ true,     true,    true,     true,     true  ]};
+  const backendEnums =        { NN: 0,    MPS: 1,  BNNS: 2,  clDNN: 3, mklDNN: 4, DirectML: 5 };
+  const supportedTable = {
+    ADD:                      [ true,     true,    true,     true,     false,    true  ],
+    ATROUS_CONV_2D:           [ false,    false,   false,    true,     true,     true  ],
+    ATROUS_DEPTHWISE_CONV_2D: [ false,    false,   false,    true,     true,     true  ],
+    AVERAGE_POOL_2D:          [ true,     true,    true,     true,     true,     true  ],
+    CONCATENATION:            [ true,     true,    true,     true,     true,     true  ],
+    CONV_2D:                  [ true,     true,    true,     true,     true,     true  ],
+    DEPTHWISE_CONV_2D:        [ true,     true,    false,    true,     true,     true  ],
+    FULLY_CONNECTED:          [ true,     true,    true,     true,     true,     true  ],
+    MAX_POOL_2D:              [ true,     true,    true,     true,     true,     true  ],
+    MUL:                      [ true,     true,    true,     true,     false,    true  ],
+    RESHAPE:                  [ true,     true,    true,     true,     true,     true  ],
+    RESIZE_BILINEAR:          [ true,     false,   true,     true,     false,    false ],
+    SOFTMAX:                  [ true,     true,    true,     true,     true,     true  ],
+    ARGMAX:                   [ false,    true,    false,    true,     false,    true  ]
+  };
 
   const nn = navigator.ml.getNeuralNetworkContext();
   const supportedOps = new Set();
@@ -962,6 +964,7 @@ const operationTypes = {
    28: 'TANH',
    29: 'BATCH_TO_SPACE_ND',
    37: 'TRANSPOSE',
+   39: 'ARGMAX',
    65: 'MAXIMUM',
    10003: 'ATROUS_CONV_2D',
    10004: 'ATROUS_DEPTHWISE_CONV_2D'

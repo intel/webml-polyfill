@@ -24,14 +24,17 @@ class SSBenchmark extends Benchmark {
     const channelScheme = preOptions.channelScheme || 'RGB';
     const imageChannels = 4; // RGBA
     this.isQuantized = this.modelInfoDict.isQuantized || false;
-    let typedArray;
+    let typedArrayIn = null;
+    let typedArrayOut = null;
     if (this.isQuantized) {
-      typedArray = Uint8Array;
+      typedArrayIn = Uint8Array;
+      typedArrayOut = Uint8Array;
     } else {
-      typedArray = Float32Array;
+      typedArrayIn = Float32Array;
+      typedArrayOut = Int32Array;
     }
-    this.inputTensor = new typedArray(this.modelInfoDict.inputSize.reduce((a, b) => a * b));
-    this.outputTensor = new typedArray(this.modelInfoDict.outputSize.reduce((a, b) => a * b));
+    this.inputTensor = new typedArrayIn(this.modelInfoDict.inputSize.reduce((a, b) => a * b));
+    this.outputTensor = new typedArrayOut(this.modelInfoDict.outputSize.reduce((a, b) => a * b));
     this.inputSize = this.modelInfoDict.inputSize;
     this.outputSize = this.modelInfoDict.outputSize;
     height = this.inputSize[0];
