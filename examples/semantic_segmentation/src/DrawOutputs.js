@@ -329,8 +329,9 @@ class Renderer {
       in vec2 v_texcoord;
 
       void main() {
-        float fg_alpha = texture(u_mask, v_texcoord).x;
-        fg_alpha = 1.0 / (1.0 + exp(-fg_alpha));
+        const float PERSON_ID = 15.0;
+        float mask_pixel = texture(u_mask, v_texcoord).a;
+        float fg_alpha = mask_pixel == (PERSON_ID / 255.0) ? 1.0 : 0.0;
         float bg_alpha = 1.0 - fg_alpha;
 
         vec4 pixel = texture(u_image, v_texcoord);
@@ -672,12 +673,12 @@ class Renderer {
         this.gl.texImage2D(
           this.gl.TEXTURE_2D,
           0,
-          this.gl.R32F,
+          this.gl.ALPHA,
           this._clippedSize[0],
           this._clippedSize[1],
           0,
-          this.gl.RED,
-          this.gl.FLOAT,
+          this.gl.ALPHA,
+          this.gl.UNSIGNED_BYTE,
           this._predictions
         );
       } else {
@@ -814,20 +815,13 @@ class Renderer {
     const clippedWidth = this._clippedSize[0];
     const outputWidth = segmap.outputShape[1];
     const data = segmap.data;
-    let mask = null;
-    if (this._effect === 'label') {
-      mask = new Uint8Array(clippedHeight * clippedWidth);
-    } else {
-      mask = new Float32Array(clippedHeight * clippedWidth);
-    }
-
+    const mask = new Uint8Array(clippedHeight * clippedWidth);
     let i = 0;
     for (let h = 0; h < clippedHeight; h++) {
       for (let w = 0; w < clippedWidth; w++) {
         mask[i++] = data[h * outputWidth + w];
       }
     }
-
     return mask;
   }
 

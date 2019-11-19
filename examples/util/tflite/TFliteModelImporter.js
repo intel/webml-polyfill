@@ -78,12 +78,9 @@ class TFliteModelImporter {
           typedArray = Float32Array;
         } break;
         case tflite.TensorType.INT64: {
-          // dummy operand. not work on NNAPI
-          this._tensorIds.push(
-             this._addOperand({type: this._nn.TENSOR_INT32, dimensions: tensor.shapeArray()}));
+          type = this._nn.TENSOR_INT32;
           typedArray = Int32Array;
-          continue;
-        }
+        } break;
         case tflite.TensorType.INT32: {
           type = this._nn.TENSOR_INT32;
           typedArray = Int32Array;
