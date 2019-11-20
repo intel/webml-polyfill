@@ -200,7 +200,7 @@ namespace binding_utils {
                                outputShape, (float*)outputData);
   }
   
-  void averagePoolUin8Wrapper(const PoolParams op_params,
+  void averagePoolUint8Wrapper(const PoolParams op_params,
                               const RuntimeShape& inputShape, 
                               const intptr_t inputData, 
                               const RuntimeShape& outputShape, 
@@ -391,6 +391,23 @@ namespace binding_utils {
                           (const int32_t*) input2_data, output_shape,
                           (int32_t*) output_data);
   }
+
+  void logisticFloat32Wrapper(const RuntimeShape& input_shape,
+                              const intptr_t inputData,
+                              const RuntimeShape& output_shape,
+                              intptr_t outputData) {
+    optimized_ops::Logistic(input_shape, (const float*)inputData,
+                            output_shape, (float*)outputData);                            
+  }
+
+  void logisticUint8Wrapper(const LogisticParams& params,
+                             const RuntimeShape& input_shape,
+                             const intptr_t input_data,
+                             const RuntimeShape& output_shape,
+                             intptr_t output_data) {
+    optimized_ops::Logistic(params, input_shape, (const uint8_t*)input_data,
+                            output_shape, (uint8_t*)output_data);
+  }
 }
 
 EMSCRIPTEN_BINDINGS(nn)
@@ -529,6 +546,14 @@ EMSCRIPTEN_BINDINGS(nn)
     .field("perm", &TransposeParams::perm)
     .field("perm_count", &TransposeParams::perm_count)
     ;
+
+  value_object<LogisticParams>("LogisticParams")
+    // uint8 inference params.
+    .field("input_zero_point", &LogisticParams::input_zero_point)
+    .field("input_range_radius", &LogisticParams::input_range_radius)
+    .field("input_multiplier", &LogisticParams::input_multiplier)
+    .field("input_left_shift", &LogisticParams::input_left_shift)
+    ;
   
   value_array<std::array<int32_t, 4>>("array_int32_4")
     .element(emscripten::index<0>())
@@ -557,7 +582,7 @@ EMSCRIPTEN_BINDINGS(nn)
   function("convFloat32", &binding_utils::convFloat32Wrapper, allow_raw_pointers());
   function("convUint8", &binding_utils::convUint8Wrapper, allow_raw_pointers());
   function("averagePoolFloat32", &binding_utils::averagePoolFloat32Wrapper, allow_raw_pointers());
-  function("averagePoolUint8", &binding_utils::averagePoolUin8Wrapper, allow_raw_pointers());
+  function("averagePoolUint8", &binding_utils::averagePoolUint8Wrapper, allow_raw_pointers());
   function("softmaxFloat32", &binding_utils::softmaxFloat32Wrapper, allow_raw_pointers());
   function("softmaxUint8", &binding_utils::softmaxUint8Wrapper, allow_raw_pointers());
   function("reshapeFloat32", &binding_utils::reshapeFloat32Wrapper, allow_raw_pointers());
@@ -574,6 +599,8 @@ EMSCRIPTEN_BINDINGS(nn)
   function("batchToSpaceNDFloat32", &binding_utils::batchToSpaceNDFloat32Wrapper, allow_raw_pointers());
   function("transposeFloat32", &binding_utils::transposeFloat32Wrapper, allow_raw_pointers());
   function("argMaxFloat32", &binding_utils::argMaxFloat32Wrapper, allow_raw_pointers());
+  function("logisticFloat32", &binding_utils::logisticFloat32Wrapper, allow_raw_pointers());
+  function("logisticUint8", &binding_utils::logisticUint8Wrapper, allow_raw_pointers());
 
   // TODO: operation wrappers
   /*
@@ -582,11 +609,9 @@ EMSCRIPTEN_BINDINGS(nn)
   function("reluFloat32", &binding_utils::reluFloat32Wrapper, allow_raw_pointers());
   function("relu1Float32", &binding_utils::relu1Float32Wrapper, allow_raw_pointers());
   function("relu6Float32", &binding_utils::relu6Float32Wrapper, allow_raw_pointers());
-  function("logisticFloat32", &binding_utils::logisticFloat32Wrapper, allow_raw_pointers());
   function("reluQuant8", &binding_utils::reluQuant8Wrapper, allow_raw_pointers());
   function("relu1Quant8", &binding_utils::relu1Quant8Wrapper, allow_raw_pointers());
   function("relu6Quant8", &binding_utils::relu6Quant8Wrapper, allow_raw_pointers());
-  function("logisticQuant8", &binding_utils::logisticQuant8Wrapper, allow_raw_pointers());
   function("fullyConnectedQuant8", &binding_utils::fullyConnectedQuant8Wrapper, allow_raw_pointers());
   function("concatenationQuant8", &binding_utils::concatenationQuant8Wrapper, allow_raw_pointers());
   function("l2normFloat32", &binding_utils::l2normFloat32Wrapper, allow_raw_pointers());
