@@ -5,10 +5,12 @@
 #include "external/tensorflow/tensorflow/lite/kernels/internal/types.h"
 #include "external/tensorflow/tensorflow/lite/kernels/internal/optimized/cpu_check.h"
 #include "external/tensorflow/tensorflow/lite/kernels/internal/optimized/optimized_ops.h"
-#include "external/tensorflow/tensorflow/lite/kernels/internal/reference/reference_ops.h"
 #include "external/tensorflow/tensorflow/lite/kernels/internal/optimized/depthwiseconv_float.h"
 #include "external/tensorflow/tensorflow/lite/kernels/internal/optimized/depthwiseconv_uint8.h"
 #include "external/tensorflow/tensorflow/lite/kernels/internal/optimized/legacy_optimized_ops.h"
+#include "external/tensorflow/tensorflow/lite/kernels/internal/reference/prelu.h"
+#include "external/tensorflow/tensorflow/lite/kernels/internal/reference/reference_ops.h"
+#include "external/tensorflow/tensorflow/lite/kernels/internal/reference/binary_function.h"
 #include "fixedpoint/fixedpoint.h"
 #include "public/gemmlowp.h"
 
@@ -43,7 +45,11 @@ namespace binding_utils {
     auto output_map = optimized_ops::MapAsVector(output_data, output_shape);
     output_map.array() = input1_map.array().max(input2_map.array());
   }
-  
+
+  template <typename T>
+  T ApplyPrelu(T input, T alpha) {
+    return input >= 0.0 ? input : input * alpha;
+  }  
 
   // Operation wrappers.
   void addFloat32Wrapper(const ArithmeticParams& op_params,
@@ -396,17 +402,42 @@ namespace binding_utils {
                               const intptr_t inputData,
                               const RuntimeShape& output_shape,
                               intptr_t outputData) {
-    optimized_ops::Logistic(input_shape, (const float*)inputData,
-                            output_shape, (float*)outputData);                            
+    optimized_ops::Logistic(input_shape, (const float*) inputData,
+                            output_shape, (float*) outputData);                            
   }
 
   void logisticUint8Wrapper(const LogisticParams& params,
-                             const RuntimeShape& input_shape,
-                             const intptr_t input_data,
-                             const RuntimeShape& output_shape,
-                             intptr_t output_data) {
-    optimized_ops::Logistic(params, input_shape, (const uint8_t*)input_data,
-                            output_shape, (uint8_t*)output_data);
+                            const RuntimeShape& input_shape,
+                            const intptr_t input_data,
+                            const RuntimeShape& output_shape,
+                            intptr_t output_data) {
+    optimized_ops::Logistic(params, input_shape, (const uint8_t*) input_data,
+                            output_shape, (uint8_t*) output_data);
+  }
+
+  void preluFloat32Wrapper(const RuntimeShape& input_shape,
+                           const intptr_t input_data,
+                           const RuntimeShape& alpha_shape,
+                           const intptr_t alpha_data,
+                           const RuntimeShape& output_shape,
+                           intptr_t output_data) {
+    reference_ops::BroadcastBinaryFunction4DSlow<float, float, float>(
+                           input_shape, (const float*) input_data, 
+                           alpha_shape, (const float*) alpha_data, 
+                           output_shape, (float*) output_data, ApplyPrelu<float>);
+  }
+
+  void preluUint8Wrapper(const PreluParams& params,
+                         const RuntimeShape& input_shape,
+                         const intptr_t input_data,
+                         const RuntimeShape& alpha_shape,
+                         const intptr_t alpha_data,
+                         const RuntimeShape& output_shape,
+                         intptr_t output_data) {
+    reference_ops::BroadcastPrelu4DSlow(params, 
+                         input_shape, (const uint8_t*) input_data, 
+                         alpha_shape, (const uint8_t*) alpha_data, 
+                         output_shape, (uint8_t*) output_data);
   }
 }
 
@@ -554,6 +585,14 @@ EMSCRIPTEN_BINDINGS(nn)
     .field("input_multiplier", &LogisticParams::input_multiplier)
     .field("input_left_shift", &LogisticParams::input_left_shift)
     ;
+
+  value_object<PreluParams>("PreluParams")
+    .field("input_offset", &PreluParams::input_offset)
+    .field("alpha_offset", &PreluParams::alpha_offset)
+    .field("output_offset", &PreluParams::output_offset)
+    .field("output_multiplier", &PreluParams::output_multiplier)
+    .field("output_shift", &PreluParams::output_shift)
+    ;
   
   value_array<std::array<int32_t, 4>>("array_int32_4")
     .element(emscripten::index<0>())
@@ -601,6 +640,8 @@ EMSCRIPTEN_BINDINGS(nn)
   function("argMaxFloat32", &binding_utils::argMaxFloat32Wrapper, allow_raw_pointers());
   function("logisticFloat32", &binding_utils::logisticFloat32Wrapper, allow_raw_pointers());
   function("logisticUint8", &binding_utils::logisticUint8Wrapper, allow_raw_pointers());
+  function("preluFloat32", &binding_utils::preluFloat32Wrapper, allow_raw_pointers());
+  function("preluUint8", &binding_utils::preluUint8Wrapper, allow_raw_pointers());
 
   // TODO: operation wrappers
   /*
