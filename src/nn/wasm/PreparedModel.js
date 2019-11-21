@@ -1256,6 +1256,77 @@ export default class PreparedModel {
                              axisData, output.runtimeshape, output.value);
         nn_ops._free(axisData);
       } break;
+      case OperationCode.LOGISTIC: {
+        allParametersPresent(1, 1);
+        let input = operands[inputs[0]];
+        let output = operands[outputs[0]];
+
+        // Error check
+        OPS_CHECK(input.runtimeshape.DimensionsCount() <= 4);
+
+        if (output.type === OperandCode.TENSOR_QUANT8_ASYMM) {
+          if (output.zeroPoint != 0 || output.scale != 1 / 256) {
+            console.error("incorrect scale / offset for output");
+          };
+          let input_zero_point = input.zeroPoint;
+          let input_range_radius = 0;
+          let input_multiplier = 0;
+          let input_left_shift= 0;
+
+          let kInputIntegerBits = 4;
+          let input_real_multiplier = input.scale * (1 << (31 - kInputIntegerBits));
+          [input_multiplier, input_left_shift] = QuantizeMultiplierGreaterThanOne(input_real_multiplier);
+          input_range_radius = CalculateInputRadius(kInputIntegerBits, input_left_shift);
+
+          let logisticParams = {
+            // uint8 inference params.
+            input_zero_point: input_zero_point,
+            input_range_radius: input_range_radius,
+            input_multiplier: input_multiplier,
+            input_left_shift: input_left_shift
+          };
+
+          nn_ops.logisticUint8(logisticParams,
+                               input.runtimeshape, input.value,
+                               output.runtimeshape, output.value);
+        } else if (output.type === OperandCode.TENSOR_FLOAT32) {
+          nn_ops.logisticFloat32(input.runtimeshape, input.value,
+                                 output.runtimeshape, output.value);
+        };
+      } break;
+      case OperationCode.PRELU: {
+        allParametersPresent(2, 1);
+        let input = operands[inputs[0]];
+        let alpha = operands[inputs[1]];
+        let output = operands[outputs[0]];
+
+        if (output.type === OperandCode.TENSOR_QUANT8_ASYMM) {
+          let input_offset = -input.zeroPoint || 0;
+          let alpha_offset = -alpha.zeroPoint || 0;
+          let output_offset = output.zeroPoint || 0;
+
+          let input_product_scale = input.scale * alpha.scale;
+          let real_multiplier = input_product_scale / output.scale;
+          let [output_multiplier, output_shift] = QuantizeMultiplier(real_multiplier);
+
+          let preluParams = {
+            input_offset: input_offset,
+            alpha_offset: alpha_offset,
+            output_offset: output_offset,
+            output_multiplier: output_multiplier,
+            output_shift: output_shift
+          };
+
+          nn_ops.preluUint8(preluParams, 
+                            input.runtimeshape, input.value,
+                            alpha.runtimeshape, alpha.value,
+                            output.runtimeshape, output.value);
+        } else if (output.type === OperandCode.TENSOR_FLOAT32) {
+          nn_ops.preluFloat32(input.runtimeshape, input.value,
+                              alpha.runtimeshape, alpha.value,
+                              output.runtimeshape, output.value);
+        };
+      } break;
       default: {
         throw new Error(`Operation ${op} is not supported`);
       }
