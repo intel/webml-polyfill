@@ -207,10 +207,10 @@ namespace binding_utils {
   }
   
   void averagePoolUint8Wrapper(const PoolParams op_params,
-                              const RuntimeShape& inputShape, 
-                              const intptr_t inputData, 
-                              const RuntimeShape& outputShape, 
-                              intptr_t outputData) {
+                               const RuntimeShape& inputShape, 
+                               const intptr_t inputData, 
+                               const RuntimeShape& outputShape, 
+                               intptr_t outputData) {
     optimized_ops::AveragePool(op_params,
                                inputShape, (const uint8_t*)inputData,
                                outputShape, (uint8_t*)outputData);
