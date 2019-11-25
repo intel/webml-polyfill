@@ -329,9 +329,7 @@ class Renderer {
       in vec2 v_texcoord;
 
       void main() {
-        const float PERSON_ID = 15.0;
-        float mask_pixel = texture(u_mask, v_texcoord).a;
-        float fg_alpha = mask_pixel == (PERSON_ID / 255.0) ? 1.0 : 0.0;
+        float fg_alpha = texture(u_mask, v_maskcord).a;
         float bg_alpha = 1.0 - fg_alpha;
 
         vec4 pixel = texture(u_image, v_texcoord);
@@ -664,7 +662,7 @@ class Renderer {
       // Person segmentation
       this._segMap = newSegMap;
       console.time("post-processing time");
-      this._predictions = this._maskSegMap(newSegMap);
+      this._predictions = this._maskSegMapPerson(newSegMap);
       console.timeEnd("post-processing time");
       if (this._guidedFilterRadius === 0) {
         // guided filter is disabled
@@ -820,6 +818,22 @@ class Renderer {
     for (let h = 0; h < clippedHeight; h++) {
       for (let w = 0; w < clippedWidth; w++) {
         mask[i++] = data[h * outputWidth + w];
+      }
+    }
+    return mask;
+  }
+
+  _maskSegMapPerson(segmap) {
+    const PERSON_ID = 15;
+    const clippedHeight = this._clippedSize[1];
+    const clippedWidth = this._clippedSize[0];
+    const outputWidth = segmap.outputShape[1];
+    const data = segmap.data;
+    const mask = new Uint8Array(clippedHeight * clippedWidth);
+    let i = 0;
+    for (let h = 0; h < clippedHeight; h++) {
+      for (let w = 0; w < clippedWidth; w++) {
+        mask[i++] = data[h * outputWidth + w] === PERSON_ID ? 255 : 0;
       }
     }
     return mask;
