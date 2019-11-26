@@ -17,6 +17,8 @@
 |  :---:  |  :---  |
 |  squeezenet1.1  |   https://s3.amazonaws.com/onnx-model-zoo/squeezenet/squeezenet1.1/squeezenet1.1.tar.gz  | 
 |  mobilenetv2-1.0  |   https://s3.amazonaws.com/onnx-model-zoo/mobilenet/mobilenetv2-1.0/mobilenetv2-1.0.tar.gz  |
+|  resnet50v1  |   https://s3.amazonaws.com/onnx-model-zoo/resnet/resnet50v1/resnet50v1.tar.gz  | 
+|  resnet50v2  |   https://s3.amazonaws.com/onnx-model-zoo/resnet/resnet50v2/resnet50v2.tar.gz  |
 
 ## Install
 ```sh
