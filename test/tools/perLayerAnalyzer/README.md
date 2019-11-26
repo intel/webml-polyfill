@@ -99,9 +99,9 @@ This is an automation tool kit to automatically test the every layer of realmode
 ```
    You need modify these eight fields for the different platforms:
    + **_urlServer_**: `{string}`, Server IP address, port number 8080.
-   + **_modelName_**: `{array}`, We support **squeezenet1.1**, **mobilenetv2-1.0**, **resnet50v1**, **resnet50v2**  four models.
+   + **_modelName_**: `{array}`, We support four models, including  **squeezenet1.1**, **mobilenetv2-1.0**, **resnet50v1**, **resnet50v2** .
    + **_platform_**: `{string}`, target platform, support **Android**, **Mac**, **Linux** and **Windows**.
-   + **_chromiumPath_**: `{string}`, **Mac**/**Linux**/**Windows**: the target chromium path **Android**: the chrome or chromium path in above Prerequisites to show the final checking results.
+   + **_chromiumPath_**: `{string}`, **Mac**/**Linux**/**Windows**: the target Chromium path **Android**: the Chrome or Chromium path in above Prerequisites to show the final checking results.
    + **_supportSwitch_**: `{boolean}`, support **true** and **false**.
    + **_API_**: `{string}`, choose to **polyfill** and **webnn**.
    + **_preference_**: `{string}`, choose to  **fast** , **sustained** and **low**.
