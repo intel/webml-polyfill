@@ -77,6 +77,10 @@ class TFliteModelImporter {
           type = this._nn.TENSOR_FLOAT32;
           typedArray = Float32Array;
         } break;
+        case tflite.TensorType.INT64: {
+          type = this._nn.TENSOR_INT32;
+          typedArray = Int32Array;
+        } break;
         case tflite.TensorType.INT32: {
           type = this._nn.TENSOR_INT32;
           typedArray = Int32Array;
@@ -404,6 +408,21 @@ class TFliteModelImporter {
         } break;
         case tflite.BuiltinOperator.MAXIMUM: {
           opType = this._nn.MAXIMUM;
+        } break;
+        case tflite.BuiltinOperator.ARG_MAX: {
+          let axis = this._operands[inputs[1]].value[0];
+          let operandId = this._addScalarInt32(axis);
+          inputs[1] = operandId;
+          if (this._nn.ARGMAX === undefined) {
+            let currentPreferText = {
+              fast: 'FAST_SINGLE_ANSWER',
+              sustained: 'SUSTAINED_SPEED',
+              low: 'LOW_POWER',
+            }[this._prefer];
+            throw new Error(`Operator type 'ARGMAX' is not supported by WebNN\(${currentPreferText}\), please use dual backend for test.`);
+          } else {
+            opType = this._nn.ARGMAX;
+          }
         } break;
         default: {
           throw new Error(`operator type ${opCode} is not supported.`);
