@@ -1312,6 +1312,17 @@ view.ModelFactoryService = class {
 
                                         item = {"name": x._type, "min": min, "max": max }
                                     }
+
+                                    if(x._type === 'Activation') {
+                                        let type = '0';
+                                        x.attributes.map((i) => {
+                                            if(i.name === 'type') {
+                                                type = i.value;
+                                            }
+                                        })
+
+                                        item = {"name": x._type, "type": type }
+                                    }
                                 }
                                 
                                 allops.push(item)
@@ -1327,6 +1338,9 @@ view.ModelFactoryService = class {
                             var t = []
                             allops.map((i)=> {
                                 let item = i.name;
+
+                                console.log('>>> ' + item)
+
                                 // ONNX
                                 if (i.name === 'Conv') {
                                     if (i.depthwise === true && i.dilations === true) {
@@ -1362,6 +1376,10 @@ view.ModelFactoryService = class {
                                         item = 'Clamp/Relu6';
                                     } else if (i.max === 1 && i.min === -1) {
                                         item = 'Clamp/Relu1';
+                                    }
+                                } else if (i.name === 'Activation') {
+                                    if(i.type === 'sigmoid') {
+                                        item = 'Activation/Sigmoid';
                                     }
                                 }
 
@@ -1522,6 +1540,9 @@ view.ModelFactoryService = class {
                                                 break;
                                             case 'Clamp/Relu1':
                                                 i = 'FUSED_RELU1';  
+                                                break;
+                                            case 'Activation/Sigmoid':
+                                                i = 'LOGISTIC';  
                                                 break;
                                             default: {
                                                 //

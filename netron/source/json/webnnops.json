@@ -21,7 +21,10 @@
       "FUSED_NONE": 1,
       "FUSED_RELU": 1,
       "FUSED_RELU1": 1,
-      "FUSED_RELU6": 1
+      "FUSED_RELU6": 1,
+      "ARGMAX": 1,
+      "LOGISTIC": 1,
+      "PRELU": 1
     }
   ],
   "WebGL": [
@@ -46,7 +49,10 @@
       "FUSED_NONE": 1,
       "FUSED_RELU": 1,
       "FUSED_RELU1": 1,
-      "FUSED_RELU6": 1
+      "FUSED_RELU6": 1,
+      "ARGMAX": 1,
+      "LOGISTIC": 1,
+      "PRELU": 1
     }
   ],
   "NNAPI": [
@@ -71,7 +77,10 @@
       "FUSED_NONE": 1,
       "FUSED_RELU": 1,
       "FUSED_RELU1": 1,
-      "FUSED_RELU6": 1
+      "FUSED_RELU6": 1,
+      "ARGMAX": 1,
+      "LOGISTIC": 1,
+      "PRELU": 1
     }
   ],
   "MPS": [
@@ -96,7 +105,10 @@
       "FUSED_NONE": 1,
       "FUSED_RELU": 1,
       "FUSED_RELU1": 1,
-      "FUSED_RELU6": 1
+      "FUSED_RELU6": 1,
+      "ARGMAX": 1,
+      "LOGISTIC": 1,
+      "PRELU": 1
     }
   ],
   "BNNS": [
@@ -121,7 +133,10 @@
       "FUSED_NONE": 1,
       "FUSED_RELU": 1,
       "FUSED_RELU1": 1,
-      "FUSED_RELU6": 1
+      "FUSED_RELU6": 1,
+      "ARGMAX": 1,
+      "LOGISTIC": 1,
+      "PRELU": 0
     }
   ],
   "clDNN": [
@@ -146,7 +161,10 @@
       "FUSED_NONE": 1,
       "FUSED_RELU": 1,
       "FUSED_RELU1": 1,
-      "FUSED_RELU6": 1
+      "FUSED_RELU6": 1,
+      "ARGMAX": 1,
+      "LOGISTIC": 1,
+      "PRELU": 1
     }
   ],
   "MKLDNN": [
@@ -171,7 +189,10 @@
       "FUSED_NONE": 1,
       "FUSED_RELU": 1,
       "FUSED_RELU1": 1,
-      "FUSED_RELU6": 1
+      "FUSED_RELU6": 1,
+      "ARGMAX": 1,
+      "LOGISTIC": 1,
+      "PRELU": 1
     }
   ],
   "DirectML": [
@@ -196,7 +217,10 @@
       "FUSED_NONE": 1,
       "FUSED_RELU": 1,
       "FUSED_RELU1": 1,
-      "FUSED_RELU6": 1
+      "FUSED_RELU6": 1,
+      "ARGMAX": 1,
+      "LOGISTIC": 1,
+      "PRELU": 1
     }
   ],
   "IE_clDNN": [
@@ -221,7 +245,10 @@
       "FUSED_NONE": 1,
       "FUSED_RELU": 1,
       "FUSED_RELU1": 1,
-      "FUSED_RELU6": 1
+      "FUSED_RELU6": 1,
+      "ARGMAX": 1,
+      "LOGISTIC": 1,
+      "PRELU": 1
     }
   ],
   "IE_MKLDNN": [
@@ -246,7 +273,10 @@
       "FUSED_NONE": 1,
       "FUSED_RELU": 1,
       "FUSED_RELU1": 1,
-      "FUSED_RELU6": 1
+      "FUSED_RELU6": 1,
+      "ARGMAX": 1,
+      "LOGISTIC": 1,
+      "PRELU": 1
     }
   ],
   "IE_MYRIAD": [
@@ -271,7 +301,10 @@
       "FUSED_NONE": 1,
       "FUSED_RELU": 1,
       "FUSED_RELU1": 1,
-      "FUSED_RELU6": 1
+      "FUSED_RELU6": 1,
+      "ARGMAX": 1,
+      "LOGISTIC": 1,
+      "PRELU": 1
     }
   ]
 }
