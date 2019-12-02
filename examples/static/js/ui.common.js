@@ -135,6 +135,7 @@ const trademarks = (allFormats) => {
 const updateNativeBackend = () => {
   if(currentPrefer === 'sustained' & currentOS === 'Mac OS') {
     let nativebackend = getNativeAPI(currentPrefer);
+    $('#l-sustained').html('SUSTAINED_SPEED');
     $('#l-sustained').append(`<span class='nbackend'>${nativebackend}</span>`);
   } else {
     $('#l-sustained').html('SUSTAINED_SPEED');
@@ -630,6 +631,8 @@ if (skeletonDetectionPath <= -1) {
         }
         updateTitle('Dual Backends', currentBackend, currentPrefer, um);
       }
+
+      updateNativeBackend();
 
       updateBackendRadioUI(currentBackend, currentPrefer);
       strsearch = `?prefer=${currentPrefer}&b=${currentBackend}&m=${um}&s=${us}&d=${ud}`;
