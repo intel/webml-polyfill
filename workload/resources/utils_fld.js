@@ -142,7 +142,7 @@ class FLDBenchmark extends Benchmark {
     // drawImage
     let ctx = canvas.getContext('2d');
     ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
-
+  
     // drawFaceBox
     face_boxes.forEach(box => {
       let xmin = box[0] / image.height * canvas.height;

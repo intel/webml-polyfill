@@ -271,7 +271,6 @@ class Utils {
     }
   }
 
-
   // for debugging
   async iterateLayers(configs, layerList) {
     if (!this.initialized) return;
@@ -286,6 +285,7 @@ class Utils {
         bin: OpenVINOModelImporter,
       }[fileExtension];
       const model = await new importer({
+        isQuantized: this.isQuantized,
         rawModel: this.rawModel,
         backend: config.backend,
         prefer: config.prefer || null,

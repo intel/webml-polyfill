@@ -105,16 +105,28 @@ const formatToLogo = {
 };
 
 const trademarks = (allFormats) => {
-  let trademarknote;
-  for (const format of allFormats) {
-    if (format.toLowerCase() === 'tflite') {
-      trademarknote = 'TensorFlow, the TensorFlow logo and any related marks are trademarks of Google Inc.';
-    } else if (format.toLowerCase() === 'onnx') {
-      trademarknote += ' ONNX is a community project created by Facebook and Microsoft. ONNX is a trademark of Facebook, Inc.';
-    } else if (format.toLowerCase() === 'openvino') {
-      trademarknote += ' OpenVINO and the OpenVINO logo are trademarks of Intel Corporation or its subsidiaries in the U.S. and/or other countries.';
+  let trademarknote = '';
+
+  for (let format of allFormats) {
+    let trademark = '';
+
+    switch(format.toLowerCase()) {
+      case 'tflite':
+        trademark = 'TensorFlow, the TensorFlow logo and any related marks are trademarks of Google Inc.';
+        break;
+      case 'onnx':
+        trademark += 'ONNX is a community project created by Facebook and Microsoft. ONNX is a trademark of Facebook, Inc.';
+        break;
+      case 'openvino':
+        trademark += 'OpenVINO and the OpenVINO logo are trademarks of Intel Corporation or its subsidiaries in the U.S. and/or other countries.';
+        break;
+      default:
+        break;
     }
+
+    trademarknote += trademark;
   }
+
   if(trademarknote) {
     $('#trademark').html(trademarknote);
   }
@@ -129,13 +141,12 @@ const updateNativeBackend = () => {
   }
 }
 
-const constructModelTable = (modelList) => {
-
+let singleModelTable = (modelList, modelClass='model', showName='Model') => {
   const allFormats = new Set(modelList.map((m) => m.format));
   const tbody = $('#query tbody');
   const trows = [];
   for (const format of allFormats) {
-    const trow = $('<tr class="model">');
+    const trow = $(`<tr class='model' id='${modelClass}'>`);
     const tdata = $('<td>');
     trow.append(tdata);
 
@@ -146,18 +157,33 @@ const constructModelTable = (modelList) => {
     for (const model of models) {
       const modelName = model.modelName.replace(/ \(.*\)$/, '');
       const modelId = model.modelId;
-      tdata.append($(`<input type='radio' class='d-none' name='m'id='${modelId}' value='${modelId}'>`));
+      tdata.append($(`<input type='radio' class='d-none' name='m' id='${modelId}' value='${modelId}'>`));
       tdata.append($(`<label id='l-${modelId}' class='themodel' for='${modelId}' title='${modelName}'>${modelName}</label>`));
     }
     trows.push(trow);
   }
   trows[0].prepend($(`<th class='text-center' rowspan='${allFormats.size}'>
-                        <a href='../model.html' title='View model details'>Model</a>
+                        <a href='../model.html' title='View model details'>${showName}</a>
                       </th>`));
   tbody.prepend(trows);
+  return allFormats;
+}
 
-  trademarks(allFormats);
+const constructModelTable = (modelLists, multiple=false) => {
 
+  let formatTypes = [];
+  if (multiple) {
+    for (let [key, value] of Object.entries(modelLists)) {
+      let formats = singleModelTable(value, key, key);
+      formatTypes.push(...formats);
+      formatTypes = [...new Set(formatTypes)];
+    }
+  } else {
+    let formats = singleModelTable(modelLists);
+    formatTypes.push(...formats);
+  }
+
+  trademarks(formatTypes);
   $('input:radio[name=m]').click(changeModel);
   checkedModelStyle();
   disableModel();
@@ -192,7 +218,7 @@ const updateTitle = (name, backend, prefer, modelId) => {
     // low: 'LOW_POWER',
     fast: 'FAST',
     sustained: 'SUSTAINED',
-    low: 'LOW',   
+    low: 'LOW',
     none: 'None',
   }[prefer];
 
@@ -204,14 +230,32 @@ const updateTitle = (name, backend, prefer, modelId) => {
     backendtext = backend + ' + WebNN';
   }
 
-  const model = getModelById(modelId);
-  if(currentprefertext === 'None') {
-    $('#ictitle').html(`${name} / ${backendtext} / ${model.modelName || 'None'}`);
-  } else if(currentPrefer === 'sustained' & currentOS === 'Mac OS') {
-    $('#ictitle').html(`${name} / ${backendtext} (${currentprefertext}/MPS) / ${model.modelName || 'None'}`);
+  let modelShow = null;
+  let modelIdArray;
+  if (modelId.includes('+') || modelId.includes(' ')) {
+    if (modelId.includes('+')) {
+      modelIdArray = modelId.split('+');
+    } else if (modelId.includes(' ')) {
+      modelIdArray = modelId.split(' ');
+    }
+    for (let model of modelIdArray) {
+      if (modelShow === null) {
+        modelShow = getModelById(model).modelName;
+      } else {
+        modelShow = modelShow + ' + ' + getModelById(model).modelName;
+      }
+    }
   } else {
-    $('#ictitle').html(`${name} / ${backendtext} (${currentprefertext}) / ${model.modelName || 'None'}`);
-  } 
+    modelShow = getModelById(modelId).modelName;
+  }
+
+  if(currentprefertext === 'None') {
+    $('#ictitle').html(`${name} / ${backendtext} / ${modelShow || 'None'}`);
+  } else if(currentPrefer === 'sustained' & currentOS === 'Mac OS') {
+    $('#ictitle').html(`${name} / ${backendtext} (${currentprefertext}/MPS) / ${modelShow || 'None'}`);
+  } else {
+    $('#ictitle').html(`${name} / ${backendtext} (${currentprefertext}) / ${modelShow || 'None'}`);
+  }
 }
 
 $('#header').sticky({ topSpacing: 0, zIndex: '50' });
@@ -309,19 +353,59 @@ const componentToggle = () => {
 
 const disableModel = () => {
   if (um) {
-    $('.model input').attr('disabled', false);
-    $('.model label').removeClass('cursordefault');
-    $('#' + um).attr('disabled', true);
-    $('#l-' + um).addClass('cursordefault');
+    if (um.includes('+')) {
+      let umArray = um.split('+');
+      for (let modelName of umArray) {
+        let modelClass = $('#' + modelName).parent().parent().attr('id');
+        $('.model[id=' + modelClass + '] input').attr('disabled', false);
+        $('.model[id=' + modelClass + '] label').removeClass('cursordefault');
+        $('#' + modelName).attr('disabled', true);
+        $('#l-' + modelName).addClass('cursordefault');
+      }
+    } else if (um.includes(' ')) {
+      let umArray = um.split(' ');
+      for (let modelName of umArray) {
+        let modelClass = $('#' + modelName).parent().parent().attr('id');
+        $('.model[id=' + modelClass + '] input').attr('disabled', false);
+        $('.model[id=' + modelClass + '] label').removeClass('cursordefault');
+        $('#' + modelName).attr('disabled', true);
+        $('#l-' + modelName).addClass('cursordefault');
+      }
+    } else {
+      $('.model input').attr('disabled', false);
+      $('.model label').removeClass('cursordefault');
+      $('#' + um).attr('disabled', true);
+      $('#l-' + um).addClass('cursordefault');
+    }
   }
 }
 
 const checkedModelStyle = () => {
   if (um) {
-    $('.model input').removeAttr('checked');
-    $('.model label').removeClass('checked');
-    $('#' + um).attr('checked', 'checked');
-    $('#l-' + um).addClass('checked');
+    if (um.includes('+')) {
+      let umArray = um.split('+');
+      for (let modelName of umArray) {
+        let modelClass = $('#' + modelName).parent().parent().attr('id');
+        $('.model[id=' + modelClass + '] input').removeAttr('checked');
+        $('.model[id=' + modelClass + '] label').removeClass('checked');
+        $('#' + modelName).attr('checked', 'checked');
+        $('#l-' + modelName).addClass('checked');
+      }
+    } else if (um.includes(' ')) {
+      let umArray = um.split(' ');
+      for (let modelName of umArray) {
+        let modelClass = $('#' + modelName).parent().parent().attr('id');
+        $('.model[id=' + modelClass + '] input').removeAttr('checked');
+        $('.model[id=' + modelClass + '] label').removeClass('checked');
+        $('#' + modelName).attr('checked', 'checked');
+        $('#l-' + modelName).addClass('checked');
+      }
+    } else {
+      $('.model input').removeAttr('checked');
+      $('.model label').removeClass('checked');
+      $('#' + um).attr('checked', 'checked');
+      $('#l-' + um).addClass('checked');
+    }
   }
 }
 
@@ -349,6 +433,14 @@ let isFrontFacingSwitch = () => {
   return $('#cameraswitch').is(':checked')
 }
 
+let getModelClasss = () => {
+  let ids = [];
+  for (let model of $('#query tbody .model')) {
+    ids.push(model.id);
+  }
+  return [...new Set(ids)];
+}
+
 const changeModel = () => {
   $('.alert').hide();
   um = $('input:radio[name="m"]:checked').attr('id');
@@ -356,6 +448,22 @@ const changeModel = () => {
     return;
   }
   currentModel = um;
+
+  let modelClasss = getModelClasss();
+  let seatModelClass = $('#' + um).parent().parent().attr('id');
+  if (modelClasss.length > 1) {
+    for (let modelClass of modelClasss) {
+      if (seatModelClass !== modelClass) {
+        let modelName = $('.model[id=' + modelClass + '] input:radio[checked="checked"]').attr('id');
+        if (typeof modelName !== 'undefined') {
+          um = um + '+' + modelName;
+        }
+      }
+    }
+
+    currentModel = um;
+  }
+
   if (currentBackend && currentPrefer) {
     strsearch = `?prefer=${currentPrefer}&b=${currentBackend}&m=${um}&s=${us}&d=${ud}`;
   } else {
@@ -368,7 +476,17 @@ const changeModel = () => {
   disableModel();
   updateTitle(currentExample, currentBackend, currentPrefer, um);
   $('.offload').hide();
-  main(us === 'camera');
+
+  if (modelClasss.length > 1) {
+    let umArray = um.split('+');
+    if (modelClasss.length === umArray.length) {
+      main(us === 'camera');
+    } else {
+      showError('Not enough selected models', 'Please select ' + modelClasss.length + ' kinds of models to start prediction.');
+    }
+  } else {
+    main(us === 'camera');
+  }
 };
 
 
@@ -395,7 +513,7 @@ $(document).ready(() => {
     $('#fullscreen i svg').click(() => {
       $('#cameraswitcher').toggleClass('fullscreen');
     })
-    
+
     $('#img').click(() => {
       $('#cameraswitcher').hide();
     })

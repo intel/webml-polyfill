@@ -68,6 +68,7 @@
               <li><a href='object_detection/'>Person/Object Detection</a></li>
               <li><a href='semantic_segmentation/'>Semantic Segmentation</a></li>
               <li><a href='skeleton_detection/'>Skeleton Detection</a></li>
+              <li><a href='face_recognition/'>Face Recognition</a></li>
               <li><a href='facial_landmark_detection/'>Facial Landmark Detection</a></li>
               <li><a href='super_resolution/'>Super Resolution</a></li>
               <li><a href='emotion_analysis/'>Emotion Analysis</a></li>
@@ -83,7 +84,7 @@
   <section class='examples' id='examples'>
     <div class='container'>
       <h2 class='text-center'>
-        Web Neural Network (WebNN) API Examples
+        Web Neural Network API Examples
       </h2>
 
       <div class='row'>
@@ -200,22 +201,24 @@
         <div class='examples-col col-lg-4 col-xs-12'>
           <div class='card card-block text-center'>
             <div>
-              <div class='feature-icon disabled'>
-                <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="users"
-                  class="svg-inline--fa fa-users fa-w-20" role="img" xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 640 512">
-                  <path fill="currentColor"
-                    d="M96 224c35.3 0 64-28.7 64-64s-28.7-64-64-64-64 28.7-64 64 28.7 64 64 64zm448 0c35.3 0 64-28.7 64-64s-28.7-64-64-64-64 28.7-64 64 28.7 64 64 64zm32 32h-64c-17.6 0-33.5 7.1-45.1 18.6 40.3 22.1 68.9 62 75.1 109.4h66c17.7 0 32-14.3 32-32v-32c0-35.3-28.7-64-64-64zm-256 0c61.9 0 112-50.1 112-112S381.9 32 320 32 208 82.1 208 144s50.1 112 112 112zm76.8 32h-8.3c-20.8 10-43.9 16-68.5 16s-47.6-6-68.5-16h-8.3C179.6 288 128 339.6 128 403.2V432c0 26.5 21.5 48 48 48h288c26.5 0 48-21.5 48-48v-28.8c0-63.6-51.6-115.2-115.2-115.2zm-223.7-13.4C161.5 263.1 145.6 256 128 256H64c-35.3 0-64 28.7-64 64v32c0 17.7 14.3 32 32 32h65.9c6.3-47.4 34.9-87.3 75.2-109.4z">
-                  </path>
-                </svg>
+              <div class='feature-icon'>
+                <a href='face_recognition/'>
+                  <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="users"
+                    class="svg-inline--fa fa-users fa-w-20" role="img" xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 640 512">
+                    <path fill="currentColor"
+                      d="M96 224c35.3 0 64-28.7 64-64s-28.7-64-64-64-64 28.7-64 64 28.7 64 64 64zm448 0c35.3 0 64-28.7 64-64s-28.7-64-64-64-64 28.7-64 64 28.7 64 64 64zm32 32h-64c-17.6 0-33.5 7.1-45.1 18.6 40.3 22.1 68.9 62 75.1 109.4h66c17.7 0 32-14.3 32-32v-32c0-35.3-28.7-64-64-64zm-256 0c61.9 0 112-50.1 112-112S381.9 32 320 32 208 82.1 208 144s50.1 112 112 112zm76.8 32h-8.3c-20.8 10-43.9 16-68.5 16s-47.6-6-68.5-16h-8.3C179.6 288 128 339.6 128 403.2V432c0 26.5 21.5 48 48 48h288c26.5 0 48-21.5 48-48v-28.8c0-63.6-51.6-115.2-115.2-115.2zm-223.7-13.4C161.5 263.1 145.6 256 128 256H64c-35.3 0-64 28.7-64 64v32c0 17.7 14.3 32 32 32h65.9c6.3-47.4 34.9-87.3 75.2-109.4z">
+                    </path>
+                  </svg>
+                </a>
               </div>
             </div>
             <div>
-              <h3 class='disabled'>
-                Face Recognition
+              <h3>
+                <a href='face_recognition/'>Face Recognition</a>
               </h3>
               <p>
-                <span class='wip'>WIP</span> Detecting faces of participants by using object detection and checks
+                Detecting faces of participants by using object detection and checks
                 whether each face was present
                 or not.
               </p>
@@ -374,8 +377,10 @@
             <div>
               <h3><a href='emotion_analysis/'>Emotion Analysis</a></h3>
               <p>
-                Analysing and inferring emotion from input text, and displaying an emoji that represents the estimated
-                emotion.
+                Mapping human facial features to different types of emotion class by using face detection.
+                <!-- 
+                  Analysing and inferring emotion from input text, and displaying an emoji that represents the estimated emotion. 
+                -->
               </p>
             </div>
           </div>
@@ -412,24 +417,24 @@
             <div>
               <div class='feature-icon disabled'>
                 <a href='speech_commands/'>
-                <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="microphone-alt"
-                  class="svg-inline--fa fa-microphone-alt fa-w-11" role="img" viewBox="0 0 352 512">
-                  <path fill="currentColor"
-                    d="M336 192h-16c-8.84 0-16 7.16-16 16v48c0 74.8-64.49 134.82-140.79 127.38C96.71 376.89 48 317.11 48 250.3V208c0-8.84-7.16-16-16-16H16c-8.84 0-16 7.16-16 16v40.16c0 89.64 63.97 169.55 152 181.69V464H96c-8.84 0-16 7.16-16 16v16c0 8.84 7.16 16 16 16h160c8.84 0 16-7.16 16-16v-16c0-8.84-7.16-16-16-16h-56v-33.77C285.71 418.47 352 344.9 352 256v-48c0-8.84-7.16-16-16-16zM176 352c53.02 0 96-42.98 96-96h-85.33c-5.89 0-10.67-3.58-10.67-8v-16c0-4.42 4.78-8 10.67-8H272v-32h-85.33c-5.89 0-10.67-3.58-10.67-8v-16c0-4.42 4.78-8 10.67-8H272v-32h-85.33c-5.89 0-10.67-3.58-10.67-8v-16c0-4.42 4.78-8 10.67-8H272c0-53.02-42.98-96-96-96S80 42.98 80 96v160c0 53.02 42.98 96 96 96z">
-                  </path>
-                </svg>
+                  <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="microphone-alt"
+                    class="svg-inline--fa fa-microphone-alt fa-w-11" role="img" viewBox="0 0 352 512">
+                    <path fill="currentColor"
+                      d="M336 192h-16c-8.84 0-16 7.16-16 16v48c0 74.8-64.49 134.82-140.79 127.38C96.71 376.89 48 317.11 48 250.3V208c0-8.84-7.16-16-16-16H16c-8.84 0-16 7.16-16 16v40.16c0 89.64 63.97 169.55 152 181.69V464H96c-8.84 0-16 7.16-16 16v16c0 8.84 7.16 16 16 16h160c8.84 0 16-7.16 16-16v-16c0-8.84-7.16-16-16-16h-56v-33.77C285.71 418.47 352 344.9 352 256v-48c0-8.84-7.16-16-16-16zM176 352c53.02 0 96-42.98 96-96h-85.33c-5.89 0-10.67-3.58-10.67-8v-16c0-4.42 4.78-8 10.67-8H272v-32h-85.33c-5.89 0-10.67-3.58-10.67-8v-16c0-4.42 4.78-8 10.67-8H272v-32h-85.33c-5.89 0-10.67-3.58-10.67-8v-16c0-4.42 4.78-8 10.67-8H272c0-53.02-42.98-96-96-96S80 42.98 80 96v160c0 53.02 42.98 96 96 96z">
+                    </path>
+                  </svg>
                 </a>
               </div>
             </div>
             <div class='disabled'>
               <h3>
                 <a href='speech_commands/'>
-                Speech Commands
+                  Speech Commands
                 </a>
               </h3>
 
               <p>
-                Recognizing a set of voice commands using the audio file or device's microphone input. 
+                Recognizing a set of voice commands using the audio file or device's microphone input.
               </p>
             </div>
           </div>
@@ -450,7 +455,8 @@
           <div class='webmlbadge mb-4'>
             <div class='webml-title'>W3C Spec</div>
             <div class='webml-status-true'><a href='https://webmachinelearning.github.io/webnn/#usecases'
-                title='W3C Web Neural Network API Use Cases'>Use Cases</a></div>
+                title='W3C Web Neural Network API Use Cases'>Use Cases</h3>
+            </div>
           </div>
           <p>&copy;2019 <a href='index.html'>WebNN API</a></p>
         </div>
@@ -493,10 +499,11 @@
   <script async src="https://www.googletagmanager.com/gtag/js?id=UA-147662084-1"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
+    function gtag() { dataLayer.push(arguments); }
     gtag('js', new Date());
 
     gtag('config', 'UA-147662084-1');
   </script>
 </body>
+
 </html>

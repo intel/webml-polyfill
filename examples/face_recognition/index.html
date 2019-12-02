@@ -3,13 +3,13 @@
 
 <head>
   <meta charset='utf-8'>
-  <title>Web Neural Network API - Examples - Facial Landmark Detection</title>
+  <title>Web Neural Network API - Examples - Face Recognition</title>
   <meta content='width=device-width, initial-scale=1.0' name='viewport'>
   <meta
-    content='Facial Landmark Detection, WebML, Web Machine Learning, Machine Learning for Web, Neural Networks, WebNN, WebNN API, Web Neural Network API'
+    content='Emotion Analysis, WebML, Web Machine Learning, Machine Learning for Web, Neural Networks, WebNN, WebNN API, Web Neural Network API'
     name='keywords'>
   <meta
-    content='Facial Landmark Detection, WebML, Web Machine Learning, Machine Learning for Web, Neural Networks, WebNN, WebNN API, Web Neural Network API'
+    content='Emotion Analysis, WebML, Web Machine Learning, Machine Learning for Web, Neural Networks, WebNN, WebNN API, Web Neural Network API'
     name='description'>
   <link rel='apple-touch-icon' sizes='57x57' href='../static/img/favicon/apple-icon-57x57.png'>
   <link rel='apple-touch-icon' sizes='60x60' href='../static/img/favicon/apple-icon-60x60.png'>
@@ -32,7 +32,7 @@
   <link href='../static/css/style.css' rel='stylesheet'>
 </head>
 
-<body id='faciallandmarkdetection'>
+<body id='facerecognition'>
   <header id='header'>
     <div class='container'>
       <div id='logo' class='pull-left'>
@@ -85,32 +85,6 @@
     <div class='filter mb-3 mt-2'>
       <table id='filter' class='t-filter table table-condensed'>
         <tbody>
-          <tr class='model'>
-            <th class='text-center'><a href='../model.html' title='View model details'>Model</a></th>
-            <td>
-              <img src='../static/img/l-tflite.png' alt='TensorFlow Lite Format' title='TensorFlow Lite Format'>
-              <input type='radio' class='d-none' name='m' id='ssd_mobilenetv1_face_tflite'
-                value='ssd_mobilenetv1_face_tflite' checked>
-              <label id='l-ssd_mobilenetv1_face_tflite' class='themodel' for='ssd_mobilenetv1_face_tflite'
-                title='SSD MobileNet v1'>SSD MobileNet v1</label>
-              <input type='radio' class='d-none' name='m' id='ssd_mobilenetv2_face_tflite'
-                value='ssd_mobilenetv2_face_tflite' checked>
-              <label id='l-ssd_mobilenetv2_face_tflite' class='themodel' for='ssd_mobilenetv2_face_tflite'
-                title='SSD MobileNet v2'>SSD MobileNet v2</label>
-              <input type='radio' class='d-none' name='m' id='ssdlite_mobilenetv2_face_tflite'
-                value='ssdlite_mobilenetv2_face_tflite' checked>
-              <label id='l-ssdlite_mobilenetv2_face_tflite' class='themodel' for='ssdlite_mobilenetv2_face_tflite'
-                title='SSDLite MobileNet v2'>SSDLite MobileNet v2</label>
-              <input type='radio' class='d-none' name='m' id='tiny_yolov2_face_tflite' value='tiny_yolov2_face_tflite'
-                checked>
-              <label id='l-tiny_yolov2_face_tflite' class='themodel' for='tiny_yolov2_face_tflite'
-                title='Tiny Yolo v2'>Tiny Yolo v2</label>
-              <input type='radio' class='d-none' name='l' id='face_landmark_tflite' value='face_landmark_tflite'
-                checked>
-              <label id='l-face_landmark_tflite' class='themodel' for='face_landmark_tflite'
-                title='Simple CNN'>SimpleCNN (TFlite)</label>
-            </td>
-          </tr>
           <tr class='backend'>
             <th class='text-center backendtitle'>Backend</th>
             <td>
@@ -147,11 +121,11 @@
       </table>
     </div>
   </form>
-  <section class='ic' id='ic'>
+  <section class='fn' id='fn'>
     <div class='container' id='container'>
       <a id='extra' href='#' class='mb-1 mt-3'>
         <h3 class='text-center ex' id='ictitle'>
-          Facial Landmark Detection
+          Face Recognition
         </h3>
         <span class='fa chevron-up'>
           <svg aria-hidden='true' data-prefix='fas' data-icon='chevron-up' class='svg-inline--fa fa-chevron-up fa-w-14'
@@ -222,28 +196,45 @@
       </div>
 
       <div class='tab-content clearfix'>
-        <div class='text-center'>
-          <figure class='item shoulddisplay' style='display: none;'>
-            <div class='inner'>
-              <canvas id='canvasshow' width='640' height='480'></canvas>
-            </div>
-          </figure>
-        </div>
-
         <div class='tab-pane text-center active' id='imagetab'>
           <div class='icdisplay' style='display: none;'>
             <div class='col-lg-12 col-xs-12 text-center'>
+              <div class='row'>
+                <div class='col bt-3 mb-3'>
+                  <img id='targetImage' hidden crossorigin='anonymous' class='img-fluid' alt='Responsive image'
+                    src='./img/targetImage.jpg'>
+                  <canvas id='targetCanvasShow'></canvas>
+                </div>
+                <div class='col bt-3 mb-3'>
+                  <img id='searchImage' hidden crossorigin='anonymous' class='img-fluid' alt='Responsive image'
+                    src='./img/searchImage.jpg'>
+                  <canvas id='searchCanvasShow'></canvas>
+                </div>
+              </div>
               <div class='row mt-1'>
                 <div class='col'>
                   <div class='box'>
-                    <input type='file' name='f[]' id='input' accept='image/*' class='inputfile inputf' />
-                    <label for='input'><svg width='20' height='17' viewBox='0 0 20 17'>
+                    <input type='file' name='f[]' id='targetInput' accept='image/*' class='inputfile inputf' />
+                    <label for='targetInput'><svg width='20' height='17' viewBox='0 0 20 17'>
                         <path
                           d='M10 0l-5.2 4.9h3.3v5.1h3.8v-5.1h3.3l-5.2-4.9zm9.3 11.5l-3.2-2.1h-2l3.4 2.6h-3.5c-.1 0-.2.1-.2.1l-.8 2.3h-6l-.8-2.2c-.1-.1-.1-.2-.2-.2h-3.6l3.4-2.6h-2l-3.2 2.1c-.4.3-.7 1-.6 1.5l.6 3.1c.1.5.7.9 1.2.9h16.3c.6 0 1.1-.4 1.3-.9l.6-3.1c.1-.5-.2-1.2-.7-1.5z' />
                         </svg>
-                      <span>Pick Image</span>
+                      <span>Pick Faces Image</span>
                     </label>
                   </div>
+                  <span class='desc'>Step 1: Upload frontally oriented faces image.</span>
+                </div>
+                <div class='col'>
+                  <div class='box'>
+                    <input type='file' name='f[]' id='searchInput' accept='image/*' class='inputfile inputf' />
+                    <label for='searchInput'><svg width='20' height='17' viewBox='0 0 20 17'>
+                        <path
+                          d='M10 0l-5.2 4.9h3.3v5.1h3.8v-5.1h3.3l-5.2-4.9zm9.3 11.5l-3.2-2.1h-2l3.4 2.6h-3.5c-.1 0-.2.1-.2.1l-.8 2.3h-6l-.8-2.2c-.1-.1-.1-.2-.2-.2h-3.6l3.4-2.6h-2l-3.2 2.1c-.4.3-.7 1-.6 1.5l.6 3.1c.1.5.7.9 1.2.9h16.3c.6 0 1.1-.4 1.3-.9l.6-3.1c.1-.5-.2-1.2-.7-1.5z' />
+                        </svg>
+                      <span>Pick New Faces Image</span>
+                    </label>
+                  </div>
+                  <span class='desc'>Step 2: Upload other faces images for prediction.</span>
                 </div>
               </div>
             </div>
@@ -273,22 +264,47 @@
                 <label class='custom-control-label' for='cameraswitch'>Front-facing</label>
               </div>
             </div>
+            <div class='col-lg-12 col-xs-12 text-center'>
+              <div class='row'>
+                <div class='col bt-3 mb-3'>
+                  <img id='cameraImage' hidden crossorigin='anonymous' class='img-fluid' alt='Responsive image'
+                    src='./img/targetImage.jpg'>
+                  <canvas id='cameraImageShow'></canvas>
+                </div>
+                <div class='col bt-3 mb-3'>
+                  <canvas id='cameraShow'></canvas>
+                </div>
+              </div>
+              <div class='row mt-1'>
+                <div class='col'>
+                  <div class='box'>
+                    <input type='file' name='f[]' id='cameraImageInput' accept='image/*' class='inputfile inputf' />
+                    <label for='cameraImageInput'><svg width='20' height='17' viewBox='0 0 20 17'>
+                        <path
+                          d='M10 0l-5.2 4.9h3.3v5.1h3.8v-5.1h3.3l-5.2-4.9zm9.3 11.5l-3.2-2.1h-2l3.4 2.6h-3.5c-.1 0-.2.1-.2.1l-.8 2.3h-6l-.8-2.2c-.1-.1-.1-.2-.2-.2h-3.6l3.4-2.6h-2l-3.2 2.1c-.4.3-.7 1-.6 1.5l.6 3.1c.1.5.7.9 1.2.9h16.3c.6 0 1.1-.4 1.3-.9l.6-3.1c.1-.5-.2-1.2-.7-1.5z' />
+                        </svg>
+                        <span>Pick Faces Image</span>
+                    </label>
+                  </div>
+                  <span class='desc'>Upload frontally oriented faces image, results will be predicted from Live Camera.</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </div>
   </section>
 
-  <img id='image' crossorigin='anonymous' class='img-fluid' alt='Responsive image' src='./img/image1.jpg'>
-  <canvas id='canvas' width=300 height=300></canvas>
-  <canvas id='canvas1' width=128 height=128></canvas>
+  <canvas id='detecorCanvas'></canvas>
+  <canvas id='recognitionCanvas'></canvas>
   <video id='video' autoplay playsinline></video>
 
   <footer>
     <div class='container'>
       <div class='row'>
         <div class='col-lg-12 col-xs-12 text-lg-center text-center'>
-          <div id='trademark' class='mb-4'>TensorFlow, the TensorFlow logo and any related marks are trademarks of Google Inc.</div>
+          <div id='trademark' class='mb-4'></div>
           <div class='webmlbadge mb-4'>
             <div class='webml-title'>WebNN API</div>
             <div id='webmlstatus'></div>
@@ -364,6 +380,9 @@
   <script src='../util/tflite/schema/schema_generated.js'></script>
   <script src='../util/tflite/TfLiteModelUtils.js'></script>
   <script src='../util/tflite/TFliteModelImporter.js'></script>
+  <script src='../util/openvino/openvino.js'></script>
+  <script src='../util/openvino/OpenVINOModelUtils.js'></script>
+  <script src='../util/openvino/OpenVINOModelImporter.js'></script>
   <script src='../util/decoders/SsdDecoder.js'></script>
   <script src='../util/decoders/Yolo2Decoder.js'></script>
   <script src='../util/faceDetector.js'></script>
@@ -378,8 +397,8 @@
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
-
     gtag('config', 'UA-147662084-1');
   </script>
 </body>
+
 </html>

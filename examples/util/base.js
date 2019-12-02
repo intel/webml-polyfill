@@ -535,7 +535,7 @@ semanticSegmentationModels: [{
     modelFile: 'https://webnnmodel.s3-us-west-2.amazonaws.com/semantic_segmentation/model/deeplab_mobilenetv2_224.tflite',
     labelsFile: 'https://webnnmodel.s3-us-west-2.amazonaws.com/semantic_segmentation/model/labels.txt',
     inputSize: [224, 224, 3],
-    outputSize: [224, 224, 21],
+    outputSize: [224, 224, 1],
     preOptions: {
       mean: [127.5, 127.5, 127.5],
       std: [127.5, 127.5, 127.5],
@@ -550,7 +550,7 @@ semanticSegmentationModels: [{
     modelFile: 'https://webnnmodel.s3-us-west-2.amazonaws.com/semantic_segmentation/model/deeplab_mobilenetv2_224_dilated.tflite',
     labelsFile: 'https://webnnmodel.s3-us-west-2.amazonaws.com/semantic_segmentation/model/labels.txt',
     inputSize: [224, 224, 3],
-    outputSize: [224, 224, 21],
+    outputSize: [224, 224, 1],
     preOptions: {
       mean: [127.5, 127.5, 127.5],
       std: [127.5, 127.5, 127.5],
@@ -565,7 +565,7 @@ semanticSegmentationModels: [{
     modelFile: 'https://webnnmodel.s3-us-west-2.amazonaws.com/semantic_segmentation/model/deeplab_mobilenetv2_257.tflite',
     labelsFile: 'https://webnnmodel.s3-us-west-2.amazonaws.com/semantic_segmentation/model/labels.txt',
     inputSize: [257, 257, 3],
-    outputSize: [257, 257, 21],
+    outputSize: [257, 257, 1],
     preOptions: {
       mean: [127.5, 127.5, 127.5],
       std: [127.5, 127.5, 127.5],
@@ -580,7 +580,7 @@ semanticSegmentationModels: [{
     modelFile: 'https://webnnmodel.s3-us-west-2.amazonaws.com/semantic_segmentation/model/deeplab_mobilenetv2_257_dilated.tflite',
     labelsFile: 'https://webnnmodel.s3-us-west-2.amazonaws.com/semantic_segmentation/model/labels.txt',
     inputSize: [257, 257, 3],
-    outputSize: [257, 257, 21],
+    outputSize: [257, 257, 1],
     preOptions: {
       mean: [127.5, 127.5, 127.5],
       std: [127.5, 127.5, 127.5],
@@ -595,7 +595,7 @@ semanticSegmentationModels: [{
     modelFile: 'https://webnnmodel.s3-us-west-2.amazonaws.com/semantic_segmentation/model/deeplab_mobilenetv2_321.tflite',
     labelsFile: 'https://webnnmodel.s3-us-west-2.amazonaws.com/semantic_segmentation/model/labels.txt',
     inputSize: [321, 321, 3],
-    outputSize: [321, 321, 21],
+    outputSize: [321, 321, 1],
     preOptions: {
       mean: [127.5, 127.5, 127.5],
       std: [127.5, 127.5, 127.5],
@@ -610,7 +610,7 @@ semanticSegmentationModels: [{
     modelFile: 'https://webnnmodel.s3-us-west-2.amazonaws.com/semantic_segmentation/model/deeplab_mobilenetv2_321_dilated.tflite',
     labelsFile: 'https://webnnmodel.s3-us-west-2.amazonaws.com/semantic_segmentation/model/labels.txt',
     inputSize: [321, 321, 3],
-    outputSize: [321, 321, 21],
+    outputSize: [321, 321, 1],
     preOptions: {
       mean: [127.5, 127.5, 127.5],
       std: [127.5, 127.5, 127.5],
@@ -625,7 +625,7 @@ semanticSegmentationModels: [{
     modelFile: 'https://webnnmodel.s3-us-west-2.amazonaws.com/semantic_segmentation/model/deeplab_mobilenetv2_513.tflite',
     labelsFile: 'https://webnnmodel.s3-us-west-2.amazonaws.com/semantic_segmentation/model/labels.txt',
     inputSize: [513, 513, 3],
-    outputSize: [513, 513, 21],
+    outputSize: [513, 513, 1],
     preOptions: {
       mean: [127.5, 127.5, 127.5],
       std: [127.5, 127.5, 127.5],
@@ -640,7 +640,7 @@ semanticSegmentationModels: [{
     modelFile: 'https://webnnmodel.s3-us-west-2.amazonaws.com/semantic_segmentation/model/deeplab_mobilenetv2_513_dilated.tflite',
     labelsFile: 'https://webnnmodel.s3-us-west-2.amazonaws.com/semantic_segmentation/model/labels.txt',
     inputSize: [513, 513, 3],
-    outputSize: [513, 513, 21],
+    outputSize: [513, 513, 1],
     preOptions: {
       mean: [127.5, 127.5, 127.5],
       std: [127.5, 127.5, 127.5],
@@ -788,6 +788,42 @@ speechCommandModels: [{
   labelsFile: 'https://webnnmodel.s3-us-west-2.amazonaws.com/speech_commands/model/labels.txt',
   intro: 'Use Convolutional Neural Networks (CNNs) for a small-footprint keyword spotting (KWS) task.',
   paperUrl: 'https://www.isca-speech.org/archive/interspeech_2015/papers/i15_1478.pdf'
+}],
+
+faceRecognitionModels: [{
+    modelName: 'FaceNet (OpenVINO)',
+    format: 'OpenVino',
+    modelId: 'facenet_recognition_openvino',
+    modelSize: '93.9MB',
+    modelFile: 'https://webnnmodel.s3-us-west-2.amazonaws.com/face_recognition/model/facenet.bin',
+    inputSize: [1, 160, 160, 3],
+    outputSize: [1, 512],
+    threshold: 1.26,
+    preOptions: {
+      mean: [0, 0, 0, 0],
+      std: [1, 1, 1, 1],
+      channelScheme: 'BGR',
+      format: 'NHWC'
+    },
+    intro: 'This is a CNN model for face recognition which learns discriminative features of faces and produces embeddings for input face images.',
+    paperUrl: 'https://arxiv.org/abs/1503.03832'
+  }, {
+    modelName: 'Face Reidentification (OpenVINO)',
+    format: 'OpenVino',
+    modelId: 'facereidentification_recognition_openvino',
+    modelSize: '4.4MB',
+    modelFile: 'https://webnnmodel.s3-us-west-2.amazonaws.com/face_recognition/model/face-reidentification-retail-0095.bin',
+    inputSize: [1, 128, 128, 3],
+    outputSize: [1, 1, 1, 256],
+    threshold: 0.8,
+    preOptions: {
+      mean: [0, 0, 0, 0],
+      std: [1, 1, 1, 1],
+      channelScheme: 'BGR',
+      format: 'NHWC'
+    },
+    intro: 'This is a lightweight network for the face re-identification scenario that is\
+      based on MobileNet V2. The model produces feature vectors which should be close in cosine distance for similar faces and far for different faces.'
 }]
 
 };
@@ -866,21 +902,23 @@ const getDefaultSupportedOps = (backend, prefer) => {
   }
 
   // backend enums are defined in the `getNativeAPI` above
-  const backendEnums =        { NN: 0,    MPS: 1,  BNNS: 2,  clDNN: 3, mklDNN: 4 };
-  const supportedTable =
-  { ADD:                      [ true,     true,    true,     true,     false ],
-    ATROUS_CONV_2D:           [ false,    false,   false,    true,     true  ],
-    ATROUS_DEPTHWISE_CONV_2D: [ false,    false,   false,    true,     true  ],
-    AVERAGE_POOL_2D:          [ true,     true,    true,     true,     true  ],
-    CONCATENATION:            [ true,     true,    true,     true,     true  ],
-    CONV_2D:                  [ true,     true,    true,     true,     true  ],
-    DEPTHWISE_CONV_2D:        [ true,     true,    false,    true,     true  ],
-    FULLY_CONNECTED:          [ true,     true,    true,     true,     true  ],
-    MAX_POOL_2D:              [ true,     true,    true,     true,     true  ],
-    MUL:                      [ true,     true,    true,     true,     false ],
-    RESHAPE:                  [ true,     true,    true,     true,     true  ],
-    RESIZE_BILINEAR:          [ true,     false,   true,     true,     false ],
-    SOFTMAX:                  [ true,     true,    true,     true,     true  ]};
+  const backendEnums =        { NN: 0,    MPS: 1,  BNNS: 2,  clDNN: 3, mklDNN: 4, DirectML: 5 };
+  const supportedTable = {
+    ADD:                      [ true,     true,    true,     true,     false,    true  ],
+    ATROUS_CONV_2D:           [ false,    false,   false,    true,     true,     true  ],
+    ATROUS_DEPTHWISE_CONV_2D: [ false,    false,   false,    true,     true,     true  ],
+    AVERAGE_POOL_2D:          [ true,     true,    true,     true,     true,     true  ],
+    CONCATENATION:            [ true,     true,    true,     true,     true,     true  ],
+    CONV_2D:                  [ true,     true,    true,     true,     true,     true  ],
+    DEPTHWISE_CONV_2D:        [ true,     true,    false,    true,     true,     true  ],
+    FULLY_CONNECTED:          [ true,     true,    true,     true,     true,     true  ],
+    MAX_POOL_2D:              [ true,     true,    true,     true,     true,     true  ],
+    MUL:                      [ true,     true,    true,     true,     false,    true  ],
+    RESHAPE:                  [ true,     true,    true,     true,     true,     true  ],
+    RESIZE_BILINEAR:          [ true,     false,   true,     true,     false,    false ],
+    SOFTMAX:                  [ true,     true,    true,     true,     true,     true  ],
+    ARGMAX:                   [ false,    true,    false,    true,     false,    true  ]
+  };
 
   const nn = navigator.ml.getNeuralNetworkContext();
   const supportedOps = new Set();
@@ -926,10 +964,11 @@ const operationTypes = {
    28: 'TANH',
    29: 'BATCH_TO_SPACE_ND',
    37: 'TRANSPOSE',
+   39: 'ARGMAX',
    65: 'MAXIMUM',
    10003: 'ATROUS_CONV_2D',
    10004: 'ATROUS_DEPTHWISE_CONV_2D'
-} 
+}
 
 const getUrlParams = (prop) => {
   var params = {};

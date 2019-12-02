@@ -228,6 +228,7 @@ class Utils {
     for (let config of configs) {
       let importer = this.modelFile.split('.').pop() === 'tflite' ? TFliteModelImporter : OnnxModelImporter;
       let model = await new importer({
+        isQuantized: this.isQuantized,
         rawModel: this.rawModel,
         backend: config.backend,
         prefer: config.prefer || null,

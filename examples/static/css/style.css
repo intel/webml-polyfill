@@ -220,7 +220,7 @@ section {
   padding: 85px 0;
 }
 
-#imageclassification section, #posenet section, #semanticsegmentation section, #objectdetection section, #superresolution section, #faciallandmarkdetection section, #emotionanalysis section, #speechcommands section {
+#imageclassification section, #posenet section, #semanticsegmentation section, #objectdetection section, #superresolution section, #faciallandmarkdetection section, #emotionanalysis section, #speechcommands section, #facerecognition section {
   padding: 0px 0;
 }
 
@@ -2983,4 +2983,89 @@ button.xclose {
 
 #speechcommands #cameraswitcher, #speechcommands #cameraswitcher.fullscreen {
   display: none !important;
+}
+
+tr.model th {
+  text-transform: capitalize;
+}
+
+#facerecognition canvas {
+  width: 400px;
+}
+
+#facerecognition video {
+  display: none;
+}
+
+#facerecognition span.desc {
+  font-size: 0.8rem;
+}
+
+#facerecognition #inferenceTime {
+  display: inline-block;
+  width: auto; 
+}
+
+#facerecognition .icdisplay .expand {
+  height: 0px;
+}
+
+#facerecognition #fps {
+  border-radius: 5px;
+  margin-left: 1rem;
+}
+
+#facerecognition #fullscreen i svg {
+  top: 1rem;
+  left: 89%;
+}
+
+#facerecognition #cameraShow.fullscreen {
+  position: fixed;
+  margin: 0 !important;
+  left: 0;
+  bottom: 0;
+  min-width: 100%;
+  min-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: fill;
+  z-index: 500;
+  border: 0px;
+}
+
+#facerecognition #inference.fullscreen {
+  background-color: transparent;
+  top: 4rem;
+}
+
+#facerecognition #inference.fullscreen #inferenceTime {
+  position: fixed;
+  top: 3.5rem;
+  right: 6rem;
+}
+
+#facerecognition #fps.fullscreen {
+  top: 1rem;
+}
+
+#facerecognition #ictitle.fullscreen {
+  right: auto !important;
+}
+
+#facerecognition #cameraswitcher {
+  margin: -0.5rem 0 0.5rem 0;
+}
+@media (max-width: 768px) {
+  #facerecognition canvas {
+    width: 76vw;
+  }
+  #facerecognition span.desc {
+    margin-bottom: 1rem;
+    display: inline-block;
+  }
+  #facerecognition #fullscreen i svg {
+    top: 30px;
+    left: 80%;
+  }
 }

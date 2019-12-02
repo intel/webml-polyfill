@@ -329,7 +329,7 @@ class Renderer {
       in vec2 v_texcoord;
 
       void main() {
-        float fg_alpha= texture(u_mask, v_maskcord).a;
+        float fg_alpha = texture(u_mask, v_maskcord).a;
         float bg_alpha = 1.0 - fg_alpha;
 
         vec4 pixel = texture(u_image, v_texcoord);
@@ -638,10 +638,12 @@ class Renderer {
     this.gl.canvas.height = this._clippedSize[1] * this._zoom;
     this.utils.setViewport(this.gl.drawingBufferWidth, this.gl.drawingBufferHeight);
 
-    // Display color labels
     if (this._effect === 'label') {
+      // Display color labels
       this._segMap = newSegMap;
-      this._predictions = this._argmaxClippedSegMap(newSegMap);
+      console.time("post-processing time");
+      this._predictions = this._maskSegMap(newSegMap);
+      console.timeEnd("post-processing time");
       this.utils.bindTexture('predictions');
       this.gl.pixelStorei(this.gl.UNPACK_ALIGNMENT, 1);
       this.gl.texImage2D(
@@ -656,12 +658,12 @@ class Renderer {
         this._predictions
       );
       this._drawColorLabel();
-    }
-
-    // Person segmentation
-    else {
+    } else {
+      // Person segmentation
       this._segMap = newSegMap;
-      this._predictions = this._argmaxClippedSegMapPerson(newSegMap);
+      console.time("post-processing time");
+      this._predictions = this._maskSegMapPerson(newSegMap);
+      console.timeEnd("post-processing time");
       if (this._guidedFilterRadius === 0) {
         // guided filter is disabled
         this.utils.bindTexture('predictions');
@@ -806,63 +808,34 @@ class Renderer {
     this.utils.render();
   }
 
-
-  _argmaxClippedSegMap(segmap) {
-
+  _maskSegMap(segmap) {
     const clippedHeight = this._clippedSize[1];
     const clippedWidth = this._clippedSize[0];
     const outputWidth = segmap.outputShape[1];
-    const numClasses = segmap.outputShape[2];
     const data = segmap.data;
     const mask = new Uint8Array(clippedHeight * clippedWidth);
-
     let i = 0;
     for (let h = 0; h < clippedHeight; h++) {
-      const starth = h * outputWidth * numClasses;
       for (let w = 0; w < clippedWidth; w++) {
-        const startw = starth + w * numClasses;
-        let maxVal = Number.MIN_SAFE_INTEGER;
-        let maxIdx = 0;
-        for (let n = 0; n < numClasses; n++) {
-          if (data[startw + n] > maxVal) {
-            maxVal = data[startw + n];
-            maxIdx = n;
-          }
-        }
-        mask[i++] = maxIdx;
+        mask[i++] = data[h * outputWidth + w];
       }
     }
-
     return mask;
   }
 
-  _argmaxClippedSegMapPerson(segmap) {
-
+  _maskSegMapPerson(segmap) {
     const PERSON_ID = 15;
     const clippedHeight = this._clippedSize[1];
     const clippedWidth = this._clippedSize[0];
     const outputWidth = segmap.outputShape[1];
-    const numClasses = segmap.outputShape[2];
     const data = segmap.data;
     const mask = new Uint8Array(clippedHeight * clippedWidth);
-
     let i = 0;
     for (let h = 0; h < clippedHeight; h++) {
-      const starth = h * outputWidth * numClasses;
       for (let w = 0; w < clippedWidth; w++) {
-        const startw = starth + w * numClasses;
-        let maxVal = Number.MIN_SAFE_INTEGER;
-        let maxIdx = 0;
-        for (let n = 0; n < numClasses; n++) {
-          if (data[startw + n] > maxVal) {
-            maxVal = data[startw + n];
-            maxIdx = n;
-          }
-        }
-        mask[i++] = maxIdx === PERSON_ID ? 255 : 0;
+        mask[i++] = data[h * outputWidth + w] === PERSON_ID ? 255 : 0;
       }
     }
-
     return mask;
   }
 

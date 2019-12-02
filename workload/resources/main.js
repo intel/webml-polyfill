@@ -31,7 +31,7 @@ async function main() {
         let selectedOpt = preferSelectElement.options[preferSelectElement.selectedIndex];
         let backendName = configuration[key];
         if (configuration[key].indexOf('WebNN') === 0) {
-          backendName += ` + (Preference: ${selectedOpt.text})`;
+          backendName += ` (Preference: ${selectedOpt.text})`;
         }
         logger.log(`${key.padStart(12)}: ${backendName}`);
       } else {
