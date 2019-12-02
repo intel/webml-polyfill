@@ -41,7 +41,7 @@ const predict = async(targetSource, searchSource, targetShow, searchShow, embedd
     targetFaceBoxes = faceRecognition.getBoxs(targetDetectResult.boxes);
     targetRecogniseResult = await faceRecognition.predict(targetSource, targetFaceBoxes);
     targetEmbeddings = targetRecogniseResult.embedding;
-    targetTime = parseFloat(targetDetectResult.time + targetRecogniseResult.time);
+    targetTime = parseFloat(targetDetectResult.time) + parseFloat(targetRecogniseResult.time);
 
     let targetClasses = new Array();
     for (let i in targetEmbeddings) targetClasses.push(parseInt(i) + 1);
@@ -55,12 +55,12 @@ const predict = async(targetSource, searchSource, targetShow, searchShow, embedd
   let searchFaceBoxes = faceRecognition.getBoxs(searchDetectResult.boxes);
   let searchRecogniseResult = await faceRecognition.predict(searchSource, searchFaceBoxes);
   let searchEmbeddings = searchRecogniseResult.embedding;
-  let searchTime = parseFloat(searchDetectResult.time + searchRecogniseResult.time);
+  let searchTime = parseFloat(searchDetectResult.time) + parseFloat(searchRecogniseResult.time);
   let searchClasses = faceRecognition.getClass(targetEmbeddings, searchEmbeddings);
 
   drawFaceBoxes(searchSource, searchShow, searchFaceBoxes, searchClasses);
 
-  let runTime = parseFloat(targetTime + searchTime);
+  let runTime = parseFloat(targetTime) + parseFloat(searchTime);
   updateResult(runTime);
 
   return targetEmbeddings;
