@@ -838,7 +838,7 @@ speechRecognitionModels: [{
   outputSizeC: [1, 2048],
   outputSizeH: [1, 2048],
   sampleRate: 44100,
-  modelFile: '../speech_recognition/model/deep_speech_16.tflite',
+  modelFile: '../speech_recognition/model/deep_speech.tflite',
   labelsFile: '../speech_recognition/model/alphabet.txt',
   intro: 'DeepSpeech is an open source Speech-To-Text engine, using a model trained by machine learning techniques based on Baidu Deep Speech research paper.',
   paperUrl: 'https://arxiv.org/abs/1412.5567'
