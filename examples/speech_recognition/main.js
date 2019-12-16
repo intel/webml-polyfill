@@ -5,15 +5,14 @@ utils.updateProgress = updateProgress;    //register updateProgress function if 
 let front = false;
 
 Module.onRuntimeInitialized = function () {
-  // runtime = true;
-  console.log('Runtime is initialized.');
+  console.log('WASM runtime is initialized.');
 };
 
 const updateResult = (result) => {
   try {
     console.log(`Inference time: ${result.time} ms`);
     let inferenceTimeElement = document.getElementById('inferenceTime');
-    inferenceTimeElement.innerHTML = `inference time: <span class='ir'>${result.time} ms</span>`;
+    inferenceTimeElement.innerHTML = `average inference time: <span class='ir'>${result.time} ms</span>`;
   } catch (e) {
     console.log(e);
   }
@@ -24,7 +23,6 @@ const updateResult = (result) => {
       let labelElement = document.getElementById(`label${i}`);
       let probElement = document.getElementById(`prob${i}`);
       labelElement.innerHTML = `${c.label}`;
-      probElement.innerHTML = `${c.prob}%`;
     });
     if (result.classes[0].prob > 50) {
       $('#speechcommands #scresult svg').removeClass('current');
@@ -91,7 +89,7 @@ const recordAndPredictMicrophone = (stream) => {
     if (track) {
       track.stop();
     }
-  }, 1000);
+  }, 3000);
 }
 
 const handleDataAvailable = (e) => {

@@ -303,6 +303,7 @@ export default class WebGLModel {
     const inputs = operation.inputs;
     const outputs = operation.outputs;
     const operands = this._operands;
+    const modelOperands = this._model._operands;
 
     const FuseFunctionMap = new Map([
       [FuseCode.NONE, x => x],
@@ -632,11 +633,21 @@ export default class WebGLModel {
         const output = operands[outputs[0]];
         output.assign(tf.argMax(input1, input2));
       } break;
-      case OperationCode.MAXIMUM: {
+      case OperationCode.MAXIMUM:
+      case OperationCode.MINIMUM: {
         const input1 = operands[inputs[0]];
         const input2 = operands[inputs[1]];
         const output = operands[outputs[0]];
-        output.assign(tf.maximum(input1, input2));
+        if (op === OperationCode.MAXIMUM) {
+          output.assign(tf.maximum(input1, input2));
+        } else {
+          output.assign(tf.minimum(input1, input2));
+        }
+      } break;
+      case OperationCode.LOGISTIC: {
+        const input = operands[inputs[0]];
+        const output = operands[outputs[0]];
+        output.assign(tf.sigmoid(input));
       } break;
       case OperationCode.PRELU: {
         const input1 = operands[inputs[0]];
@@ -644,13 +655,32 @@ export default class WebGLModel {
         const output = operands[outputs[0]];
         output.assign(tf.prelu(input1, input2));
       } break;
-      case OperationCode.LOGISTIC: {
-        const input1 = operands[inputs[0]];
+      case OperationCode.STRIDED_SLICE: {
+        const input = operands[inputs[0]];
+        const begin = modelOperands[inputs[1]].value;
+        const end = modelOperands[inputs[2]].value;
+        const strides = modelOperands[inputs[3]].value;
+        const beginMask = operands[inputs[4]].value[0];
+        const endMask = operands[inputs[5]].value[0];
+        const ellipsisMask = operands[inputs[6]].value[0];
+        const newAxisMask = operands[inputs[7]].value[0];
+        const shrinkAxisMask = operands[inputs[8]].value[0];
         const output = operands[outputs[0]];
-        output.assign(tf.sigmoid(input1));
+        output.assign(tf.stridedSlice(input, begin, end, strides, beginMask, endMask, ellipsisMask, newAxisMask, shrinkAxisMask));
+      } break;
+      case OperationCode.SPLIT: {
+        const input = operands[inputs[1]];
+        const outs = [];
+        const numOrSizeSplits = operands[inputs[2]].value[0];
+        const axis = modelOperands[inputs[0]].value[0];
+        const results = tf.split(input, numOrSizeSplits, axis);
+        for(let i=0; i<numOrSizeSplits; i++) {
+          outs[i] = operands[outputs[i]];
+          outs[i].assign(results[i]);
+        }
       } break;
       default: {
-        throw new Error(`Operation ${op} is not supported`);
+        throw new Error(`Operation ${op} is not supported`);	
       }
     }
   }

@@ -424,6 +424,26 @@ class TFliteModelImporter {
             opType = this._nn.ARGMAX;
           }
         } break;
+        case tflite.BuiltinOperator.MINIMUM: {
+          opType = this._nn.MINIMUM;
+        } break;
+        case tflite.BuiltinOperator.LOGISTIC: {
+          opType = this._nn.LOGISTIC;
+        } break;
+        case tflite.BuiltinOperator.STRIDED_SLICE: {
+          let options = operator.builtinOptions(new tflite.StridedSliceOptions());
+          inputs.push(this._addScalarInt32(options.beginMask()));
+          inputs.push(this._addScalarInt32(options.endMask()));
+          inputs.push(this._addScalarInt32(options.ellipsisMask()));
+          inputs.push(this._addScalarInt32(options.newAxisMask()));
+          inputs.push(this._addScalarInt32(options.shrinkAxisMask()));
+          opType = this._nn.STRIDED_SLICE;
+        } break;
+        case tflite.BuiltinOperator.SPLIT: {
+          let options = operator.builtinOptions(new tflite.SplitOptions());
+          inputs.push(this._addScalarInt32(options.numSplits()));
+          opType = this._nn.SPLIT;
+        } break;
         default: {
           throw new Error(`operator type ${opCode} is not supported.`);
         }

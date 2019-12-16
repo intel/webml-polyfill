@@ -236,14 +236,14 @@
                 </path>
               </svg>
             </div>
-            <label class='labelblock'>On, Off, Yes, No, Go, Stop, Up, Down, Left, Right</label>
+            <!-- <label class='labelblock'>On, Off, Yes, No, Go, Stop, Up, Down, Left, Right</label> -->
           </div>
         </div>
 
         <div id='inference' class='shoulddisplay col-sm' style='display: none;'>
 
           <div class='row text-center tc' id='inferencetitle'>
-              <div id='scresult'>
+              <!-- <div id='scresult'>
                     <svg id='ron' aria-hidden='true' focusable='false' data-prefix='fas' data-icon='toggle-on'
                       class='svg-inline--fa fa-toggle-on fa-w-18' viewBox='0 0 576 512'>
                       <title>On</title>
@@ -324,25 +324,25 @@
                       </path>
                     </svg>
                     <div id='rtext'>Unknown</div>
-                </div>
+                </div> -->
             <div id='inferenceTime'></div>
           </div>
           <div class='row text-center' id='inferenceresult'>
             <table class='table table-sm'>
               <thead>
                 <tr>
-                  <th scope='col'>#</th>
-                  <th scope='col'>Label</th>
-                  <th scope='col'>Probability</th>
+                  <!-- <th scope='col'>#</th> -->
+                  <th scope='col'>Decode:</th>
+                  <!-- <th scope='col'>Probability</th> -->
                 </tr>
               </thead>
               <tbody>
                 <tr>
-                  <th scope='row'>1</th>
+                  <!-- <th scope='row'>1</th> -->
                   <td id='label0'></td>
-                  <td id='prob0'></td>
+                  <!-- <td id='prob0'></td> -->
                 </tr>
-                <tr>
+                <!-- <tr>
                   <th scope='row'>2</th>
                   <td id='label1'></td>
                   <td id='prob1'></td>
@@ -351,7 +351,7 @@
                   <th scope='row'>3</th>
                   <td id='label2'></td>
                   <td id='prob2'></td>
-                </tr>
+                </tr> -->
               </tbody>
             </table>
           </div>
@@ -451,7 +451,7 @@
   <script src='main.js'></script>
   <script src='../static/js/ui.common.js'></script>
   <script src='ui.js'></script>
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.2.7"> </script>
+  <script src='../../node_modules/@tensorflow/tfjs-core/dist/tf-core.min.js'></script>
 </body>
 
 </html>

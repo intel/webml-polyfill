@@ -4,7 +4,11 @@ class Utils {
     this.labels;
     this.model;
     this.inputTensor;
+    this.inputTensorC;
+    this.inputTensorH;
     this.outputTensor;
+    this.outputTensorC;
+    this.outputTensorH;
     this.modelFile;
     this.labelsFile;
     this.inputSize;
@@ -47,6 +51,11 @@ class Utils {
     }
     this.inputTensor = new typedArray(this.inputSize.reduce((a, b) => a * b));
     this.outputTensor = new typedArray(this.outputSize.reduce((a, b) => a * b));
+
+    this.inputTensorC = new Float32Array(2048);
+    this.inputTensorH = new Float32Array(2048);
+    this.outputTensorC = new Float32Array(2048);
+    this.outputTensorH = new Float32Array(2048);
 
     let result = await this.loadModelAndLabels(this.modelFile, this.labelsFile);
     this.labels = result.text.split('\n');
@@ -144,14 +153,59 @@ class Utils {
   }
 
   async predict(mediaElement) {
+    let text = '';
+    let timeArray = [];
+    let decodeTimeArray = [];
+    let result = [];
+
+    this.inputTensorC.fill(0);
+    this.inputTensorH.fill(0);
+
+    console.log("~~~~~~Backend~~~~~~~ ", tf.getBackend());
+    
     if (!this.initialized) return;
-    await this.prepareInputTensor(this.inputTensor, mediaElement);
-    let start = performance.now();
-    await this.model.compute([this.inputTensor], [this.outputTensor]);
-    let elapsed = performance.now() - start;
+    let preStart = performance.now();
+    let preparedTensor = await this.prepareInputTensor(mediaElement);
+    let preElapsed = (performance.now() - preStart) / preparedTensor.length;
+
+    for(let i=0; i<preparedTensor.length; i++) {
+      this.inputTensor = preparedTensor[i];
+      this.inputTensorC = this.outputTensorC;
+      this.inputTensorH = this.outputTensorH;
+
+      let start = performance.now();
+      await this.model.compute([this.inputTensor, this.inputTensorC, this.inputTensorH], 
+                               [this.outputTensor, this.outputTensorC, this.outputTensorH]);
+      let elapsed = performance.now() - start;
+      timeArray.push(elapsed);
+
+      let logist = this.splitArr(this.outputTensor, 29);
+
+      await tf.setBackend('cpu');
+      console.log('*** Set backend to ~~~CPU~~~ and get backend:', tf.getBackend());
+      let decodeStart = performance.now();
+      for(let i=0; i<logist.length; i++) {
+        let t = this.labels[tf.argMax(logist[i]).dataSync()];
+        if(t !== text[text.length-1]) {
+          text += t;
+        }
+      }
+      let decodeElapsed = performance.now() - decodeStart;
+      await tf.setBackend('webgl');
+      console.log('*** Set backend to ~~~WebGL~~~ and get backend:', tf.getBackend());
+      decodeTimeArray.push(decodeElapsed);
+      console.log('round', i, 'inference:', elapsed, 'decode:', decodeElapsed);
+    }
+    console.log("Preprocess time:", preElapsed)
+    console.log("Inference time:", eval(timeArray.join("+")) / timeArray.length);
+    console.log("Decode time:", eval(decodeTimeArray.join("+")) / decodeTimeArray.length);
+    console.log("Decode text:", text);
+    let time = eval(timeArray.join("+")) / timeArray.length;
+    result.push({label: text, prob: (0 * 100).toFixed(2)});
+
     return {
-      time: elapsed.toFixed(2),
-      classes: this.getTopClasses(this.outputTensor, this.labels, 3, this.model._deQuantizeParams)
+      time: time.toFixed(2),
+      classes: result
     };
   }
 
@@ -190,35 +244,40 @@ class Utils {
     });
   }
 
-  async prepareInputTensor(tensor, audio) {
+  async prepareInputTensor(audio) {
     let request = new Request(audio.src);
     let response = await fetch(request);
     let audioFileData = await response.arrayBuffer();
     let audioDecodeData = await this.audioContext.decodeAudioData(audioFileData);
     let audioPCMData = audioDecodeData.getChannelData(0);
 
+    let start = performance.now();
     let audioMfccs = this.getAudioMfccs(audioPCMData);
+    let elapsed = performance.now() - start;
+    console.log("---MFCCS time---", elapsed);
     let inputTensor = this.create_overlapping_windows(audioMfccs);
-    tensor = inputTensor.slice();
-    console.log(tensor);
+
+    return inputTensor;
   }
 
   getAudioMfccs(pcm) {
     let mfccsLenPtr = Module._malloc(4);
     let pcmPtr = Module._malloc(8 * pcm.length);
+
     for(let i=0; i<pcm.length; i++) {
       Module.HEAPF64[pcmPtr/8 + i] = pcm[i];
     }
+
     let tfMfccs = Module.cwrap('tf_mfccs', 'number', ['number', 'number', 'number']);
     let mfccsPtr = tfMfccs(pcmPtr, pcm.length, mfccsLenPtr);
     let mfccsLen = Module.HEAP32[mfccsLenPtr >> 2];
-  
     let audioMfccs = [mfccsLen];
+
     for(let i=0; i<mfccsLen; i++) {
       audioMfccs[i] = Module.HEAPF64[(mfccsPtr >> 3) + i];
     }
     Module._free(pcmPtr, mfccsLenPtr);
-  
+
     return audioMfccs;
   }
 
@@ -226,14 +285,15 @@ class Utils {
     let batch_size = 1;
     let window_width = 2 * 9 + 1;
     let num_channels = 26;
+    let batchs = batch_x.length / num_channels;
   
-    batch_x = tf.reshape(batch_x, [126, 26]);
+    batch_x = tf.reshape(batch_x, [batchs, num_channels]);
     batch_x = tf.expandDims(batch_x, 0);
   
     // Create a constant convolution filter using an identity matrix, so that the
     // convolution returns patches of the input tensor as is, and we can create
     // overlapping windows over the MFCCs.
-    eye_tensor = tf.eye(window_width * num_channels);
+    let eye_tensor = tf.eye(window_width * num_channels);
     let eye_filter = tf.reshape(eye_tensor, [window_width, num_channels, window_width * num_channels])
   
     // Create overlapping windows
@@ -241,10 +301,18 @@ class Utils {
   
     // Remove dummy depth dimension and reshape into [batch_size, n_windows, window_width, n_input]
     batch_x = tf.reshape(batch_x, [batch_size, -1, window_width, num_channels]);
-  
-    batch_x = tf.slice(batch_x, [0,0,0,0], [1,64,19,26]);
-  
-    return batch_x.dataSync();
+    let batch_num = Math.floor(batch_x.shape[1] / 16);
+    let slice_num = batch_num * 16;
+
+    batch_x = tf.slice(batch_x, [0, 0, 0, 0], [batch_size, slice_num, window_width, num_channels]);
+    let batch_xs = tf.split(batch_x, batch_num, 1);
+
+    let result = [];
+    for(let i=0; i<batch_num; i++) {
+      result.push(batch_xs[i].dataSync())
+    }
+
+    return result;
   }
 
   downsampleAudioBuffer(buffer, rate) {
@@ -276,9 +344,34 @@ class Utils {
     return result;
   }
 
+  splitArr(data, senArrLen) {
+    let dataLen = data.length;
+    let arrOuterLen = dataLen % senArrLen === 0 ? dataLen / senArrLen : parseInt((dataLen / senArrLen)+'') + 1;
+    let arrSecLen = dataLen > senArrLen ? senArrLen : dataLen;
+    let arrOuter = new Array(arrOuterLen);
+    let arrOuterIndex = 0;
+
+    for (let i = 0; i < dataLen; i++) {
+        if (i % senArrLen === 0){
+            arrOuterIndex++;
+            let len = arrSecLen * arrOuterIndex;
+            arrOuter[arrOuterIndex-1] = new  Array(dataLen % senArrLen);
+            if(arrOuterIndex === arrOuterLen)
+                dataLen % senArrLen === 0 ?
+                    len = dataLen % senArrLen + senArrLen * arrOuterIndex :
+                    len = dataLen % senArrLen + senArrLen * (arrOuterIndex - 1);
+            let arrSec_index = 0;
+            for (let k = i; k < len; k++) {
+                arrOuter[arrOuterIndex-1][arrSec_index] = data[k];
+                arrSec_index++;
+            }
+        }
+    }
+    return arrOuter;
+  };
+
   getTopClasses(tensor, labels, k = 5, deQuantizeParams) {
-    let outputTensor = this.prepareOutputTensor(tensor);
-    let probs = Array.from(outputTensor);
+    let probs = Array.from(tensor);
     let indexes = probs.map((prob, index) => [prob, index]);
     let sorted = indexes.sort((a, b) => {
       if (a[0] === b[0]) {return 0;}
@@ -301,24 +394,6 @@ class Utils {
       classes.push(c);
     }
     return classes;
-  }
-
-  prepareOutputTensor(tensor) {
-    let tensorRuduceMax = Math.max.apply(null, tensor);
-    let tensorSub = new Array(tensor.length);
-    let tensorExp = new Array(tensor.length);
-    let outputTensor = new Array(tensor.length);
-    for(let i = 0; i < tensor.length; i++) {
-      tensorSub[i] = tensor[i] - tensorRuduceMax;
-    }
-    for(let i = 0; i < tensor.length; i++) {
-      tensorExp[i] = Math.exp(tensorSub[i]);
-    }
-    let tensorSum = eval(tensorExp.join("+"));
-    for(let i = 0; i < tensor.length; i++) {
-      outputTensor[i] = tensorExp[i] / tensorSum;
-    }
-    return outputTensor;
   }
 
   deleteAll() {

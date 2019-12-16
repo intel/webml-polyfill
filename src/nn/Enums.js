@@ -1457,6 +1457,10 @@ export const OperationCode = {
    *      condition must be satisfied: output_scale > input_scale * filter_scale.
    */
   ATROUS_DEPTHWISE_CONV_2D: 10004,
+
+  STRIDED_SLICE: 35,
+  MINIMUM: 66,
+  SPLIT: 87,
 };
 
 export const ResultCode = {
