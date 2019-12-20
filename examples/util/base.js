@@ -798,12 +798,15 @@ faceRecognitionModels: [{
     modelFile: '../face_recognition/model/facenet.bin',
     inputSize: [1, 160, 160, 3],
     outputSize: [1, 512],
-    threshold: 1.26,
     preOptions: {
       mean: [0, 0, 0, 0],
       std: [1, 1, 1, 1],
       channelScheme: 'BGR',
       format: 'NHWC'
+    },
+    postOptions: {
+      distanceMetric: 'euclidean',
+      threshold: 1.26
     },
     intro: 'This is a CNN model for face recognition which learns discriminative features of faces and produces embeddings for input face images.',
     paperUrl: 'https://arxiv.org/abs/1503.03832'
@@ -815,12 +818,15 @@ faceRecognitionModels: [{
     modelFile: '../face_recognition/model/face-reidentification-retail-0095.bin',
     inputSize: [1, 128, 128, 3],
     outputSize: [1, 1, 1, 256],
-    threshold: 0.8,
     preOptions: {
       mean: [0, 0, 0, 0],
       std: [1, 1, 1, 1],
       channelScheme: 'BGR',
       format: 'NHWC'
+    },
+    postOptions: {
+      distanceMetric: 'cosine',
+      threshold: 0.8
     },
     intro: 'This is a lightweight network for the face re-identification scenario that is\
       based on MobileNet V2. The model produces feature vectors which should be close in cosine distance for similar faces and far for different faces.'
