@@ -23,6 +23,7 @@ export default class WebGLModel {
     this._prepared = false;
     this._profiler = null;
 
+    //TF.js v1.3.1 and later use float16 as default
     if (tf.backend().floatPrecision() === 16) {
       console.warn(
           'The current floating point operation precision is only 16-bit');
@@ -278,24 +279,16 @@ export default class WebGLModel {
     });
   }
 
-  async _executeGlSubgraph(subgraph) {
-    tf.webgl.forceHalfFloat();
-    console.info('WEBGL_FORCE_F16_TEXTURES : ',tf.ENV.getBool('WEBGL_FORCE_F16_TEXTURES'));
-    console.info('floatPercision : ',tf.backend().floatPrecision());    
+  async _executeGlSubgraph(subgraph) {   
     for (const operation of subgraph.operations) {
       tf.tidy(() => this._executeGlOperation(operation));
     }
 
-    // fence
-    // const queue = [];
     for (const tensorId of subgraph.outputs) {
       const buffer = this._nnOperands[tensorId];
       const operand = this._operands[tensorId];
-      buffer.set(operand.dataSync());
-      // const promise = operand.data().then((data) => buffer.set(data));
-      // queue.push(promise);
+      buffer.set(await operand.data());
     }
-    // await Promise.all(queue);
   }
 
   _executeGlOperation(operation) {
@@ -555,7 +548,8 @@ export default class WebGLModel {
         const targetShape = operands[inputs[1]];
         const output = operands[outputs[0]];
         if (targetShape.value === undefined) {
-          targetShape.value = targetShape.dataSync();
+          const operand = this._model._operands[inputs[1]];
+          targetShape.value = Array.apply([], operand.value);
         }
         output.assign(input.reshape(targetShape.value));
       } break;
@@ -607,9 +601,8 @@ export default class WebGLModel {
         const output = operands[outputs[0]];
         const crops = [[0, 0], [0, 0]];
         if (blockShape.value === undefined) {
-          // blockShape.dataSync() return Int32Array,
-          // which should be converted to Array here.
-          blockShape.value = Array.apply([], blockShape.dataSync());
+          const operand = this._model._operands[inputs[1]];
+          blockShape.value = Array.apply([], operand.value);
         }
         output.assign(input.batchToSpaceND(blockShape.value, crops));
       } break;
@@ -619,7 +612,8 @@ export default class WebGLModel {
         const output = operands[outputs[0]];
         if (perm !== undefined) {
           if (perm.value === undefined) {
-            perm.value = perm.dataSync();
+            const operand = this._model._operands[inputs[1]];
+            perm.value = Array.apply([], operand.value);
           }
           output.assign(input.transpose(perm.value));
         } else {
