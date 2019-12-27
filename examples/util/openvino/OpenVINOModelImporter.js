@@ -458,7 +458,8 @@ class OpenVINOModelImporter {
           const bias = node.inputs[2];
           const weightsTensor = weights.getInitializer();
           const biasTensor = bias.getInitializer();
-          const dims = [weightsTensor.length];
+          // put length into channel of NHWC
+          const dims = [1, 1, 1, weightsTensor.length];
 
           // add intputs for Mul
           inputs.push(this._getTensorId(input));
