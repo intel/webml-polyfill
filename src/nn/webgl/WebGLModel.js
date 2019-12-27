@@ -23,7 +23,6 @@ export default class WebGLModel {
     this._prepared = false;
     this._profiler = null;
 
-    //TF.js v1.3.1 and later use float16 as default
     if (tf.backend().floatPrecision() === 16) {
       console.warn(
           'The current floating point operation precision is only 16-bit');
@@ -280,6 +279,7 @@ export default class WebGLModel {
   }
 
   async _executeGlSubgraph(subgraph) {   
+    //TF.js v1.3.1 and later use float16 as default
     for (const operation of subgraph.operations) {
       tf.tidy(() => this._executeGlOperation(operation));
     }
@@ -549,7 +549,7 @@ export default class WebGLModel {
         const output = operands[outputs[0]];
         if (targetShape.value === undefined) {
           const operand = this._model._operands[inputs[1]];
-          targetShape.value = Array.apply([], operand.value);
+          targetShape.value = operand.value;
         }
         output.assign(input.reshape(targetShape.value));
       } break;
@@ -602,7 +602,7 @@ export default class WebGLModel {
         const crops = [[0, 0], [0, 0]];
         if (blockShape.value === undefined) {
           const operand = this._model._operands[inputs[1]];
-          blockShape.value = Array.apply([], operand.value);
+          blockShape.value = operand.value;
         }
         output.assign(input.batchToSpaceND(blockShape.value, crops));
       } break;
@@ -613,7 +613,7 @@ export default class WebGLModel {
         if (perm !== undefined) {
           if (perm.value === undefined) {
             const operand = this._model._operands[inputs[1]];
-            perm.value = Array.apply([], operand.value);
+            perm.value = operand.value;
           }
           output.assign(input.transpose(perm.value));
         } else {
