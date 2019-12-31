@@ -6,6 +6,6 @@
     "webmlPolyfill": true,
     "webnn": true,
     "remoteURL": "https://brucedai.github.io/webnnt/test/index-local.html",
-    "needCheckRealModelTC": true,
-    "localServerURL": "http://localhost:8080/test/squeezenet1.1.html"
+    "needCheckRealModelTC": false,
+    "localServerURL": "http://localhost:8081/test/onnx-realmodel-test.html"
 }
