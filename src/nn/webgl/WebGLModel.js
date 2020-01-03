@@ -287,7 +287,7 @@ export default class WebGLModel {
     for (const tensorId of subgraph.outputs) {
       const buffer = this._nnOperands[tensorId];
       const operand = this._operands[tensorId];
-      buffer.set(await operand.data());
+      buffer.set(operand.dataSync());
     }
   }
 
