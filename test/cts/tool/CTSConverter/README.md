@@ -32,7 +32,7 @@ $ npm run info
 
 ```shell
 -h, --help            show this help message and exit
--a, --all             [option] '-a [all-file relative directory]', create all test file
+-a, --all             [option] '-a [all-file in relative directory]', create all test file
 -t, --transfer        [option] '-t [transfer relative directory]', transfer nn test file
 -c, --cts             [option] '-c [cts relative directory]', include cts test file
 -s, --supplement      [option] '-s [supplement relative directory]', include supplement test file

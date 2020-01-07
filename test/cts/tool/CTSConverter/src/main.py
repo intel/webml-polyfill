@@ -6,11 +6,11 @@ import json
 
 def get_args():
   parser = argparse.ArgumentParser()
-  parser.add_argument("-a", "--all", help = "[option] '-a [file directory]', create all test file", default = "-")
-  parser.add_argument("-t", "--transfer", help = "[option] '-t [transfer directory]', transfer nn test file", default = "-")
-  parser.add_argument("-c", "--cts", help = "[option] '-c [cts directory]', include cts test file", default = "-")
-  parser.add_argument("-s", "--supplement", help = "[option] '-s [supplement directory]', include supplement test file", default = "-")
-  parser.add_argument("-p", "--plus", help = "[option] '-p [plus directory]', include plus test file", default = "-")
+  parser.add_argument("-a", "--all", help = "[option] '-a [all-file in relative directory]', create all test file", default = "-")
+  parser.add_argument("-t", "--transfer", help = "[option] '-t [transfer relative directory]', transfer nn test file", default = "-")
+  parser.add_argument("-c", "--cts", help = "[option] '-c [cts relative directory]', include cts test file", default = "-")
+  parser.add_argument("-s", "--supplement", help = "[option] '-s [supplement relative directory]', include supplement test file", default = "-")
+  parser.add_argument("-p", "--plus", help = "[option] '-p [plus relative directory]', include plus test file", default = "-")
 
   args = parser.parse_args()
 
