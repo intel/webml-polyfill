@@ -58,9 +58,3 @@ $ python3 ./src/main.py -s ./test_supplement -a ./output/cts_supplement-all.js
 ```shell
 $ python3 ./src/main.py -t ./src/nn/specs -c ./output/cts -p ./V1_0_plus -a ./output/cts-all.js
 ```
-
-4. Create all test case file as `all-cts-supplement-plus.js` that include cts and supplement and plus test case.
-
-```shell
-$ python3 ./src/main.py -c ./output/cts -s ./test_supplement -p ./V1_0_plus -a ./output/all-cts-supplement-plus.js
-```
