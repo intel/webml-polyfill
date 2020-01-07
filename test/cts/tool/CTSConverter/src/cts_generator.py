@@ -530,7 +530,7 @@ def DumpJSTest(model, example, js_fd):
     for p in model.GetParameters():
         parameterType = p.type.type
         str_array = typeToArray(parameterType)
-        print ("    model.setOperandValue(%s, new %s([%s]))"%(
+        print ("    model.setOperandValue(%s, new %s([%s]));"%(
                p, str_array, GetJointStr(p.value)), file = js_fd)
 
     # set operations
@@ -558,14 +558,14 @@ def DumpJSTest(model, example, js_fd):
     # set input and output
     inputType = example.model.GetInputs()[0].type.type
     str_array = typeToArray(inputType)
-    print ("    let %s_input = new %s(%s_value)"%(
+    print ("    let %s_input = new %s(%s_value);"%(
            example.model.GetInputs()[0], str_array, example.model.GetInputs()[0]), file = js_fd)
     print ("    execution.setInput(0, %s_input);"%example.model.GetInputs()[0], file = js_fd)
 
     for outputIndex in range(len(example.model.GetOutputs())):
         outputType = example.model.GetOutputs()[outputIndex].type.type
         str_array = typeToArray(outputType)
-        print ("    let %s_output = new %s(%s_length)"%(
+        print ("    let %s_output = new %s(%s_length);"%(
                example.model.GetOutputs()[outputIndex], str_array,
                example.model.GetOutputs()[outputIndex].type), file = js_fd)
         print ("    execution.setOutput(%s, %s_output);"%(
