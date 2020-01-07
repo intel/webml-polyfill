@@ -18,7 +18,7 @@
 # the input's first dimension doesn't have to be the batch size, the
 # input is reshaped as needed.
 
-model = Model()
+model = Model().IntroducedIn("V1_0")
 in0 = Input("op1", "TENSOR_FLOAT32", "{4, 1, 5, 1}")
 weights = Parameter("op2", "TENSOR_FLOAT32", "{3, 10}", [
       1, 2, 3, 4, 5, 6, 7, 8, 9, 10,  # u = 0

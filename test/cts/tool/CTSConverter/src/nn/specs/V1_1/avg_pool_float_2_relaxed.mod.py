@@ -24,9 +24,11 @@ chn = 3
 
 i0 = Input("i0", "TENSOR_FLOAT32", "{%d, %d, %d, %d}" % (bat, row, col, chn))
 
+# This was lowered from values in avg_pool_float_2, as it wasn't possible
+# to evaluate it with expected accuracy requirements with fp16 accumulator.
 std = 5
-flt = 100
-pad = 50
+flt = 35
+pad = 30
 
 stride = Int32Scalar("stride", std)
 filt = Int32Scalar("filter", flt)

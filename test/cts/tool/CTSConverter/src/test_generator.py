@@ -16,1018 +16,1927 @@
 
 """NN model compiler
 
-Compile models and examples into NDK-based CTS unit tests
+Contain classes definition and utilify functions for compiling models and
+examples into NDK-based CTS and VTS unit tests.
+
+Used by cts_generator.py, vts_generator.py, and slicing.py
 """
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 import argparse
+import copy
 from functools import reduce
+import itertools
 import math
 import os
+import re
 import struct
 import sys
 import contextlib
 import pprint
+import numpy as np
+
+def GetJointStr(l, sep=", ", method=str):
+    return sep.join([method(i) for i in l])
+
+# Print in C float literal format
+def PrettyPrintAsFloat(x):
+    s = str(float(x))
+    if s.find(".") >= 0 or s.find("e") >= 0:
+        return s + "f"
+    else:
+        return s + ".0f"
+
+# Transform from original type to float32
+def Dequantize(v, ty):
+    v -= ty.zeroPoint
+    if ty.scale != 0:
+        v *= ty.scale
+    if isinstance(ty.extraParams, SymmPerChannelQuantParams):
+        v *= ty.extraParams.GetScalesBroadcastArray(ty.dimensions)
+    return v
+
+# Transform float32 to target data type
+def Quantize(v, ty):
+    if ty.scale != 0:
+        v /= ty.scale
+    if isinstance(ty.extraParams, SymmPerChannelQuantParams):
+        v = v / ty.extraParams.GetScalesBroadcastArray(ty.dimensions)
+    v += ty.zeroPoint
+    if not ty.IsFloat():
+        v = np.round(v)
+        v = int(v) if np.isscalar(v) else v.astype(int)
+    if ty.type == "TENSOR_QUANT8_ASYMM":
+        v = np.minimum(np.maximum(v, 0), 255)
+    elif ty.type == "TENSOR_QUANT16_ASYMM":
+        v = np.minimum(np.maximum(v, 0), 65535)
+    elif ty.type == "TENSOR_QUANT8_SYMM_PER_CHANNEL":
+        v = np.minimum(np.maximum(v, -127), 127)
+    elif ty.type == "UINT32":
+        v = np.maximum(v, 0)
+    return v
 
 @contextlib.contextmanager
-def smart_open(filename=None):
-  if filename and filename != '-':
-    fh = open(filename, 'w')
-  else:
-    fh = sys.stdout
+def SmartOpen(filename=None, mode="w"):
+    if filename and filename != '-':
+        fh = open(filename, mode)
+    else:
+        fh = sys.stdout
 
-  try:
-    yield fh
-  finally:
-    if fh is not sys.stdout:
-      fh.close()
+    try:
+        yield fh
+    finally:
+        if fh is not sys.stdout:
+            fh.close()
 
-class Phase(object):
-  def __init__(self):
-    self.__objects = []
-    self.__contents = []
-    self.__contentsjs = []
-    self.__dict_of_objects = {}
+# Tracking objects inside a model with a unique name
+class NamedObject:
+    existingNames = set()
 
-  def append(self, obj, x, y):
-    self.__objects.append(obj)
-    self.__contents.append(x)
-    self.__contentsjs.append(y)
-    self.__dict_of_objects[obj.ID()] = obj
+    def __init__(self, *args, sep="_", showZero=False, startsFrom=0, skipRenaming=False):
+        name = GetJointStr([i for i in args if i is not None and i != ""], sep=sep)
+        if skipRenaming:
+            self.name = name
+            return
+        # make the name unique by renaming with a suffix number
+        uniqueName = name if showZero is False else name + sep + str(startsFrom)
+        while uniqueName in self.__class__.existingNames:
+            startsFrom += 1
+            uniqueName = name + sep + str(startsFrom)
+        self.__class__.existingNames.add(uniqueName)
+        self.name = uniqueName
 
-  def dump(self, filename):
-    if JS_FLAG:
-      for y in self.__contentsjs:
-        print (y, file = filename)
-    else :
-      for x in self.__contents:
-        print ("  " + x + ";", file = filename)
+    def __str__(self):
+        return self.name
+    __repr__ = __str__
 
-  def objects(self):
-    return self.__objects
+    # Since names are unique, objects with the same name are considered equal
+    def __eq__(self, other):
+        return isinstance(other, NamedObject) and self.name == other.name
 
-  def search(self, i):
-    return self.__dict_of_objects[i]
+    def __ne__(self, other):
+        return not self.__eq__(other)
 
-# Tracking objects inside a model with a not necessarily unique name and
-# an unique number
-class NamedObject(object):
-  __serial = 0
+    def __hash__(self):
+        return hash(self.name)
 
-  def __init__(self, name = "NamedObject"):
-    self.__name = name
-    self.__id = NamedObject.serial()
-    NamedObject.__serial += 1
+    def __lt__(self, other):
+        return self.name < other.name
 
-  def ID(self):
-    return self.__id
+# Types, operands should all have a unique name since they share the same namespace
+class NamedVariable(NamedObject):
+    existingNames = set()
+    def __init__(self, *args, sep="_", showZero=False, startsFrom=0, skipRenaming=False):
+        NamedObject.__init__(self, *args, sep=sep, showZero=showZero,
+            startsFrom=startsFrom, skipRenaming=skipRenaming)
 
-  def serial():
-    return NamedObject.__serial
+# Global variables in the spec namespace such as CreateModel, is_ignored, and examples
+class GlobalVariable(NamedVariable):
+    def __init__(self, *args, skipRenaming=False):
+        NamedObject.__init__(self, *args, startsFrom=1, skipRenaming=skipRenaming)
 
-  def get_name(self):
-    return self.__name
+# Each test should have a unique name, but will not conflict with variables
+class NamedTest(NamedObject):
+    existingNames = set()
+    def __init__(self, *args, startsFrom=0, skipRenaming=False):
+        NamedObject.__init__(self, *args, startsFrom=1, skipRenaming=skipRenaming)
 
-  def __str__(self):
-    return self.get_name()
-
-  def __hash__(self):
-    return self.__id
-
-# Object that can be traversed during topological sorting phase
-class Traversable(object):
-  def traversable(self):
-    return True
-
-class Nontraversable(object):
-  def traversable(self):
-    return False
-
-# Object that can take input from other objects
-class Uses(object):
-  all_uses = set()
-  def __init__(self, ins = []):
-    self.ins = ins.copy()
-    Uses.all_uses.add(self)
-    for i in ins:
-      i.outs.append(self)
-
-# Object that other objects takes its definition from
-class Definitions(object):
-  def __init__(self, outs = []):
-    self.outs = outs.copy()
-    for o in outs:
-      o.ins.append(self)
-
-class TypeLookup:
-  __type_lookup = {
-      "INT32": "int32_t",
-      "UINT32": "uint32_t",
-      "FLOAT32": "float",
-      "TENSOR_INT32": "int32_t",
-      "TENSOR_FLOAT32": "float",
-      "TENSOR_QUANT8_ASYMM": "uint8_t",
+class Type(NamedVariable):
+    typesMap = dict()
+    typeLookup = {
+        "INT32": "int32_t",
+        "UINT32": "uint32_t",
+        "FLOAT32": "float",
+        "FLOAT16": "_Float16",
+        "TENSOR_INT32": "int32_t",
+        "TENSOR_FLOAT16": "_Float16",
+        "TENSOR_FLOAT32": "float",
+        "TENSOR_QUANT8_ASYMM": "uint8_t",
+        "TENSOR_QUANT8_SYMM": "int8_t",
+        "BOOL": "bool8",
+        "TENSOR_QUANT16_ASYMM": "uint16_t",
+        "TENSOR_QUANT16_SYMM": "int16_t",
+        "TENSOR_BOOL8": "bool8",
+        "TENSOR_QUANT8_SYMM_PER_CHANNEL": "int8_t",
 #     "OEM_SCALAR": this is service-defined.
-      "TENSOR_OEM_BYTE": "uint8_t",
+        "TENSOR_OEM_BYTE": "uint8_t",
     }
 
-  def get_cpptype(nnapi_type):
-    return TypeLookup.__type_lookup[nnapi_type]
+    # types are named as "type0", "type1", ...
+    def __init__(self, vt, dimensions, scale, zeroPoint, name="type", skipRenaming=False,
+                 extraParams=None):
+        NamedVariable.__init__(self, name, sep="", showZero=True, skipRenaming=skipRenaming)
+        self.type = vt
+        self.dimensions = dimensions
+        self.scale = float(scale)
+        self.zeroPoint = int(zeroPoint)
+        self.extraParams = extraParams
 
-  def is_float(nnapi_type):
-    return TypeLookup.get_cpptype(nnapi_type) == "float"
+    # Factory for Type object, only create a new Type if requested type does
+    # not have a match with all existing types
+    @staticmethod
+    def GetType(vt, dimensions, scale=0, zeroPoint=0, extraParams=None):
+        key = ",".join([vt, str(dimensions), str(scale), str(zeroPoint), str(extraParams)])
+        if key not in Type.typesMap:
+            Type.typesMap[key] = Type(vt, dimensions, scale, zeroPoint, extraParams=extraParams)
+        return Type.typesMap[key]
 
-  def get_size(nnapi_type):
-    return 1 if TypeLookup.get_cpptype(nnapi_type) == "uint8_t" else 4
+    @staticmethod
+    def GetAllTypes():
+        # sort to ensure a stable order when dumping the code
+        return sorted(Type.typesMap.values())
+
+    # For backward-compatibility
+    @staticmethod
+    def GetTypeFromString(vt, shape, extraParams=None):
+        dimensions, scale, zeroPoint = Type.GetParsedShape(shape)
+        scale = float(scale)
+        zeroPoint = int(zeroPoint)
+        return Type.GetType(vt, dimensions, scale, zeroPoint, extraParams)
+
+    # For backward-compatibility
+    @staticmethod
+    def GetParsedShape(shape):
+        # Parse shape
+        if (shape != "" and shape != "{}"):
+            left, sep, right = shape.partition('{')
+            real_shape, sep, right = right.partition('}')
+            shape = [int(x) for x in real_shape.split(",")]
+            # left now looks like "0.0f, 127.5f, "
+            scale, sep, zero_point = right.rpartition(',')
+            if scale == "":
+                if zero_point == "":
+                    return shape, "0", "0"
+                return shape, zero_point, "0"
+            left, sep, scale = scale.partition(',')
+            return shape, scale.replace("f", ""), zero_point
+        else:
+            return [], "0", "0"
+
+    def GetNumberOfElements(self):
+        return reduce(lambda x,y: x*y, self.dimensions, 1)
+
+    def GetCppTypeString(self):
+        return Type.typeLookup[self.type]
+
+    def IsFloat(self):
+        return self.GetCppTypeString() in ["float", "_Float16"]
+
+    def IsBool(self):
+        return self.GetCppTypeString() == "bool8"
+
+    def GetElementByteSize(self):
+        cppTypeString = self.GetCppTypeString()
+        if cppTypeString in ["uint8_t", "int8_t", "bool8"]:
+            return 1
+        elif cppTypeString in ["int16_t", "uint16_t", "_Float16"]:
+            return 2
+        else:
+            return 4
+
+    def GetByteSize(self):
+        return self.GetElementByteSize() * self.GetNumberOfElements()
+
+    def GetDimensionsString(self):
+        return "{" + GetJointStr(self.dimensions) + "}"
+
+    def GetSignatureTuple(self):
+        return (self.type, self.dimensions, self.scale, self.zeroPoint)
+
+    # For backward-compatibility with slicing.py
+    def GetRawShape(self):
+        if self.scale == 0 and self.zeroPoint == 0:
+            return self.GetDimensionsString()
+        else:
+            return GetJointStr([self.GetDimensionsString(), self.scale, self.zeroPoint])
+
+    def ToUnspecifiedDim(self):
+        return Type.GetType(self.type, [0] * len(self.dimensions), self.scale, self.zeroPoint)
+
+# To track implicitly convertible parameter types
+class ImplicitParameter():
+    @staticmethod
+    def ImplicitConvertion(value):
+        if isinstance(value, Operand):
+            return value
+        for implicitType in ImplicitParameter.__subclasses__():
+            if implicitType.IsCompatible(value):
+                return implicitType("param", value)
+        assert False, "%s not supported for implicit parameter"%value
 
 
-class Type(object):
-  __types =  {}
-  __type_serial = 0 # types have their own numbering
-  def __init__(self, vt = None, shape = None):
-    self.__vt = vt
-    self.__shape = shape
-    if vt is None or shape is None:
-      self.__name = None
-      return
+# ExtraParams with per-channel quantization.
+class SymmPerChannelQuantParams():
+  def __init__(self, channelDim, scales, hide = False):
+    self.channelDim = channelDim
+    self.scales = scales
+    self.hide = hide
 
-    key = str(self)
-    if key not in Type.__types:
-      self.__id = Type.__type_serial
-      Type.__types[str(self)] = self
-      Type.__type_serial += 1
-    else:
-      self.__id = Type.__types[key].__id
-    self.__name = "type" + str(self.__id)
+  def GetScalesBroadcastArray(self, dimensions):
+    bshape = [1] * len(dimensions)
+    bshape[self.channelDim] = len(self.scales)
+    return np.array(self.scales).reshape(bshape)
 
-  def get_shape(self):
-    return self.__shape
+  def GetConstructor(self):
+    return "SymmPerChannelQuantParams({%s},%d)" % (
+        ", ".join(str(x) + "f" for x in self.scales), self.channelDim)
 
-  def get_element_type(self):
-    return self.__vt
+  def GetVtsSetter(self):
+    return "channelQuant"
 
-  def get_name(self):
-    return self.__name
+  def GetVtsConstructor(self):
+    return "SymmPerChannelQuantParams{.scales={%s}, .channelDim=%d}" % (
+        ", ".join(str(x) + "f" for x in self.scales), self.channelDim)
 
-  def __str__(self):
-    return (", ".join([self.__vt, self.__shape]))
-
-  def __hash__(self):
-    return self.__id
-
-  def dump(filename):
-    for key, value in sorted(Type.__types.items()):
-      if JS_FLAG:
-        type_string = str(key.split(",")[0])
-        data_string = str(key[len(key.split(",")[0]) + 2:])
-
-        if type_string in ["FLOAT32", "INT32", "UINT32"]:
-          print ("    let " + str(value.__name) + " = {type: nn." + type_string + "};", file = filename)
-        else :
-          if len(data_string[1:-1]) == 0:
-            for obj in js_obj:
-              if str(value.__name) == obj.get("type_name"):
-                dimensions_string = obj.get("value")
-
-            print ("    let " + str(value.__name) + " = {type: nn." + type_string +\
-                   ", dimensions: [" + str(dimensions_string)[1:-1] + "]};", file = filename)
-          else :
-            dimensions_string = data_string[0:data_string.find("}") + 1]
-
-            if len(dimensions_string) == len(data_string):
-              print ("    let " + str(value.__name) + " = {type: nn." + type_string +\
-                     ", dimensions: [" + dimensions_string[1:-1] + "]};", file = filename)
-            else :
-              tmp_string = data_string[len(dimensions_string) + 2:]
-              scale_string = tmp_string.split(",")[0]
-
-              if len(tmp_string) == len(scale_string):
-                if scale_string.find("f") >= 0:
-                  scale_string_tmp = scale_string[:-1]
-                else :
-                  scale_string_tmp = scale_string
-
-                print ("    let " + str(value.__name) + " = {type: nn." + type_string +\
-                       ", dimensions: [" + dimensions_string[1:-1] +\
-                       "], scale: " + scale_string_tmp + "};", file = filename)
-              else :
-                zeroPoint_string = tmp_string[len(scale_string) + 2:]
-
-                if scale_string.find("f") >= 0:
-                  scale_string_tmp = scale_string[:-1]
-                else :
-                  scale_string_tmp = scale_string
-
-                print ("    let " + str(value.__name) + " = {type: nn." + type_string +\
-                       ", dimensions: [" + dimensions_string[1:-1] +\
-                       "], scale: " + scale_string_tmp +\
-                       ", zeroPoint: " + zeroPoint_string + "};", file = filename)
-
-          print ("    let " + str(value.__name) + "_length = product(" + str(value.__name) + ".dimensions);", file = filename)
-      else :
-        print ("  OperandType " + str(value.__name) + "(Type::" + str(key) + ");", file = filename)
-
-  def get_raw_shape(self):
-    return self.__shape
-
-  def get_parsed_shape(self):
-    # Parse shape
-    if (self.__shape != "" and self.__shape != "{}"):
-      left, sep, right = self.__shape.partition('{')
-      real_shape, sep, right = right.partition('}')
-      shape = [int(x) for x in real_shape.split(",")]
-      # left now looks like "0.0f, 127.5f, "
-      scale, sep, zero_point = right.rpartition(',')
-      if scale == "":
-        if zero_point == "":
-          return real_shape, "0", "0"
-        return real_shape, zero_point, "0"
-      left, sep, scale = scale.partition(',')
-      return real_shape, scale.replace("f", ""), zero_point
-    else:
-      return "", "0", "0"
-
-  def get_nr_elements(self):
-    # Parse shape
-    nr_elements = 1
-    real_shape, scale, zero_point = self.get_parsed_shape()
-
-    if (real_shape != "" and real_shape != "{}"):
-      shape = [int(x) for x in real_shape.split(",")]
-      nr_elements = reduce((lambda x, y: x*y), shape)
-    return nr_elements
-
-  def get_size(self):
-    element_size = TypeLookup.get_size(self.__vt)
-    return self.get_nr_elements() * element_size
-
-# A value is a typed, named object
-class Value(NamedObject):
-  def __init__(self, name, vt):
-    NamedObject.__init__(self, name)
-    self.type = vt
 
 # An operand that can be fed into operations. Also, an operand is always
 # declared before operations.
-class Operand(Value):
-  # All operand declarations in string
-  operands = Phase()
+class Operand(NamedVariable):
 
-  def __init__(self, name, vt):
-    Value.__init__(self, name, vt)
-    def_string = (
-        "auto " + self.get_name() + " = "\
-            "model->addOperand(&" + vt.get_name() + ")")
-    js_string = ("    let " + self.get_name() +
-                 " = operandIndex++;\n    model.addOperand(" + vt.get_name() + ");")
-    Operand.operands.append(self, def_string, js_string)
+    def __init__(self, name, opType, value, backward=None, skipRenaming=False, extraParams=None):
+        NamedVariable.__init__(self, name, sep="", skipRenaming=skipRenaming)
+        if type(opType) is str:
+            self.type = Type.GetTypeFromString(opType, value, extraParams)
+            value = backward
+        else:
+            self.type = Type.GetType(*opType, extraParams=extraParams)
+        self.SetValue(value)
+        self.dimensions = self.type.dimensions
+        self.lifetime = "TEMPORARY_VARIABLE"
+        self.ins = []
+        self.outs = []
 
-    flag = True
+    def SetValue(self, value):
+        self.value = value if type(value) is list or type(value) is tuple else [value]
+        return self
 
-    for obj in js_obj:
-      if str(name) == obj.get("obj"):
-        flag = False
-        obj.setdefault("type_name", vt.get_name())
+    def SetValueFromNumpy(self, value):
+        self.value = value.flatten().tolist()
+        return self
 
-    if flag:
-      js_format["obj"] = self.get_name()
-      js_format["type_name"] = vt.get_name()
-      js_format["type"] = vt.get_element_type()
+    def GetValueAsNumpy(self):
+        return np.array(self.value).reshape(self.type.dimensions)
 
-      obj_tmp = js_format.copy()
-      js_obj.append(obj_tmp)
-      js_format.clear()
+    # Print value as cpp-style list initialization
+    def GetListInitialization(self):
+        assert self.value is not None, \
+            "Trying to print operand %s with None value"%(str(self))
+        if self.type.IsFloat():
+            return "{%s}"%(GetJointStr(self.value, method=PrettyPrintAsFloat))
+        elif self.type.IsBool():
+            return "{%s}"%(GetJointStr(self.value, method=lambda v: "true" if v else "false"))
+        else:
+            return "{%s}"%(GetJointStr(self.value, method=lambda x: str(int(x))))
 
-  # By default, produce nothing (when asked by the Topological Sort phase)
-  def Definition(self):
-    pass
+    def ToUnspecifiedDim(self):
+        self.dimensions = self.type.dimensions
+        self.type = self.type.ToUnspecifiedDim()
 
-  def Reference(self):
-    return NamedObject.__str__(self)
+# Base class of user-defined input/output operand
+class InOut(Operand):
 
-  # Print a set of operands in curly braces
-  def print_operands(operands):
-    return [ x.Reference() for x in operands ]
+    def __init__(self, name, opType, backward=None, skipRenaming=False, extraParams=None):
+        Operand.__init__(self, name, opType, backward, None, skipRenaming=skipRenaming, extraParams=extraParams)
+        self.lifetime = "MODEL_INPUT"
+        self.index = 0
 
-  # Defined with the model or not
-  def is_weight(self):
-    return False
+    def Feed(self, value):
+        self.SetValue(value[self] if type(value) is dict else value)
+        return self
+
+    def GetListInitialization(self):
+        return "{%d, %s}"%(self.index, super().GetListInitialization())
 
 # A user-declared input operand
-class Input(Operand, Definitions, Traversable):
-  # for enumerating inputs
-  __next_number = 0
-  # Holds reference to all Inputs; used by Topoligcal sort as starting nodes.
-  __inputs = set()
-
-  def __init__(self, name, vt, shape, increase_next_number=True):
-    Operand.__init__(self, name, Type(vt, shape))
-    Definitions.__init__(self)
-    Input.__inputs.add(self)
-    self.number = Input.__next_number
-    if increase_next_number is True:
-      Input.__next_number += 1
-
-  def lifetime(self):
-    return "MODEL_INPUT"
-
-  def is_internal(self):
-    return False
-
-  def get_inputs(exclude_internal = None):
-    if exclude_internal is not None:
-      external = { x for x in Input.__inputs if not x.is_internal() }
-      return external
-    else:
-      return Input.__inputs
+class Input(InOut):
+    def __init__(self, name, opType, backward=None, skipRenaming=False, extraParams=None):
+        InOut.__init__(self, name, opType, backward, skipRenaming=skipRenaming, extraParams=extraParams)
+        self.lifetime = "MODEL_INPUT"
 
 # A user-declared output operand
-class Output(Operand, Uses, Nontraversable):
-  # for enumerating outputs
-  __next_number = 0
-  __outputs = []
-
-  def __init__(self, name, vt, shape):
-    Operand.__init__(self, name, Type(vt, shape))
-    Uses.__init__(self)
-    Output.__outputs.append(self)
-    self.number = Output.__next_number
-    Output.__next_number += 1
-
-  def lifetime(self):
-    return "MODEL_OUTPUT"
-
-  # return all unique outputs in the original order
-  def get_outputs():
-    saw = set()
-    unique = [x for x in Output.__outputs if x not in saw and (saw.add(x) or True)]
-    return unique
+class Output(InOut):
+    def __init__(self, name, opType, backward=None, skipRenaming=False):
+        InOut.__init__(self, name, opType, backward, skipRenaming=skipRenaming)
+        self.lifetime = "MODEL_OUTPUT"
 
 # An output that we don't want to compare the results
 class IgnoredOutput(Output):
-  __ignored = set()
-  def __init__(self, name, vt, shape):
-    Output.__init__(self, name, vt, shape)
-    IgnoredOutput.__ignored.add(self)
-  def gen_ignored():
-    ignored_func = """
-bool is_ignored(int i) {
-  static std::set<int> ignore = {%s};
-  return ignore.find(i) != ignore.end();
-}""" % ", ".join([str(x.number) for x in IgnoredOutput.__ignored])
-    return ignored_func
+    def __init__(self, name, opType, backward=None, skipRenaming=False):
+        Output.__init__(self, name, opType, backward, skipRenaming=skipRenaming)
+        self.lifetime = "MODEL_OUTPUT"
+    def Feed(self, value):
+        numElements = reduce(lambda x,y: x*y, self.dimensions, 1)
+        self.value = [0 for x in range(numElements)]
+        return self
 
-class ModelArgument:
-  __arguments = []
+# An explicitly declared parameter
+class Parameter(Operand):
+    def __init__(self, name, opType, value, backward=None, skipRenaming=False, extraParams=None):
+        Operand.__init__(self, name, opType, value, backward, skipRenaming=skipRenaming,
+                         extraParams=extraParams)
+        self.initializer = NamedVariable(str(self) + "_init")
+        self.lifetime = "CONSTANT_REFERENCE" if Configuration.useSHM() else "CONSTANT_COPY"
 
-  def __init__(self, arg_name):
-    self.__arg_name = arg_name
-    ModelArgument.__arguments.append(" ".join([arg_name]))
+# A shortcut for parameters of INT32
+class Int32Scalar(Parameter, ImplicitParameter):
+    def __init__(self, name, value):
+        Parameter.__init__(self, name, ("INT32", []), int(value))
+    @staticmethod
+    def IsCompatible(value):
+        return type(value) is int
 
-  def get_arg_name(self):
-    return self.__arg_name
+# A shortcut for parameters of FLOAT16
+class Float16Scalar(Parameter, ImplicitParameter):
+    def __init__(self, name, value):
+        Parameter.__init__(self, name, ("FLOAT16", []), float(value))
+    @staticmethod
+    def IsCompatible(value):
+        return False
 
-  def get_arguments():
-    return ModelArgument.__arguments
+# A shortcut for parameters of FLOAT32
+class Float32Scalar(Parameter, ImplicitParameter):
+    def __init__(self, name, value):
+        Parameter.__init__(self, name, ("FLOAT32", []), float(value))
+    @staticmethod
+    def IsCompatible(value):
+        return type(value) is float
 
-  def lifetime(self):
-    return "CONSTANT_COPY"
+# A shortcut for parameters of BOOL
+class BoolScalar(Parameter, ImplicitParameter):
+    def __init__(self, name, value):
+        Parameter.__init__(self, name, ("BOOL", []), bool(value))
+    @staticmethod
+    def IsCompatible(value):
+        return type(value) is bool
 
-# Print in C float literal format
-def pretty_print_as_float(x):
-  s = str(float(x))
-  if s.find(".") >= 0 or s.find("e") >= 0:
-    return s + "f"
-  else:
-    return s + ".0f"
+# A shortcut for parameter of 1-D TENSOR_INT32
+class Int32Vector(Parameter, ImplicitParameter):
+    def __init__(self, name, value):
+        Parameter.__init__(self, name, ("TENSOR_INT32", [len(value)]), [int(v) for v in value])
+    @staticmethod
+    def IsCompatible(value):
+        if type(value) is not list and type(value) is not tuple:
+            return False
+        return all(type(i) is int for i in value)
 
-class Parameter(Input):
-  # TODO seems wrong that's an Input.
-  def __init__(self, name, vt, shape, initializer):
-    flag = True
-
-    for obj in js_obj:
-      if str(name) == obj.get("obj"):
-        flag = False
-        obj.setdefault("type", vt)
-        obj.setdefault("value", initializer)
-
-    if flag:
-      js_format["obj"] = name
-      js_format["type"] = vt
-      js_format["value"] = initializer
-
-      obj_tmp = js_format.copy()
-      js_obj.append(obj_tmp)
-      js_format.clear()
-
-    Input.__init__(self, name, vt, shape, False)
-    self.initializer = initializer
-    self.cpptype = TypeLookup.get_cpptype(vt)
-    self.isFloat = TypeLookup.is_float(vt)
-    self.vt = vt
-
-  def is_internal(self):
-    return True
-  def Definition(self):
-    init_name = self.get_name() + "_init"
-    initializer = [str(x) for x in self.initializer]
-    js_data = initializer
-    if self.cpptype == "float":
-      initializer = [ pretty_print_as_float(x) for x in initializer]
-    init = self.cpptype + " " + init_name + "[]"
-    init = "static " + init + " = {" + ", ".join(initializer) + "};"
-    args = [ self.get_name(), init_name,
-            "sizeof(" + self.cpptype + ") * " + str(len(self.initializer)) ]
-
-    if JS_FLAG:
-      if self.vt in ["INT32", "TENSOR_INT32", "UINT32"]:
-        array_str = "new Int32Array"
-      elif self.vt == "TENSOR_QUANT8_ASYMM":
-        array_str = "new Uint8Array"
-      else :
-        array_str = "new Float32Array"
-      stmt = "  model.setOperandValue(" + self.get_name() + ", " + array_str + "([" + ", ".join(js_data) + "]));"
-    else :
-      stmt = "\n  ".join([init, "model->setOperandValue(" + ", ".join(args)+");"])
-    return stmt
-  def is_weight(self):
-    return True
-  def lifetime(self):
-    if Configuration.useSHM():
-      return "CONSTANT_REFERENCE"
-    else:
-      return "CONSTANT_COPY"
-
-class Int32Scalar(Parameter):
-  def __init__(self, name, value):
-    Parameter.__init__(self, name, "INT32", "{}", [value])
-
-class Float32Scalar(Parameter):
-  def __init__(self, name, value):
-    Parameter.__init__(self, name, "FLOAT32", "{}", [value])
-
-# A compiler-generated intermediate result from an operation
-class IntermediateResult(Operand, Definitions, Uses, Traversable):
-  def __init__(self, src: Value):
-    tmp_name = "tmp" + str(NamedObject.serial())
-    Operand.__init__(self, tmp_name, src.type)
-    Definitions.__init__(self)
-    Uses.__init__(self, [src])
-
-  def lifetime(self):
-    return "TEMPORARY_VARIABLE"
+# A shortcut for parameter of 1-D TENSOR_FLOAT32
+class Float32Vector(Parameter, ImplicitParameter):
+    def __init__(self, name, value):
+        Parameter.__init__(self, name, ("TENSOR_FLOAT32", [len(value)]), [float(v) for v in value])
+    @staticmethod
+    def IsCompatible(value):
+        if type(value) is not list and type(value) is not tuple:
+            return False
+        return all(type(i) is float for i in value)
 
 # An explicitly declared intermediate result
-class Internal(Operand, Definitions, Uses, Traversable):
-  def __init__(self, name, vt, shape):
-    Operand.__init__(self, name, Type(vt, shape))
-    Definitions.__init__(self)
-    Uses.__init__(self)
+class Internal(Operand):
+    def __init__(self, name, opType, backward=None, skipRenaming=False):
+        Operand.__init__(self, name, opType, backward, None, skipRenaming=skipRenaming)
+        self.lifetime = "TEMPORARY_VARIABLE"
 
-  def lifetime(self):
-    return "TEMPORARY_VARIABLE"
+# An operation in a model, does not need a name
+class Operation:
 
-# An operation in a model
-class Operation(Definitions, Uses, Traversable):
-  def __init__(self, optype, ins, outs):
-    self.type = ins[0].type
-    Definitions.__init__(self, outs)
-    Uses.__init__(self, ins)
-    self.optype = optype
+    def __init__(self, optype, ins, outs):
+        self.optype = optype
+        self.SetInputs(ins)
+        self.SetOutputs(outs)
 
-  def __str__(self):
-    inputs = [ str(x) for x in self.ins ]
-    return "Operation:" + self.optype + " " + ", ".join(inputs)
+    # for the ease of debugging
+    def __str__(self):
+        insString = GetJointStr(self.ins)
+        outsString = GetJointStr(self.outs)
+        return "Operation %s: [%s] -> [%s]"%(self.optype, insString, outsString)
+    __repr__ = __str__
 
-  def Reference(self):
-    return "operation" + str(self.ID());
+    def SetInputs(self, ins):
+        self.ins = [ImplicitParameter.ImplicitConvertion(i) for i in ins]
+        return self
 
-  def Definition(self):
-    inputs = Operand.print_operands(self.ins);
-    outputs = Operand.print_operands(self.outs);
-    if JS_FLAG:
-      return "  model.addOperation(nn." + self.optype + ", " + "[" + ", ".join(inputs) + "], [" + ", ".join(outputs) + "]);"
-    else :
-      return "model->addOperation(ANEURALNETWORKS_"+self.optype+", " + \
-          "{"+", ".join(inputs)+"}, {" + ", ".join(outputs) + "});"
+    def SetOutputs(self, outs):
+        self.outs = list(outs)
+        return self
 
-  # Get Python-ish dump for the op
-  def PyDefinition(self):
-    py_op_string = """Operation("{optype}", {inputs}).To({outputs})"""
-    inputs = [str(x) for x in Operand.print_operands(self.ins)]
-    inputs = ", ".join(inputs)
-    assert len(self.outs) <= 1
-    outputs = str(Operand.print_operands(self.outs)[0])
-    ops = {"optype": self.optype, "inputs": inputs, "outputs": outputs}
-    return py_op_string.format(**ops)
+    # For backward-compatibility with slicing.py
+    # Get Python-ish dump for the op
+    def PyDefinition(self):
+        py_op_string = """Operation("{optype}", {inputs}).To({outputs})"""
+        inputs = [str(x) for x in self.ins]
+        inputs = ", ".join(inputs)
+        assert len(self.outs) <= 1
+        outputs = str(self.outs[0])
+        ops = {"optype": self.optype, "inputs": inputs, "outputs": outputs}
+        return py_op_string.format(**ops)
 
 # Main interface
-class Model(object):
-  __isRelaxed = False
+class Model:
+    models = list()
 
-  def __init__(self):
-    self.__currentOp = None
+    def __init__(self, name=None):
+        self.name = name
+        self.operations = []
+        self.operands = []
+        self.isRelaxed = False
+        self.compiled = False
+        self.dumped = False
+        self.hasDynamicOutputShape = False
+        self.version = FileNames.version
+        Model.models.append(self)
 
-  # TODO turn this into generic binary operations
-  def Add(self, i1: Value, i2 = None) -> Operation:
-    ins = [i1]
-    if i2 is not None:
-      ins.append(i2)
-    if self.__currentOp is not None:
-      ir = IntermediateResult(self.__currentOp)
-      self.__currentOp = ir
-      ins.append(self.__currentOp)
+    def WithSuffix(self, *args):
+        self.createFunctionName = GlobalVariable("CreateModel", self.name, *args)
+        self.createTestFunctionName = GlobalVariable("createTestModel", self.name, *args)
+        self.isIgnoredFunctionName = GlobalVariable("is_ignored", self.name, *args)
+        return self
 
-    op = Operation("ADD", ins, [])
+    def AddOperation(self, operation):
+        self.operations.append(operation)
+        for i in operation.ins:
+            if i not in self.operands:
+                self.operands.append(i)
+        for o in operation.outs:
+            if o not in self.operands:
+                self.operands.append(o)
+        return self
 
-    self.__currentOp = op
-    return self
+    def Operation(self, op_name, *args):
+        return self.AddOperation(Operation(op_name, args, []))
 
-  def Operation(self, op_name, *args):
-    ins = [i for i in args]
-    outs = []
-    op = Operation(op_name, ins, outs)
-    self.__currentOp = op
-    return self
+    def To(self, *args):
+        assert len(self.operations) > 0
+        if type(args[0]) is tuple or type(args[0]) is list:
+            outs = args[0]
+        else:
+            outs = args
+        self.operations[-1].SetOutputs(outs)
+        for o in outs:
+            if o not in self.operands:
+                self.operands.append(o)
+        return self
 
-  def RawAdd(self, i1: Value, i2: Value, o = None) -> Operation:
-    ins = [i1, i2]
-    outs = []
-    if o is not None:
-      outs = [o]
-    op = Operation("ADD", ins, outs)
+    def RelaxedExecution(self, isRelaxed):
+        self.isRelaxed = isRelaxed
+        return self
 
-    self.__currentOp = op
-    return self
+    def TestDynamicOutputShape(self, hasDynamicOutputShape):
+        self.hasDynamicOutputShape = hasDynamicOutputShape
+        return self
 
-  # See CpuExecutor::executeOperation() for the arguments of each op
-  def AveragePool(self, input, padding, stride_width, stride_height, filter_width, filter_height, activation):
-    ins = [input, padding, stride_width,
-           stride_height, filter_width, filter_height, activation]
-    outs = []
-    op = Operation("AVERAGE_POOL_2D", ins, outs)
-    self.__currentOp = op
-    return self
+    # Sets the version of the model in compliance tests. Set to None to disable the test.
+    def IntroducedIn(self, ver):
+        self.version = ver
+        return self
 
-  def Concatenation(self, *args):
-    ins = [i for i in args]
-    outs = []
-    op = Operation("CONCATENATION", ins, outs)
-    self.__currentOp = op
-    return self
+    def GetTypes(self):
+        return sorted(list(set(op.type for op in self.operands)))
 
-  def Conv(self, filter, bias, input, padding, stride_width, stride_height, activation):
-    ins = [filter, bias, input, padding, stride_width,
-           stride_height, activation]
-    outs = []
-    op = Operation("CONV_2D", ins, outs)
-    self.__currentOp = op
-    return self
+    def GetInputs(self):
+        return [i for i in self.operands if isinstance(i, Input)]
 
-  def DepthWiseConv(self, filter, bias, input, padding, stride_width, stride_height, depth_multiplier, activation):
-    ins = [filter, bias, input, padding, stride_width,
-           stride_height, depth_multiplier, activation]
-    outs = []
-    op = Operation("DEPTHWISE_CONV_2D", ins, outs)
-    self.__currentOp = op
-    return self
+    def GetOutputs(self):
+        return [o for o in self.operands if isinstance(o, Output)]
 
-  def FullyConnected(self, input, weights, bias, activation):
-    ins = [input, weights, bias, activation]
-    outs = []
-    op = Operation("FULLY_CONNECTED", ins, outs)
-    self.__currentOp = op
-    return self
+    def GetInputsIndex(self):
+        return [i for i,op in enumerate(self.operands) if isinstance(op, Input)]
 
-  def Logistic(self, input):
-    ins = [input]
-    outs = []
-    op = Operation("LOGISTIC", ins, outs)
-    self.__currentOp = op
-    return self
+    def GetOutputsIndex(self):
+        return [o for o,op in enumerate(self.operands) if isinstance(op, Output)]
 
-  def L2Pool(self, input, padding, stride_width, stride_height, filter_width, filter_height, activation):
-    ins = [input, padding, stride_width,
-           stride_height, filter_width, filter_height, activation]
-    outs = []
-    op = Operation("L2_POOL_2D", ins, outs)
-    self.__currentOp = op
-    return self
+    def GetIndexOfOperands(self, operands):
+        return [self.operands.index(i) for i in operands]
 
-  def MaxPool(self, input, padding, stride_width, stride_height, filter_width, filter_height, activation):
-    ins = [input, padding, stride_width,
-           stride_height, filter_width, filter_height, activation]
-    outs = []
-    op = Operation("MAX_POOL_2D", ins, outs)
-    self.__currentOp = op
-    return self
+    def GetIgnoredOutputs(self):
+        return [o for o in self.operands if isinstance(o, IgnoredOutput)]
 
-  def SoftMax(self, input, beta):
-    ins = [input, beta]
-    outs = []
-    op = Operation("SOFTMAX", ins, outs)
-    self.__currentOp = op
-    return self
+    def GetParameters(self):
+        return [p for p in self.operands if isinstance(p, Parameter)]
 
-  def Reshape(self, input, shape):
-    ins = [input, shape]
-    outs = []
-    op = Operation("RESHAPE", ins, outs)
-    self.__currentOp = op
-    return self
+    def GetEquivalentOperands(self, targets):
+        return [self.operands[self.operands.index(t)] for t in targets]
 
-  def Out(self, o):
-    if (type(o) is list or type(o) is tuple):
-      for i in o:
-        self.__currentOp.outs.append(i)
-        i.ins.append(self.__currentOp)
-    else:
-      self.__currentOp.outs.append(o)
-      o.ins.append(self.__currentOp)
-    return self
+    def UpdateEquivalentOperands(self, targets):
+        for t in targets:
+            self.operands[self.operands.index(t)] = t
+        return self
 
-  def To(self, o:Value):
-    ret = Model.Out(self, o)
-    self.__currentOp = None
-    return self
+    def SetInputAndOutputIndex(self):
+        for ind, i in enumerate(self.GetInputs()):
+            i.index = ind
+        for ind, o in enumerate(self.GetOutputs()):
+            o.index = ind
+        return self
 
-  def RelaxedExecution(self, isRelaxed):
-    Model.__isRelaxed = isRelaxed
-    return self
+    def SetOperandInsAndOuts(self):
+        for op in self.operands:
+            op.ins = list()
+            op.outs = list()
+        for op in self.operations:
+            op.ins = self.GetEquivalentOperands(op.ins)
+            op.outs = self.GetEquivalentOperands(op.outs)
+            for i in op.ins:
+                i.outs.append(op)
+            for o in op.outs:
+                o.ins.append(op)
+        return self
 
-  def isRelaxed():
-    return Model.__isRelaxed
+    def TopologicalSortHelper(self, op, deps, visited):
+        if op in visited:
+            assert op not in deps, "Cycle detected in the graph"
+        else:
+            visited.add(op)
+            for i in deps[op]:
+                self.TopologicalSortHelper(i, deps, visited)
+            self.operations.append(op)
+            deps.pop(op)
 
+    # Topological sort of the operations, and detect if there is a cycle is the graph
+    def TopologicalSort(self):
+        deps = {op: list() for op in self.operations}
+        [deps[o].append(i) for op in self.operands for o in op.outs for i in op.ins]
+        operations = self.operations.copy()
+        self.operations = []
+        visited = set()
+        for op in operations:
+            self.TopologicalSortHelper(op, deps, visited)
 
-class FileNames:
-  SpecFile = ""
+    def SetOutputUnspecified(self):
+        for op in self.operands:
+            op.dimensions = op.type.dimensions
+        if self.hasDynamicOutputShape:
+            for op in self.GetOutputs():
+                op.ToUnspecifiedDim()
+        return self
 
-class Example():
-  __examples = []
-  def __init__(self, list_of_examples):
-    Example.__examples.append(list_of_examples)
+    def Compile(self):
+        if self.compiled:
+            return self
+        self.SetInputAndOutputIndex()
+        self.SetOperandInsAndOuts()
+        self.TopologicalSort()
+        self.SetOutputUnspecified()
+        # Do not check compliance for relaxed mode and dynamic output shape tests.
+        if self.isRelaxed or self.hasDynamicOutputShape:
+            self.IntroducedIn(None)
+        self.compiled = True
+        return self
 
-  def dump_dict(d):
-    ret = []
-    for k, v in d.items():
-      key = str(k)
-      suffix = "f"
-      if type(k) is not int:
-        key = str(k.number)
-        if not TypeLookup.is_float(k.type.get_element_type()):
-          suffix = ""
-      init = ", ".join(
-          [str(i) + (suffix if str(i).find(".") != -1 else "") for i in v])
-      ret.append("{%s, {%s}}" % (key, init))
-    return ", ".join(ret)
+# To track implicitly convertible variation types
+class ImplicitVariation:
+    @staticmethod
+    def ImplicitConvertion(value):
+        if isinstance(value, ModelVariation):
+            return value
+        for implicitType in ImplicitVariation.__subclasses__():
+            value = value if type(value) is tuple or type(value) is list else [value]
+            if implicitType.IsCompatible(value[0]):
+                var = implicitType(value[0])
+                if len(value) > 1:
+                    var.Identify(*value[1:])
+                return var
+        assert False, "%s not supported for implicit variation"%value[0]
 
-  def dump_mixed_types(d):
-    ret = []
+# The base class for model variations
+class ModelVariation:
 
-    float32_dict = {}
-    int32_dict = {}
-    uint8_dict = {}
+    def __init__(self, name=None):
+        self.targetOperands = {}
+        self.name = name
 
-    for k, v in d.items():
-      key_id = k.ID() if type(k) is not int else k
-      ty = Operand.operands.search(key_id).type.get_element_type()
-      # find out type of the operand addressed by the key
-      if (ty == "TENSOR_FLOAT32"):
-        float32_dict[k] = v
-      elif (ty == "TENSOR_INT32"):
-        int32_dict[k] = v
-      elif (ty == "TENSOR_OEM_BYTE"):
-        uint8_dict[k] = v
-      elif (ty == "TENSOR_QUANT8_ASYMM"):
-        uint8_dict[k] = v
-      else:
-        print ("Unhandled type %s"%ty,  file = sys.stderr)
-        assert 0 and "unsupported example type"
+    def ApplyToHelper(self, model, args, feedDicts, transform):
+        opVarList = []
+        for op in model.GetEquivalentOperands(sorted(args.keys())):
+            opVar = op
+            feedDictsVar = []
+            if isinstance(op, Input) or isinstance(op, Output):
+                for feedDict in feedDicts:
+                    op_tmp = copy.deepcopy(op)
+                    if op_tmp in feedDict[0]:
+                        opVar = transform(op_tmp.Feed(feedDict[0]), args[op_tmp])
+                    elif op_tmp in feedDict[1]:
+                        opVar = transform(op_tmp.Feed(feedDict[1]), args[op_tmp])
+                    else:
+                        assert False
+                    feedDictsVar.append(opVar.value)
+                assert type(op) == type(opVar), "Can not handle %s -> %s"%(type(op), type(opVar))
+            else:
+                opVar = transform(op, args[op])
+                # handle Parameter -> Input
+                if isinstance(opVar, Input) or isinstance(opVar, Output):
+                    feedDictsVar = [opVar.value] * len(feedDicts)
+            if isinstance(opVar, Input) or isinstance(opVar, Output):
+                for feedDict, feedDictVar in zip(feedDicts, feedDictsVar):
+                    if opVar in feedDict[1]:
+                        feedDict[1][opVar] = feedDictVar
+                    else:
+                        feedDict[0][opVar] = feedDictVar
+            opVarList.append(opVar)
+        return opVarList
 
-    tuple_init = """\
-{{ // See tools/test_generator/include/TestHarness.h:MixedTyped
-  // int -> FLOAT32 map
-  {{{float32_dict}}},
-  // int -> INT32 map
-  {{{int32_dict}}},
-  // int -> QUANT8_ASYMM map
-  {{{uint8_dict}}}
-}}"""
-    tuple_contents = {
-        'float32_dict': Example.dump_dict(float32_dict),
-        'int32_dict': Example.dump_dict(int32_dict),
-        'uint8_dict': Example.dump_dict(uint8_dict)
+    # Make a deepcopy of the model and feedDicts, and apply the change
+    def ApplyTo(self, modelOrigin, feedDictsOrigin):
+        model, feedDicts = copy.deepcopy((modelOrigin, feedDictsOrigin))
+        model.compiled = False
+        model.dumped = False
+
+        if not self.targetOperands:
+            self.AutoIdentify(model)
+
+        # get transformed operands and update feedDicts
+        operandsVar = self.ApplyToHelper(
+            model, self.targetOperands, feedDicts, self.TransformOperand)
+
+        model = self.TransformModel(model)
+        model.UpdateEquivalentOperands(operandsVar)
+        return model, feedDicts
+
+    def IdentifyOperands(self, args=None):
+        if args is None:
+            return self
+        self.targetOperands = args if type(args) is dict else {i: None for i in args}
+        return self
+
+    def Identify(self, operandArgs=None, paramArgs=None):
+        self.IdentifyOperands(operandArgs)
+        return self
+
+    # Set variation to its default name
+    def SetToDefaultName(self):
+        self.name = ""
+        return self
+
+    # Automatically select the target operand list
+    def AutoIdentify(self, model):
+        return self
+
+    # Transform operands that are marked by IdentifyOperands()
+    def TransformOperand(self, op, arg=None):
+        return op
+
+    # Transform the model
+    def TransformModel(self, model):
+        return model
+
+# Default variation that does nothing
+class DefaultVariation(ModelVariation):
+
+    def __init__(self, name=None):
+        ModelVariation.__init__(self, name=name)
+
+# Convert operand data type
+class DataTypeConverter(ModelVariation, ImplicitVariation):
+
+    def __init__(self, targetType=None, name=None):
+        ModelVariation.__init__(self, name=name)
+        if targetType is not None:
+            assert DataTypeConverter.IsCompatible(targetType)
+        self.targetType = targetType
+
+    @staticmethod
+    def IsCompatible(value):
+        return value.lower() in ["float16", "int32"]
+
+    def SetToDefaultName(self):
+        if self.targetType is not None:
+            self.name = self.targetType.lower()
+            return self
+        # get all target types
+        targetTypes = list(zip(*self.targetOperands.values()))[0]
+        if "TENSOR_QUANT8_SYMM_PER_CHANNEL" in targetTypes:
+            self.name = "channelQuant8"
+        elif "TENSOR_QUANT8_ASYMM" in targetTypes:
+            self.name = "quant8"
+        elif "TENSOR_INT32" in targetTypes:
+            self.name = "int32"
+        elif "TENSOR_FLOAT16" in targetTypes:
+            self.name = "float16"
+        else:
+            self.name = "float32"
+        return self
+
+    def AutoIdentify(self, model):
+        if self.targetType is not None:
+            # By default, select all the float32 tensors/scalars
+            targets = {op: ["TENSOR_" + self.targetType.upper()] \
+                    for op in model.operands if op.type.type == "TENSOR_FLOAT32"}
+            targets.update({op: [self.targetType.upper()] \
+                    for op in model.operands if op.type.type == "FLOAT32"})
+            self.Identify(targets)
+        return self
+
+    def TransformOperand(self, op, arg=None):
+        if len(arg) == 1:
+            typeTuple = (arg[0], op.type.dimensions)
+        else:
+            typeTuple = (arg[0], op.type.dimensions, *arg[1:])
+        # To handle Internal operands
+        if op.value is None or op.type.GetNumberOfElements() == 0:
+            op.type = Type.GetType(*typeTuple)
+        else:
+            v = Dequantize(op.GetValueAsNumpy().astype(np.float32), op.type)
+            op.type = Type.GetType(*typeTuple)
+            v = Quantize(v, op.type)
+            op.SetValueFromNumpy(v)
+        return op
+
+# Convert model to turn on/off relaxed computation
+class RelaxedModeConverter(ModelVariation, ImplicitVariation):
+
+    def __init__(self, isRelaxed=True, name=None):
+        ModelVariation.__init__(self, name=name)
+        if isinstance(isRelaxed, bool):
+            self.isRelaxed = isRelaxed
+        else:
+            assert RelaxedModeConverter.IsCompatible(isRelaxed.lower())
+            self.isRelaxed = True
+
+    @staticmethod
+    def IsCompatible(value):
+        return value.lower() in ["relaxed"]
+
+    def SetToDefaultName(self):
+        self.name = "relaxed" if self.isRelaxed else "float"
+        return self
+
+    def TransformModel(self, model):
+        model.RelaxedExecution(self.isRelaxed)
+        return model
+
+# Convert data layout between "NHWC" amd "NCHW"
+class DataLayoutConverter(ModelVariation, ImplicitVariation):
+
+    def __init__(self, targetLayout="nchw", name=None):
+        ModelVariation.__init__(self, name=name)
+        self.targetLayout = targetLayout.lower()
+        assert DataLayoutConverter.IsCompatible(self.targetLayout)
+        self.perm = (0, 3, 1, 2) if self.targetLayout == "nchw" else (0, 2, 3, 1)
+        self.param = True if self.targetLayout == "nchw" else False
+
+    @staticmethod
+    def IsCompatible(value):
+        return value.lower() in ["nhwc", "nchw"]
+
+    def SetToDefaultName(self):
+        self.name = self.targetLayout
+        return self
+
+    def TransformOperand(self, op, arg=None):
+        if len(op.type.dimensions) == 4:
+            # To handle Internal operands
+            if op.value is not None and op.type.GetNumberOfElements() != 0:
+                op.SetValueFromNumpy(op.GetValueAsNumpy().transpose(self.perm))
+            newDim = [op.type.dimensions[i] for i in self.perm]
+            op.type = Type.GetType(op.type.type, newDim, op.type.scale, op.type.zeroPoint)
+        elif len(op.type.dimensions) == 1 and len(op.value) == 4:
+            op.SetValueFromNumpy(op.GetValueAsNumpy()[list(self.perm)])
+        elif op.type.type == "BOOL":
+            op.SetValue(self.param)
+        else:
+            assert False, "%s not supported by DataLayoutConverter"%op
+        return op
+
+# Convert data by tansposing and removing axis
+class AxisConverter(ModelVariation):
+
+    def __init__(self, origin, target, dim, drop=[], name=None):
+        ModelVariation.__init__(self, name=name)
+        self.origin = origin
+        self.target = target
+        assert all(i >= -dim and i < dim for i in [self.origin, self.target])
+        self.dim = dim
+        self.perm = list(range(dim))
+        self.perm.insert(target if target >= 0 else target + dim, self.perm.pop(origin))
+        self.drop = [drop] if type(drop) is int else list(drop)
+        assert all(i >= -dim and i < dim for i in self.drop)
+        self.drop = [i if i >= 0 else i + dim for i in self.drop]
+        assert target not in self.drop and target + dim not in self.drop
+
+    def SetToDefaultName(self):
+        axis = self.target if self.target >= 0 else self.target + self.dim
+        axis -= sum(i < axis for i in self.drop)
+        neg = "" if self.target >= 0 else "_neg"
+        self.name = "dim%d_axis%d%s"%(self.dim - len(self.drop), axis, neg)
+        return self
+
+    def TransposeAxis(self, op):
+        if op.type.type == "INT32":
+            op.SetValue(self.target)
+        elif len(op.type.dimensions) == self.dim:
+            # To handle Internal operands
+            if op.value is not None:
+                op.SetValueFromNumpy(op.GetValueAsNumpy().transpose(self.perm))
+            newDim = [op.type.dimensions[i] for i in self.perm]
+            op.type = Type.GetType(op.type.type, newDim, op.type.scale, op.type.zeroPoint)
+        else:
+            assert False, "%s not supported by AxisConverter"%op
+        return op
+
+    def RemoveAxis(self, op):
+        if op.type.type == "INT32":
+            if op.value[0] >= 0:
+                op.SetValue(op.value[0] - sum(i < op.value[0] for i in self.drop))
+            else:
+                op.SetValue(op.value[0] + sum(i > (op.value[0] + self.dim) for i in self.drop))
+        elif len(op.type.dimensions) == self.dim:
+            if op.value is not None:
+                val = op.GetValueAsNumpy()
+                for i in sorted(self.drop, reverse=True):
+                    val = np.take(val, 0, axis=i)
+                op.SetValueFromNumpy(val)
+            newDim = [op.type.dimensions[i] for i in range(self.dim) if i not in self.drop]
+            op.type = Type.GetType(op.type.type, newDim, op.type.scale, op.type.zeroPoint)
+        else:
+            assert False, "%s not supported by AxisConverter"%op
+        return op
+
+    def TransformOperand(self, op, arg=None):
+        op = self.TransposeAxis(op)
+        op = self.RemoveAxis(op)
+        return op
+
+# Convert a Parameter to Input
+class ParameterAsInputConverter(ModelVariation, ImplicitVariation):
+
+    def __init__(self, arg="as_input", prefix="weight", name=None):
+        ModelVariation.__init__(self, name=name)
+        assert ParameterAsInputConverter.IsCompatible(arg.lower())
+        self.prefix = prefix
+
+    @staticmethod
+    def IsCompatible(value):
+        return value.lower() in ["as_input"]
+
+    def SetToDefaultName(self):
+        self.name = self.prefix + "_as_input"
+        return self
+
+    def TransformOperand(self, op, arg=None):
+        assert isinstance(op, Parameter), "%s cannot be converted to Input."%type(op)
+        newop = Input(op.name, op.type.GetSignatureTuple(), skipRenaming=True, extraParams=op.type.extraParams)
+        newop.SetValue(op.value)
+        return newop
+
+# Convert Output based on activation
+class ActivationConverter(ModelVariation, ImplicitVariation):
+    # (Enum, low, high)
+    actMap = {
+        "none": (0, None, None),
+        "relu": (1, 0.0, None),
+        "relu1": (2, -1.0, 1.0),
+        "relu6": (3, 0.0, 6.0),
     }
-    return tuple_init.format(**tuple_contents)
+    def __init__(self, act="relu", name=None):
+        ModelVariation.__init__(self, name=name)
+        self.act = act.lower()
+        assert ActivationConverter.IsCompatible(self.act)
+        self.enum = ActivationConverter.actMap[self.act][0]
+        self.low = ActivationConverter.actMap[self.act][1]
+        self.high = ActivationConverter.actMap[self.act][2]
 
-  def get_examples():
-    return Example.__examples
+    @staticmethod
+    def IsCompatible(value):
+        return value.lower() in ActivationConverter.actMap.keys()
 
-  def dump(filename):
-    if len(Example.__examples) > 0:
-      spec_file = " (from: %s)" % (FileNames.SpecFile)
-      print ('// Generated file%s. Do not edit' % (spec_file),
-             file = filename)
-    for i, o in Example.__examples:
-      print ('// Begin of an example', file = filename)
-      print ('{', file = filename)
-      inputs = Example.dump_mixed_types(i)
-      outputs = Example.dump_mixed_types(o)
-      print ('//Input(s)\n%s,' % inputs , file = filename)
-      print ('//Output(s)\n%s' % outputs, file = filename)
-      print ('}, // End of an example', file = filename)
+    def SetToDefaultName(self):
+        self.name = self.act
+        return self
 
-  # Similar to dump_dict, but in python. Used by the slicing tool
-  # if referenced is not None, only print operands that are present there
-  def py_dump_dict(d, referenced):
-    ret = []
-    for k, v in d.items():
-      if referenced != None and k not in referenced:
-        continue
-      key = str(k)
-      init = pprint.pformat(v)
-      ret.append("%s: %s" % (key, init))
-    return ", ".join(ret)
+    def TransformOperand(self, op, arg=None):
+        if op.type.type == "INT32": # activation enum
+            return op.SetValue(self.enum)
+        else:
+            assert isinstance(op, Output)
+            v = op.GetValueAsNumpy()
+            if self.low is not None:
+                low = Quantize(self.low, op.type)
+                v = np.maximum(v, low)
+            if self.high is not None:
+                high = Quantize(self.high, op.type)
+                v = np.minimum(v, high)
+            return op.SetValueFromNumpy(v)
 
-  # similar to dump, but in python. Used by the slicing tool
-  # if referenced is not None, only print operands that are present there
-  def py_dump(example_file, override, referenced):
-    if len(Example.__examples) > 0:
-      example_no = 0
-      example_template = """\
+class DynamicOutputShapeConverter(ModelVariation):
+    def __init__(self, name=None):
+        ModelVariation.__init__(self, name=name)
+
+    def SetToDefaultName(self):
+        self.name = "dynamic_output_shape"
+        return self
+
+    def TransformModel(self, model):
+        model.TestDynamicOutputShape(True)
+        return model
+
+# An example is always attached to a model, and could have multiple variations
+class Example:
+    examples = []
+    versionOverrides = {}
+
+    def __init__(self, *args, model=None, name=None):
+        self.model = Model.models[-1] if model is None else model
+        self.name = name
+        self.expectedMultinomialDistributionTolerance = None
+        self.feedDicts = []
+        for feedDict in args:
+            if type(feedDict) is tuple or type(feedDict) is list:
+                self.feedDicts.append(feedDict)
+            elif type(feedDict) is dict:
+                self.feedDicts.append((
+                    {i: feedDict[i] for i in self.model.GetInputs()},
+                    {o: feedDict[o] for o in self.model.GetOutputs()}
+                ))
+            else:
+                assert False
+        if Configuration.test_dynamic_output_shape:
+            ''' Original
+            self.variations = [[DefaultVariation(), DynamicOutputShapeConverter()]]
+            '''
+
+            # For js: remove DynamicOutputShapeConverter
+            print ("    skip not support variations: DynamicOutputShape", file=sys.stderr)
+            self.variations = [[DefaultVariation()]]
+            # end
+        else:
+            self.variations = []
+
+        Example.examples.append(self)
+
+    @staticmethod
+    def SetVersion(ver, *args):
+        for name in args:
+            Example.versionOverrides[name] = ver
+
+    # Main entrance of test generator
+    ''' Original
+    @staticmethod
+    def DumpAllExamples(DumpModel=None, model_fd=None,
+                        DumpExample=None, example_fd=None,
+                        DumpTest=None, test_fd=None):
+    '''
+
+    # For js
+    @staticmethod
+    def DumpAllExamples(DumpModel=None, model_fd=None,
+                        DumpExample=None, example_fd=None,
+                        DumpTest=None, test_fd=None,
+                        DumpJS=None, js_fd=None):
+    # end
+        Example.CombineAllExamples()
+
+        ''' Original
+        for example in Example.examples:
+            example.Dump(DumpModel, model_fd, DumpExample, example_fd, DumpTest, test_fd)
+        '''
+
+        # For js
+        if len(Example.examples) > 1:
+            Configuration.single_example_flag = False
+        else :
+            Configuration.single_example_flag = True
+
+        for example in Example.examples:
+            example.Dump(DumpModel, model_fd, DumpExample, example_fd,
+                         DumpTest, test_fd, DumpJS, js_fd)
+        # end
+
+    # Combine examples with the same model, same name, and same set of variations
+    @staticmethod
+    def CombineAllExamples():
+        modelMap = {}
+        newExamples = []
+        for example in Example.examples:
+            key = (example.model, example.name, tuple(tuple(e) for e in example.variations))
+            if key in modelMap:
+                modelMap[key].Combine(example)
+            else:
+                modelMap[key] = example
+                newExamples.append(example)
+        Example.examples = newExamples
+
+    def AddVariations(self, *args, includeDefault=True, defaultName=None):
+        self.variations.append([DefaultVariation(defaultName)] if includeDefault else [])
+        self.variations[-1].extend(ImplicitVariation.ImplicitConvertion(i) for i in args)
+        return self
+
+    def AddNchw(self, *args, includeDefault=True, defaultName="nhwc"):
+        var = DataLayoutConverter("nchw").Identify(args)
+        self.AddVariations(var, includeDefault=includeDefault, defaultName=defaultName)
+        return self
+
+    def AddRelaxed(self, isRelaxed=True, includeDefault=True, defaultName=None):
+        var = RelaxedModeConverter(isRelaxed)
+        self.AddVariations(var, includeDefault=includeDefault, defaultName=defaultName)
+        return self
+
+    def AddInput(self, *args, includeDefault=True, defaultName=None):
+        var = ParameterAsInputConverter().Identify(args)
+        self.AddVariations(var, includeDefault=includeDefault, defaultName=defaultName)
+        return self
+
+    def AddRelu(self, *args, includeDefault=True, defaultName=None):
+        var = ActivationConverter("relu").Identify(args)
+        self.AddVariations(var, includeDefault=includeDefault, defaultName=defaultName)
+        return self
+
+    def AddAllActivations(self, *args):
+        var = [ActivationConverter(i).Identify(args)
+            for i in sorted(ActivationConverter.actMap.keys())]
+        self.AddVariations(*var, includeDefault=False)
+        return self
+
+    def GuessOriginalAxisAndDim(self, *args):
+        origin = None
+        dim = None
+        for arg in args:
+            if arg.type.type == "INT32":
+                origin = arg.value[0]
+            else:
+                if dim is None:
+                    dim = len(arg.type.dimensions)
+                else:
+                    assert dim == len(arg.type.dimensions)
+        assert dim is not None
+        origin = dim - 1 if origin is None else origin
+        origin = origin + dim if origin < 0 else origin
+        return origin, dim
+
+    def AddAxis(self, axis, *args, includeDefault=True, defaultName=None):
+        origin, dim = self.GuessOriginalAxisAndDim(*args)
+        axis = [axis] if type(axis) is int else list(axis)
+        var = [AxisConverter(origin, a, dim).Identify(args) for a in axis]
+        self.AddVariations(*var, includeDefault=includeDefault, defaultName=defaultName)
+        return self
+
+    def AddAllPositiveAxis(self, *args):
+        origin, dim = self.GuessOriginalAxisAndDim(*args)
+        var = [AxisConverter(origin, a, dim).Identify(args) for a in range(dim)]
+        self.AddVariations(*var, includeDefault=False)
+        return self
+
+    def AddAllAxis(self, *args):
+        origin, dim = self.GuessOriginalAxisAndDim(*args)
+        var = [AxisConverter(origin, a, dim).Identify(args) for a in range(-dim, dim)]
+        self.AddVariations(*var, includeDefault=False)
+        return self
+
+    def AddDims(self, dims, *args, includeDefault=True, defaultName=None):
+        origin, dim = self.GuessOriginalAxisAndDim(*args)
+        dims = [dims] if type(dims) is int else list(dims)
+        drop = list(range(dim))
+        drop.pop(origin)
+        var = [AxisConverter(origin, origin, dim, drop[0:(dim-i)]).Identify(args) for i in dims]
+        self.AddVariations(*var, includeDefault=includeDefault, defaultName=defaultName)
+        return self
+
+    def AddAllDims(self, *args):
+        origin, dim = self.GuessOriginalAxisAndDim(*args)
+        drop = list(range(dim))
+        drop.pop(origin)
+        var = [AxisConverter(origin, origin, dim, drop[0:i]).Identify(args) for i in range(dim)]
+        self.AddVariations(*var, includeDefault=False)
+        return self
+
+    def AddAllDimsAndPositiveAxis(self, *args):
+        origin, dim = self.GuessOriginalAxisAndDim(*args)
+        var = [AxisConverter(origin, j, dim, range(i)).Identify(args) \
+                for i in range(dim) for j in range(i, dim)]
+        self.AddVariations(*var, includeDefault=False)
+        return self
+
+    def AddAllDimsAndAxis(self, *args):
+        origin, dim = self.GuessOriginalAxisAndDim(*args)
+        var = [AxisConverter(origin, k, dim, range(i)).Identify(args) \
+                for i in range(dim) for j in range(i, dim) for k in [j, j - dim]]
+        self.AddVariations(*var, includeDefault=False)
+        return self
+
+    def Combine(self, other):
+        assert self.model is other.model, "Only examples targetting the same model can be combined"
+        assert tuple(self.variations) == tuple(other.variations), \
+            "Only examples with the same set of variations can be combined"
+        assert self.name == other.name, "Only examples with the same name can be combined"
+        self.feedDicts.extend(other.feedDicts)
+        return self
+
+    ''' Original
+    def Dump(self, DumpModel, model_fd, DumpExample, example_fd, DumpTest, test_fd):
+    '''
+
+    # For js
+    def Dump(self, DumpModel, model_fd, DumpExample, example_fd,
+             DumpTest, test_fd, DumpJS, js_fd):
+        if len(self.variations) > 1 and Configuration.single_example_flag == True:
+            Configuration.single_example_flag = False
+    # end
+
+        [v.SetToDefaultName() for vs in self.variations for v in vs if v.name is None]
+        for variationList in itertools.product(*self.variations):
+            # Apply variations
+            modelOrigin, feedDictsOrigin = self.model, self.feedDicts
+            self.model, self.feedDicts = copy.deepcopy((self.model, self.feedDicts))
+            for variation in variationList:
+                self.model, self.feedDicts = variation.ApplyTo(self.model, self.feedDicts)
+            # Concat names for test and examples
+            varNames = [v.name for v in variationList]
+            self.testName = NamedTest(FileNames.specName, self.model.name, self.name, *varNames)
+            self.examplesName = GlobalVariable("examples", self.model.name, self.name, *varNames)
+            if str(self.testName) in Example.versionOverrides:
+                self.model.IntroducedIn(Example.versionOverrides[str(self.testName)])
+            self.model.WithSuffix(*varNames).Compile()
+            # Dump files
+            ''' Original
+            if DumpModel is not None and model_fd is not None:
+                DumpModel(self.model, model_fd)
+            if DumpExample is not None and example_fd is not None:
+                DumpExample(self, example_fd)
+            if DumpTest is not None and test_fd is not None:
+                DumpTest(self, test_fd)
+            '''
+
+            # For js
+            if DumpJS is not None and js_fd is not None:
+                DumpJS(self.model, self, js_fd)
+            # end
+
+            # Restore model and feedDicts before variation
+            self.model = modelOrigin
+            self.feedDicts = feedDictsOrigin
+        return self
+
+    # Specifies the RANDOM_MULTINOMIAL distribution tolerance.
+    # If set to greater than zero, the input is compared as log-probabilities
+    # to the output and must be within this tolerance to pass.
+    def WithMultinomialDistributionTolerance(self, expectedTolerance):
+      self.expectedMultinomialDistributionTolerance = expectedTolerance
+      return self
+
+    # For backward-compatibility with slicing.py
+    # Similar to dump_dict, but in python. Used by the slicing tool
+    # if referenced is not None, only print operands that are present there
+    @staticmethod
+    def py_dump_dict(d, referenced):
+        ret = []
+        for k, v in d.items():
+            if referenced != None and k not in referenced:
+                continue
+            key = str(k)
+            init = pprint.pformat(v)
+            ret.append("%s: %s" % (key, init))
+        return ", ".join(ret)
+
+    # For backward-compatibility with slicing.py
+    # similar to dump, but in python. Used by the slicing tool
+    # if referenced is not None, only print operands that are present there
+    @staticmethod
+    def py_dump(example_file, override, referenced):
+        Example.CombineAllExamples()
+        if len(Example.examples[0].feedDicts) > 0:
+            example_no = 0
+            example_template = """\
 input{no} = {{{inputs}}}
 # Only executed during data collection phase
 if collecting_data is True:
   Example((input{no}, {{{outputs}}}))
 """
-      for i, o in Example.__examples:
-        print ('# Begin of an example', file = example_file)
-        inputs = Example.py_dump_dict(i, referenced)
-        output_list = []
-        for k, v in override.items():
-          output_list.append("%s: [0] * %d" % (k, v))
-        outputs = ",".join(output_list)
+        for i, o in Example.examples[0].feedDicts:
+            print ('# Begin of an example', file = example_file)
+            inputs = Example.py_dump_dict(i, referenced)
+            output_list = []
+            for k, v in override.items():
+                output_list.append("%s: [0] * %d" % (k, v))
+            outputs = ",".join(output_list)
 
-        # TODO: handle >1 outputs
-        for k, v in o.items():
-          assert k.number == 0
-        example_contents = {
-            'no': example_no,
-            'inputs': inputs,
-            'outputs': outputs
-        }
-        print (example_template.format(**example_contents), file = example_file)
+            # TODO: handle >1 outputs
+            for k, v in o.items():
+                assert k.index == 0
+            example_contents = {
+                'no': example_no,
+                'inputs': inputs,
+                'outputs': outputs
+            }
+            print (example_template.format(**example_contents), file = example_file)
 
+class FileNames:
+    specFiles = []
+    specNames = []
+    modelFiles = []
+    exampleFiles = []
+    testFiles = []
+    specFile = ""
+    specName = ""
+    modelFile = ""
+    exampleFile = ""
+    testFile = ""
+    ctsFile = ""
+    logFile = ""
+    version = ""
+    fileIndex = 0
 
-def TopologicalSort(format_op):
-  start = Input.get_inputs().copy()
-  deps = { x: set(x.ins) for x in Uses.all_uses }
+    # For js
+    jsFile = ""
+    # end
 
-  while len(start) > 0:
-    cur = start.pop()
-    if format_op(cur) is False:
-      return
-    distinct_outs = set(cur.outs)
-    for o in distinct_outs:
-      deps[o].remove(cur)
-      if len(deps[o]) == 0 and o.traversable():
-        start.add(o)
+    ''' Original
+    @staticmethod
+    def InitializeFileLists(spec, model, example, test, cts="-", log=""):
+    '''
+
+    # For js
+    @staticmethod
+    def InitializeFileLists(spec, model, example, test, jsTest, cts="-", log=""):
+    # end
+
+        # get all spec files and target files
+        if os.path.isfile(spec):
+            FileNames.specFiles = [os.path.abspath(spec)]
+        elif os.path.isdir(spec):
+            FileNames.specFiles = sorted([os.path.abspath(os.path.join(spec, f))
+                for f in os.listdir(spec) if f.endswith(".mod.py")])
+        else:
+            assert False, "%s is neither a file or a directory"%spec
+        FileNames.specNames = [re.sub(r"\..*", "", os.path.basename(f))
+            for f in FileNames.specFiles]
+        FileNames.modelFiles = FileNames.ParseTargetFiles(model, ".model.cpp")
+        FileNames.exampleFiles = FileNames.ParseTargetFiles(example, ".example.cpp")
+        FileNames.testFiles = FileNames.ParseTargetFiles(test, ".mod.py.cpp")
+        FileNames.ctsFile = os.path.abspath(cts) if cts != "-" else "-"
+        FileNames.logFile = ", \"%s\""%log if log != "" else ""
+
+        # For js
+        FileNames.jsFile = jsTest
+        # end
+
+    @staticmethod
+    def ParseTargetFiles(arg, ext):
+        numFiles = len(FileNames.specFiles)
+        absPath = os.path.abspath(arg)
+        if os.path.isdir(arg):
+            target = [os.path.join(absPath, f + ext) for f in FileNames.specNames]
+        elif arg == "-":
+            target = ["-"] * numFiles
+        else:
+            target = [absPath] * numFiles
+        return target
+
+    @staticmethod
+    def NextFile():
+        if FileNames.fileIndex >= len(FileNames.specFiles):
+            return False
+        FileNames.specFile = FileNames.specFiles[FileNames.fileIndex]
+        FileNames.specName = FileNames.specNames[FileNames.fileIndex]
+        FileNames.modelFile = FileNames.modelFiles[FileNames.fileIndex]
+        FileNames.exampleFile = FileNames.exampleFiles[FileNames.fileIndex]
+        FileNames.testFile = FileNames.testFiles[FileNames.fileIndex]
+        FileNames.fileIndex += 1
+        NamedObject.existingNames = set()
+        NamedVariable.existingNames = set()
+        NamedTest.existingNames = set()
+        Type.typesMap = dict()
+        Model.models = list()
+        Example.examples = list()
+        Configuration.use_shm_for_weights = False
+
+        # Extract version from absolute file path.
+        versionMatch = re.findall(r"/V\d_\d/", FileNames.specFile)
+        if len(versionMatch) == 1:
+            FileNames.version = versionMatch[0].strip('/')
+        else:
+            FileNames.version = None
+        return True
 
 class Configuration:
-  use_shm_for_weights = False
-  def useSHM():
-    return Configuration.use_shm_for_weights
+    use_shm_for_weights = False
+    force_regenerate = False
+    test_dynamic_output_shape = True
+    # For js
+    example_count = 1
+    single_example_flag = True
+    support_types = [
+        "BOOL",                 # Layout: nhwc and nchw
+        "INT32",                # INT32
+        "UINT32",               # UINT32
+        "FLOAT32",              # FLOAT32
+        "FLOAT16",              # FLOAT32
+        "TENSOR_INT32",         # TENSOR_INT32
+        "TENSOR_FLOAT32",       # TENSOR_FLOAT32
+        "TENSOR_FLOAT16",       # TENSOR_FLOAT32
+        "TENSOR_QUANT8_ASYMM"   # TENSOR_QUANT8_ASYMM
+    ]
+    operation_code = [
+        "ADD",
+        "AVERAGE_POOL_2D",
+        "CONCATENATION",
+        "CONV_2D",
+        "DEPTHWISE_CONV_2D",
+        "DEPTH_TO_SPACE",
+        "DEQUANTIZE",
+        "EMBEDDING_LOOKUP",
+        "FLOOR",
+        "FULLY_CONNECTED",
+        "HASHTABLE_LOOKUP",
+        "L2_NORMALIZATION",
+        "L2_POOL_2D",
+        "LOCAL_RESPONSE_NORMALIZATION",
+        "LOGISTIC",
+        "LSH_PROJECTION",
+        "LSTM",
+        "MAX_POOL_2D",
+        "MUL",
+        "RELU",
+        "RELU1",
+        "RELU6",
+        "RESHAPE",
+        "RESIZE_BILINEAR",
+        "RNN",
+        "SOFTMAX",
+        "SPACE_TO_DEPTH",
+        "SVDF",
+        "TANH",
+        "BATCH_TO_SPACE_ND",
+        "TRANSPOSE",
+        "ARGMAX",
+        "MAXIMUM",
+        "PRELU",
+        "ATROUS_CONV_2D",
+        "ATROUS_DEPTHWISE_CONV_2D"
+    ]
+    check_list = {
+        "RESIZE_BILINEAR": {
+            "inputs": {
+                0: {
+                    "layout": ["NHWC"],
+                    "types": ["TENSOR_FLOAT32"],
+                    "dimensions": [4]
+                },
+                1: {
+                    "layout": ["NHWC"],
+                    "types": ["INT32"],
+                    "dimensions": [0]
+                },
+                2: {
+                    "layout": ["NHWC"],
+                    "types": ["INT32"],
+                    "dimensions": [0]
+                },
+                3: {
+                    "layout": ["NHWC"],
+                    "types": ["INT32"],
+                    "dimensions": [0]
+                }
+            },
+            "outputs": {
+                0: {
+                    "layout": ["NHWC"],
+                    "types": ["TENSOR_FLOAT32"],
+                    "dimensions": [4]
+                }
+            }
+        },
+        "TRANSPOSE": {
+            "inputs": {
+                0: {
+                    "layout": ["NHWC"],
+                    "types": ["TENSOR_FLOAT32", "TENSOR_QUANT8_ASYMM"],
+                    "dimensions": [1, 2, 3, 4]
+                },
+                1: {
+                    "layout": ["NHWC"],
+                    "types": ["TENSOR_INT32"],
+                    "dimensions": [1]
+                }
+            },
+            "outputs": {
+                0: {
+                    "layout": ["NHWC"],
+                    "types": ["TENSOR_FLOAT32", "TENSOR_QUANT8_ASYMM"],
+                    "dimensions": [1, 2, 3, 4]
+                }
+            }
+        },
+        "SOFTMAX": {
+            "inputs": {
+                0: {
+                    "layout": ["NHWC"],
+                    "types": ["TENSOR_FLOAT32", "TENSOR_QUANT8_ASYMM"],
+                    "dimensions": [2, 4]
+                },
+                1: {
+                    "layout": ["NHWC"],
+                    "types": ["FLOAT32"],
+                    "dimensions": [0]
+                }
+            },
+            "outputs": {
+                0: {
+                    "layout": ["NHWC"],
+                    "types": ["TENSOR_FLOAT32", "TENSOR_QUANT8_ASYMM"],
+                    "dimensions": [2, 4]
+                }
+            }
+        },
+        "RESHAPE": {
+            "inputs": {
+                0: {
+                    "layout": ["NHWC"],
+                    "types": ["TENSOR_FLOAT32", "TENSOR_QUANT8_ASYMM"],
+                    "dimensions": [1, 2, 3, 4]
+                },
+                1: {
+                    "layout": ["NHWC"],
+                    "types": ["TENSOR_INT32"],
+                    "dimensions": [1]
+                }
+            },
+            "outputs": {
+                0: {
+                    "layout": ["NHWC"],
+                    "types": ["TENSOR_FLOAT32", "TENSOR_QUANT8_ASYMM"],
+                    "dimensions": [1, 2, 3, 4]
+                }
+            }
+        },
+        "DEPTHWISE_CONV_2D": {
+            "inputs": {
+                0: {
+                    "layout": ["NHWC"],
+                    "types": ["TENSOR_FLOAT32", "TENSOR_QUANT8_ASYMM"],
+                    "dimensions": [4]
+                },
+                1: {
+                    "layout": ["NHWC"],
+                    "types": ["TENSOR_FLOAT32", "TENSOR_QUANT8_ASYMM"],
+                    "dimensions": [4]
+                },
+                2: {
+                    "layout": ["NHWC"],
+                    "types": ["TENSOR_FLOAT32", "TENSOR_INT32", "TENSOR_QUANT8_ASYMM"],
+                    "dimensions": [1]
+                },
+                3: {
+                    "layout": ["NHWC"],
+                    "types": ["INT32"],
+                    "dimensions": [0]
+                },
+                4: {
+                    "layout": ["NHWC"],
+                    "types": ["INT32"],
+                    "dimensions": [0]
+                },
+                5: {
+                    "layout": ["NHWC"],
+                    "types": ["INT32"],
+                    "dimensions": [0]
+                },
+                6: {
+                    "layout": ["NHWC"],
+                    "types": ["INT32"],
+                    "dimensions": [0]
+                },
+                7: {
+                    "layout": ["NHWC"],
+                    "types": ["INT32"],
+                    "dimensions": [0]
+                },
+                8: {
+                    "layout": ["NHWC"],
+                    "types": ["INT32"],
+                    "dimensions": [0]
+                },
+                9: {
+                    "layout": ["NHWC"],
+                    "types": ["INT32"],
+                    "dimensions": [0]
+                },
+                10: {
+                    "layout": ["NHWC"],
+                    "types": ["INT32"],
+                    "dimensions": [0]
+                }
+            },
+            "outputs": {
+                0: {
+                    "layout": ["NHWC"],
+                    "types": ["TENSOR_FLOAT32", "TENSOR_QUANT8_ASYMM"],
+                    "dimensions": [4]
+                }
+            }
+        },
+        "CONV_2D": {
+            "inputs": {
+                0: {
+                    "layout": ["NHWC"],
+                    "types": ["TENSOR_FLOAT32", "TENSOR_QUANT8_ASYMM"],
+                    "dimensions": [4]
+                },
+                1: {
+                    "layout": ["NHWC"],
+                    "types": ["TENSOR_FLOAT32", "TENSOR_QUANT8_ASYMM"],
+                    "dimensions": [4]
+                },
+                2: {
+                    "layout": ["NHWC"],
+                    "types": ["TENSOR_FLOAT32", "TENSOR_INT32", "TENSOR_QUANT8_ASYMM"],
+                    "dimensions": [1]
+                },
+                3: {
+                    "layout": ["NHWC"],
+                    "types": ["INT32"],
+                    "dimensions": [0]
+                },
+                4: {
+                    "layout": ["NHWC"],
+                    "types": ["INT32"],
+                    "dimensions": [0]
+                },
+                5: {
+                    "layout": ["NHWC"],
+                    "types": ["INT32"],
+                    "dimensions": [0]
+                },
+                6: {
+                    "layout": ["NHWC"],
+                    "types": ["INT32"],
+                    "dimensions": [0]
+                },
+                7: {
+                    "layout": ["NHWC"],
+                    "types": ["INT32"],
+                    "dimensions": [0]
+                },
+                8: {
+                    "layout": ["NHWC"],
+                    "types": ["INT32"],
+                    "dimensions": [0]
+                },
+                9: {
+                    "layout": ["NHWC"],
+                    "types": ["INT32"],
+                    "dimensions": [0]
+                }
+            },
+            "outputs": {
+                0: {
+                    "layout": ["NHWC"],
+                    "types": ["TENSOR_FLOAT32", "TENSOR_QUANT8_ASYMM"],
+                    "dimensions": [4]
+                }
+            }
+        },
+        "CONCATENATION": {
+            "inputs": {
+                0: {
+                    "layout": ["NHWC"],
+                    "types": ["TENSOR_FLOAT32", "TENSOR_QUANT8_ASYMM"],
+                    "dimensions": [1, 2, 3, 4]
+                },
+                1: {
+                    "layout": ["NHWC"],
+                    "types": ["INT32", "TENSOR_FLOAT32", "TENSOR_QUANT8_ASYMM"],
+                    "dimensions": [0, 1, 2, 3, 4]
+                },
+                2: {
+                    "layout": ["NHWC"],
+                    "types": ["INT32", "TENSOR_FLOAT32", "TENSOR_QUANT8_ASYMM"],
+                    "dimensions": [0, 1, 2, 3, 4]
+                },
+                3: {
+                    "layout": ["NHWC"],
+                    "types": ["INT32", "TENSOR_FLOAT32", "TENSOR_QUANT8_ASYMM"],
+                    "dimensions": [0, 1, 2, 3, 4]
+                }
+            },
+            "outputs": {
+                0: {
+                    "layout": ["NHWC"],
+                    "types": ["TENSOR_FLOAT32", "TENSOR_QUANT8_ASYMM"],
+                    "dimensions": [1, 2, 3, 4]
+                }
+            }
+        },
+        "AVERAGE_POOL_2D": {
+            "inputs": {
+                0: {
+                    "layout": ["NHWC"],
+                    "types": ["TENSOR_FLOAT32", "TENSOR_QUANT8_ASYMM"],
+                    "dimensions": [4]
+                },
+                1: {
+                    "layout": ["NHWC"],
+                    "types": ["INT32"],
+                    "dimensions": [0]
+                },
+                2: {
+                    "layout": ["NHWC"],
+                    "types": ["INT32"],
+                    "dimensions": [0]
+                },
+                3: {
+                    "layout": ["NHWC"],
+                    "types": ["INT32"],
+                    "dimensions": [0]
+                },
+                4: {
+                    "layout": ["NHWC"],
+                    "types": ["INT32"],
+                    "dimensions": [0]
+                },
+                5: {
+                    "layout": ["NHWC"],
+                    "types": ["INT32"],
+                    "dimensions": [0]
+                },
+                6: {
+                    "layout": ["NHWC"],
+                    "types": ["INT32"],
+                    "dimensions": [0]
+                },
+                7: {
+                    "layout": ["NHWC"],
+                    "types": ["INT32"],
+                    "dimensions": [0]
+                },
+                8: {
+                    "layout": ["NHWC"],
+                    "types": ["INT32"],
+                    "dimensions": [0]
+                },
+                9: {
+                    "layout": ["NHWC"],
+                    "types": ["INT32"],
+                    "dimensions": [0]
+                }
+            },
+            "outputs": {
+                0: {
+                    "layout": ["NHWC"],
+                    "types": ["TENSOR_FLOAT32", "TENSOR_QUANT8_ASYMM"],
+                    "dimensions": [4]
+                }
+            }
+        },
+        "ARGMAX": {
+            "inputs": {
+                0: {
+                    "layout": ["NHWC"],
+                    "types": ["TENSOR_FLOAT32", "TENSOR_INT32", "TENSOR_QUANT8_ASYMM"],
+                    "dimensions": [1, 2, 3, 4]
+                },
+                1: {
+                    "layout": ["NHWC"],
+                    "types": ["INT32"],
+                    "dimensions": [0]
+                }
+            },
+            "outputs": {
+                0: {
+                    "layout": ["NHWC"],
+                    "types": ["TENSOR_INT32"],
+                    "dimensions": [1, 2, 3, 4]
+                }
+            }
+        },
+        "ADD": {
+            "inputs": {
+                0: {
+                    "layout": ["NHWC"],
+                    "types": ["TENSOR_FLOAT32", "TENSOR_QUANT8_ASYMM"],
+                    "dimensions": [1, 2, 3, 4]
+                },
+                1: {
+                    "layout": ["NHWC"],
+                    "types": ["TENSOR_FLOAT32", "TENSOR_QUANT8_ASYMM"],
+                    "dimensions": [1, 2, 3, 4]
+                },
+                2: {
+                    "layout": ["NHWC"],
+                    "types": ["INT32"],
+                    "dimensions": [0]
+                }
+            },
+            "outputs": {
+                0: {
+                    "layout": ["NHWC"],
+                    "types": ["TENSOR_FLOAT32", "TENSOR_QUANT8_ASYMM"],
+                    "dimensions": [1, 2, 3, 4]
+                }
+            }
+        },
+        "FULLY_CONNECTED": {
+            "inputs": {
+                0: {
+                    "layout": ["NHWC"],
+                    "types": ["TENSOR_FLOAT32", "TENSOR_QUANT8_ASYMM"],
+                    "dimensions": [1, 2, 3, 4]
+                },
+                1: {
+                    "layout": ["NHWC"],
+                    "types": ["TENSOR_FLOAT32", "TENSOR_QUANT8_ASYMM"],
+                    "dimensions": [2]
+                },
+                2: {
+                    "layout": ["NHWC"],
+                    "types": ["TENSOR_FLOAT32", "TENSOR_INT32", "TENSOR_QUANT8_ASYMM"],
+                    "dimensions": [1]
+                },
+                3: {
+                    "layout": ["NHWC"],
+                    "types": ["INT32"],
+                    "dimensions": [0]
+                }
+            },
+            "outputs": {
+                0: {
+                    "layout": ["NHWC"],
+                    "types": ["TENSOR_FLOAT32", "TENSOR_QUANT8_ASYMM"],
+                    "dimensions": [1, 2, 3, 4]
+                }
+            }
+        },
+        "LOGISTIC": {
+            "inputs": {
+                0: {
+                    "layout": ["NHWC"],
+                    "types": ["TENSOR_FLOAT32", "TENSOR_QUANT8_ASYMM"],
+                    "dimensions": [1, 2, 3, 4]
+                }
+            },
+            "outputs": {
+                0: {
+                    "layout": ["NHWC"],
+                    "types": ["TENSOR_FLOAT32", "TENSOR_QUANT8_ASYMM"],
+                    "dimensions": [1, 2, 3, 4]
+                }
+            }
+        },
+        "MAX_POOL_2D": {
+            "inputs": {
+                0: {
+                    "layout": ["NHWC"],
+                    "types": ["TENSOR_FLOAT32", "TENSOR_QUANT8_ASYMM"],
+                    "dimensions": [4]
+                },
+                1: {
+                    "layout": ["NHWC"],
+                    "types": ["INT32"],
+                    "dimensions": [0]
+                },
+                2: {
+                    "layout": ["NHWC"],
+                    "types": ["INT32"],
+                    "dimensions": [0]
+                },
+                3: {
+                    "layout": ["NHWC"],
+                    "types": ["INT32"],
+                    "dimensions": [0]
+                },
+                4: {
+                    "layout": ["NHWC"],
+                    "types": ["INT32"],
+                    "dimensions": [0]
+                },
+                5: {
+                    "layout": ["NHWC"],
+                    "types": ["INT32"],
+                    "dimensions": [0]
+                },
+                6: {
+                    "layout": ["NHWC"],
+                    "types": ["INT32"],
+                    "dimensions": [0]
+                },
+                7: {
+                    "layout": ["NHWC"],
+                    "types": ["INT32"],
+                    "dimensions": [0]
+                },
+                8: {
+                    "layout": ["NHWC"],
+                    "types": ["INT32"],
+                    "dimensions": [0]
+                },
+                9: {
+                    "layout": ["NHWC"],
+                    "types": ["INT32"],
+                    "dimensions": [0]
+                }
+            },
+            "outputs": {
+                0: {
+                    "layout": ["NHWC"],
+                    "types": ["TENSOR_FLOAT32", "TENSOR_QUANT8_ASYMM"],
+                    "dimensions": [4]
+                }
+            }
+        },
+        "MUL": {
+            "inputs": {
+                0: {
+                    "layout": ["NHWC"],
+                    "types": ["TENSOR_FLOAT32", "TENSOR_QUANT8_ASYMM"],
+                    "dimensions": [1, 2, 3, 4]
+                },
+                1: {
+                    "layout": ["NHWC"],
+                    "types": ["TENSOR_FLOAT32", "TENSOR_QUANT8_ASYMM"],
+                    "dimensions": [1, 2, 3, 4]
+                },
+                2: {
+                    "layout": ["NHWC"],
+                    "types": ["INT32"],
+                    "dimensions": [0]
+                }
+            },
+            "outputs": {
+                0: {
+                    "layout": ["NHWC"],
+                    "types": ["TENSOR_FLOAT32", "TENSOR_QUANT8_ASYMM"],
+                    "dimensions": [1, 2, 3, 4]
+                }
+            }
+        },
+        "TANH": {
+            "inputs": {
+                0: {
+                    "layout": ["NHWC"],
+                    "types": ["TENSOR_FLOAT32"],
+                    "dimensions": [1, 2, 3, 4]
+                }
+            },
+            "outputs": {
+                0: {
+                    "layout": ["NHWC"],
+                    "types": ["TENSOR_FLOAT32"],
+                    "dimensions": [1, 2, 3, 4]
+                }
+            }
+        },
+        "BATCH_TO_SPACE_ND": {
+            "inputs": {
+                0: {
+                    "layout": ["NHWC"],
+                    "types": ["TENSOR_FLOAT32", "TENSOR_QUANT8_ASYMM"],
+                    "dimensions": [4]
+                },
+                1: {
+                    "layout": ["NHWC"],
+                    "types": ["TENSOR_INT32"],
+                    "dimensions": [1]
+                }
+            },
+            "outputs": {
+                0: {
+                    "layout": ["NHWC"],
+                    "types": ["TENSOR_FLOAT32", "TENSOR_QUANT8_ASYMM"],
+                    "dimensions": [4]
+                }
+            }
+        },
+    }
+    # end
 
-# Take a model from command line
-def import_source():
-  parser = argparse.ArgumentParser()
-  parser.add_argument("spec", help="the spec file")
-  parser.add_argument(
-      "-m", "--model", help="the output model file", default="-")
-  parser.add_argument(
-      "-e", "--example", help="the output example file", default="-")
-  parser.add_argument(
-      "-js", "--jsTest", help="the output javascript file", default="-")
-  parser.add_argument(
-      "-a", "--alljsTest", help="the output javascript file with one file", default="-")
-  args = parser.parse_args()
-
-  if os.path.exists(args.spec):
-    FileNames.SpecFile = os.path.basename(args.spec)
-    exec (open(args.spec).read())
-
-  return (args.spec, args.model, args.example, args.jsTest, args.alljsTest)
-
-
-def print_cts_op(filename, op):
-  fmt = op.Definition()
-  if fmt is not None:
-    print ("  %s" % fmt, file = filename)
-  return True
-
-def get_obj_inputs():
-  return Operand.print_operands(Input.get_inputs(True))
-
-def get_obj_outputs():
-  return Operand.print_operands(Output.get_outputs())
-
-def js_obj_supplement():
-  for i, o in Example.get_examples():
-    for name, value in i.items():
-      for obj in js_obj:
-        if str(name) == obj["obj"]:
-          obj["value_name"] = str(name) + "_value"
-          obj["value"] = value
-
-    for name, value in o.items():
-      for obj in js_obj:
-        if str(name) == obj["obj"]:
-          obj["value_name"] = str(name) + "_expect"
-          obj["length"] = str(obj["type_name"]) + "_length"
-          obj["value"] = value
-
-def js_print_examples(name, value, filename):
-  for obj in js_obj:
-    if str(name) == obj.get("obj"):
-      print ("    let %s = %s;"%(obj.get("value_name"), value), file = filename)
-
-def js_print_set_operand_value(obj_inputs, filename):
-  if len(obj_inputs) > 1:
-    js_obj_input = obj_inputs[0]
-
-    for obj_input in obj_inputs:
-      if not obj_input == js_obj_input:
-        for obj in js_obj:
-          if str(obj_input) == obj.get("obj"):
-            if obj.get("type") in ["INT32", "TENSOR_INT32", "UINT32"]:
-              str_array = "Int32Array"
-            elif obj.get("type") == "TENSOR_QUANT8_ASYMM":
-              str_array = "Uint8Array"
-            else :
-              str_array = "Float32Array"
-
-            obj["input_name"] = obj.get("obj") + "_input"
-
-            print ("    let %s = new %s(%s);"%(obj.get("input_name"), str_array, obj.get("value_name")), file = filename)
-            print ("    model.setOperandValue(%s, %s);\n"%(obj.get("obj"), obj.get("input_name")), file = filename)
-  else :
-    js_obj_input = obj_inputs[0]
-
-  return js_obj_input
-
-def js_print_set_input_value(only_input, filename):
-  count = 0
-
-  for obj in js_obj:
-    if str(only_input) == obj.get("obj"):
-      if obj.get("type") in ["INT32", "TENSOR_INT32", "UINT32"]:
-        str_array = "Int32Array"
-      elif obj.get("type") == "TENSOR_QUANT8_ASYMM":
-        str_array = "Uint8Array"
-      else :
-        str_array = "Float32Array"
-
-      obj["input_name"] = obj.get("obj") + "_input"
-
-      print ("    let %s = new %s(%s);"%(obj.get("input_name"), str_array, obj.get("value_name")), file = filename)
-      print ("    execution.setInput(%s, %s);\n"%(count, obj.get("input_name")), file = filename)
-
-      count = count + 1
-
-def js_print_set_output_value(obj_outputs, filename):
-  count = 0
-
-  for obj_output in obj_outputs:
-    for obj in js_obj:
-      if str(obj_output) == obj.get("obj"):
-        if obj.get("type") in ["INT32", "TENSOR_INT32", "UINT32"]:
-          str_array = "Int32Array"
-        elif obj.get("type") == "TENSOR_QUANT8_ASYMM":
-          str_array = "Uint8Array"
-        else :
-          str_array = "Float32Array"
-
-        obj["output_name"] = obj.get("obj") + "_output"
-
-        print ("    let %s = new %s(%s);"%(obj.get("output_name"), str_array, obj.get("length")), file = filename)
-        print ("    execution.setOutput(%s, %s);\n"%(count, obj.get("output_name")), file = filename)
-
-        count = count + 1
-
-def js_print_assert(obj_outputs, filename):
-  for obj_output in obj_outputs:
-    for obj in js_obj:
-      if str(obj_output) == obj.get("obj"):
-        print ("    for (let i = 0; i < %s; ++i) {"%obj.get("length"), file = filename)
-        print ("      assert.isTrue(almostEqualCTS(%s[i], %s[i]));"%(obj.get("output_name"), obj.get("value_name")), file = filename)
-        print ("    }", file = filename)
-
-def js_print_model(ex_input, ex_output, count, filename, flag):
-  print ("", file = filename)
-
-  test_name = ""
-  test_index = ""
-  test_info = FileNames.SpecFile[:-7].capitalize().replace("_", " ")
-
-  if test_info.split(" ")[-1].isdigit():
-    test_name = " ".join(test_info.split(" ")[:-1])
-    test_index = test_info.split(" ")[-1]
-  else:
-    test_name = test_info
-
-  if flag:
-    if test_index == "":
-      print ("  it('check result for %s example', async function() {"%test_name, file = filename)
-    else:
-      print ("  it('check result for %s example/%s', async function() {"%(test_name, test_index), file = filename)
-  else:
-    if test_index == "":
-      print ("  it('check result for %s example-%s', async function() {"%(test_name, count), file = filename)
-    else:
-      print ("  it('check result for %s example/%s-%s', async function() {"%(test_name, test_index, count), file = filename)
-
-  print ("    let model = await nn.createModel(" + args + ");", file = filename)
-  print ("    let operandIndex = 0;\n", file = filename)
-
-  for name, value in ex_input.items():
-    js_print_examples(name, value, filename)
-  for name, value in ex_output.items():
-    js_print_examples(name, value, filename)
-
-  print ("", file = filename)
-  Type.dump(filename)
-  print ("", file = filename)
-
-  Operand.operands.dump(filename)
-
-  print ("", file = filename)
-
-  obj_inputs = get_obj_inputs()
-  obj_outputs = get_obj_outputs()
-
-  js_obj_input = js_print_set_operand_value(obj_inputs, filename)
-
-  TopologicalSort(lambda x: print_cts_op(filename, x))
-  print ("", file = filename)
-
-  print ("    model.identifyInputsAndOutputs([" + js_obj_input + "], [" + ", ".join(obj_outputs) + "]);", file = filename)
-  print ("    await model.finish();\n", file = filename)
-
-  print ("    let compilation = await model.createCompilation();", file = filename)
-  print ("    compilation.setPreference(getPreferenceCode(options.prefer));", file = filename)
-  print ("    await compilation.finish();\n", file = filename)
-  print ("    let execution = await compilation.createExecution();\n", file = filename)
-
-  js_print_set_input_value(js_obj_input, filename)
-  js_print_set_output_value(obj_outputs, filename)
-
-  print ("    await execution.startCompute();\n", file = filename)
-
-  js_print_assert(obj_outputs, filename)
-
-  print ('  });', file = filename)
-
-
-if __name__ == '__main__':
-  js_format = {"obj": None, "value_name": None, "value": None, "type_name": None, "type": None, "length": None, "output_name": None, "input_name": None}
-  js_obj = []
-  js_format.clear()
-
-  (spec, model, example, jsTest, alljsTest) = import_source()
-  # Boilerplate
-  args = ""
-
-  ModelArgument("options")
-
-  if len(ModelArgument.get_arguments()) > 0:
-    args = ", ".join(ModelArgument.get_arguments())
-
-  js_obj_supplement()
-
-  print("Input nn test: %s" % spec, file = sys.stderr)
-  print("Output js test: %s \n" % jsTest, file = sys.stderr)
-
-  JS_FLAG = True
-  with smart_open(jsTest) as js_file:
-    print ("describe('CTS', function() {", file = js_file)
-    print ("  const assert = chai.assert;", file = js_file)
-    print ("  const nn = navigator.ml.getNeuralNetworkContext();", file = js_file)
-
-    index_flag = len(Example.get_examples()) == 1
-    count = 1
-    for i, o in Example.get_examples():
-      js_print_model(i, o, count, js_file, index_flag)
-
-      if alljsTest != "-":
-        with open(alljsTest, "a+") as all_js_Test:
-          js_print_model(i, o, count, all_js_Test, index_flag)
-
-      count = count + 1
-
-    print ('});', file = js_file)
-
-#    for obj in js_obj:
-#      print (obj, file = sys.stderr)
+    @staticmethod
+    def useSHM():
+        return Configuration.use_shm_for_weights
