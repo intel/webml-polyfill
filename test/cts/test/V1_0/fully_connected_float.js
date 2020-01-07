@@ -1,21 +1,23 @@
+// Generated file (from: fully_connected_float.mod.py). Do not edit
 describe('CTS', function() {
   const assert = chai.assert;
   const nn = navigator.ml.getNeuralNetworkContext();
 
   it('check result for Fully connected float example', async function() {
+    // For 'Fully connected float' example: examples
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
     let op1_value = [2, 32, 16];
     let op3_expect = [8, 68, 36];
 
-    let type3 = {type: nn.INT32};
+    let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [3, 1]};
+    let type0_length = product(type0.dimensions);
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 1]};
     let type1_length = product(type1.dimensions);
     let type2 = {type: nn.TENSOR_FLOAT32, dimensions: [1]};
     let type2_length = product(type2.dimensions);
-    let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [3, 1]};
-    let type0_length = product(type0.dimensions);
+    let type3 = {type: nn.INT32};
 
     let op1 = operandIndex++;
     model.addOperand(type0);
@@ -23,10 +25,10 @@ describe('CTS', function() {
     model.addOperand(type1);
     let b0 = operandIndex++;
     model.addOperand(type2);
-    let op3 = operandIndex++;
-    model.addOperand(type0);
     let act = operandIndex++;
     model.addOperand(type3);
+    let op3 = operandIndex++;
+    model.addOperand(type0);
 
     model.setOperandValue(op2, new Float32Array([2]));
     model.setOperandValue(b0, new Float32Array([4]));
@@ -44,7 +46,6 @@ describe('CTS', function() {
 
     let op1_input = new Float32Array(op1_value);
     execution.setInput(0, op1_input);
-
     let op3_output = new Float32Array(type0_length);
     execution.setOutput(0, op3_output);
 

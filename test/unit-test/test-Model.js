@@ -8418,7 +8418,7 @@ describe('Unit Test/Model Test', function() {
 
     it('"4-D tensors as input0 that is TENSOR_FLOAT32 type and input1 that is INT32 type and 3-D tensor as output0 that is TENSOR_INT32 type" are ok for "ARGMAX" operation', function() {
       return nn.createModel(options).then((model)=>{
-        let input0 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 1, 1, 4]]};
+        let input0 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 1, 1, 4]};
         let input1 = {type: nn.INT32};
         let output0 = {type: nn.TENSOR_INT32, dimensions: [1, 1, 1]};
         model.addOperand(input0);
@@ -8460,7 +8460,7 @@ describe('Unit Test/Model Test', function() {
 
     it('raise error when 5-D tensor as input0 that is TENSOR_FLOAT32 type and input1 that is INT32 type and 4-D tensor as output0 that is TENSOR_INT32 type for "ARGMAX" operation', function() {
       return nn.createModel(options).then((model)=>{
-        let input0 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 1, 1, 1, 4]]};
+        let input0 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 1, 1, 1, 4]};
         let input1 = {type: nn.INT32};
         let output0 = {type: nn.TENSOR_INT32, dimensions: [1, 1, 1, 1]};
         model.addOperand(input0);
@@ -8601,7 +8601,7 @@ describe('Unit Test/Model Test', function() {
     it('raise error when the type of input1 is TENSOR_FLOAT32 (not INT32) for "ARGMAX" operation', function() {
       return nn.createModel(options).then((model)=>{
         let input0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2, 2]};
-        let input1 = {type: nn.TENSOR_FLOAT32, , dimensions: [1]};
+        let input1 = {type: nn.TENSOR_FLOAT32, dimensions: [1]};
         let output0 = {type: nn.TENSOR_INT32, dimensions: [2, 2, 2]};
         model.addOperand(input0);
         model.addOperand(input1);
@@ -8615,7 +8615,7 @@ describe('Unit Test/Model Test', function() {
     it('raise error when the type of input1 is TENSOR_INT32 (not INT32) for "ARGMAX" operation', function() {
       return nn.createModel(options).then((model)=>{
         let input0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2, 2]};
-        let input1 = {type: nn.TENSOR_INT32, , dimensions: [1]};
+        let input1 = {type: nn.TENSOR_INT32, dimensions: [1]};
         let output0 = {type: nn.TENSOR_INT32, dimensions: [2, 2, 2]};
         model.addOperand(input0);
         model.addOperand(input1);

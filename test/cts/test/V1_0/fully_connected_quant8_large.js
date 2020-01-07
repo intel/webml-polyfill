@@ -1,21 +1,23 @@
+// Generated file (from: fully_connected_quant8_large.mod.py). Do not edit
 describe('CTS', function() {
   const assert = chai.assert;
   const nn = navigator.ml.getNeuralNetworkContext();
 
   it('check result for Fully connected quant8 large example', async function() {
+    // For 'Fully connected quant8 large' example: examples
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
     let op1_value = [10, 10, 10, 10, 10];
     let op3_expect = [32];
 
-    let type3 = {type: nn.INT32};
-    let type1 = {type: nn.TENSOR_INT32, dimensions: [1], scale: 0.04, zeroPoint: 0};
-    let type1_length = product(type1.dimensions);
-    let type2 = {type: nn.TENSOR_QUANT8_ASYMM, dimensions: [1, 1], scale: 1., zeroPoint: 0};
-    let type2_length = product(type2.dimensions);
     let type0 = {type: nn.TENSOR_QUANT8_ASYMM, dimensions: [1, 5], scale: 0.2, zeroPoint: 0};
     let type0_length = product(type0.dimensions);
+    let type1 = {type: nn.TENSOR_INT32, dimensions: [1], scale: 0.04, zeroPoint: 0};
+    let type1_length = product(type1.dimensions);
+    let type2 = {type: nn.TENSOR_QUANT8_ASYMM, dimensions: [1, 1], scale: 1.0, zeroPoint: 0};
+    let type2_length = product(type2.dimensions);
+    let type3 = {type: nn.INT32};
 
     let op1 = operandIndex++;
     model.addOperand(type0);
@@ -23,10 +25,10 @@ describe('CTS', function() {
     model.addOperand(type0);
     let b0 = operandIndex++;
     model.addOperand(type1);
-    let op3 = operandIndex++;
-    model.addOperand(type2);
     let act = operandIndex++;
     model.addOperand(type3);
+    let op3 = operandIndex++;
+    model.addOperand(type2);
 
     model.setOperandValue(op2, new Uint8Array([10, 20, 20, 20, 10]));
     model.setOperandValue(b0, new Int32Array([10]));
@@ -44,7 +46,6 @@ describe('CTS', function() {
 
     let op1_input = new Uint8Array(op1_value);
     execution.setInput(0, op1_input);
-
     let op3_output = new Uint8Array(type2_length);
     execution.setOutput(0, op3_output);
 

@@ -1,8 +1,10 @@
+// Generated file (from: depthwise_conv2d_float_weights_as_inputs.mod.py). Do not edit
 describe('CTS', function() {
   const assert = chai.assert;
   const nn = navigator.ml.getNeuralNetworkContext();
 
   it('check result for Depthwise conv2d float weights as inputs example', async function() {
+    // For 'Depthwise conv2d float weights as inputs' example: examples
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -11,13 +13,13 @@ describe('CTS', function() {
     let op3_value = [1, 2, 3, 4];
     let op4_expect = [11, 3, 7.2, 10.6, 11, 3, 7.4, 10.9, 11, 3, 7.8, 11.5, 11, 3, 8.0, 11.8];
 
-    let type3 = {type: nn.INT32};
-    let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2, 4]};
-    let type1_length = product(type1.dimensions);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 3, 3, 2]};
     let type0_length = product(type0.dimensions);
+    let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2, 4]};
+    let type1_length = product(type1.dimensions);
     let type2 = {type: nn.TENSOR_FLOAT32, dimensions: [4]};
     let type2_length = product(type2.dimensions);
+    let type3 = {type: nn.INT32};
 
     let op1 = operandIndex++;
     model.addOperand(type0);
@@ -27,25 +29,22 @@ describe('CTS', function() {
     model.addOperand(type2);
     let pad0 = operandIndex++;
     model.addOperand(type3);
-    let act = operandIndex++;
-    model.addOperand(type3);
     let stride = operandIndex++;
     model.addOperand(type3);
     let channelMultiplier = operandIndex++;
     model.addOperand(type3);
+    let act = operandIndex++;
+    model.addOperand(type3);
     let op4 = operandIndex++;
     model.addOperand(type1);
 
-    let op2_input = new Float32Array(op2_value);
-    model.setOperandValue(op2, op2_input);
-
-    let op3_input = new Float32Array(op3_value);
-    model.setOperandValue(op3, op3_input);
+    model.setOperandValue(op2, new Float32Array(op2_value));
+    model.setOperandValue(op3, new Float32Array(op3_value));
 
     model.setOperandValue(pad0, new Int32Array([0]));
-    model.setOperandValue(act, new Int32Array([0]));
     model.setOperandValue(stride, new Int32Array([1]));
     model.setOperandValue(channelMultiplier, new Int32Array([2]));
+    model.setOperandValue(act, new Int32Array([0]));
     model.addOperation(nn.DEPTHWISE_CONV_2D, [op1, op2, op3, pad0, pad0, pad0, pad0, stride, stride, channelMultiplier, act], [op4]);
 
     model.identifyInputsAndOutputs([op1], [op4]);
@@ -59,7 +58,6 @@ describe('CTS', function() {
 
     let op1_input = new Float32Array(op1_value);
     execution.setInput(0, op1_input);
-
     let op4_output = new Float32Array(type1_length);
     execution.setOutput(0, op4_output);
 

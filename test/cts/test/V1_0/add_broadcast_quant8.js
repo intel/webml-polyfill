@@ -1,8 +1,10 @@
+// Generated file (from: add_broadcast_quant8.mod.py). Do not edit
 describe('CTS', function() {
   const assert = chai.assert;
   const nn = navigator.ml.getNeuralNetworkContext();
 
   it('check result for Add broadcast quant8 example', async function() {
+    // For 'Add broadcast quant8' example: examples
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -10,11 +12,11 @@ describe('CTS', function() {
     let op2_value = [1, 2, 3, 4];
     let op3_expect = [3, 6, 5, 8];
 
-    let type2 = {type: nn.INT32};
     let type0 = {type: nn.TENSOR_QUANT8_ASYMM, dimensions: [1, 2], scale: 2.0, zeroPoint: 0};
     let type0_length = product(type0.dimensions);
     let type1 = {type: nn.TENSOR_QUANT8_ASYMM, dimensions: [2, 2], scale: 1.0, zeroPoint: 0};
     let type1_length = product(type1.dimensions);
+    let type2 = {type: nn.INT32};
 
     let op1 = operandIndex++;
     model.addOperand(type0);
@@ -25,8 +27,7 @@ describe('CTS', function() {
     let op3 = operandIndex++;
     model.addOperand(type1);
 
-    let op2_input = new Uint8Array(op2_value);
-    model.setOperandValue(op2, op2_input);
+    model.setOperandValue(op2, new Uint8Array(op2_value));
 
     model.setOperandValue(act, new Int32Array([0]));
     model.addOperation(nn.ADD, [op1, op2, act], [op3]);
@@ -42,7 +43,6 @@ describe('CTS', function() {
 
     let op1_input = new Uint8Array(op1_value);
     execution.setInput(0, op1_input);
-
     let op3_output = new Uint8Array(type1_length);
     execution.setOutput(0, op3_output);
 

@@ -1,8 +1,10 @@
+// Generated file (from: logistic_float_1.mod.py). Do not edit
 describe('CTS', function() {
   const assert = chai.assert;
   const nn = navigator.ml.getNeuralNetworkContext();
 
   it('check result for Logistic float example/1', async function() {
+    // For 'Logistic float' example: examples
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -30,7 +32,6 @@ describe('CTS', function() {
 
     let op1_input = new Float32Array(op1_value);
     execution.setInput(0, op1_input);
-
     let op3_output = new Float32Array(type0_length);
     execution.setOutput(0, op3_output);
 

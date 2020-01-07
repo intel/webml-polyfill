@@ -1,8 +1,10 @@
+// Generated file (from: conv_3_h3_w2_VALID.mod.py). Do not edit
 describe('CTS', function() {
   const assert = chai.assert;
   const nn = navigator.ml.getNeuralNetworkContext();
 
   it('check result for Conv 3 h3 w2 valid example-1', async function() {
+    // For 'Conv 3 h3 w2 valid' example: examples
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -10,15 +12,21 @@ describe('CTS', function() {
     let op3_expect = [-0.186842, -1.87308, 1.21135, -0.385009, 1.72032, -1.56036, -1.23059, 1.23694, 0.00200015, 0.359522, 1.60084, 0.434006, -0.282945, 2.37292, -1.28653, 0.0847837, -0.352093, -2.39659, 0.149246, 0.920351, -1.34346, 0.484796, -1.19989, -0.684298, -1.41301, 0.103177, -0.307039, 1.17741, 2.58936, -2.76237, -1.21565, -1.09619, 1.17432, 0.512143, 0.771379, 0.399879, -0.0533093, 0.290864, 0.95563, 1.16328, 1.80768, -1.52564, 1.2248, 0.237127, -0.213297, -0.619941, 0.497944, -1.68688, 1.59314, -0.127337, 0.111419, 1.13719, 1.68537, -0.479644, 1.18608, -2.52744, 1.34136, 0.548297, -2.0838, 2.64585, -0.993354, 0.128238, 1.26092, -0.629126, -0.949229, 2.25828, -1.961, 0.00589599, -0.187854, -1.02403, 0.396121, 1.3704, 3.99355, 0.434221, 0.274464, -0.562438, -0.914871, 0.539129, -0.928687, 0.834954, 0.844178, -0.566053, -0.957341, 0.933336, -0.414666, -0.452821, -0.706006, -1.72657, -0.726574, -0.0979362, -0.478669, 1.78703, -0.639288, 1.48565, -0.179904, 1.01003, -0.317118, -0.675387, 1.90969, -1.38343, 0.697255, -0.292255, 1.81634, 0.717801, 0.862479, -0.481893, -0.135565, -2.95941, 0.247846, 2.67757, -2.23999, -0.519673, 0.254447, 0.415283, -1.01065, 0.507911, 0.979926, -0.184304, -0.000950437, -0.734348, -0.196685, -0.713241, 0.594972, 0.0845044, 2.48496, 0.385019];
 
     let type0 = {type: nn.INT32};
-    let type2 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 6, 7, 3]};
-    let type2_length = product(type2.dimensions);
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 8, 8, 3]};
     let type1_length = product(type1.dimensions);
+    let type2 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 6, 7, 3]};
+    let type2_length = product(type2.dimensions);
     let type3 = {type: nn.TENSOR_FLOAT32, dimensions: [3, 3, 2, 3]};
     let type3_length = product(type3.dimensions);
     let type4 = {type: nn.TENSOR_FLOAT32, dimensions: [3]};
     let type4_length = product(type4.dimensions);
 
+    let op2 = operandIndex++;
+    model.addOperand(type1);
+    let op0 = operandIndex++;
+    model.addOperand(type3);
+    let op1 = operandIndex++;
+    model.addOperand(type4);
     let b4 = operandIndex++;
     model.addOperand(type0);
     let b5 = operandIndex++;
@@ -27,21 +35,15 @@ describe('CTS', function() {
     model.addOperand(type0);
     let b7 = operandIndex++;
     model.addOperand(type0);
-    let op2 = operandIndex++;
-    model.addOperand(type1);
     let op3 = operandIndex++;
     model.addOperand(type2);
-    let op0 = operandIndex++;
-    model.addOperand(type3);
-    let op1 = operandIndex++;
-    model.addOperand(type4);
 
+    model.setOperandValue(op0, new Float32Array([-0.966213, -0.579455, -0.684259, 0.738216, 0.184325, 0.0973683, -0.176863, -0.23936, -0.000233404, 0.055546, -0.232658, -0.316404, -0.012904, 0.320705, -0.326657, -0.919674, 0.868081, -0.824608, -0.467474, 0.0278809, 0.563238, 0.386045, -0.270568, -0.941308, -0.779227, -0.261492, -0.774804, -0.79665, 0.22473, -0.414312, 0.685897, -0.327792, 0.77395, -0.714578, -0.972365, 0.0696099, -0.82203, -0.79946, 0.37289, -0.917775, 0.82236, -0.144706, -0.167188, 0.268062, 0.702641, -0.412223, 0.755759, 0.721547, -0.43637, -0.274905, -0.269165, 0.16102, 0.819857, -0.312008]));
+    model.setOperandValue(op1, new Float32Array([0, 0, 0]));
     model.setOperandValue(b4, new Int32Array([2]));
     model.setOperandValue(b5, new Int32Array([1]));
     model.setOperandValue(b6, new Int32Array([1]));
     model.setOperandValue(b7, new Int32Array([0]));
-    model.setOperandValue(op0, new Float32Array([-0.966213, -0.579455, -0.684259, 0.738216, 0.184325, 0.0973683, -0.176863, -0.23936, -0.000233404, 0.055546, -0.232658, -0.316404, -0.012904, 0.320705, -0.326657, -0.919674, 0.868081, -0.824608, -0.467474, 0.0278809, 0.563238, 0.386045, -0.270568, -0.941308, -0.779227, -0.261492, -0.774804, -0.79665, 0.22473, -0.414312, 0.685897, -0.327792, 0.77395, -0.714578, -0.972365, 0.0696099, -0.82203, -0.79946, 0.37289, -0.917775, 0.82236, -0.144706, -0.167188, 0.268062, 0.702641, -0.412223, 0.755759, 0.721547, -0.43637, -0.274905, -0.269165, 0.16102, 0.819857, -0.312008]));
-    model.setOperandValue(op1, new Float32Array([0, 0, 0]));
     model.addOperation(nn.CONV_2D, [op2, op0, op1, b4, b5, b6, b7], [op3]);
 
     model.identifyInputsAndOutputs([op2], [op3]);
@@ -55,7 +57,6 @@ describe('CTS', function() {
 
     let op2_input = new Float32Array(op2_value);
     execution.setInput(0, op2_input);
-
     let op3_output = new Float32Array(type2_length);
     execution.setOutput(0, op3_output);
 
@@ -67,6 +68,7 @@ describe('CTS', function() {
   });
 
   it('check result for Conv 3 h3 w2 valid example-2', async function() {
+    // For 'Conv 3 h3 w2 valid' example: examples_2
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -74,15 +76,21 @@ describe('CTS', function() {
     let op3_expect = [1.06709, -1.16534, 1.52694, -0.797245, 0.802736, -0.997109, 2.2661, -1.45548, 2.15506, -1.33682, 1.15225, -3.09324, 0.943457, 0.885211, 0.987944, -0.345875, -0.114708, 1.7107, 0.104745, 0.828324, -2.49964, -0.489415, 1.74889, -0.378257, -2.10237, 0.613022, -2.5225, -0.746785, 3.63816, -1.9287, 0.774279, -0.613917, -0.650011, 1.03753, -0.177923, 0.891815, -1.00373, 1.83859, -1.59239, -0.0662623, 0.218806, -1.088, 3.04734, -1.57302, 1.10881, -0.980369, -3.85305, -0.955859, 1.64909, 2.33573, 0.31144, -0.594375, 0.325747, -0.952566, -0.613449, 2.85073, 1.94692, 1.12977, 1.1351, -0.449652, 0.118765, -0.199547, 2.873, 1.38049, 2.38342, 0.882321, 1.03795, -0.321571, -2.60202, -1.6372, 1.09302, 0.461768, 1.8485, -0.158928, 4.28871, -0.437375, -1.5794, 1.59869, 0.0811864, 0.912054, 0.452176, 2.01812, 2.62907, 1.50304, 0.609824, -0.11105, 3.35635, 2.02386, 1.4687, -0.708365, -0.508992, -3.02602, -0.75725, 1.85277, 2.92817, -0.172997, -1.13279, -0.355636, -0.337669, -0.588752, 2.05759, 1.0651, 0.884758, -0.0712112, 3.81319, -2.19264, 0.114521, 0.543556, -1.63197, -0.267442, 1.15701, -2.37862, 2.57646, 0.531208, 0.9499, -0.231441, 1.51461, 1.58888, 0.895931, -0.753084, 0.545251, 0.746904, 0.0129939, -0.790398, -1.1055, 1.77789];
 
     let type0 = {type: nn.INT32};
-    let type2 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 6, 7, 3]};
-    let type2_length = product(type2.dimensions);
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 8, 8, 3]};
     let type1_length = product(type1.dimensions);
+    let type2 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 6, 7, 3]};
+    let type2_length = product(type2.dimensions);
     let type3 = {type: nn.TENSOR_FLOAT32, dimensions: [3, 3, 2, 3]};
     let type3_length = product(type3.dimensions);
     let type4 = {type: nn.TENSOR_FLOAT32, dimensions: [3]};
     let type4_length = product(type4.dimensions);
 
+    let op2 = operandIndex++;
+    model.addOperand(type1);
+    let op0 = operandIndex++;
+    model.addOperand(type3);
+    let op1 = operandIndex++;
+    model.addOperand(type4);
     let b4 = operandIndex++;
     model.addOperand(type0);
     let b5 = operandIndex++;
@@ -91,21 +99,15 @@ describe('CTS', function() {
     model.addOperand(type0);
     let b7 = operandIndex++;
     model.addOperand(type0);
-    let op2 = operandIndex++;
-    model.addOperand(type1);
     let op3 = operandIndex++;
     model.addOperand(type2);
-    let op0 = operandIndex++;
-    model.addOperand(type3);
-    let op1 = operandIndex++;
-    model.addOperand(type4);
 
+    model.setOperandValue(op0, new Float32Array([-0.966213, -0.579455, -0.684259, 0.738216, 0.184325, 0.0973683, -0.176863, -0.23936, -0.000233404, 0.055546, -0.232658, -0.316404, -0.012904, 0.320705, -0.326657, -0.919674, 0.868081, -0.824608, -0.467474, 0.0278809, 0.563238, 0.386045, -0.270568, -0.941308, -0.779227, -0.261492, -0.774804, -0.79665, 0.22473, -0.414312, 0.685897, -0.327792, 0.77395, -0.714578, -0.972365, 0.0696099, -0.82203, -0.79946, 0.37289, -0.917775, 0.82236, -0.144706, -0.167188, 0.268062, 0.702641, -0.412223, 0.755759, 0.721547, -0.43637, -0.274905, -0.269165, 0.16102, 0.819857, -0.312008]));
+    model.setOperandValue(op1, new Float32Array([0, 0, 0]));
     model.setOperandValue(b4, new Int32Array([2]));
     model.setOperandValue(b5, new Int32Array([1]));
     model.setOperandValue(b6, new Int32Array([1]));
     model.setOperandValue(b7, new Int32Array([0]));
-    model.setOperandValue(op0, new Float32Array([-0.966213, -0.579455, -0.684259, 0.738216, 0.184325, 0.0973683, -0.176863, -0.23936, -0.000233404, 0.055546, -0.232658, -0.316404, -0.012904, 0.320705, -0.326657, -0.919674, 0.868081, -0.824608, -0.467474, 0.0278809, 0.563238, 0.386045, -0.270568, -0.941308, -0.779227, -0.261492, -0.774804, -0.79665, 0.22473, -0.414312, 0.685897, -0.327792, 0.77395, -0.714578, -0.972365, 0.0696099, -0.82203, -0.79946, 0.37289, -0.917775, 0.82236, -0.144706, -0.167188, 0.268062, 0.702641, -0.412223, 0.755759, 0.721547, -0.43637, -0.274905, -0.269165, 0.16102, 0.819857, -0.312008]));
-    model.setOperandValue(op1, new Float32Array([0, 0, 0]));
     model.addOperation(nn.CONV_2D, [op2, op0, op1, b4, b5, b6, b7], [op3]);
 
     model.identifyInputsAndOutputs([op2], [op3]);
@@ -119,7 +121,6 @@ describe('CTS', function() {
 
     let op2_input = new Float32Array(op2_value);
     execution.setInput(0, op2_input);
-
     let op3_output = new Float32Array(type2_length);
     execution.setOutput(0, op3_output);
 

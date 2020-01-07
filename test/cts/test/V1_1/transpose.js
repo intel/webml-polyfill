@@ -1,8 +1,10 @@
+// Generated file (from: transpose.mod.py). Do not edit
 describe('CTS', function() {
   const assert = chai.assert;
   const nn = navigator.ml.getNeuralNetworkContext();
 
   it('check result for Transpose example', async function() {
+    // For 'Transpose' example: examples
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -35,7 +37,6 @@ describe('CTS', function() {
 
     let input_input = new Float32Array(input_value);
     execution.setInput(0, input_input);
-
     let output_output = new Float32Array(type0_length);
     execution.setOutput(0, output_output);
 
