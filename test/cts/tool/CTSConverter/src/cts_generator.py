@@ -363,7 +363,7 @@ def DumpJSTest(model, example, js_fd):
                        example.examplesName, p.GetValueAsNumpy()), file = sys.stderr)
                 return
 
-    # check
+    # check data type
     for operation in model.operations:
         if operation.optype not in Configuration.check_list.keys() and \
            operation.optype not in str(Configuration.check_list.keys()).lower():
@@ -444,6 +444,33 @@ def DumpJSTest(model, example, js_fd):
                            example.examplesName, model.operations[0].optype, inputOpName), file = sys.stderr)
                     return
 
+    # check: compatible dimensions
+    if model.operations[0].optype == "MUL" or model.operations[0].optype == "ADD":
+        if model.operands[0].type != model.operands[1].type:
+            if len(model.operands[0].type.dimensions) != 1 or len(model.operands[1].type.dimensions) != 1:
+                print ("    skip not support input(compatible dimensions): %s (%s - %s)" %(
+                       example.examplesName, model.operands[0].type.dimensions,
+                       model.operands[1].type.dimensions), file = sys.stderr)
+                return
+
+    # check: same dimensions
+    if model.operations[0].optype == "BATCH_TO_SPACE_ND" or model.operations[0].optype == "TRANSPOSE":
+        if example.model.GetInputs()[0].type.dimensions != example.model.GetOutputs()[0].type.dimensions:
+            print ("    skip not support output(same dimensions): %s (%s - %s)" %(
+                   example.examplesName, example.model.GetInputs()[0].type.dimensions,
+                   example.model.GetOutputs()[0].type.dimensions), file = sys.stderr)
+            return
+
+    # check: scale
+    if model.operations[0].optype == "CONV_2D" or model.operations[0].optype == "DEPTHWISE_CONV_2D":
+        if model.operands[0].type.type == "TENSOR_QUANT8_ASYMM":
+            if example.model.GetOutputs()[0].type.scale <= (
+               model.operands[0].type.scale * model.operands[1].type.scale):
+                print ("    skip not support output(scale): %s (%s <= (%s * %s))" %(
+                       example.examplesName, example.model.GetOutputs()[0].type.scale,
+                       model.operands[0].type.scale, model.operands[1].type.scale), file = sys.stderr)
+                return
+
     # set js test names
     test_name = ""
     test_index = ""
@@ -463,126 +490,126 @@ def DumpJSTest(model, example, js_fd):
 
     print ("", file = js_fd)
 
-    if Configuration.single_example_flag:
-        if test_index == "":
-            print ("  it('check result for %s example', async function() {"%test_name, file = js_fd)
-        else:
-            print ("  it('check result for %s example/%s', async function() {"%(
-                   test_name, test_index), file = js_fd)
-    else:
-        if test_index == "":
-            print ("  it('check result for %s example-%s', async function() {"%(
-                   test_name, Configuration.example_count), file = js_fd)
-        else:
-            print ("  it('check result for %s example/%s-%s', async function() {"%(
-                   test_name, test_index, Configuration.example_count), file = js_fd)
-
-    print ("    // For '%s' example: %s" %(test_name, example.examplesName), file = js_fd)
-    print ("    let model = await nn.createModel(%s);"%args, file = js_fd)
-    print ("    let operandIndex = 0;\n", file = js_fd)
-
-    # set input and output values
     for inputFeedDict, outputFeedDict in example.feedDicts:
+        if Configuration.single_example_flag:
+            if test_index == "":
+                print ("  it('check result for %s example', async function() {"%test_name, file = js_fd)
+            else:
+                print ("  it('check result for %s example/%s', async function() {"%(
+                       test_name, test_index), file = js_fd)
+        else:
+            if test_index == "":
+                print ("  it('check result for %s example-%s', async function() {"%(
+                       test_name, Configuration.example_count), file = js_fd)
+            else:
+                print ("  it('check result for %s example/%s-%s', async function() {"%(
+                       test_name, test_index, Configuration.example_count), file = js_fd)
+
+        print ("    // For '%s' example: %s" %(test_name, example.examplesName), file = js_fd)
+        print ("    let model = await nn.createModel(%s);"%args, file = js_fd)
+        print ("    let operandIndex = 0;\n", file = js_fd)
+
+        # set input and output values
         for inputOpName in example.model.GetInputs():
             print ("    let %s_value = %s;"%(inputOpName, inputFeedDict[inputOpName]), file = js_fd)
         for outputOpName in example.model.GetOutputs():
             print ("    let %s_expect = %s;"%(outputOpName, outputFeedDict[outputOpName]), file = js_fd)
         print ("", file = js_fd)
 
-    # set input and output types
-    for t in model.GetTypes():
-        if t.scale == 0.0 and t.zeroPoint == 0 and t.extraParams is None:
-            if t.type in ["FLOAT32", "INT32", "UINT32"]:
-                typeDef = "    let %s = {type: nn.%s};"%(t, t.type)
-            else :
-                typeDef = "    let %s = {type: nn.%s, dimensions: [%s]};\n    let %s_length = product(%s.dimensions);"%(
-                          t, t.type, t.GetDimensionsString()[1:-1], t, t)
-        else:
-            if t.extraParams is None or t.extraParams.hide:
-                typeDef = "    let %s = {type: nn.%s, dimensions: [%s], scale: %s, zeroPoint: %d};\n    let %s_length = product(%s.dimensions);"%(
-                          t, t.type, t.GetDimensionsString()[1:-1], tg.PrettyPrintAsFloat(t.scale)[:-1], t.zeroPoint, t, t)
+        # set input and output types
+        for t in model.GetTypes():
+            if t.scale == 0.0 and t.zeroPoint == 0 and t.extraParams is None:
+                if t.type in ["FLOAT32", "INT32", "UINT32"]:
+                    typeDef = "    let %s = {type: nn.%s};"%(t, t.type)
+                else :
+                    typeDef = "    let %s = {type: nn.%s, dimensions: [%s]};\n    let %s_length = product(%s.dimensions);"%(
+                              t, t.type, t.GetDimensionsString()[1:-1], t, t)
             else:
-                typeDef = "    let %s = {type: nn.%s, dimensions: [%s], scale: %s, zeroPoint: %d, %s};\n    let %s_length = product(%s.dimensions);"%(
-                          t, t.type, t.GetDimensionsString()[1:-1], tg.PrettyPrintAsFloat(t.scale)[:-1], t.zeroPoint,
-                          t.extraParams.GetConstructor(), t, t)
+                if t.extraParams is None or t.extraParams.hide:
+                    typeDef = "    let %s = {type: nn.%s, dimensions: [%s], scale: %s, zeroPoint: %d};\n    let %s_length = product(%s.dimensions);"%(
+                              t, t.type, t.GetDimensionsString()[1:-1], tg.PrettyPrintAsFloat(t.scale)[:-1], t.zeroPoint, t, t)
+                else:
+                    typeDef = "    let %s = {type: nn.%s, dimensions: [%s], scale: %s, zeroPoint: %d, %s};\n    let %s_length = product(%s.dimensions);"%(
+                              t, t.type, t.GetDimensionsString()[1:-1], tg.PrettyPrintAsFloat(t.scale)[:-1], t.zeroPoint,
+                              t.extraParams.GetConstructor(), t, t)
 
-        print (typeDef, file = js_fd)
-    print ("", file = js_fd)
-
-    # set operands
-    for op in model.operands:
-        print ("    let %s = operandIndex++;"%op, file = js_fd)
-        print ("    model.addOperand(%s);"%op.type, file = js_fd)
-    print ("", file = js_fd)
-
-    # set other inputs value(support only one input)
-    if len(example.model.GetInputs()) > 1:
-        for inputIndex in range(len(example.model.GetInputs())):
-            if inputIndex is not 0:
-                inputType = example.model.GetInputs()[inputIndex].type.type
-                str_array = typeToArray(inputType)
-                print ("    model.setOperandValue(%s, new %s(%s_value));"%(
-                       example.model.GetInputs()[inputIndex], str_array,
-                       example.model.GetInputs()[inputIndex]), file = js_fd)
+            print (typeDef, file = js_fd)
         print ("", file = js_fd)
 
-    # set parameter
-    for p in model.GetParameters():
-        parameterType = p.type.type
-        str_array = typeToArray(parameterType)
-        print ("    model.setOperandValue(%s, new %s([%s]));"%(
-               p, str_array, GetJointStr(p.value)), file = js_fd)
+        # set operands
+        for op in model.operands:
+            print ("    let %s = operandIndex++;"%op, file = js_fd)
+            print ("    model.addOperand(%s);"%op.type, file = js_fd)
+        print ("", file = js_fd)
 
-    # set operations
-    for op in model.operations:
-        print ("    model.addOperation(nn.%s, [%s], [%s]);"%(
-               op.optype, tg.GetJointStr(op.ins), tg.GetJointStr(op.outs)), file = js_fd)
-    print ("", file = js_fd)
+        # set other inputs value(support only one input)
+        if len(example.model.GetInputs()) > 1:
+            for inputIndex in range(len(example.model.GetInputs())):
+                if inputIndex is not 0:
+                    inputType = example.model.GetInputs()[inputIndex].type.type
+                    str_array = typeToArray(inputType)
+                    print ("    model.setOperandValue(%s, new %s(%s_value));"%(
+                           example.model.GetInputs()[inputIndex], str_array,
+                           example.model.GetInputs()[inputIndex]), file = js_fd)
+            print ("", file = js_fd)
 
-    # identify inputs and outputs
-    print ("    model.identifyInputsAndOutputs([%s], [%s]);"%(
-           example.model.GetInputs()[0], tg.GetJointStr(example.model.GetOutputs())), file = js_fd)
-    print ("    await model.finish();", file = js_fd)
-    print ("", file = js_fd)
+        # set parameter
+        for p in model.GetParameters():
+            parameterType = p.type.type
+            str_array = typeToArray(parameterType)
+            print ("    model.setOperandValue(%s, new %s([%s]));"%(
+                   p, str_array, GetJointStr(p.value)), file = js_fd)
 
-    # compiling model
-    print ("    let compilation = await model.createCompilation();", file = js_fd)
-    print ("    compilation.setPreference(getPreferenceCode(%s.prefer));"%args, file = js_fd)
-    print ("    await compilation.finish();", file = js_fd)
-    print ("", file = js_fd)
+        # set operations
+        for op in model.operations:
+            print ("    model.addOperation(nn.%s, [%s], [%s]);"%(
+                   op.optype, tg.GetJointStr(op.ins), tg.GetJointStr(op.outs)), file = js_fd)
+        print ("", file = js_fd)
 
-    # executing model
-    print ("    let execution = await compilation.createExecution();", file = js_fd)
-    print ("", file = js_fd)
+        # identify inputs and outputs
+        print ("    model.identifyInputsAndOutputs([%s], [%s]);"%(
+               example.model.GetInputs()[0], tg.GetJointStr(example.model.GetOutputs())), file = js_fd)
+        print ("    await model.finish();", file = js_fd)
+        print ("", file = js_fd)
 
-    # set input and output
-    inputType = example.model.GetInputs()[0].type.type
-    str_array = typeToArray(inputType)
-    print ("    let %s_input = new %s(%s_value);"%(
-           example.model.GetInputs()[0], str_array, example.model.GetInputs()[0]), file = js_fd)
-    print ("    execution.setInput(0, %s_input);"%example.model.GetInputs()[0], file = js_fd)
+        # compiling model
+        print ("    let compilation = await model.createCompilation();", file = js_fd)
+        print ("    compilation.setPreference(getPreferenceCode(%s.prefer));"%args, file = js_fd)
+        print ("    await compilation.finish();", file = js_fd)
+        print ("", file = js_fd)
 
-    for outputIndex in range(len(example.model.GetOutputs())):
-        outputType = example.model.GetOutputs()[outputIndex].type.type
-        str_array = typeToArray(outputType)
-        print ("    let %s_output = new %s(%s_length);"%(
-               example.model.GetOutputs()[outputIndex], str_array,
-               example.model.GetOutputs()[outputIndex].type), file = js_fd)
-        print ("    execution.setOutput(%s, %s_output);"%(
-               outputIndex, example.model.GetOutputs()[outputIndex]), file = js_fd)
-    print ("", file = js_fd)
-    print ("    await execution.startCompute();", file = js_fd)
-    print ("", file = js_fd)
+        # executing model
+        print ("    let execution = await compilation.createExecution();", file = js_fd)
+        print ("", file = js_fd)
 
-    # assert output
-    for output in example.model.GetOutputs():
-        print ("    for (let i = 0; i < %s_length; ++i) {"%output.type, file = js_fd)
-        print ("      assert.isTrue(almostEqualCTS(%s_output[i], %s_expect[i]));"%(output, output), file = js_fd)
-        print ("    }", file = js_fd)
+        # set input and output
+        inputType = example.model.GetInputs()[0].type.type
+        str_array = typeToArray(inputType)
+        print ("    let %s_input = new %s(%s_value);"%(
+               example.model.GetInputs()[0], str_array, example.model.GetInputs()[0]), file = js_fd)
+        print ("    execution.setInput(0, %s_input);"%example.model.GetInputs()[0], file = js_fd)
 
-    print ("  });", file = js_fd)
+        for outputIndex in range(len(example.model.GetOutputs())):
+            outputType = example.model.GetOutputs()[outputIndex].type.type
+            str_array = typeToArray(outputType)
+            print ("    let %s_output = new %s(%s_length);"%(
+                   example.model.GetOutputs()[outputIndex], str_array,
+                   example.model.GetOutputs()[outputIndex].type), file = js_fd)
+            print ("    execution.setOutput(%s, %s_output);"%(
+                   outputIndex, example.model.GetOutputs()[outputIndex]), file = js_fd)
+        print ("", file = js_fd)
+        print ("    await execution.startCompute();", file = js_fd)
+        print ("", file = js_fd)
 
-    Configuration.example_count = Configuration.example_count + 1
+        # assert output
+        for output in example.model.GetOutputs():
+            print ("    for (let i = 0; i < %s_length; ++i) {"%output.type, file = js_fd)
+            print ("      assert.isTrue(almostEqualCTS(%s_output[i], %s_expect[i]));"%(output, output), file = js_fd)
+            print ("    }", file = js_fd)
+
+        print ("  });", file = js_fd)
+
+        Configuration.example_count = Configuration.example_count + 1
     model.dumped = True
 # end
 

@@ -83,7 +83,7 @@ def create(opath, file_dict, file_list, describe):
       file_text = file_read.readlines()
 
       for (line_num, line_text) in enumerate(file_text):
-        if line_num in range(5, len(file_text) - 1):
+        if line_num in range(4, len(file_text) - 1):
           with open(opath, "a+") as all_jsTest_file:
             all_jsTest_file.write(line_text)
 
