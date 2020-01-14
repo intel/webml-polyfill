@@ -453,14 +453,6 @@ def DumpJSTest(model, example, js_fd):
                        model.operands[1].type.dimensions), file = sys.stderr)
                 return
 
-    # check: same dimensions
-    if model.operations[0].optype == "BATCH_TO_SPACE_ND" or model.operations[0].optype == "TRANSPOSE":
-        if example.model.GetInputs()[0].type.dimensions != example.model.GetOutputs()[0].type.dimensions:
-            print ("    skip not support output(same dimensions): %s (%s - %s)" %(
-                   example.examplesName, example.model.GetInputs()[0].type.dimensions,
-                   example.model.GetOutputs()[0].type.dimensions), file = sys.stderr)
-            return
-
     # check: scale
     if model.operations[0].optype == "CONV_2D" or model.operations[0].optype == "DEPTHWISE_CONV_2D":
         if model.operands[0].type.type == "TENSOR_QUANT8_ASYMM":

@@ -148,7 +148,7 @@ if __name__ == "__main__":
     file_dict_all.update(plus_file_dict)
 
   if not args_all == "-":
-    skip_files = ["cts-all.js", "cts_supplement-all.js"]
+    skip_files = ["cts-all.js", "cts_supplement-all.js", "conv_65_65_96.js"]
     (args_all_path, args_all_name) = os.path.split(args_all)
     skip_files.append(args_all_name)
 
