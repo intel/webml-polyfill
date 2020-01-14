@@ -3,6 +3,7 @@ describe('CTS Supplement Test', function() {
   const assert = chai.assert;
   const nn = navigator.ml.getNeuralNetworkContext();
 
+  it('check result for Add example', async function() {
     let TENSOR_DIMENSIONS = [2, 2, 2, 2];
     let value0 = 0.4;
     let value1 = 0.5;
@@ -54,6 +55,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Add broadcasting 1D-2D example/1', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [3, 2]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [1]};
@@ -97,6 +99,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Add broadcasting 1D-2D example/2', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [3, 2]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [2]};
@@ -140,6 +143,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Add broadcasting 2D-2D example/1', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [3, 2]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2]};
@@ -183,6 +187,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Add broadcasting 2D-2D example/2', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [3, 2]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [3, 1]};
@@ -226,6 +231,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Add broadcasting 2D-2D example/3', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [3, 2]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 1]};
@@ -269,6 +275,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Add broadcasting 2D-2D example/4', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 1]};
@@ -312,6 +319,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Add broadcasting 1D-3D example/1', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [3, 2, 2]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [1]};
@@ -357,6 +365,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Add broadcasting 1D-3D example/2', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [3, 2, 2]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [2]};
@@ -402,6 +411,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Add broadcasting 2D-3D example/1', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [3, 2, 2]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2]};
@@ -447,6 +457,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Add broadcasting 2D-3D example/2', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [3, 2, 2]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 1]};
@@ -492,6 +503,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Add broadcasting 2D-3D example/3', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [3, 2, 2]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 1]};
@@ -537,6 +549,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Add broadcasting 2D-3D example/4', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [3, 2, 2]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2]};
@@ -582,6 +595,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Add broadcasting 2D-3D example/5', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [3, 1, 2]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 1]};
@@ -625,6 +639,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Add broadcasting 3D-3D example/1', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [3, 2, 2]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2]};
@@ -670,6 +685,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Add broadcasting 3D-3D example/2', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [3, 2, 2]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [3, 1, 2]};
@@ -715,6 +731,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Add broadcasting 3D-3D example/3', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [3, 2, 2]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [3, 2, 1]};
@@ -760,6 +777,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Add broadcasting 3D-3D example/4', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [3, 2, 2]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 1, 1]};
@@ -805,6 +823,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Add broadcasting 3D-3D example/5', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [3, 2, 2]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [3, 1, 1]};
@@ -850,6 +869,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Add broadcasting 3D-3D example/6', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [3, 2, 2]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 1]};
@@ -895,6 +915,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Add broadcasting 3D-3D example/7', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [3, 2, 2]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 1, 2]};
@@ -940,6 +961,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Add broadcasting 3D-3D example/8', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [3, 2, 1]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [3, 1, 2]};
@@ -983,6 +1005,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Add broadcasting 1D-4D example/1', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2, 2]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [1]};
@@ -1030,6 +1053,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Add broadcasting 1D-4D example/2', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2, 2]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [2]};
@@ -1077,6 +1101,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Add broadcasting 2D-4D example/1', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2, 2]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2]};
@@ -1124,6 +1149,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Add broadcasting 2D-4D example/2', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2, 2]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 1]};
@@ -1171,6 +1197,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Add broadcasting 2D-4D example/3', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2, 2]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 1]};
@@ -1218,6 +1245,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Add broadcasting 2D-4D example/4', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2, 2]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2]};
@@ -1265,6 +1293,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Add broadcasting 2D-4D example/5', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 1, 2]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 1]};
@@ -1310,6 +1339,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Add broadcasting 3D-4D example/1', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2, 2]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2]};
@@ -1357,6 +1387,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Add broadcasting 3D-4D example/2', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2, 2]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 1, 2]};
@@ -1404,6 +1435,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Add broadcasting 3D-4D example/3', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2, 2]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 1]};
@@ -1451,6 +1483,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Add broadcasting 3D-4D example/4', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2, 2]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2]};
@@ -1499,6 +1532,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Add broadcasting 3D-4D example/5', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2, 2]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 1, 1]};
@@ -1546,6 +1580,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Add broadcasting 3D-4D example/6', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [4, 1, 2]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [5, 4, 3, 1]};
@@ -1602,6 +1637,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Add broadcasting 4D-4D example/1', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2, 2]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2, 2]};
@@ -1650,6 +1686,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Add broadcasting 4D-4D example/2', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2, 2]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 1, 2, 2]};
@@ -1698,6 +1735,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Add broadcasting 4D-4D example/3', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2, 2]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 1, 2]};
@@ -1746,6 +1784,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Add broadcasting 4D-4D example/4', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2, 2]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2, 1]};
@@ -1794,6 +1833,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Add broadcasting 4D-4D example/5', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2, 2]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 1, 1, 1]};
@@ -1841,6 +1881,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Add broadcasting 4D-4D example/6', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 1, 2, 2]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 1, 1]};
@@ -1885,6 +1926,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for ARGMAX with 2D tensor using axis 0 example', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -1931,6 +1973,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for ARGMAX with 2D tensor using axis 1 example', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -1977,6 +2020,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for ARGMAX with 3D tensor using axis 2 example', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -2023,6 +2067,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for ARGMAX with 4D tensor using axis 3 example/1', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -2116,6 +2161,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for ATROUS_CONV_2D 1 h3 w2 implicit padding same example-1', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -2359,6 +2405,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for ATROUS_CONV_2D 1 h3 w2 implicit padding valid example-1', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -2602,6 +2649,7 @@ describe('CTS Supplement Test', function() {
       }
     });
 
+  it('check result for ATROUS_CONV_2D 3 h3 w2 implicit padding same example-1', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -2841,6 +2889,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for ATROUS_CONV_2D 3 h3 w2 implicit padding valid example-1', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -3084,6 +3133,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for ATROUS_DEPTHWISE_CONV_2D example-1', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -3335,6 +3385,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for ATROUS_DEPTHWISE_CONV_2D same example-1', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
     let op1_value = [10, 21, 10, 22, 10, 23, 10, 24, 10, 25, 10, 26, 10, 27, 10, 28, 10, 29];
@@ -3460,6 +3511,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for ATROUS_DEPTHWISE_CONV_2D vaild example-1', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
     let op1_value = [10, 21, 10, 22, 10, 23, 10, 24, 10, 25, 10, 26, 10, 27, 10, 28, 10, 29];
@@ -3584,6 +3636,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Concatenation axis 0 example', async function() {
     let model = await nn.createModel(options);
 
     let float32TensorType = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2, 2]};
@@ -3634,6 +3687,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Concatenation axis 1 example', async function() {
     let model = await nn.createModel(options);
 
     let float32TensorType = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2, 2]};
@@ -3684,6 +3738,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Concatenation axis 2 example', async function() {
     let model = await nn.createModel(options);
 
     let float32TensorType = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2, 2]};
@@ -3737,6 +3792,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Concatenation axis 3 example', async function() {
     let model = await nn.createModel(options);
 
     let float32TensorType = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2, 2]};
@@ -3791,6 +3847,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for CONV_2D 1 h65 w65 96 example', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -3901,6 +3958,7 @@ describe('CTS Supplement Test', function() {
     }
   }).timeout(50000);
 
+  it('check result for Depthwise conv 28x28 input0 5x5 weights example', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -4082,6 +4140,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Fully connected float 3D input example', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -4135,6 +4194,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Fully connected float 3D input example/2', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -4188,6 +4248,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Fully connected float 3D input example/3', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -4242,6 +4303,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Fully connected float 3D input example/4', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -4296,6 +4358,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Fully connected float 4D input example', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -4349,6 +4412,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Fully connected float 4D input example/2', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -4405,6 +4469,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Fully connected float 4D input example/3', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -4460,6 +4525,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Fully connected float 4D input example/4', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -4514,6 +4580,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for MAXIMUM example', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -4558,6 +4625,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for MAXIMUM as 4-D tensor example', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -4602,6 +4670,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for MAXIMUM as compatible dimensions example', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -4648,6 +4717,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Mul example', async function() {
     let TENSOR_DIMENSIONS = [2, 2, 2, 2];
     let value0 = 0.4;
     let value1 = 0.5;
@@ -4699,6 +4769,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Mul broadcasting 1D-2D example/1', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [3, 2]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [1]};
@@ -4742,6 +4813,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Mul broadcasting 1D-2D example/2', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [3, 2]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [2]};
@@ -4785,6 +4857,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Mul broadcasting 2D-2D example/1', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [3, 2]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2]};
@@ -4828,6 +4901,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Mul broadcasting 2D-2D example/2', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [3, 2]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [3, 1]};
@@ -4871,6 +4945,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Mul broadcasting 2D-2D example/3', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [3, 2]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 1]};
@@ -4914,6 +4989,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Mul broadcasting 2D-2D example/4', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 1]};
@@ -4957,6 +5033,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Mul broadcasting 1D-3D example/1', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [3, 2, 2]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [1]};
@@ -5002,6 +5079,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Mul broadcasting 1D-3D example/2', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [3, 2, 2]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [2]};
@@ -5047,6 +5125,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Mul broadcasting 2D-3D example/1', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [3, 2, 2]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2]};
@@ -5092,6 +5171,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Mul broadcasting 2D-3D example/2', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [3, 2, 2]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 1]};
@@ -5137,6 +5217,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Mul broadcasting 2D-3D example/3', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [3, 2, 2]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 1]};
@@ -5182,6 +5263,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Mul broadcasting 2D-3D example/4', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [3, 2, 2]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2]};
@@ -5227,6 +5309,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Mul broadcasting 2D-3D example/5', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [3, 1, 2]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 1]};
@@ -5270,6 +5353,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Mul broadcasting 3D-3D example/1', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [3, 2, 2]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2]};
@@ -5315,6 +5399,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Mul broadcasting 3D-3D example/2', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [3, 2, 2]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [3, 1, 2]};
@@ -5360,6 +5445,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Mul broadcasting 3D-3D example/3', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [3, 2, 2]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [3, 2, 1]};
@@ -5405,6 +5491,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Mul broadcasting 3D-3D example/4', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [3, 2, 2]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 1, 1]};
@@ -5450,6 +5537,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Mul broadcasting 3D-3D example/5', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [3, 2, 2]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [3, 1, 1]};
@@ -5495,6 +5583,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Mul broadcasting 3D-3D example/6', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [3, 2, 2]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 1]};
@@ -5540,6 +5629,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Mul broadcasting 3D-3D example/7', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [3, 2, 2]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 1, 2]};
@@ -5585,6 +5675,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Mul broadcasting 3D-3D example/8', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [3, 2, 1]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [3, 1, 2]};
@@ -5628,6 +5719,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Mul broadcasting 1D-4D example/1', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2, 2]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [1]};
@@ -5675,6 +5767,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Mul broadcasting 1D-4D example/2', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2, 2]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [2]};
@@ -5722,6 +5815,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Mul broadcasting 2D-4D example/1', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2, 2]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2]};
@@ -5769,6 +5863,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Mul broadcasting 2D-4D example/2', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2, 2]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 1]};
@@ -5816,6 +5911,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Mul broadcasting 2D-4D example/3', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2, 2]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 1]};
@@ -5863,6 +5959,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Mul broadcasting 2D-4D example/4', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2, 2]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2]};
@@ -5910,6 +6007,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Mul broadcasting 2D-4D example/5', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 1, 2]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 1]};
@@ -5955,6 +6053,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Mul broadcasting 3D-4D example/1', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2, 2]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2]};
@@ -6002,6 +6101,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Mul broadcasting 3D-4D example/2', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2, 2]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 1, 2]};
@@ -6049,6 +6149,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Mul broadcasting 3D-4D example/3', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2, 2]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 1]};
@@ -6096,6 +6197,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Mul broadcasting 3D-4D example/4', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2, 2]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2]};
@@ -6144,6 +6246,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Mul broadcasting 3D-4D example/5', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2, 2]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 1, 1]};
@@ -6191,6 +6294,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Mul broadcasting 3D-4D example/6', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [4, 1, 2]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [5, 4, 3, 1]};
@@ -6249,6 +6353,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Mul broadcasting 4D-4D example/1', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2, 2]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 2, 2, 2]};
@@ -6297,6 +6402,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Mul broadcasting 4D-4D example/2', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2, 2]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 1, 2, 2]};
@@ -6345,6 +6451,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Mul broadcasting 4D-4D example/3', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2, 2]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 1, 2]};
@@ -6393,6 +6500,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Mul broadcasting 4D-4D example/4', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2, 2]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2, 1]};
@@ -6441,6 +6549,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Mul broadcasting 4D-4D example/5', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 2, 2]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 1, 1, 1]};
@@ -6488,6 +6597,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Mul broadcasting 4D-4D example/6', async function() {
     let model = await nn.createModel(options);
     let type0 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 1, 2, 2]};
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2, 1, 1]};
@@ -6532,6 +6642,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for PRELU float broadcasting 2D example', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -6578,6 +6689,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for PRELU float broadcasting 3D example', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -6624,6 +6736,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for PRELU float broadcasting 4D example', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -6676,6 +6789,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for PRELU quant8 broadcasting 2D example', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -6722,6 +6836,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for PRELU quant8 broadcasting 3D example', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -6768,6 +6883,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for PRELU quant8 broadcasting 4D example', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -6820,6 +6936,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Reshape example', async function() {
     let model = await nn.createModel(options);
 
     let float32TensorType = {type: nn.TENSOR_FLOAT32, dimensions:[1, 4]};
@@ -6853,6 +6970,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Resize bilinear with inputs (without align_corners) example', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -6900,6 +7018,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Resize bilinear with inputs (without align_corners) example/2', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -6947,6 +7066,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Resize bilinear with inputs (without align_corners) distorted example/1', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -6994,6 +7114,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Resize bilinear with inputs (without align_corners) distorted example/10', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -7047,6 +7168,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Resize bilinear by align_corners(FALSE) distorted example/11', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -7103,6 +7225,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Resize bilinear by align_corners(TRUE) distorted example/12', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -7159,6 +7282,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Resize bilinear with inputs (without align_corners) distorted example/2', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -7206,6 +7330,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Resize bilinear with inputs (without align_corners) distorted example/3', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -7253,6 +7378,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Resize bilinear with inputs (without align_corners) distorted example/4', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -7300,6 +7426,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Resize bilinear by align_corners(FALSE) distorted example/5', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -7350,6 +7477,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Resize bilinear by align_corners(TRUE) distorted example/6', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -7400,6 +7528,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Resize bilinear with inputs (without align_corners) distorted example/7', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -7457,6 +7586,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Resize bilinear by align_corners(FALSE) distorted example/8', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -7517,6 +7647,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Resize bilinear by align_corners(TRUE) distorted example/9', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -7577,6 +7708,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Resize bilinear with inputs (without align_corners) remain size example/1', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -7624,6 +7756,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Resize bilinear with inputs (without align_corners) remain size example/2', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -7671,6 +7804,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Resize bilinear with inputs (without align_corners) remain size example/3', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -7718,6 +7852,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Resize bilinear with inputs (without align_corners) remain size example/4', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -7765,6 +7900,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Resize bilinear by align_corners(FALSE) remain size example/5', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -7815,6 +7951,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Resize bilinear by align_corners(TRUE) remain size example/6', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -7866,6 +8003,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Resize bilinear with inputs (without align_corners) zoom in example/1', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -7912,6 +8050,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Resize bilinear with inputs (without align_corners) zoom in example/2', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -7959,6 +8098,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Resize bilinear by align_corners(FALSE) zoom in example/3', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -8009,6 +8149,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Resize bilinear by align_corners(TRUE) zoom in example/4', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -8059,6 +8200,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Resize bilinear with inputs (without align_corners) zoom in example/5', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -8113,6 +8255,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Resize bilinear by align_corners(FALSE) zoom in example/6', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -8169,6 +8312,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Resize bilinear by align_corners(TRUE) zoom in example/7', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -8226,6 +8370,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Resize bilinear with inputs (without align_corners) zoom out example/1', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -8273,6 +8418,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Resize bilinear with inputs (without align_corners) zoom out example/2', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -8320,6 +8466,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Resize bilinear with inputs (without align_corners) zoom out example/3', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -8367,6 +8514,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Resize bilinear with inputs (without align_corners) zoom out example/4', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -8414,6 +8562,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Resize bilinear by align_corners(FALSE) zoom out example/5', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -8464,6 +8613,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Resize bilinear by align_corners(TRUE) zoom out example/6', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -8514,6 +8664,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Resize bilinear with inputs (without align_corners) zoom out example/7', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -8567,6 +8718,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Resize bilinear by align_corners(FALSE) zoom out example/8', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -8623,6 +8775,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Resize bilinear by align_corners(TRUE) zoom out example/9', async function() {
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -8677,6 +8830,7 @@ describe('CTS Supplement Test', function() {
     }
   });
 
+  it('check result for Softmax with 2D input tensor example', async function() {
     let model = await nn.createModel(options);
     let float32TensorType = {type: nn.TENSOR_FLOAT32, dimensions: [2, 2]};
     let tensorLength = product(float32TensorType.dimensions);
