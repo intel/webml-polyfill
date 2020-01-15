@@ -9,10 +9,9 @@
   "dependencies": {},
   "devDependencies": {},
   "scripts": {
-    "start": "python3 ./src/main.py -t ./src/nn/specs -c ./output/cts -a ./output/cts-all.js",
-    "info": "python3 ./src/main.py -h",
-    "updateCTS": "python3 ./src/main.py -c ../../test -a ../../test/cts-all.js",
-    "updateCTS_S": "python3 ./src/main.py -s ../../test_supplement -a ../../test_supplement/cts_supplement-all.js"
+    "start": "python3 ./src/main.py -c ../../test -a ../../test/cts-all.js && python3 ./src/main.py -s ../../test_supplement -a ../../test_supplement/cts_supplement-all.js",
+    "transfer": "python3 ./src/main.py -t ./src/nn/specs",
+    "info": "python3 ./src/main.py -h"
   },
   "license": "Apache 2.0"
 }
