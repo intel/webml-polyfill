@@ -6,7 +6,7 @@ import json
 
 def get_args():
   parser = argparse.ArgumentParser()
-  parser.add_argument("-a", "--all", help = "[option] '-a [all-file in relative directory]', create all test file", default = "-")
+  parser.add_argument("-o", "--output", help = "[option] '-o [output all-file in relative directory]', create all test file", default = "-")
   parser.add_argument("-t", "--transfer", help = "[option] '-t [transfer relative directory]', transfer nn test file", default = "-")
   parser.add_argument("-c", "--cts", help = "[option] '-c [cts relative directory]', include cts test file", default = "-")
   parser.add_argument("-s", "--supplement", help = "[option] '-s [supplement relative directory]', include supplement test file", default = "-")
@@ -14,7 +14,7 @@ def get_args():
 
   args = parser.parse_args()
 
-  return (args.all, args.transfer, args.cts, args.supplement, args.plus)
+  return (args.output, args.transfer, args.cts, args.supplement, args.plus)
 
 def del_file(path, flag):
   names = os.listdir(path)
