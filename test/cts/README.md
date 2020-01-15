@@ -13,11 +13,11 @@ Here are steps to update `./test/cts/test_supplement/cts_supplement-all.js`:
 * Update `./test/cts/test_supplement/cts_supplement-all.js` file:
 
     ```shell
-    $ npm start
+    $ npm run combine
     ```
 
     or
 
     ```shell
-    $ python3 ./src/main.py -s ../../test_supplement -a ../../test_supplement/cts_supplement-all.js
+    $ python3 ./src/main.py -s ../../test_supplement -o ../../test_supplement/cts_supplement-all.js
     ```
