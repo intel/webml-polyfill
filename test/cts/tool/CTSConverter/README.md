@@ -12,7 +12,7 @@ Transfer nn test case into `./output/cts`
 $ npm start
 ```
 
-## Update or create combine test file
+## Update or create combine test files
 
 Update or create `../../test/cts-all.js` and `../../test_supplement/cts_supplement-all.js` files.
 `../../test/cts-all.js` includes test cases in `../../test` directory and its sub directory, `../../test_supplement/cts_supplement-all.js` includes test cases in `../../test_supplement` directory.

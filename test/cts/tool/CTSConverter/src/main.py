@@ -126,16 +126,16 @@ if __name__ == "__main__":
       cts_file_names = json.load(cts_file)
       print ("Open support cts file: " + support_cts_file + "\n")
 
-    print ("transfer nn test case to js test case....\n")
+    print ("Transfer nn test case to js test case....\n")
     transfer(args_transfer, output_path_transfer, cts_file_names)
 
   if not args_cts == "-":
-    print ("scan test cts directory....")
+    print ("Scan test cts directory....")
     cts_file_dict = get_file_names(args_cts, ".js")
     file_dict_all.update(cts_file_dict)
 
   if not args_supplement == "-":
-    print ("scan test supplement directory....")
+    print ("Scan test supplement directory....")
 
     describeString = "CTS Supplement Test"
 
@@ -143,7 +143,7 @@ if __name__ == "__main__":
     file_dict_all.update(supplement_file_dict)
 
   if not args_plus == "-":
-    print ("scan test plus directory....")
+    print ("Scan test plus directory....")
     plus_file_dict = get_file_names(args_plus, ".js")
     file_dict_all.update(plus_file_dict)
 
@@ -154,22 +154,22 @@ if __name__ == "__main__":
 
     for name in skip_files:
       if name in file_dict_all:
-        print ("skip creating file name: %s"%file_dict_all[name])
+        print ("Skip creating file name: %s"%file_dict_all[name])
         del file_dict_all[name]
 
-    print ("reordering by name....")
+    print ("Reordering by name....")
     file_list = sorted(file_dict_all.keys())
 
-    print ("create all test case file: %s"%str(output_file_all))
+    print ("Create all-in-one test case file: %s"%str(output_file_all))
     create(output_file_all, file_dict_all, file_list, describeString)
 
   if not args_transfer == "-":
     if not args_all == "-":
-      print ("transfer and create all files are completed")
+      print ("Completed to transfer Android CTS spec files and create all-in-one test case file!")
     else :
-      print ("transfer all files are completed")
+      print ("Completed to transfer Android CTS spec files!")
   else :
     if not args_all == "-":
-      print ("create all files are completed")
+      print ("Completed to create all-in-one test case file!")
     else :
-      print ("nothing to do!! get info with 'npm run info' command")
+      print ("Nothing to do!! get info with 'npm run info' command.")
