@@ -2,14 +2,14 @@ Op Type | WASM | WebGL | NNAPI | MPS | BNNS | clDNN | MKLDNN | DirectML | IE-clD
 -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | --
 ADD | yes | yes | yes | yes | yes | yes | yes | yes | yes | yes
 AVERAGE_POOL_2D | yes | yes | yes | yes | yes | yes | yes | yes | yes | yes
-CONCATENATION | yes | yes | yes | [#892](https://github.com/intel/webml-polyfill/issues/892) | [#207](https://github.com/intel/webml-polyfill/issues/207) | [#242](https://github.com/intel/webml-polyfill/issues/242) | yes | yes | yes | yes
+CONCATENATION | yes | yes | yes | [#892](https://github.com/intel/webml-polyfill/issues/892) | [#207](https://github.com/intel/webml-polyfill/issues/207) | yes | yes | yes | yes | yes
 CONV_2D | yes | yes | yes | yes | yes | yes | yes | yes | yes | yes
 ATROUS_CONV_2D | yes | yes | [#415](https://github.com/intel/webml-polyfill/issues/415) | yes | [#359](https://github.com/intel/webml-polyfill/issues/359) | yes | yes | yes | yes | yes
 DEPTHWISE_CONV_2D | yes | yes | yes | yes | [#368](https://github.com/intel/webml-polyfill/issues/368) | yes | yes | yes | yes | yes
 ATROUS_DEPTHWISE_CONV_2D | yes | yes | [#415](https://github.com/intel/webml-polyfill/issues/415) | yes | [#359](https://github.com/intel/webml-polyfill/issues/359) | yes | yes | yes | yes | yes
 MAX_POOL_2D | yes | yes | yes | yes | yes | yes | yes | yes | yes | yes
-MUL | yes | yes | yes | yes | yes | yes | [#255](https://github.com/intel/mkl-dnn/issues/255) | yes | yes | yes
-RESHAPE | yes | yes | yes | [#267](https://github.com/intel/webml-polyfill/issues/267) | yes | yes | yes | yes | yes | yes
+MUL | yes | yes | yes | yes | yes | yes | [#1130](https://github.com/intel/webml-polyfill/issues/1130) | yes | yes | yes
+RESHAPE | yes | yes | yes | yes | yes | yes | yes | yes | yes | yes
 RESIZE_BILINEAR | yes | yes | yes | [#447](https://github.com/intel/webml-polyfill/issues/447) | [#340](https://github.com/intel/webml-polyfill/issues/340) | yes | [#461](https://github.com/intel/webml-polyfill/issues/461) | [#837](https://github.com/intel/webml-polyfill/issues/837) | [#754](https://github.com/intel/webml-polyfill/issues/754) | [#704](https://github.com/intel/webml-polyfill/issues/704)
 SOFTMAX | yes | yes | yes | yes | yes | yes | yes | yes | yes | yes
 FULLY_CONNECTED | yes | yes | yes | [#682](https://github.com/intel/webml-polyfill/issues/682) | yes | yes | yes | yes | [#750](https://github.com/intel/webml-polyfill/issues/750) | [#735](https://github.com/intel/webml-polyfill/issues/735)
@@ -18,7 +18,7 @@ BATCH_TO_SPACE_ND | yes | yes | yes | [#632](https://github.com/intel/webml-poly
 MAXIMUM | yes | yes | yes(available since Android 10) | [#627](https://github.com/intel/webml-polyfill/issues/627) | [#628](https://github.com/intel/webml-polyfill/issues/628) | [#629](https://github.com/intel/webml-polyfill/issues/629) | [#630](https://github.com/intel/webml-polyfill/issues/630) | [#842](https://github.com/intel/webml-polyfill/issues/842) | [#901](https://github.com/intel/webml-polyfill/issues/901) | [#904](https://github.com/intel/webml-polyfill/issues/904)
 TANH | yes | yes | yes | [#622](https://github.com/intel/webml-polyfill/issues/622) | [#623](https://github.com/intel/webml-polyfill/issues/623) | [#624](https://github.com/intel/webml-polyfill/issues/624) | [#625](https://github.com/intel/webml-polyfill/issues/625) | [#899](https://github.com/intel/webml-polyfill/issues/899) | [#902](https://github.com/intel/webml-polyfill/issues/902) | [#905](https://github.com/intel/webml-polyfill/issues/905)
 ARGMAX | yes | yes | yes(available since Android 10) | [#1086](https://github.com/intel/webml-polyfill/issues/1086) [#1087](https://github.com/intel/webml-polyfill/issues/1087) | [#950](https://github.com/intel/webml-polyfill/issues/950) | yes | [#944](https://github.com/intel/webml-polyfill/issues/944) | yes | [#947](https://github.com/intel/webml-polyfill/issues/947) | [#946](https://github.com/intel/webml-polyfill/issues/946)
-LOGISTIC | yes | yes | yes | yes | yes | [#1027](https://github.com/intel/webml-polyfill/issues/1027) | [#1028](https://github.com/intel/webml-polyfill/issues/1028) | yes | [#1091](https://github.com/intel/webml-polyfill/issues/1091) | [#1092](https://github.com/intel/webml-polyfill/issues/1092)
-PRELU | yes | yes | yes(available since Android 10) | yes | [#1038](https://github.com/intel/webml-polyfill/issues/1038) | [#1034](https://github.com/intel/webml-polyfill/issues/1034) | [#1035](https://github.com/intel/webml-polyfill/issues/1035) | yes | [#1093](https://github.com/intel/webml-polyfill/issues/1093) | [#1094](https://github.com/intel/webml-polyfill/issues/1093)
+LOGISTIC | yes | yes | yes | yes | yes | [#1110](https://github.com/intel/webml-polyfill/issues/1110) | yes | yes | [#1091](https://github.com/intel/webml-polyfill/issues/1091) | [#1092](https://github.com/intel/webml-polyfill/issues/1092)
+PRELU | yes | yes | yes(available since Android 10) | yes | [#1038](https://github.com/intel/webml-polyfill/issues/1038) | [#1111](https://github.com/intel/webml-polyfill/issues/1111) | [#1035](https://github.com/intel/webml-polyfill/issues/1035) | yes | [#1093](https://github.com/intel/webml-polyfill/issues/1093) | [#1094](https://github.com/intel/webml-polyfill/issues/1093)
 
 
