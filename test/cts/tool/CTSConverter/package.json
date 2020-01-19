@@ -1,6 +1,6 @@
 {
   "name": "CTSConverter",
-  "version": "0.0.1",
+  "version": "1.2.0",
   "description": "Transfer nn test case to webml test case",
   "main": "./src/main.py",
   "directories": {
@@ -9,7 +9,8 @@
   "dependencies": {},
   "devDependencies": {},
   "scripts": {
-    "start": "python3 ./src/main.py -t ./src/nn -c ./output/cts -p ../../test/V1_0_plus -a cts-all.js",
+    "start": "python3 ./src/main.py -t ./src/nn/specs",
+    "combine": "python3 ./src/main.py -c ../../test -o ../../test/cts-all.js && python3 ./src/main.py -s ../../test_supplement -o ../../test_supplement/cts_supplement-all.js",
     "info": "python3 ./src/main.py -h"
   },
   "license": "Apache 2.0"
