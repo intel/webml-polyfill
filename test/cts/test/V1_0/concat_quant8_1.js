@@ -1,8 +1,10 @@
+// Generated file (from: concat_quant8_1.mod.py). Do not edit
 describe('CTS', function() {
   const assert = chai.assert;
   const nn = navigator.ml.getNeuralNetworkContext();
 
   it('check result for Concat quant8 example/1', async function() {
+    // For 'Concat quant8' example: examples
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -10,9 +12,9 @@ describe('CTS', function() {
     let op2_value = [7, 8, 9, 10, 11, 12];
     let result_expect = [1, 2, 3, 7, 8, 9, 4, 5, 6, 10, 11, 12];
 
-    let type1 = {type: nn.INT32};
     let type0 = {type: nn.TENSOR_QUANT8_ASYMM, dimensions: [2, 3], scale: 0.5, zeroPoint: 0};
     let type0_length = product(type0.dimensions);
+    let type1 = {type: nn.INT32};
     let type2 = {type: nn.TENSOR_QUANT8_ASYMM, dimensions: [2, 6], scale: 0.5, zeroPoint: 0};
     let type2_length = product(type2.dimensions);
 
@@ -25,8 +27,7 @@ describe('CTS', function() {
     let result = operandIndex++;
     model.addOperand(type2);
 
-    let op2_input = new Uint8Array(op2_value);
-    model.setOperandValue(op2, op2_input);
+    model.setOperandValue(op2, new Uint8Array(op2_value));
 
     model.setOperandValue(axis1, new Int32Array([1]));
     model.addOperation(nn.CONCATENATION, [op1, op2, axis1], [result]);
@@ -42,7 +43,6 @@ describe('CTS', function() {
 
     let op1_input = new Uint8Array(op1_value);
     execution.setInput(0, op1_input);
-
     let result_output = new Uint8Array(type2_length);
     execution.setOutput(0, result_output);
 

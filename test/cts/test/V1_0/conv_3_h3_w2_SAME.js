@@ -1,8 +1,10 @@
+// Generated file (from: conv_3_h3_w2_SAME.mod.py). Do not edit
 describe('CTS', function() {
   const assert = chai.assert;
   const nn = navigator.ml.getNeuralNetworkContext();
 
   it('check result for Conv 3 h3 w2 same example-1', async function() {
+    // For 'Conv 3 h3 w2 same' example: examples
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -17,6 +19,12 @@ describe('CTS', function() {
     let type3 = {type: nn.TENSOR_FLOAT32, dimensions: [3]};
     let type3_length = product(type3.dimensions);
 
+    let op2 = operandIndex++;
+    model.addOperand(type1);
+    let op0 = operandIndex++;
+    model.addOperand(type2);
+    let op1 = operandIndex++;
+    model.addOperand(type3);
     let b4 = operandIndex++;
     model.addOperand(type0);
     let b5 = operandIndex++;
@@ -25,21 +33,15 @@ describe('CTS', function() {
     model.addOperand(type0);
     let b7 = operandIndex++;
     model.addOperand(type0);
-    let op2 = operandIndex++;
-    model.addOperand(type1);
     let op3 = operandIndex++;
     model.addOperand(type1);
-    let op0 = operandIndex++;
-    model.addOperand(type2);
-    let op1 = operandIndex++;
-    model.addOperand(type3);
 
+    model.setOperandValue(op0, new Float32Array([-0.966213, -0.579455, -0.684259, 0.738216, 0.184325, 0.0973683, -0.176863, -0.23936, -0.000233404, 0.055546, -0.232658, -0.316404, -0.012904, 0.320705, -0.326657, -0.919674, 0.868081, -0.824608, -0.467474, 0.0278809, 0.563238, 0.386045, -0.270568, -0.941308, -0.779227, -0.261492, -0.774804, -0.79665, 0.22473, -0.414312, 0.685897, -0.327792, 0.77395, -0.714578, -0.972365, 0.0696099, -0.82203, -0.79946, 0.37289, -0.917775, 0.82236, -0.144706, -0.167188, 0.268062, 0.702641, -0.412223, 0.755759, 0.721547, -0.43637, -0.274905, -0.269165, 0.16102, 0.819857, -0.312008]));
+    model.setOperandValue(op1, new Float32Array([0, 0, 0]));
     model.setOperandValue(b4, new Int32Array([1]));
     model.setOperandValue(b5, new Int32Array([1]));
     model.setOperandValue(b6, new Int32Array([1]));
     model.setOperandValue(b7, new Int32Array([0]));
-    model.setOperandValue(op0, new Float32Array([-0.966213, -0.579455, -0.684259, 0.738216, 0.184325, 0.0973683, -0.176863, -0.23936, -0.000233404, 0.055546, -0.232658, -0.316404, -0.012904, 0.320705, -0.326657, -0.919674, 0.868081, -0.824608, -0.467474, 0.0278809, 0.563238, 0.386045, -0.270568, -0.941308, -0.779227, -0.261492, -0.774804, -0.79665, 0.22473, -0.414312, 0.685897, -0.327792, 0.77395, -0.714578, -0.972365, 0.0696099, -0.82203, -0.79946, 0.37289, -0.917775, 0.82236, -0.144706, -0.167188, 0.268062, 0.702641, -0.412223, 0.755759, 0.721547, -0.43637, -0.274905, -0.269165, 0.16102, 0.819857, -0.312008]));
-    model.setOperandValue(op1, new Float32Array([0, 0, 0]));
     model.addOperation(nn.CONV_2D, [op2, op0, op1, b4, b5, b6, b7], [op3]);
 
     model.identifyInputsAndOutputs([op2], [op3]);
@@ -53,7 +55,6 @@ describe('CTS', function() {
 
     let op2_input = new Float32Array(op2_value);
     execution.setInput(0, op2_input);
-
     let op3_output = new Float32Array(type1_length);
     execution.setOutput(0, op3_output);
 
@@ -65,6 +66,7 @@ describe('CTS', function() {
   });
 
   it('check result for Conv 3 h3 w2 same example-2', async function() {
+    // For 'Conv 3 h3 w2 same' example: examples_2
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -79,6 +81,12 @@ describe('CTS', function() {
     let type3 = {type: nn.TENSOR_FLOAT32, dimensions: [3]};
     let type3_length = product(type3.dimensions);
 
+    let op2 = operandIndex++;
+    model.addOperand(type1);
+    let op0 = operandIndex++;
+    model.addOperand(type2);
+    let op1 = operandIndex++;
+    model.addOperand(type3);
     let b4 = operandIndex++;
     model.addOperand(type0);
     let b5 = operandIndex++;
@@ -87,21 +95,15 @@ describe('CTS', function() {
     model.addOperand(type0);
     let b7 = operandIndex++;
     model.addOperand(type0);
-    let op2 = operandIndex++;
-    model.addOperand(type1);
     let op3 = operandIndex++;
     model.addOperand(type1);
-    let op0 = operandIndex++;
-    model.addOperand(type2);
-    let op1 = operandIndex++;
-    model.addOperand(type3);
 
+    model.setOperandValue(op0, new Float32Array([-0.966213, -0.579455, -0.684259, 0.738216, 0.184325, 0.0973683, -0.176863, -0.23936, -0.000233404, 0.055546, -0.232658, -0.316404, -0.012904, 0.320705, -0.326657, -0.919674, 0.868081, -0.824608, -0.467474, 0.0278809, 0.563238, 0.386045, -0.270568, -0.941308, -0.779227, -0.261492, -0.774804, -0.79665, 0.22473, -0.414312, 0.685897, -0.327792, 0.77395, -0.714578, -0.972365, 0.0696099, -0.82203, -0.79946, 0.37289, -0.917775, 0.82236, -0.144706, -0.167188, 0.268062, 0.702641, -0.412223, 0.755759, 0.721547, -0.43637, -0.274905, -0.269165, 0.16102, 0.819857, -0.312008]));
+    model.setOperandValue(op1, new Float32Array([0, 0, 0]));
     model.setOperandValue(b4, new Int32Array([1]));
     model.setOperandValue(b5, new Int32Array([1]));
     model.setOperandValue(b6, new Int32Array([1]));
     model.setOperandValue(b7, new Int32Array([0]));
-    model.setOperandValue(op0, new Float32Array([-0.966213, -0.579455, -0.684259, 0.738216, 0.184325, 0.0973683, -0.176863, -0.23936, -0.000233404, 0.055546, -0.232658, -0.316404, -0.012904, 0.320705, -0.326657, -0.919674, 0.868081, -0.824608, -0.467474, 0.0278809, 0.563238, 0.386045, -0.270568, -0.941308, -0.779227, -0.261492, -0.774804, -0.79665, 0.22473, -0.414312, 0.685897, -0.327792, 0.77395, -0.714578, -0.972365, 0.0696099, -0.82203, -0.79946, 0.37289, -0.917775, 0.82236, -0.144706, -0.167188, 0.268062, 0.702641, -0.412223, 0.755759, 0.721547, -0.43637, -0.274905, -0.269165, 0.16102, 0.819857, -0.312008]));
-    model.setOperandValue(op1, new Float32Array([0, 0, 0]));
     model.addOperation(nn.CONV_2D, [op2, op0, op1, b4, b5, b6, b7], [op3]);
 
     model.identifyInputsAndOutputs([op2], [op3]);
@@ -115,7 +117,6 @@ describe('CTS', function() {
 
     let op2_input = new Float32Array(op2_value);
     execution.setInput(0, op2_input);
-
     let op3_output = new Float32Array(type1_length);
     execution.setOutput(0, op3_output);
 

@@ -1,8 +1,10 @@
+// Generated file (from: conv_1_h3_w2_VALID.mod.py). Do not edit
 describe('CTS', function() {
   const assert = chai.assert;
   const nn = navigator.ml.getNeuralNetworkContext();
 
   it('check result for Conv 1 h3 w2 valid example-1', async function() {
+    // For 'Conv 1 h3 w2 valid' example: examples
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -10,15 +12,21 @@ describe('CTS', function() {
     let op3_expect = [1.72003, 1.55816, 0.667546, 2.23663, 0.0661516, 0.290254, 0.770222, -1.58197, -0.850595, -0.484224, 0.949967, -0.577263, -0.871949, 2.34132, -0.135965, -0.985713, 0.815147, 1.03114, -1.41915, -0.515534, -0.373639, -1.50604, 0.673113, 3.06139, -0.388578, -1.76707, -0.315667, -1.03815, 0.432787, -1.41643, 1.12944, -0.175806, -0.846415, 1.40095, 0.70832, 2.19562, -2.61266, -0.705383, 1.26124, 1.46545, -2.35761, 2.04494];
 
     let type0 = {type: nn.INT32};
-    let type3 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 3, 2, 3]};
-    let type3_length = product(type3.dimensions);
-    let type2 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 6, 7, 1]};
-    let type2_length = product(type2.dimensions);
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 8, 8, 3]};
     let type1_length = product(type1.dimensions);
+    let type2 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 6, 7, 1]};
+    let type2_length = product(type2.dimensions);
+    let type3 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 3, 2, 3]};
+    let type3_length = product(type3.dimensions);
     let type4 = {type: nn.TENSOR_FLOAT32, dimensions: [1]};
     let type4_length = product(type4.dimensions);
 
+    let op2 = operandIndex++;
+    model.addOperand(type1);
+    let op0 = operandIndex++;
+    model.addOperand(type3);
+    let op1 = operandIndex++;
+    model.addOperand(type4);
     let b4 = operandIndex++;
     model.addOperand(type0);
     let b5 = operandIndex++;
@@ -27,21 +35,15 @@ describe('CTS', function() {
     model.addOperand(type0);
     let b7 = operandIndex++;
     model.addOperand(type0);
-    let op2 = operandIndex++;
-    model.addOperand(type1);
     let op3 = operandIndex++;
     model.addOperand(type2);
-    let op0 = operandIndex++;
-    model.addOperand(type3);
-    let op1 = operandIndex++;
-    model.addOperand(type4);
 
+    model.setOperandValue(op0, new Float32Array([-0.966213, -0.467474, -0.82203, -0.579455, 0.0278809, -0.79946, -0.684259, 0.563238, 0.37289, 0.738216, 0.386045, -0.917775, 0.184325, -0.270568, 0.82236, 0.0973683, -0.941308, -0.144706]));
+    model.setOperandValue(op1, new Float32Array([0]));
     model.setOperandValue(b4, new Int32Array([2]));
     model.setOperandValue(b5, new Int32Array([1]));
     model.setOperandValue(b6, new Int32Array([1]));
     model.setOperandValue(b7, new Int32Array([0]));
-    model.setOperandValue(op0, new Float32Array([-0.966213, -0.467474, -0.82203, -0.579455, 0.0278809, -0.79946, -0.684259, 0.563238, 0.37289, 0.738216, 0.386045, -0.917775, 0.184325, -0.270568, 0.82236, 0.0973683, -0.941308, -0.144706]));
-    model.setOperandValue(op1, new Float32Array([0]));
     model.addOperation(nn.CONV_2D, [op2, op0, op1, b4, b5, b6, b7], [op3]);
 
     model.identifyInputsAndOutputs([op2], [op3]);
@@ -55,7 +57,6 @@ describe('CTS', function() {
 
     let op2_input = new Float32Array(op2_value);
     execution.setInput(0, op2_input);
-
     let op3_output = new Float32Array(type2_length);
     execution.setOutput(0, op3_output);
 
@@ -67,6 +68,7 @@ describe('CTS', function() {
   });
 
   it('check result for Conv 1 h3 w2 valid example-2', async function() {
+    // For 'Conv 1 h3 w2 valid' example: examples_2
     let model = await nn.createModel(options);
     let operandIndex = 0;
 
@@ -74,15 +76,21 @@ describe('CTS', function() {
     let op3_expect = [1.28735, 1.91315, 2.51734, 0.375841, 0.637563, 2.653, 2.72959, 1.17389, -2.12119, 2.91417, -2.24246, 0.0497045, -0.127107, -0.144473, -0.393284, -2.02346, -0.239178, -0.246508, 1.29277, 1.32963, 0.117521, 0.0665713, 1.09438, -1.31426, 2.52594, -0.969211, 0.515478, -1.60926, 0.135211, 0.786415, -1.14382, -0.739102, -1.01731, 0.281615, 2.36311, 1.93872, -0.150491, 3.45217, 2.28219, 1.18282, -2.25086, 3.05468];
 
     let type0 = {type: nn.INT32};
-    let type3 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 3, 2, 3]};
-    let type3_length = product(type3.dimensions);
-    let type2 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 6, 7, 1]};
-    let type2_length = product(type2.dimensions);
     let type1 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 8, 8, 3]};
     let type1_length = product(type1.dimensions);
+    let type2 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 6, 7, 1]};
+    let type2_length = product(type2.dimensions);
+    let type3 = {type: nn.TENSOR_FLOAT32, dimensions: [1, 3, 2, 3]};
+    let type3_length = product(type3.dimensions);
     let type4 = {type: nn.TENSOR_FLOAT32, dimensions: [1]};
     let type4_length = product(type4.dimensions);
 
+    let op2 = operandIndex++;
+    model.addOperand(type1);
+    let op0 = operandIndex++;
+    model.addOperand(type3);
+    let op1 = operandIndex++;
+    model.addOperand(type4);
     let b4 = operandIndex++;
     model.addOperand(type0);
     let b5 = operandIndex++;
@@ -91,21 +99,15 @@ describe('CTS', function() {
     model.addOperand(type0);
     let b7 = operandIndex++;
     model.addOperand(type0);
-    let op2 = operandIndex++;
-    model.addOperand(type1);
     let op3 = operandIndex++;
     model.addOperand(type2);
-    let op0 = operandIndex++;
-    model.addOperand(type3);
-    let op1 = operandIndex++;
-    model.addOperand(type4);
 
+    model.setOperandValue(op0, new Float32Array([-0.966213, -0.467474, -0.82203, -0.579455, 0.0278809, -0.79946, -0.684259, 0.563238, 0.37289, 0.738216, 0.386045, -0.917775, 0.184325, -0.270568, 0.82236, 0.0973683, -0.941308, -0.144706]));
+    model.setOperandValue(op1, new Float32Array([0]));
     model.setOperandValue(b4, new Int32Array([2]));
     model.setOperandValue(b5, new Int32Array([1]));
     model.setOperandValue(b6, new Int32Array([1]));
     model.setOperandValue(b7, new Int32Array([0]));
-    model.setOperandValue(op0, new Float32Array([-0.966213, -0.467474, -0.82203, -0.579455, 0.0278809, -0.79946, -0.684259, 0.563238, 0.37289, 0.738216, 0.386045, -0.917775, 0.184325, -0.270568, 0.82236, 0.0973683, -0.941308, -0.144706]));
-    model.setOperandValue(op1, new Float32Array([0]));
     model.addOperation(nn.CONV_2D, [op2, op0, op1, b4, b5, b6, b7], [op3]);
 
     model.identifyInputsAndOutputs([op2], [op3]);
@@ -119,7 +121,6 @@ describe('CTS', function() {
 
     let op2_input = new Float32Array(op2_value);
     execution.setInput(0, op2_input);
-
     let op3_output = new Float32Array(type2_length);
     execution.setOutput(0, op3_output);
 

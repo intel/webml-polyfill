@@ -19,7 +19,7 @@ describe('CTS Supplement Test', function() {
     model.setOperandValue(2, new Int32Array([axis]));
 
     let outputFloat32TensorType = {type: nn.TENSOR_FLOAT32, dimensions: [2, 4, 2, 2]};
-    const outputTensorLength = product(outputFloat32TensorType.dimensions);
+    let outputTensorLength = product(outputFloat32TensorType.dimensions);
 
     model.addOperand(outputFloat32TensorType);
     model.addOperation(nn.CONCATENATION, [0, 1, 2], [3]);
