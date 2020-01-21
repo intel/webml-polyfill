@@ -8,7 +8,7 @@ const targetCanvasShowElement = document.getElementById('targetCanvasShow');
 const searchCanvasShowElement = document.getElementById('searchCanvasShow');
 const cameraImageShowElement = document.getElementById('cameraImageShow');
 const cameraShowElement = document.getElementById('cameraShow');
-const detecorCanvasElement = document.getElementById('detecorCanvas');
+const detectorCanvasElement = document.getElementById('detectorCanvas');
 const recognitionCanvasElement = document.getElementById('recognitionCanvas');
 
 let front = true;
@@ -17,7 +17,7 @@ let currentRecognitionModel = null;
 
 const detectionModels = faceDetectionModels.map((m) => m.modelId);
 const recognitionModels = faceRecognitionModels.map((m) => m.modelId);
-const faceDetector = new FaceDetecor(detecorCanvas);
+const faceDetector = new FaceDetecor(detectorCanvasElement);
 const faceRecognition = new Utils(recognitionCanvasElement);
 
 faceDetector.updateProgress = updateProgress;

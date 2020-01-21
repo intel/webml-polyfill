@@ -54,7 +54,7 @@ $(document).ready(() => {
   $('#targetInput').hide();
   $('#searchInput').hide();
   $('#cameraImageInput').hide();
-  $('#detecorCanvas').hide();
+  $('#detectorCanvas').hide();
   $('#recognitionCanvas').hide();
   $('#video').hide();
 });
@@ -81,7 +81,7 @@ $(window).load(() => {
   // Check if "+" shows in URL for dual models
   let modelClasss = getModelClasss();
   let seatModelClass = $('#' + um).parent().parent().attr('id');
-  if(um.indexOf(' ') < 0 && um.indexOf('+') < 0 && modelClasss.length > 1) { 
+  if(um.indexOf(' ') < 0 && um.indexOf('+') < 0 && modelClasss.length > 1) {
     showError('Not enough selected models', 'Please select ' + modelClasss.length + ' kinds (detection and recognition) of models to start prediction.');
     return;
   } else {
