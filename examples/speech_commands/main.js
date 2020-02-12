@@ -4,6 +4,10 @@ let utils = new Utils(audioContext);
 utils.updateProgress = updateProgress;    //register updateProgress function if progressBar element exist
 let front = false;
 
+Module.onRuntimeInitialized = function() {
+  console.log('WASM runtime is ready for mfccs.');
+};
+
 const updateResult = (result) => {
   try {
     console.log(`Inference time: ${result.time} ms`);
