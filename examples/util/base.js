@@ -789,14 +789,14 @@ speechCommandModels: [{
     intro: 'Use Convolutional Neural Networks (CNNs) for a small-footprint keyword spotting (KWS) task.',
     paperUrl: 'https://www.isca-speech.org/archive/interspeech_2015/papers/i15_1478.pdf'
   }, {
-    modelName: 'KWS DNN (TFLite)',
-    format: 'TFLite',
-    modelId: 'kws_dnn_tflite',
+    modelName: 'KWS DNN (OpenVINO)',
+    format: 'OpenVINO',
+    modelId: 'kws_dnn_openvino',
     modelSize: '320kB',
     inputSize: [1, 250],
     outputSize: [1, 12],
     sampleRate: 16000,
-    modelFile: '../speech_commands/model/kws_dnn.tflite',
+    modelFile: '../speech_commands/model/kws_dnn.bin',
     labelsFile: '../speech_commands/model/labels2.txt',
     preOptions: {
       mfccs: true
