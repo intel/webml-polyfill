@@ -777,17 +777,32 @@ emotionAnalysisModels: [{
 }],
 
 speechCommandModels: [{
-  modelName: 'KWS CNN (TFLite)',
-  format: 'TFLite',
-  modelId: 'kws_cnn_tflite',
-  modelSize: '3.4MB',
-  inputSize: [1, 16000],
-  outputSize: [1, 1, 12],
-  sampleRate: 16000,
-  modelFile: '../speech_commands/model/kws_cnn.tflite',
-  labelsFile: '../speech_commands/model/labels.txt',
-  intro: 'Use Convolutional Neural Networks (CNNs) for a small-footprint keyword spotting (KWS) task.',
-  paperUrl: 'https://www.isca-speech.org/archive/interspeech_2015/papers/i15_1478.pdf'
+    modelName: 'KWS CNN (TFLite)',
+    format: 'TFLite',
+    modelId: 'kws_cnn_tflite',
+    modelSize: '3.4MB',
+    inputSize: [1, 16000],
+    outputSize: [1, 1, 12],
+    sampleRate: 16000,
+    modelFile: '../speech_commands/model/kws_cnn.tflite',
+    labelsFile: '../speech_commands/model/labels.txt',
+    intro: 'Use Convolutional Neural Networks (CNNs) for a small-footprint keyword spotting (KWS) task.',
+    paperUrl: 'https://www.isca-speech.org/archive/interspeech_2015/papers/i15_1478.pdf'
+  }, {
+    modelName: 'KWS DNN (OpenVINO)',
+    format: 'OpenVINO',
+    modelId: 'kws_dnn_openvino',
+    modelSize: '320kB',
+    inputSize: [1, 250],
+    outputSize: [1, 12],
+    sampleRate: 16000,
+    modelFile: '../speech_commands/model/kws_dnn.bin',
+    labelsFile: '../speech_commands/model/labels2.txt',
+    preOptions: {
+      mfccs: true
+    },
+    intro: 'A small-footprint keyword spotting (KWS) on Microcontroller.',
+    paperUrl: 'https://arxiv.org/pdf/1711.07128.pdf'
 }],
 
 faceRecognitionModels: [{

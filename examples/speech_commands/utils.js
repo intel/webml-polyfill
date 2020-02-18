@@ -197,6 +197,11 @@ class Utils {
     let audioDecodeData = await this.audioContext.decodeAudioData(audioFileData);
     let audioPCMData = audioDecodeData.getChannelData(0);
     let inputTensor = this.downsampleAudioBuffer(audioPCMData, this.sampleRate);
+
+    if(this.preOptions.mfccs) {
+      inputTensor = this.getAudioMfccs(inputTensor, this.sampleRate, 640, 640, 4000, 20, 40, 10);
+    }
+    
     if(inputTensor.length >= this.inputSize) {
       for(let i = 0; i < this.inputSize; i++) {
         tensor[i] = inputTensor[i];
@@ -235,6 +240,39 @@ class Utils {
         offsetBuffer = nextOffsetBuffer;
     }
     return result;
+  }
+
+  getAudioMfccs(pcm, sampleRate,
+                windowSize, windowStride,
+                upperFrequencyLimit = 4000,
+                lowerFrequencyLimit = 20,
+                filterbankChannelCount = 40,
+                dctCoefficientCount = 13) {
+    let pcmPtr = Module._malloc(8 * pcm.length);
+    let lenPtr = Module._malloc(4);
+
+    for(let i=0; i<pcm.length; i++) {
+      Module.HEAPF64[pcmPtr/8 + i] = pcm[i];
+    }
+    Module.HEAP32[lenPtr/4] = pcm.length;
+
+    let tfMfccs = Module.cwrap('tf_mfccs', 'number',
+                              ['number', 'number', 'number', 'number',
+                               'number', 'number', 'number', 'number', 'number']);
+    let mfccsPtr = tfMfccs(pcmPtr, lenPtr,
+                           sampleRate, windowSize, windowStride,
+                           upperFrequencyLimit, lowerFrequencyLimit,
+                           filterbankChannelCount, dctCoefficientCount);
+    let mfccsLen = Module.HEAP32[lenPtr >> 2];
+    let audioMfccs = [mfccsLen];
+
+    for(let i=0; i<mfccsLen; i++) {
+      audioMfccs[i] = Module.HEAPF64[(mfccsPtr >> 3) + i];
+    }
+
+    Module._free(pcmPtr, lenPtr, mfccsPtr);
+
+    return audioMfccs;
   }
 
   getTopClasses(tensor, labels, k = 5, deQuantizeParams) {
