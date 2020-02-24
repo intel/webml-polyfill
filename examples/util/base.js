@@ -777,17 +777,32 @@ emotionAnalysisModels: [{
 }],
 
 speechCommandModels: [{
-  modelName: 'KWS CNN (TFLite)',
-  format: 'TFLite',
-  modelId: 'kws_cnn_tflite',
-  modelSize: '3.4MB',
-  inputSize: [1, 16000],
-  outputSize: [1, 1, 12],
-  sampleRate: 16000,
-  modelFile: 'https://webnnmodel.s3-us-west-2.amazonaws.com/speech_commands/model/kws_cnn.tflite',
-  labelsFile: 'https://webnnmodel.s3-us-west-2.amazonaws.com/speech_commands/model/labels.txt',
-  intro: 'Use Convolutional Neural Networks (CNNs) for a small-footprint keyword spotting (KWS) task.',
-  paperUrl: 'https://www.isca-speech.org/archive/interspeech_2015/papers/i15_1478.pdf'
+    modelName: 'KWS CNN (TFLite)',
+    format: 'TFLite',
+    modelId: 'kws_cnn_tflite',
+    modelSize: '3.4MB',
+    inputSize: [1, 16000],
+    outputSize: [1, 1, 12],
+    sampleRate: 16000,
+    modelFile: 'https://webnnmodel.s3-us-west-2.amazonaws.com/speech_commands/model/kws_cnn.tflite',
+    labelsFile: 'https://webnnmodel.s3-us-west-2.amazonaws.com/speech_commands/model/labels.txt',
+    intro: 'Use Convolutional Neural Networks (CNNs) for a small-footprint keyword spotting (KWS) task.',
+    paperUrl: 'https://www.isca-speech.org/archive/interspeech_2015/papers/i15_1478.pdf'
+  }, {
+    modelName: 'KWS DNN (OpenVINO)',
+    format: 'OpenVINO',
+    modelId: 'kws_dnn_openvino',
+    modelSize: '320kB',
+    inputSize: [1, 250],
+    outputSize: [1, 12],
+    sampleRate: 16000,
+    modelFile: 'https://webnnmodel.s3-us-west-2.amazonaws.com/speech_commands/model/kws_dnn.bin',
+    labelsFile: 'https://webnnmodel.s3-us-west-2.amazonaws.com/speech_commands/model/labels2.txt',
+    preOptions: {
+      mfccs: true
+    },
+    intro: 'A small-footprint keyword spotting (KWS) on Microcontroller.',
+    paperUrl: 'https://arxiv.org/pdf/1711.07128.pdf'
 }],
 
 faceRecognitionModels: [{
@@ -798,12 +813,15 @@ faceRecognitionModels: [{
     modelFile: 'https://webnnmodel.s3-us-west-2.amazonaws.com/face_recognition/model/facenet.bin',
     inputSize: [1, 160, 160, 3],
     outputSize: [1, 512],
-    threshold: 1.26,
     preOptions: {
       mean: [0, 0, 0, 0],
       std: [1, 1, 1, 1],
       channelScheme: 'BGR',
       format: 'NHWC'
+    },
+    postOptions: {
+      distanceMetric: 'euclidean',
+      threshold: 1.26
     },
     intro: 'This is a CNN model for face recognition which learns discriminative features of faces and produces embeddings for input face images.',
     paperUrl: 'https://arxiv.org/abs/1503.03832'
@@ -815,12 +833,15 @@ faceRecognitionModels: [{
     modelFile: 'https://webnnmodel.s3-us-west-2.amazonaws.com/face_recognition/model/face-reidentification-retail-0095.bin',
     inputSize: [1, 128, 128, 3],
     outputSize: [1, 1, 1, 256],
-    threshold: 0.8,
     preOptions: {
       mean: [0, 0, 0, 0],
       std: [1, 1, 1, 1],
       channelScheme: 'BGR',
       format: 'NHWC'
+    },
+    postOptions: {
+      distanceMetric: 'cosine',
+      threshold: 0.8
     },
     intro: 'This is a lightweight network for the face re-identification scenario that is\
       based on MobileNet V2. The model produces feature vectors which should be close in cosine distance for similar faces and far for different faces.'

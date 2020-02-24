@@ -9,7 +9,7 @@ class Utils {
     this.boxH;
     this.boxW;
     this.modelID;
-    this.threshold;
+    this.postOptions;
     this.preOptions;
     this.canvasElement = canvas;
     this.canvasContext = this.canvasElement.getContext('2d');
@@ -33,7 +33,7 @@ class Utils {
     this.outputSize = newModel.outputSize;
     this.modelID = newModel.modelId;
     this.modelFile = newModel.modelFile;
-    this.threshold = newModel.threshold || 1.26;
+    this.postOptions = newModel.postOptions || {};
     this.preOptions = newModel.preOptions || {};
     this.inputTensor = [new Float32Array(newModel.inputSize.reduce((x,y) => x*y))];
     this.outputTensor = [new Float32Array(newModel.outputSize.reduce((x,y) => x*y))];
@@ -103,16 +103,16 @@ class Utils {
     }
   }
 
-  getDistance(embeddings1, embeddings2) {
+  euclideanDistance(embeddings1, embeddings2) {
     let embeddingSum = 0;
     for (let i = 0; i < embeddings1.length; i++) {
       embeddingSum = embeddingSum + Math.pow((embeddings1[i] - embeddings2[i]), 2);
     }
 
-    return embeddingSum;
+    return Math.sqrt(embeddingSum);
   }
 
-  getCosine(embeddings1, embeddings2) {
+  cosineDistance(embeddings1, embeddings2) {
     let dotSum = 0;
     let norm1 = 0;
     let norm2 = 0;
@@ -130,8 +130,8 @@ class Utils {
     return 1 - cosine;
   }
 
-  // Embeddings normalization
-  normalization(embeddings) {
+  // Embeddings L2-Normalization
+  L2Normalization(embeddings) {
     // norm(L2) = (|x0|^2 + |x1|^2 + |x2|^2 + |xi|^2)^1/2
     let embeddingSum = 0;
     for (let i = 0; i < embeddings.length; i++) {
@@ -183,15 +183,18 @@ class Utils {
 
     for (let i in targetEmbeddings) {
       for (let j in searchEmbeddings) {
+        // Set default status 'unknown' as 'X'
         results[j] = 'X';
 
         let distance;
-        if (this.modelID === "facenet_recognition_openvino") {
-          let [...targetEmbeddingsTmp] = Float32Array.from(this.normalization(targetEmbeddings[i]));
-          let [...searchEmbeddingsTmp] = Float32Array.from(this.normalization(searchEmbeddings[j]));
-          distance = this.getDistance(targetEmbeddingsTmp, searchEmbeddingsTmp);
-        } else if (this.modelID === "facereidentification_recognition_openvino") {
-          distance = this.getCosine(targetEmbeddings[i], searchEmbeddings[j]);
+        if (this.postOptions.distanceMetric === "euclidean") {
+          let [...targetEmbeddingsTmp] = Float32Array.from(this.L2Normalization(targetEmbeddings[i]));
+          let [...searchEmbeddingsTmp] = Float32Array.from(this.L2Normalization(searchEmbeddings[j]));
+          distance = this.euclideanDistance(targetEmbeddingsTmp, searchEmbeddingsTmp);
+        } else if (this.postOptions.distanceMetric === "cosine") {
+          distance = this.cosineDistance(targetEmbeddings[i], searchEmbeddings[j]);
+        } else {
+          throw new Error(`Not support distance metric: ${this.postOptions.distanceMetric}`);
         }
 
         if (!distanceMap.has(j)) distanceMap.set(j, new Map());
@@ -216,7 +219,7 @@ class Utils {
         }
       }
 
-      if (results[key1] === 'X' && minDis < this.threshold) {
+      if (results[key1] === 'X' && minDis < this.postOptions.threshold) {
         results[key1] = parseInt(num) + 1;
       }
     }
