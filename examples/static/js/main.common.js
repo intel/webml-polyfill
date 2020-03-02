@@ -10,6 +10,7 @@ const imageElement = document.getElementById('image');
 const inputElement = document.getElementById('input');
 const progressBar = document.getElementById('progressBar');
 const recordButton = document.getElementById('record');
+const downloadButton = document.getElementById('download');
 
 let streaming = false;
 let stats = new Stats();

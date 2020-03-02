@@ -805,6 +805,22 @@ speechCommandModels: [{
     paperUrl: 'https://arxiv.org/pdf/1711.07128.pdf'
 }],
 
+speechSampleModels: [{
+  modelName: 'wsj_dnn5b (OpenVINO)',
+  format: 'OpenVINO',
+  modelId: 'wsj_dnn5b_openvino',
+  modelSize: '115.6MB',
+  inputSize: [1, 440],
+  outputSize: [1, 3425],
+  sampleRate: 16000,
+  modelFile: '../speech_sample/model/wsj_dnn5b.bin',
+  preOptions: {
+    mfccs: true
+  },
+  intro: 'Inference based on Kaldi* neural networks and speech feature vectors.',
+  paperUrl: 'https://docs.openvinotoolkit.org/latest/_inference_engine_samples_speech_sample_README.html'
+}],
+
 faceRecognitionModels: [{
     modelName: 'FaceNet (OpenVINO)',
     format: 'OpenVino',

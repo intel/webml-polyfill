@@ -756,6 +756,22 @@ class OpenVINOModelImporter {
 
           opCode = this._nn.PRELU;
         } break;
+        case 'Sigmoid': {
+          opCode = this._nn.LOGISTIC;
+          // Add inputs
+          const input = node.inputs[0];
+          inputs.push(this._getTensorId(input));
+
+          // Add outputs
+          const output = node.outputs[0];
+          const outDims = output.shape();
+          const outputType = {
+            type: this._getTypeCode(output.dataType()), dimensions: outDims
+          };
+          const outputId = this._addNamedOperand(output.graphId(), outputType);
+          outputs.push(outputId);
+              
+        } break;
         case 'Activation': {
           // Add inputs
           const in1 = node.inputs[0];
