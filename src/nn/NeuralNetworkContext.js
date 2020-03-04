@@ -2,7 +2,7 @@ import {OperationCode, OperandCode, PaddingCode, PreferenceCode, FuseCode, Resul
 import Model from './Model'
 import Compilation from './Compilation'
 import Execution from './Execution'
-import WebGLModel from './webgl/WebGLModel'
+import TfjsModel from './webgl/TfjsModel'
 
 export default class NeuralNetworkContext {
   constructor() {
@@ -11,7 +11,7 @@ export default class NeuralNetworkContext {
     this._initFusedActivationFunctionTypes();
     this._initImplicitPaddingTypes();
     this._initExecutionPreferenceTypes();
-    this.supportWebGL = WebGLModel._supportWebGL();
+    this.supportWebGL = TfjsModel._supportWebGL();
     this.supportWasm = !!window.WebAssembly;
   }
 

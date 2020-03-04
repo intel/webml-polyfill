@@ -8,13 +8,24 @@ const config = {
     path: path.resolve(__dirname, 'dist')
   },
 	module: {
-		rules: [{ test: /\.js$/, loader: 'babel-loader', exclude: /node_modules/ }]
+		rules: [
+      {
+        test: /\.js$/,
+        loader: 'babel-loader',
+        exclude: /node_modules/
+      },
+      {
+        test: /\.wasm$/i,
+        type: 'javascript/auto',
+        loader: 'file-loader',
+        options: {
+          name: '[name].[ext]'
+        }
+      }
+    ]
   },
   resolve: {
 		extensions: ['.js']
-  },
-  externals: {
-    'fs': true
   },
   devServer: {
     // enable https
@@ -25,6 +36,9 @@ const config = {
     disableHostCheck: true,
     // serve bundle files from /dist/ without writing to disk
     publicPath: '/dist/',
+  },
+  node: {
+    fs: 'empty'
   }
 };
 

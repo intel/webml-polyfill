@@ -25,24 +25,26 @@
   },
   "homepage": "https://github.com/intel/webml-polyfill#readme",
   "devDependencies": {
+    "@tensorflow/tfjs-backend-wasm": "^1.5.1-alpha5",
+    "@tensorflow/tfjs-core": "^1.5.1",
     "babel-core": "^6.26.0",
     "babel-loader": "^7.1.1",
     "babel-polyfill": "^6.26.0",
     "babel-preset-env": "^1.6.1",
     "chromedriver": "80.0.1",
     "fast-csv": "^2.4.1",
-    "http-server": "^0.10.0",
+    "file-loader": "^5.0.2",
+    "globby": "^8.0.1",
+    "http-server": "^0.12.1",
     "ndarray": "^1.0.18",
     "ndarray-ops": "^1.2.2",
     "ndarray-squeeze": "^1.0.2",
+    "npmlog": "^4.1.2",
     "portfinder": "^1.0.20",
+    "rimraf": "^2.6.2",
     "selenium-webdriver": "^4.0.0-alpha.5",
     "webpack": "^4.26.0",
     "webpack-cli": "^3.1.2",
-    "webpack-dev-server": "^3.1.10",
-    "npmlog": "^4.1.2",
-    "globby": "^8.0.1",
-    "rimraf": "^2.6.2",
-    "@tensorflow/tfjs-core": "1.2.11"
+    "webpack-dev-server": "^3.1.10"
   }
 }

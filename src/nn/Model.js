@@ -27,6 +27,7 @@ export default class Model {
     this._backend = options.backend;
     this._eager = options.eager || false;
     this._supportedOps = options.supportedOps || new Set();
+    this._isQuantized = false;
   }
 
   /**
@@ -56,6 +57,13 @@ export default class Model {
     this._sortIntoRunOrder();
     this._completed = true;
     return ResultCode.NO_ERROR;
+  }
+
+  /**
+   * Determine if the OperandCode of model is quant8.
+   */
+  isQuant8() {
+    return this._operands[this._inputs[0]].type === OperandCode.TENSOR_QUANT8_ASYMM || this._isQuantized ? true : false;
   }
 
   /**
@@ -154,6 +162,12 @@ export default class Model {
     }
     if (!this._validateOperandList(outputs)) {
       throw new Error(`Invalid outputs ${outputs}`);
+    }
+    if (type === OperationCode.ADD) {
+      if (this._operands[inputs[0]].type === OperandCode.TENSOR_QUANT8_ASYMM || 
+          this._operands[inputs[1]].type === OperandCode.TENSOR_QUANT8_ASYMM) {
+        this._isQuantized = true;
+      }
     }
     let op = {
       type: type,

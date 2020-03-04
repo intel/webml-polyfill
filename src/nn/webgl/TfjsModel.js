@@ -3,12 +3,14 @@ import { FuseCode, OperandCode, OperationCode, PaddingCode, PreferenceCode } fro
 import Graph from '../GraphUtils';
 import * as utils from '../utils';
 import CyclicProfiler from '../instrument';
+import wasmPath from '../../../node_modules/@tensorflow/tfjs-backend-wasm/dist/tfjs-backend-wasm.wasm';
+import {setWasmPath} from '@tensorflow/tfjs-backend-wasm';
 
 var warmUpRuns = 1;
 
-export default class WebGLModel {
+export default class TfjsModel {
   /**
-   * Create WebGLModel class in nn/Model.js
+   * Create TfjsModel class in nn/Model.js
    *
    * @param {Object} model - Model from nn/Model.js
    */
@@ -31,6 +33,20 @@ export default class WebGLModel {
 
   /** Called in nn/Compilation.js */
   async prepareModel() {
+    if(this._model._backend === 'WASM'){
+      if(tf.getBackend() != 'wasm'){
+        setWasmPath(wasmPath);
+        await tf.setBackend('wasm');
+      };
+    } else {
+      if(tf.getBackend() != "WebGL"){
+        await tf.setBackend('webgl');
+        tf.webgl.forceHalfFloat();
+        console.info('WEBGL_FORCE_F16_TEXTURES : ',tf.ENV.getBool('WEBGL_FORCE_F16_TEXTURES'));
+        console.info('floatPercision : ',tf.backend().floatPrecision());
+      };
+    };
+
     const model = this._model;
     const operations = model._operations;
 
@@ -72,8 +88,20 @@ export default class WebGLModel {
               const type = this._getOperandType(operand.type);
               if (operand.value !== null) {
                 // constant tensor
+                let typedArray;
+                let raw = operand.value;
+                if (this._model._backend === 'WASM' && raw.buffer.byteLength != raw.byteLength) {                  
+                  let part = raw.buffer.slice(raw.byteOffset, raw.byteOffset + raw.byteLength);
+                  if (type === 'float32') {
+                    typedArray = new Float32Array(part);
+                  } else {
+                    typedArray = new Int32Array(part);
+                  }
+                } else {
+                  typedArray = raw;
+                }
                 this._operands[tensorId] =
-                    tf.tensor(operand.value, operand.dimensions, type);
+                    tf.tensor(typedArray, operand.dimensions, type);
               } else {
                 // variable tensor
                 const zeroTensor = tf.zeros(operand.dimensions, type);
@@ -278,10 +306,7 @@ export default class WebGLModel {
     });
   }
 
-  async _executeGlSubgraph(subgraph) {
-    tf.webgl.forceHalfFloat();
-    console.info('WEBGL_FORCE_F16_TEXTURES : ',tf.ENV.getBool('WEBGL_FORCE_F16_TEXTURES'));
-    console.info('floatPercision : ',tf.backend().floatPrecision());    
+  async _executeGlSubgraph(subgraph) {    
     for (const operation of subgraph.operations) {
       tf.tidy(() => this._executeGlOperation(operation));
     }
@@ -490,16 +515,34 @@ export default class WebGLModel {
           filterW = operands[inputs[i++]].value[0];
           filterH = operands[inputs[i++]].value[0];
           activation = FuseFunctionMap.get(operands[inputs[i++]].value[0]);
-          if (op === OperationCode.AVERAGE_POOL_2D) {
-            output.assign(activation(
-                input.avgPool([filterH, filterW],
-                              [strideH, strideW],
-                              padding)));
+          if (this._model._backend==='WASM' && filterH===1 && filterW===1) {
+            let inputData;
+            const [N, H, W, C] = output.shape;
+            const [NI, HI, WI, CI] = input.shape;
+            if (padding === 'same') {
+              const paddingLeft = Math.floor(((W-1)*strideW + filterW - WI)/2);
+              const paddingRight = ((W-1)*strideW + filterW - WI) - paddingLeft;
+              const paddingTop = Math.floor(((H-1)*strideH + filterH - HI)/2);
+              const paddingBottom = ((H-1)*strideH + filterH - HI) - paddingTop;
+              inputData = input.pad([[0, 0], [paddingTop, paddingBottom],
+                                             [paddingLeft, paddingRight], [0, 0]]).dataSync();
+            } else {
+              inputData = input.dataSync()
+            }            
+            let outputData = this._downSampling(input, output, inputData, strideH, strideW);
+            output.assign(activation(tf.tensor(outputData, output.shape)));
           } else {
-            output.assign(activation(
-                input.maxPool([filterH, filterW],
-                              [strideH, strideW],
-                              padding)));
+            if (op === OperationCode.AVERAGE_POOL_2D) {
+              output.assign(activation(
+                  input.avgPool([filterH, filterW],
+                                [strideH, strideW],
+                                padding)));
+            } else {
+              output.assign(activation(
+                  input.maxPool([filterH, filterW],
+                                [strideH, strideW],
+                                padding)));
+            }
           }
         } else {
           const paddingLeft = operands[inputs[i++]].value[0];
@@ -511,31 +554,38 @@ export default class WebGLModel {
           filterW = operands[inputs[i++]].value[0];
           filterH = operands[inputs[i++]].value[0];
           activation = FuseFunctionMap.get(operands[inputs[i++]].value[0]);
-          if (this._isPaddingEqual(paddingLeft, paddingRight,
-                                   paddingTop, paddingBottom)) {
-            if (op === OperationCode.AVERAGE_POOL_2D) {
-              output.assign(activation(
-                  input.avgPool([filterH, filterW],
-                                [strideH, strideW],
-                                paddingLeft, 'floor')));
-            } else {
-              output.assign(activation(
-                  input.maxPool([filterH, filterW],
-                                [strideH, strideW],
-                                paddingLeft, 'floor')));
-            }
+          if (this._model._backend==='WASM' && filterH===1 && filterW===1) {
+            let inputData = input.pad([[0, 0], [paddingTop, paddingBottom],
+                                               [paddingLeft, paddingRight], [0, 0]]).dataSync();       
+            let outputData = this._downSampling(input, output, inputData, strideH, strideW);
+            output.assign(activation(tf.tensor(outputData, output.shape)));
           } else {
-            if (op === OperationCode.AVERAGE_POOL_2D) {
-              throw new Error(
-                  'AVERAGE_POOL_2D with unequal padding is not supported');
+            if (this._isPaddingEqual(paddingLeft, paddingRight,
+                                    paddingTop, paddingBottom)) {
+              if (op === OperationCode.AVERAGE_POOL_2D) {
+                output.assign(activation(
+                    input.avgPool([filterH, filterW],
+                                  [strideH, strideW],
+                                  paddingLeft, 'floor')));
+              } else {
+                output.assign(activation(
+                    input.maxPool([filterH, filterW],
+                                  [strideH, strideW],
+                                  paddingLeft, 'floor')));
+              }
             } else {
-              output.assign(activation(
-                  input.pad([[0, 0], [paddingTop, paddingBottom],
-                             [paddingLeft, paddingRight], [0, 0]],
-                            -1e8 /* a small enough constant */)
-                       .maxPool([filterH, filterW],
-                                [strideH, strideW],
-                                'valid')));
+              if (op === OperationCode.AVERAGE_POOL_2D) {
+                throw new Error(
+                    'AVERAGE_POOL_2D with unequal padding is not supported');
+              } else {
+                output.assign(activation(
+                    input.pad([[0, 0], [paddingTop, paddingBottom],
+                              [paddingLeft, paddingRight], [0, 0]],
+                              -1e8 /* a small enough constant */)
+                        .maxPool([filterH, filterW],
+                                  [strideH, strideW],
+                                  'valid')));
+              }
             }
           }
         }
@@ -695,6 +745,23 @@ export default class WebGLModel {
         filter.dispose();
       } break;
     }
+  }
+
+  /** patch code to enable pooling with filter 1×1 */
+  _downSampling(input, output, inputData, strideH, strideW) {
+    const [N, H, W, C] = output.shape;
+    const [NI, HI, WI, CI] = input.shape;
+    let outputData = new Float32Array(N*H*W*C);
+    for (let n = 0; n < N; ++n) {
+      for (let h = 0; h < H; ++h) {
+        for (let w = 0; w < W; ++w) {
+          for (let c = 0; c < C; ++c) {
+            outputData[n*H*W*C + h*W*C + w*C + c] = inputData[n*HI*WI*CI + h*strideH*WI*CI + w*strideW*C + c];
+          }
+        }
+      }
+    }
+    return outputData;
   }
 
   _isPaddingEqual(left, right, top, bottom) {
