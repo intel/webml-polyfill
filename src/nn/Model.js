@@ -89,6 +89,29 @@ export default class Model {
   }
 
   /**
+   * Sets an operand's per channel quantization parameters.
+   * 
+   * @param {number} index - The index of the model operand we're setting.
+   * @param {number} params.channelDim - The index of the channel dimension
+   * @param {Float32Array} params.scales - The array of scaling values for each channel.
+   *                                Each value must be greater than zero.
+   *                                Its length should be equal to dimension[channelDim] of the Operand.
+   */
+  setOperandSymmPerChannelQuantParams(index, params) {
+    if (this._completed) {
+      throw new Error('setOperandSymmPerChannelQuantParams cant modify after model finished');
+    }
+    if (index >= this._operands.length) {
+      throw new Error(`Invalid index ${index}`);
+    }
+    let operand = this._operands[index];
+    if (!this._validateOperandSymmPerChannelQuantParams(operand, params)) {
+      throw new Error(`Invalid params`);
+    }
+    operand.channelQuant = params;
+  }
+
+  /**
    * Sets an operand to a constant value.
    *
    * @param {number} index - The index of the model operand we're setting.
@@ -185,6 +208,47 @@ export default class Model {
       }
       if (options.scale < 0.0) {
         console.error(`Invalid scale ${options.scale}`);
+        return false;
+      }
+    }
+    return true;
+  }
+
+  _validateOperandSymmPerChannelQuantParams(operand, channelQuant) {
+    if (operand.type != OperandCode.TENSOR_QUANT8_SYMM_PER_CHANNEL) {
+      console.error(`Invalid operand type ${operand.type}`);
+      return false;
+    }
+
+    if (typeof channelQuant.channelDim !== 'number') {
+      console.error('Invalid type of channleDim');
+      return false;
+    }
+
+    if (channelQuant.channelDim >= operand.dimensions.length) {
+      console.error(`Invalid channelDim ${channelDim} for 
+          operand dimensions with length ${operand.dimensions.length}`);
+      return false;
+    }
+
+    if (!(channelQuant.scales instanceof Float32Array)) {
+      console.error('Invalid type of scales');
+      return false;
+    }
+
+    if (channelQuant.scales.length !== operand.dimensions[channelQuant.channelDim]) {
+      console.error('Invalid length of scales');
+      return false;
+    }
+
+    if (operand.dimensions[channelQuant.channelDim] === 0) {
+      console.log(`Channle dimension ${channelQuant.channelDim} is underspecified`);
+      return false;
+    }
+    
+    for (let i = 0; i < operand.dimensions[channelQuant.channelDim]; i++) {
+      if (channelQuant.scales[i] <= 0) {
+        console.error(`Invalid value of scales[${i}]`);
         return false;
       }
     }

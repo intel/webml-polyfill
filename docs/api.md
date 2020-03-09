@@ -26,6 +26,7 @@ interface NeuralNetworkContext {
   const long TENSOR_FLOAT32 = 3;
   const long TENSOR_INT32 = 4;
   const long TENSOR_QUANT8_ASYMM = 5;
+  const long TENSOR_QUANT8_SYMM_PER_CHANNEL = 11;
 
   // Operation types.
   const long ADD = 0;
@@ -89,14 +90,18 @@ interface NeuralNetworkContext {
 dictionary OperandOptions {
   required long type;
   sequence<unsigned long> dimensions;
-  // scale: an non-negative floating point value
   float scale;
-  // zeroPoint: an integer, in range [0, 255]
   long zeroPoint;
+};
+
+disctionary OperandSymmPerChannelQuantParams {
+  unsigned long channelDim;
+  Float32Array scales;
 };
 
 interface Model {
   void addOperand(OperandOptions options);
+  void setOperandSymmPerChannelQuantParams(unsigned long index, OperandSymmPerChannelQuantParams params);
   void setOperandValue(unsigned long index, ArrayBufferView data);
   void addOperation(long type, sequence<unsigned long> inputs, sequence<unsigned long> outputs);
   void identifyInputsAndOutputs(sequence<unsigned long> inputs, sequence<unsigned long> outputs);
