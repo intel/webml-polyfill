@@ -1341,6 +1341,8 @@ export default class PreparedModel {
       nn_ops.HEAP32.set(data, ptr >> 2);
     } else if (type === OperandCode.TENSOR_QUANT8_ASYMM) {
       nn_ops.HEAPU8.set(data, ptr);
+    } else if (type === OperandCode.TENSOR_QUANT8_SYMM_PER_CHANNEL) {
+      nn_ops.HEAP8.set(data, ptr);
     } else {
       throw new Error(`Operand type ${type} is not supported`);
     }
@@ -1355,6 +1357,8 @@ export default class PreparedModel {
       view = new Int32Array(nn_ops.HEAP32.buffer, ptr, buffer.length);
     } else if (type === OperandCode.TENSOR_QUANT8_ASYMM) {
       view = new Uint8Array(nn_ops.HEAPU8.buffer, ptr, buffer.length);
+    } else if (type === OperandCode.TENSOR_QUANT8_SYMM_PER_CHANNEL) {
+      view = new Int8Array(nn_ops.HEAP8.buffer, ptr, buffer.length);
     } else {
       throw new Error(`Operand type ${type} is not supported`);
     }
@@ -1370,6 +1374,8 @@ export default class PreparedModel {
       view = new Int32Array(nn_ops.HEAP32.buffer, ptr, length);
     } else if (type === OperandCode.TENSOR_QUANT8_ASYMM) {
       view = new Uint8Array(nn_ops.HEAPU8.buffer, ptr, length);
+    } else if (type === OperandCode.TENSOR_QUANT8_SYMM_PER_CHANNEL) {
+      view = new Int8Array(nn_ops.HEAP8.buffer, ptr, length);
     } else {
       throw new Error(`Operand type ${type} is not supported`);
     }
