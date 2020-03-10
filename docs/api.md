@@ -94,7 +94,7 @@ dictionary OperandOptions {
   long zeroPoint;
 };
 
-disctionary OperandSymmPerChannelQuantParams {
+dictionary OperandSymmPerChannelQuantParams {
   unsigned long channelDim;
   Float32Array scales;
 };
