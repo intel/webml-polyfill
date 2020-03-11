@@ -1,5 +1,4 @@
 describe('Unit Test/Execution Test', function() {
-  const assert = chai.assert;
   const TENSOR_DIMENSIONS = [2, 2, 2, 2];
   let nn;
 
@@ -27,7 +26,7 @@ describe('Unit Test/Execution Test', function() {
         model.identifyInputsAndOutputs([0], [3]);
         model.finish().then((result)=>{
           model.createCompilation().then((compilation)=>{
-            compilation.setPreference(nn.PREFER_LOW_POWER);
+            compilation.setPreference(getPreferenceCode(options.prefer));
             compilation.finish().then(()=>{
               compilation.createExecution().then((execution)=>{
                 assert.isFunction(execution.setInput);
@@ -53,7 +52,7 @@ describe('Unit Test/Execution Test', function() {
       model.identifyInputsAndOutputs([0], [3]);
       await model.finish();
       let compilation = await  model.createCompilation();
-      compilation.setPreference(nn.PREFER_LOW_POWER);
+      compilation.setPreference(getPreferenceCode(options.prefer));
       await compilation.finish();
       let execution = await compilation.createExecution();
       let inputData = new Float32Array(product(op.dimensions));
@@ -76,7 +75,7 @@ describe('Unit Test/Execution Test', function() {
         model.identifyInputsAndOutputs([0], [3]);
         model.finish().then((result)=>{
           model.createCompilation().then((compilation)=>{
-            compilation.setPreference(nn.PREFER_LOW_POWER);
+            compilation.setPreference(getPreferenceCode(options.prefer));
             compilation.finish().then(()=>{
               compilation.createExecution().then((execution)=>{
                 let inputData = new Float32Array(product(op.dimensions));
@@ -106,7 +105,7 @@ describe('Unit Test/Execution Test', function() {
         model.identifyInputsAndOutputs([0], [3]);
         model.finish().then((result)=>{
           model.createCompilation().then((compilation)=>{
-            compilation.setPreference(nn.PREFER_LOW_POWER);
+            compilation.setPreference(getPreferenceCode(options.prefer));
             compilation.finish().then(()=>{
               compilation.createExecution().then((execution)=>{
                 let inputData = new Int32Array(product(op.dimensions));
@@ -136,7 +135,7 @@ describe('Unit Test/Execution Test', function() {
         model.identifyInputsAndOutputs([0], [3]);
         model.finish().then((result)=>{
           model.createCompilation().then((compilation)=>{
-            compilation.setPreference(nn.PREFER_LOW_POWER);
+            compilation.setPreference(getPreferenceCode(options.prefer));
             compilation.finish().then(()=>{
               compilation.createExecution().then((execution)=>{
                 let inputData = new Int32Array(product(op.dimensions));
@@ -166,7 +165,7 @@ describe('Unit Test/Execution Test', function() {
         model.identifyInputsAndOutputs([0], [3]);
         model.finish().then((result)=>{
           model.createCompilation().then((compilation)=>{
-            compilation.setPreference(nn.PREFER_LOW_POWER);
+            compilation.setPreference(getPreferenceCode(options.prefer));
             compilation.finish().then(()=>{
               compilation.createExecution().then((execution)=>{
                 assert.throws(()=>{
@@ -194,7 +193,7 @@ describe('Unit Test/Execution Test', function() {
         model.identifyInputsAndOutputs([0], [3]);
         model.finish().then((result)=>{
           model.createCompilation().then((compilation)=>{
-            compilation.setPreference(nn.PREFER_LOW_POWER);
+            compilation.setPreference(getPreferenceCode(options.prefer));
             compilation.finish().then(()=>{
               compilation.createExecution().then((execution)=>{
                 assert.throws(()=>{
@@ -222,7 +221,7 @@ describe('Unit Test/Execution Test', function() {
         model.identifyInputsAndOutputs([0], [3]);
         model.finish().then((result)=>{
           model.createCompilation().then((compilation)=>{
-            compilation.setPreference(nn.PREFER_LOW_POWER);
+            compilation.setPreference(getPreferenceCode(options.prefer));
             compilation.finish().then(()=>{
               compilation.createExecution().then((execution)=>{
                 let inputData = new Int32Array(product(op.dimensions));
@@ -252,7 +251,7 @@ describe('Unit Test/Execution Test', function() {
         model.identifyInputsAndOutputs([0], [3]);
         model.finish().then((result)=>{
           model.createCompilation().then((compilation)=>{
-            compilation.setPreference(nn.PREFER_LOW_POWER);
+            compilation.setPreference(getPreferenceCode(options.prefer));
             compilation.finish().then(()=>{
               compilation.createExecution().then((execution)=>{
                 let inputData = new Int32Array(product(op.dimensions));
@@ -282,7 +281,7 @@ describe('Unit Test/Execution Test', function() {
         model.identifyInputsAndOutputs([0], [3]);
         model.finish().then((result)=>{
           model.createCompilation().then((compilation)=>{
-            compilation.setPreference(nn.PREFER_LOW_POWER);
+            compilation.setPreference(getPreferenceCode(options.prefer));
             compilation.finish().then(()=>{
               compilation.createExecution().then((execution)=>{
                 assert.throws(()=>{
@@ -312,7 +311,7 @@ describe('Unit Test/Execution Test', function() {
         model.identifyInputsAndOutputs([0], [3]);
         model.finish().then((result)=>{
           model.createCompilation().then((compilation)=>{
-            compilation.setPreference(nn.PREFER_LOW_POWER);
+            compilation.setPreference(getPreferenceCode(options.prefer));
             compilation.finish().then(()=>{
               compilation.createExecution().then((execution)=>{
                 assert.isFunction(execution.setOutput);
@@ -338,7 +337,7 @@ describe('Unit Test/Execution Test', function() {
       model.identifyInputsAndOutputs([0], [3]);
       await model.finish();
       let compilation = await model.createCompilation();
-      compilation.setPreference(nn.PREFER_LOW_POWER);
+      compilation.setPreference(getPreferenceCode(options.prefer));
       await compilation.finish()
       let execution = await compilation.createExecution();
       let outputData = new Float32Array(product(op.dimensions));
@@ -360,7 +359,7 @@ describe('Unit Test/Execution Test', function() {
         model.identifyInputsAndOutputs([0], [3]);
         model.finish().then((result)=>{
           model.createCompilation().then((compilation)=>{
-            compilation.setPreference(nn.PREFER_LOW_POWER);
+            compilation.setPreference(getPreferenceCode(options.prefer));
             compilation.finish().then(()=>{
               compilation.createExecution().then((execution)=>{
                 let outputData = new Float32Array(product(op.dimensions));
@@ -390,7 +389,7 @@ describe('Unit Test/Execution Test', function() {
         model.identifyInputsAndOutputs([0], [3]);
         model.finish().then((result)=>{
           model.createCompilation().then((compilation)=>{
-            compilation.setPreference(nn.PREFER_LOW_POWER);
+            compilation.setPreference(getPreferenceCode(options.prefer));
             compilation.finish().then(()=>{
               compilation.createExecution().then((execution)=>{
                 let outputData = new Int32Array(product(op.dimensions));
@@ -420,7 +419,7 @@ describe('Unit Test/Execution Test', function() {
         model.identifyInputsAndOutputs([0], [3]);
         model.finish().then((result)=>{
           model.createCompilation().then((compilation)=>{
-            compilation.setPreference(nn.PREFER_LOW_POWER);
+            compilation.setPreference(getPreferenceCode(options.prefer));
             compilation.finish().then(()=>{
               compilation.createExecution().then((execution)=>{
                 let outputData = new Int32Array(product(op.dimensions));
@@ -450,7 +449,7 @@ describe('Unit Test/Execution Test', function() {
         model.identifyInputsAndOutputs([0], [3]);
         model.finish().then((result)=>{
           model.createCompilation().then((compilation)=>{
-            compilation.setPreference(nn.PREFER_LOW_POWER);
+            compilation.setPreference(getPreferenceCode(options.prefer));
             compilation.finish().then(()=>{
               compilation.createExecution().then((execution)=>{
                 assert.throws(()=>{
@@ -478,7 +477,7 @@ describe('Unit Test/Execution Test', function() {
         model.identifyInputsAndOutputs([0], [3]);
         model.finish().then((result)=>{
           model.createCompilation().then((compilation)=>{
-            compilation.setPreference(nn.PREFER_LOW_POWER);
+            compilation.setPreference(getPreferenceCode(options.prefer));
             compilation.finish().then(()=>{
               compilation.createExecution().then((execution)=>{
                 assert.throws(()=>{
@@ -506,7 +505,7 @@ describe('Unit Test/Execution Test', function() {
         model.identifyInputsAndOutputs([0], [3]);
         model.finish().then((result)=>{
           model.createCompilation().then((compilation)=>{
-            compilation.setPreference(nn.PREFER_LOW_POWER);
+            compilation.setPreference(getPreferenceCode(options.prefer));
             compilation.finish().then(()=>{
               compilation.createExecution().then((execution)=>{
                 let outputData = new Int32Array(product(op.dimensions));
@@ -536,7 +535,7 @@ describe('Unit Test/Execution Test', function() {
         model.identifyInputsAndOutputs([0], [3]);
         model.finish().then((result)=>{
           model.createCompilation().then((compilation)=>{
-            compilation.setPreference(nn.PREFER_LOW_POWER);
+            compilation.setPreference(getPreferenceCode(options.prefer));
             compilation.finish().then(()=>{
               compilation.createExecution().then((execution)=>{
                 let outputData = new Int32Array(product(op.dimensions));
@@ -566,7 +565,7 @@ describe('Unit Test/Execution Test', function() {
         model.identifyInputsAndOutputs([0], [3]);
         model.finish().then((result)=>{
           model.createCompilation().then((compilation)=>{
-            compilation.setPreference(nn.PREFER_LOW_POWER);
+            compilation.setPreference(getPreferenceCode(options.prefer));
             compilation.finish().then(()=>{
               compilation.createExecution().then((execution)=>{
                 assert.throws(()=>{
@@ -596,7 +595,7 @@ describe('Unit Test/Execution Test', function() {
         model.identifyInputsAndOutputs([0], [3]);
         model.finish().then((result)=>{
           model.createCompilation().then((compilation)=>{
-            compilation.setPreference(nn.PREFER_LOW_POWER);
+            compilation.setPreference(getPreferenceCode(options.prefer));
             compilation.finish().then(()=>{
               compilation.createExecution().then((execution)=>{
                 assert.isFunction(execution.startCompute);
@@ -622,7 +621,7 @@ describe('Unit Test/Execution Test', function() {
       model.identifyInputsAndOutputs([0], [3]);
       await model.finish();
       let compilation = await model.createCompilation();
-      compilation.setPreference(nn.PREFER_LOW_POWER);
+      compilation.setPreference(getPreferenceCode(options.prefer));
       await compilation.finish();
       let execution = await compilation.createExecution();
       let inputData = new Float32Array(product(op.dimensions));
@@ -649,7 +648,7 @@ describe('Unit Test/Execution Test', function() {
       model.identifyInputsAndOutputs([0], [3]);
       await model.finish();
       let compilation = await model.createCompilation();
-      compilation.setPreference(nn.PREFER_LOW_POWER);
+      compilation.setPreference(getPreferenceCode(options.prefer));
       await compilation.finish();
       let execution = await compilation.createExecution();
       execution.setOutput(0, new Float32Array(product(op.dimensions)));
@@ -673,7 +672,7 @@ describe('Unit Test/Execution Test', function() {
       model.identifyInputsAndOutputs([0], [3]);
       await model.finish();
       let compilation = await model.createCompilation();
-      compilation.setPreference(nn.PREFER_LOW_POWER);
+      compilation.setPreference(getPreferenceCode(options.prefer));
       await compilation.finish();
       let execution = await compilation.createExecution();
       let inputData = new Float32Array(product(op.dimensions));
@@ -699,7 +698,7 @@ describe('Unit Test/Execution Test', function() {
       model.identifyInputsAndOutputs([0], [3]);
       await model.finish();
       let compilation = await model.createCompilation();
-      compilation.setPreference(nn.PREFER_LOW_POWER);
+      compilation.setPreference(getPreferenceCode(options.prefer));
       await compilation.finish();
       let execution = await compilation.createExecution();
       let inputData = new Float32Array(product(op.dimensions));
