@@ -290,6 +290,11 @@ class SymmPerChannelQuantParams():
     return "SymmPerChannelQuantParams{.scales={%s}, .channelDim=%d}" % (
         ", ".join(str(x) + "f" for x in self.scales), self.channelDim)
 
+  # For js
+  def GetJSConstructor(self):
+    return "{channelDim: %d, scales: new Float32Array([%s])}" % (self.channelDim,
+        ", ".join(str(x) for x in self.scales))
+  # end
 
 # An operand that can be fed into operations. Also, an operand is always
 # declared before operations.
@@ -1351,18 +1356,19 @@ class Configuration:
     force_regenerate = False
     test_dynamic_output_shape = True
     # For js
-    example_count = 1
+    example_count = 0
     single_example_flag = True
     support_types = [
-        "BOOL",                 # Layout: nhwc and nchw
-        "INT32",                # INT32
-        "UINT32",               # UINT32
-        "FLOAT32",              # FLOAT32
-        "FLOAT16",              # FLOAT32
-        "TENSOR_INT32",         # TENSOR_INT32
-        "TENSOR_FLOAT32",       # TENSOR_FLOAT32
-        "TENSOR_FLOAT16",       # TENSOR_FLOAT32
-        "TENSOR_QUANT8_ASYMM"   # TENSOR_QUANT8_ASYMM
+        "BOOL",                             # Layout: nhwc and nchw
+        "INT32",                            # INT32
+        "UINT32",                           # UINT32
+        "FLOAT32",                          # FLOAT32
+        "FLOAT16",                          # FLOAT32
+        "TENSOR_INT32",                     # TENSOR_INT32
+        "TENSOR_FLOAT32",                   # TENSOR_FLOAT32
+        "TENSOR_FLOAT16",                   # TENSOR_FLOAT32
+        "TENSOR_QUANT8_ASYMM",              # TENSOR_QUANT8
+        "TENSOR_QUANT8_SYMM_PER_CHANNEL"    # TENSOR_QUANT8
     ]
     operation_code = [
         "ADD",
@@ -1506,12 +1512,12 @@ class Configuration:
                 },
                 1: {
                     "layout": ["NHWC"],
-                    "types": ["TENSOR_FLOAT32", "TENSOR_QUANT8_ASYMM"],
+                    "types": ["TENSOR_FLOAT32", "TENSOR_QUANT8_ASYMM", "TENSOR_QUANT8_SYMM_PER_CHANNEL"],
                     "dimensions": [4]
                 },
                 2: {
                     "layout": ["NHWC"],
-                    "types": ["TENSOR_FLOAT32", "TENSOR_INT32", "TENSOR_QUANT8_ASYMM"],
+                    "types": ["TENSOR_FLOAT32", "TENSOR_INT32", "TENSOR_QUANT8_ASYMM", "TENSOR_QUANT8_SYMM_PER_CHANNEL"],
                     "dimensions": [1]
                 },
                 3: {
@@ -1572,12 +1578,12 @@ class Configuration:
                 },
                 1: {
                     "layout": ["NHWC"],
-                    "types": ["TENSOR_FLOAT32", "TENSOR_QUANT8_ASYMM"],
+                    "types": ["TENSOR_FLOAT32", "TENSOR_QUANT8_ASYMM", "TENSOR_QUANT8_SYMM_PER_CHANNEL"],
                     "dimensions": [4]
                 },
                 2: {
                     "layout": ["NHWC"],
-                    "types": ["TENSOR_FLOAT32", "TENSOR_INT32", "TENSOR_QUANT8_ASYMM"],
+                    "types": ["TENSOR_FLOAT32", "TENSOR_INT32", "TENSOR_QUANT8_ASYMM", "TENSOR_QUANT8_SYMM_PER_CHANNEL"],
                     "dimensions": [1]
                 },
                 3: {

@@ -322,8 +322,10 @@ TEST_AVAILABLE_SINCE({version}, {test_name}, {namespace}::{create_model_name})\n
 def typeToArray(targetType):
     if targetType in ["INT32", "TENSOR_INT32", "UINT32"]:
         str_array = "Int32Array"
-    elif targetType == "TENSOR_QUANT8_ASYMM":
+    elif targetType in ["TENSOR_QUANT8_ASYMM"]:
         str_array = "Uint8Array"
+    elif targetType in ["TENSOR_QUANT8_SYMM_PER_CHANNEL"]:
+        str_array = "Int8Array"
     else :
         str_array = "Float32Array"
     return str_array
@@ -348,6 +350,20 @@ def DumpJSTest(model, example, js_fd):
             # use "FLOAT32" to support "FLOAT16"
             if t.type == "FLOAT16":
                 t.type = "FLOAT32"
+
+    '''
+    # select 'TENSOR_QUANT8_SYMM_PER_CHANNEL' type models
+    per_c_flag = False
+    select_types = ["TENSOR_QUANT8_SYMM_PER_CHANNEL"]
+    for t in model.GetTypes():
+        if t.type in select_types:
+            per_c_flag = True
+
+    if per_c_flag == False:
+        print ("    skip not select types: %s (%s)" %(
+               select_types, example.examplesName), file = sys.stderr)
+        return
+    '''
 
     # support layout: NHWC
     for p in example.model.GetParameters():
@@ -464,9 +480,12 @@ def DumpJSTest(model, example, js_fd):
                 return
 
     # set js test names
+    Configuration.example_count = Configuration.example_count + 1
+
     test_name = ""
     test_index = ""
     args = "options"
+    per_channel_types = dict()
     test_info = tg.FileNames.specName.capitalize().replace("_", " ")
     test_name_array = test_info.split(" ")
 
@@ -521,9 +540,10 @@ def DumpJSTest(model, example, js_fd):
                     typeDef = "    let %s = {type: nn.%s, dimensions: [%s], scale: %s, zeroPoint: %d};\n    let %s_length = product(%s.dimensions);"%(
                               t, t.type, t.GetDimensionsString()[1:-1], tg.PrettyPrintAsFloat(t.scale)[:-1], t.zeroPoint, t, t)
                 else:
-                    typeDef = "    let %s = {type: nn.%s, dimensions: [%s], scale: %s, zeroPoint: %d, %s};\n    let %s_length = product(%s.dimensions);"%(
-                              t, t.type, t.GetDimensionsString()[1:-1], tg.PrettyPrintAsFloat(t.scale)[:-1], t.zeroPoint,
-                              t.extraParams.GetConstructor(), t, t)
+                    typeDef = "    let %s = {type: nn.%s, dimensions: [%s]};\n    let %s_length = product(%s.dimensions);"%(
+                              t, t.type, t.GetDimensionsString()[1:-1], t, t)
+
+                    per_channel_types[str(t)] = t.extraParams.GetJSConstructor()
 
             print (typeDef, file = js_fd)
         print ("", file = js_fd)
@@ -532,6 +552,9 @@ def DumpJSTest(model, example, js_fd):
         for op in model.operands:
             print ("    let %s = operandIndex++;"%op, file = js_fd)
             print ("    model.addOperand(%s);"%op.type, file = js_fd)
+
+            if str(op.type) in per_channel_types.keys():
+                print ("    model.setOperandSymmPerChannelQuantParams(operandIndex++, %s);"%per_channel_types[str(op.type)], file = js_fd)
         print ("", file = js_fd)
 
         # set other inputs value(support only one input)
@@ -601,7 +624,6 @@ def DumpJSTest(model, example, js_fd):
 
         print ("  });", file = js_fd)
 
-        Configuration.example_count = Configuration.example_count + 1
     model.dumped = True
 # end
 
@@ -649,7 +671,11 @@ if __name__ == '__main__':
         else:
             print ("Skip file: %s" % tg.FileNames.specFile, file = sys.stderr)
 
-        print (">>Output JS CTS test: %s\n" %tg.FileNames.jsFile, file = sys.stderr)
+        if Configuration.example_count == 0:
+            os.remove(tg.FileNames.jsFile)
+            print (">>Remove empty JS CTS test: %s\n" %tg.FileNames.jsFile, file = sys.stderr)
+        else :
+            print (">>Output JS CTS test: %s\n" %tg.FileNames.jsFile, file = sys.stderr)
         ''' Original
         with SmartOpen(tg.FileNames.ctsFile, mode="a") as cts_fd:
             print("#include \"../generated/tests/%s.cpp\""%os.path.basename(tg.FileNames.specFile),
