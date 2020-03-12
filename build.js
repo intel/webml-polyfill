@@ -31,6 +31,7 @@ const BUILD_NN_OPS = path.join(WASM_BUILD, 'nn_ops.js');
 const DEPS_EMSDK = path.join(DEPS, 'emsdk');
 const DEPS_EMSDK_EMSCRIPTEN = path.join(DEPS_EMSDK, 'emscripten');
 const EMSDK_BIN = path.join(DEPS_EMSDK, 'emsdk');
+const EMSDK_VERSION = '1.39.10';
 const NN_OPS = path.join(ROOT, 'src/nn/wasm/nn_ops.js');
 
 logger.info('Build', 'Initialization completed. Start to build...');
@@ -86,7 +87,7 @@ if (!buildWasm) {
   logger.info('Build.Wasm', '(1/4) Setting up emsdk...');
   if (!fs.existsSync(DEPS_EMSDK_EMSCRIPTEN)) {
     logger.info('Build.Wasm', 'Installing emsdk...');
-    const install = spawnSync(`${EMSDK_BIN} install latest`, {shell: true, stdio: 'inherit', cwd: DEPS_EMSDK});
+    const install = spawnSync(`${EMSDK_BIN} install ${EMSDK_VERSION}`, {shell: true, stdio: 'inherit', cwd: DEPS_EMSDK});
     if (install.status !== 0) {
       if (install.error) {
         console.error(install.error);
@@ -96,7 +97,7 @@ if (!buildWasm) {
     logger.info('Build.Wasm', 'Installing emsdk... DONE');
 
     logger.info('Build.Wasm', 'Activating emsdk...');
-    const activate = spawnSync(`${EMSDK_BIN} activate latest`, {shell: true, stdio: 'inherit', cwd: DEPS_EMSDK});
+    const activate = spawnSync(`${EMSDK_BIN} activate ${EMSDK_VERSION}`, {shell: true, stdio: 'inherit', cwd: DEPS_EMSDK});
     if (activate.status !== 0) {
       if (activate.error) {
         console.error(activate.error);
@@ -109,7 +110,7 @@ if (!buildWasm) {
 
   // Step 2: Find path to TOOL_CHAIN
   logger.info('Build.Wasm', '(2/4) Find path to camke toolchain...');
-  let TOOL_CHAIN = globby.sync('./emscripten/**/cmake/Modules/Platform/Emscripten.cmake', {cwd: DEPS_EMSDK})[0];
+  let TOOL_CHAIN = globby.sync('./upstream/emscripten/**/cmake/Modules/Platform/Emscripten.cmake', {cwd: DEPS_EMSDK})[0];
   console.log(TOOL_CHAIN);
   if (!TOOL_CHAIN) {
     logger.error('Build.Wasm', 'Unable to find camke toolchain. Try re-building with --clean-install flag.');
