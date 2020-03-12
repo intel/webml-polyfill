@@ -17,6 +17,9 @@ class Utils {
     this.loaded = false;
     this.resolveGetRequiredOps = null;
     this.outstandingRequest = null;
+    this.frameError = {};
+    this.totalError = {};
+    this.referenceTensor;
   }
 
   async loadModel(model) {
@@ -44,6 +47,7 @@ class Utils {
     }
     this.inputTensor = new typedArray(this.inputSize.reduce((a, b) => a * b));
     this.outputTensor = new typedArray(this.outputSize.reduce((a, b) => a * b));
+    this.referenceTensor = new typedArray(this.outputSize.reduce((a, b) => a * b));
 
     let arrayBuffer = await this.loadUrl(this.modelFile, true, true);
     let resultBytes = new Uint8Array(arrayBuffer);
@@ -146,16 +150,22 @@ class Utils {
     let totalTime = 0;
     let arkInput = await this.loadKaldiArkFile(arkPath);
     let arkScore = await this.loadKaldiArkFile(this.scoreFile);
-    
+    this.initError(this.totalError);
+
     for (let i=0; i<arkInput.rows; i++) {
       this.inputTensor.set(arkInput.data.subarray(i*arkInput.columns, (i+1)*arkInput.columns));
       let start = performance.now();
       await this.model.compute([this.inputTensor], [this.outputTensor]);
       let elapsed = performance.now() - start;
       totalTime += elapsed;
+
+      this.referenceTensor.set(arkScore.data.subarray(i*arkScore.columns, (i+1)*arkScore.columns));
+      this.compareScores(this.outputTensor, this.referenceTensor, 1, arkScore.columns);
+      this.updateScoreError(this.frameError, this.totalError);
     }
 
     console.log("Avg time: ", (totalTime / arkInput.rows).toFixed(2), "ms");
+    this.printReferenceCompareResults(this.totalError, 1);
 
     return {
       time: totalTime.toFixed(2),
@@ -214,6 +224,83 @@ class Utils {
 
   downloadArkFile() {
     console.log("Convert output data to ark file.");
+  }
+
+  initError(error) {
+    error.numScores = 0,
+    error.numErrors = 0,
+    error.threshold = 0.0001,
+    error.maxError = 0.0,
+    error.rmsError = 0.0,
+    error.sumError = 0.0,
+    error.sumRmsError = 0.0,
+    error.sumSquaredError = 0.0,
+    error.maxRelError = 0.0,
+    error.sumRelError = 0.0,
+    error.sumSquaredRelError = 0.0
+  }
+
+  compareScores(outputTensor, referenceTensor, numRows, numColumns) {
+    let numErrors = 0;
+    this.initError(this.frameError);
+    for (let i = 0; i < numRows; i ++) {
+      for (let j = 0; j < numColumns; j ++) {
+        let score = outputTensor[i*numColumns+j];
+        let refScore = referenceTensor[i * numColumns + j];
+        let error = Math.abs(refScore - score);
+        let rel_error = error / ((Math.abs(refScore)) + 1e-20);
+        let squared_error = error * error;
+        let squared_rel_error = rel_error * rel_error;
+        this.frameError.numScores ++;
+        this.frameError.sumError += error;
+        this.frameError.sumSquaredError += squared_error;
+        if (error > this.frameError.maxError) {
+          this.frameError.maxError = error;
+        }
+        this.frameError.sumRelError += rel_error;
+        this.frameError.sumSquaredRelError += squared_rel_error;
+        if (rel_error > this.frameError.maxRelError) {
+          this.frameError.maxRelError = rel_error;
+        }
+        if (error > this.frameError.threshold) {
+          numErrors ++;
+        }
+      }
+    }
+    this.frameError.rmsError = Math.sqrt(this.frameError.sumSquaredError / (numRows * numColumns));
+    this.frameError.sumRmsError += this.frameError.rmsError;
+    this.frameError.numErrors = numErrors;
+    return numErrors;
+  }
+
+  updateScoreError(frameError, totalError) {
+    totalError.numErrors += frameError.numErrors;
+    totalError.numScores += frameError.numScores;
+    totalError.sumRmsError += frameError.rmsError;
+    totalError.sumError += frameError.sumError;
+    totalError.sumSquaredError += frameError.sumSquaredError;
+    if (frameError.maxError > totalError.maxError) {
+      totalError.maxError = frameError.maxError;
+    }
+    totalError.sumRelError += frameError.sumRelError;
+    totalError.sumSquaredRelError += frameError.sumSquaredRelError;
+    if (frameError.maxRelError > totalError.maxRelError) {
+      totalError.maxRelError = frameError.maxRelError;
+    }
+  }
+
+  printReferenceCompareResults(totalError, framesNum) {//framesNum equals to number of frames in one utterance
+    console.log("         max error: ", totalError.maxError);
+    console.log("         avg error: ", totalError.sumError / totalError.numScores);
+    console.log("         avg rms error: ", totalError.sumRmsError / framesNum);
+    console.log("         stdDev error: ", this.stdDevError(totalError));
+    console.log("         num of errors: ", totalError.numErrors);
+  }
+
+  stdDevError(totalError) {
+    let result = Math.sqrt(totalError.sumSquaredError / totalError.numScores
+                - (totalError.sumError / totalError.numScores) * (totalError.sumError / totalError.numScores));
+    return result;
   }
 
   deleteAll() {
