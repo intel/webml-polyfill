@@ -11,10 +11,6 @@ $(document).ready(() => {
     utilsPredict(arkFile);
 
   }, false);
-
-  downloadButton.addEventListener('click', () => {
-    downloadOutput();
-  }, false);
 });
 
 $(window).load(() => {

@@ -5,33 +5,50 @@ let front = false;
 
 const updateResult = (result) => {
   try {
+    let avgTime = (result.time / result.cycles).toFixed(2);
     console.log(`Inference time: ${result.time} ms`);
+    console.log(`Inference cycles: ${result.cycles}`);
+    console.log(`Average time: ${avgTime} ms`);
+    let inferenceCyclesElement = document.getElementById('inferenceCycles');
     let inferenceTimeElement = document.getElementById('inferenceTime');
+    let averageTimeElement = document.getElementById('averageTime');
+    inferenceCyclesElement.innerHTML = `inference cycles: <span class='ir'>${result.cycles} times</span>`;
     inferenceTimeElement.innerHTML = `inference time: <span class='ir'>${result.time} ms</span>`;
+    averageTimeElement.innerHTML = `average time: <span class='ir'>${avgTime} ms</span>`;
   } catch (e) {
     console.log(e);
   }
-  // try {
-  //   console.log(`Classes: `);
-  //   result.classes.forEach((c, i) => {
-  //     console.log(`\tlabel: ${c.label}, probability: ${c.prob}%`);
-  //     let labelElement = document.getElementById(`label${i}`);
-  //     let probElement = document.getElementById(`prob${i}`);
-  //     labelElement.innerHTML = `${c.label}`;
-  //     probElement.innerHTML = `${c.prob}%`;
-  //   });
-  //   if (result.classes[0].prob > 50) {
-  //     $('#speechcommands #scresult svg').removeClass('current');
-  //     $(`#r${result.classes[0].label}`).addClass('current');
-  //     // $('#speechcommands #scresult #rtext').html(`${result.classes[0].label}`);
-  //   } else {
-  //     $('#speechcommands #scresult svg').removeClass('current');
-  //     // $('#speechcommands #scresult #rtext').html(`Unknown`);
-  //   }
-  // }
-  // catch (e) {
-  //   console.log(e);
-  // }
+  try {
+    console.log(`max error: ${result.errors.maxError} ms`);
+    console.log(`avg error: ${result.errors.avgError} ms`);
+    console.log(`avg rms error: ${result.errors.avgRmsError} ms`);
+    console.log(`stdDev error: ${result.errors.stdDevError} ms`);
+    let resultElement0 = document.getElementById('result0');
+    let resultElement1 = document.getElementById('result1');
+    let resultElement2 = document.getElementById('result2');
+    let resultElement3 = document.getElementById('result3');
+    resultElement0.innerHTML = result.errors.maxError;
+    resultElement1.innerHTML = result.errors.avgError;
+    resultElement2.innerHTML = result.errors.avgRmsError;
+    resultElement3.innerHTML = result.errors.stdDevError;
+  } catch (e) {
+    console.log(e);
+  }
+  try {
+    let inferenceTextElement = document.getElementById('inferenceText');
+    if (result.errors.num == 0) {
+      let dev93Text = "Saatchi officials said the management re:structuring might accelerate \
+      its efforts to persuade clients to use the firm as a one stop shop for business services."
+      console.log("Inference result: ", dev93Text);
+      inferenceTextElement.innerHTML = dev93Text;
+    } else {
+      let errorText = "Please check your input ark file!";
+      console.log("Inference result: ", errorText);
+      inferenceTextElement.innerHTML = errorText;
+    }
+  } catch (e) {
+    console.log(e);
+  }
 }
 
 const downloadOutput = () => {

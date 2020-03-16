@@ -193,6 +193,9 @@
       <div class='tab-content clearfix row'>
         <div class='tab-pane text-center active col-sm' id='imagetab'>
           <div class='icdisplay' style='display: none;'>
+            <div id='inferenceCycles' style="text-transform: capitalize; width: 100%;"></div>
+            <div style="text-transform: capitalize; margin-bottom: 10px; width: 100%;">inference text:</div>
+            <div id='inferenceText' style="color: rgba(25, 190, 225, 1.0); width: 100%;"></div>
             <div class='col-lg-12 col-xs-12 text-center'>
 
               <div class='row mt-3'>
@@ -213,45 +216,45 @@
             </div>
           </div>
         </div>
-        <!-- <div class='tab-pane text-center col-sm' id='cameratab'>
-          <div class='icdisplay' style='display: none;'>
-            <div id='fps'></div>
-            <audio id='recorder' src='audio/yes.wav' controls='controls'></audio>
-            <div id='record'>
-              <svg aria-hidden='true' focusable='false' data-prefix='fas' data-icon='microphone'
-                class='svg-inline--fa fa-microphone fa-w-11' viewBox='0 0 352 512'>
-                <title>Please read following words by clicking microphone icon</title>
-                <path fill='currentColor'
-                  d='M176 352c53.02 0 96-42.98 96-96V96c0-53.02-42.98-96-96-96S80 42.98 80 96v160c0 53.02 42.98 96 96 96zm160-160h-16c-8.84 0-16 7.16-16 16v48c0 74.8-64.49 134.82-140.79 127.38C96.71 376.89 48 317.11 48 250.3V208c0-8.84-7.16-16-16-16H16c-8.84 0-16 7.16-16 16v40.16c0 89.64 63.97 169.55 152 181.69V464H96c-8.84 0-16 7.16-16 16v16c0 8.84 7.16 16 16 16h160c8.84 0 16-7.16 16-16v-16c0-8.84-7.16-16-16-16h-56v-33.77C285.71 418.47 352 344.9 352 256v-48c0-8.84-7.16-16-16-16z'>
-                </path>
-              </svg>
-            </div>
-            <label class='labelblock'>On, Off, Yes, No, Go, Stop, Up, Down, Left, Right</label>
-          </div>
-        </div> -->
 
         <div id='inference' class='shoulddisplay col-sm' style='display: none;'>
 
           <div class='row text-center tc' id='inferencetitle'>
           <div id='inferenceTime'></div>
+          <div id='averageTime' style="text-transform: capitalize; width: 100%;"></div>
           </div>
-          <div class='tab-pane text-center active col-sm' id='downloadbtn'>
-            <div class='icdisplay' style='display: none;'>
-              <div class='col-lg-12 col-xs-12 text-center'>
-  
-                <div class='row mt-3'>
-                  <div class='col'>
-                    <div class='box'>
-                      <button type='button' name='d[]' id='download' class='inputfile inputf' />
-                      <label for='button'>
-                        <span>Download Output ARK</span>
-                      </label>
-                    </div>
-                  </div>
-                </div>
-  
-              </div>
-            </div>
+          <div class='row text-center' id='inferenceresult'>
+            <table class='table table-sm'>
+              <thead>
+                <tr>
+                  <th scope='col'>#</th>
+                  <th scope='col'>error</th>
+                  <th scope='col'>result</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th scope='row'>1</th>
+                  <td id='type0'>max</td>
+                  <td id='result0'></td>
+                </tr>
+                <tr>
+                  <th scope='row'>2</th>
+                  <td id='type1'>avg</td>
+                  <td id='result1'></td>
+                </tr>
+                <tr>
+                  <th scope='row'>3</th>
+                  <td id='type2'>avg rms</td>
+                  <td id='result2'></td>
+                </tr>
+                <tr>
+                  <th scope='row'>4</th>
+                  <td id='type3'>stdDev</td>
+                  <td id='result3'></td>
+                </tr>
+              </tbody>
+            </table>
           </div>
           <div id='cameraswitcher' class='custom-control custom-switch'>
             <input type='checkbox' class='custom-control-input' id='cameraswitch'>

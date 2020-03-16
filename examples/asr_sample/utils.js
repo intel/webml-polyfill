@@ -164,12 +164,12 @@ class Utils {
       this.updateScoreError(this.frameError, this.totalError);
     }
 
-    console.log("Avg time: ", (totalTime / arkInput.rows).toFixed(2), "ms");
-    this.printReferenceCompareResults(this.totalError, 1);
+    let errors = this.getReferenceCompareResults(this.totalError, arkScore.rows);
 
     return {
+      cycles: arkScore.rows,
       time: totalTime.toFixed(2),
-      result: "Stay Tuned."
+      errors: errors
     };
   }
 
@@ -289,12 +289,18 @@ class Utils {
     }
   }
 
-  printReferenceCompareResults(totalError, framesNum) {//framesNum equals to number of frames in one utterance
-    console.log("         max error: ", totalError.maxError);
-    console.log("         avg error: ", totalError.sumError / totalError.numScores);
-    console.log("         avg rms error: ", totalError.sumRmsError / framesNum);
-    console.log("         stdDev error: ", this.stdDevError(totalError));
-    console.log("         num of errors: ", totalError.numErrors);
+  getReferenceCompareResults(totalError, framesNum) {  //framesNum equals to number of frames in one utterance
+    let avgError = totalError.sumError / totalError.numScores;
+    let avgRmsError= totalError.sumRmsError / framesNum;
+    let stdDevError= this.stdDevError(totalError);
+
+    return {
+      maxError: totalError.maxError.toFixed(15),
+      avgError: avgError.toFixed(15),
+      avgRmsError: avgRmsError.toFixed(15),
+      stdDevError: stdDevError.toFixed(15),
+      num: totalError.numErrors
+    }
   }
 
   stdDevError(totalError) {
