@@ -285,28 +285,37 @@ export default class PreparedModel {
           throw new Error("Unsupported fused activation function.");
         }
         return [float_activation_min, float_activation_max, 0, 0];
-      } else if (output.type === OperandCode.TENSOR_QUANT8_ASYMM) {
+      } else if (output.type === OperandCode.TENSOR_QUANT8_ASYMM ||
+          output.type === OperandCode.TENSOR_QUANT8_ASYMM_SIGNED) {
         // reference: https://android.googlesource.com/platform/frameworks/ml/+/refs/heads/master/nn/common/OperationsUtils.cpp#230
         let quantized_activation_min, quantized_activation_max;
         let scale = output.scale;
         let zero_point = output.zeroPoint;
+        let qmin, qmax;
+        if (output.type === OperandCode.TENSOR_QUANT8_ASYMM) {
+          qmin = nn_ops.UINT8_MIN;
+          qmax = nn_ops.UINT8_MAX;
+        } else {
+          qmin = nn_ops.INT8_MIN;
+          qmax = nn_ops.INT8_MAX;
+        }
 
         let quantize = function(f) {
             return zero_point + Math.round(f / scale);
         };
 
         if (activation == FuseCode.RELU) {
-          quantized_activation_min = Math.max(nn_ops.UINT8_MIN, quantize(0.0));
-          quantized_activation_max = nn_ops.UINT8_MAX;
+          quantized_activation_min = Math.max(qmin, quantize(0.0));
+          quantized_activation_max = qmax;
         } else if (activation == FuseCode.RELU6) {
-          quantized_activation_min = Math.max(nn_ops.UINT8_MIN, quantize(0.0));
-          quantized_activation_max = Math.min(nn_ops.UINT8_MAX, quantize(6.0));
+          quantized_activation_min = Math.max(qmin, quantize(0.0));
+          quantized_activation_max = Math.min(qmax, quantize(6.0));
         } else if (activation == FuseCode.RELU1) {
-          quantized_activation_min = Math.max(nn_ops.UINT8_MIN, quantize(-1.0));
-          quantized_activation_max = Math.min(nn_ops.UINT8_MAX, quantize(1.0));
+          quantized_activation_min = Math.max(qmin, quantize(-1.0));
+          quantized_activation_max = Math.min(qmax, quantize(1.0));
         } else if (activation == FuseCode.NONE){
-          quantized_activation_min = nn_ops.UINT8_MIN;
-          quantized_activation_max = nn_ops.UINT8_MAX;
+          quantized_activation_min = qmin;
+          quantized_activation_max = qmax;
         } else {
           throw new Error("Unsupported fused activation function.");
         }
@@ -326,13 +335,18 @@ export default class PreparedModel {
       }
       let q;
       [q, shift] = frexp(double_multiplier);
-      quantized_multiplier = Math.round(q * -(1 << 31));
-      OPS_CHECK(quantized_multiplier <= -(1 << 31));
-      if (quantized_multiplier == -(1 << 31)) {
-        quantized_multiplier /= 2;
+      let q_fixed = Math.round(q * -(1 << 31));
+      OPS_CHECK(q_fixed <= -(1 << 31));
+      if (q_fixed == -(1 << 31)) {
+        q_fixed /= 2;
         ++shift;
       }
-      OPS_CHECK(quantized_multiplier <= nn_ops.INT32_MAX);
+      OPS_CHECK(q_fixed <= nn_ops.INT32_MAX);
+      if (shift < -31) {
+        shift = 0;
+        q_fixed = 0;
+      }
+      quantized_multiplier = q_fixed | 0;
       return [quantized_multiplier, shift];
     }
 
@@ -345,7 +359,6 @@ export default class PreparedModel {
       OPS_CHECK(Math.abs(input_product_scale - bias_scale) <=
                 (1e-6 * Math.min(input_product_scale, bias_scale)));
       OPS_CHECK(input_product_scale >= 0);
-      OPS_CHECK(input_product_scale < output_scale);
       let multiplier = input_product_scale / output_scale;
       return multiplier;
     }
@@ -647,11 +660,16 @@ export default class PreparedModel {
         let inDepth = input.runtimeshape.Dims(3);
 
         let output_multiplier = 0, output_shift = 0;
+        let float_activation_min, float_activation_max,
+            quantized_activation_min, quantized_activation_max;
         let typedArray = Float32Array;
         if (output.type === OperandCode.TENSOR_QUANT8_ASYMM) {
           let real_multiplier = GetQuantizedConvolutionMultipler(input.scale, filter.scale,
                                                                  bias.scale, output.scale);
-          [output_multiplier, output_shift] = QuantizeMultiplierSmallerThanOne(real_multiplier);
+          [output_multiplier, output_shift] = QuantizeMultiplier(real_multiplier);
+          output_shift = -output_shift;
+          [float_activation_min, float_activation_max, quantized_activation_min,
+              quantized_activation_max] = calculateActivationRange(activation, output);
           typedArray = Uint8Array;
         }
 
@@ -668,9 +686,6 @@ export default class PreparedModel {
         }
         let im2colShape = this._allocateRuntimeShape(operand);
         let im2colData = this._allocateTensor(operand);
-
-        let [float_activation_min, float_activation_max,
-             quantized_activation_min, quantized_activation_max] = calculateActivationRange(activation, output);
 
         // Error check
         OPS_CHECK(input.type === filter.type);
