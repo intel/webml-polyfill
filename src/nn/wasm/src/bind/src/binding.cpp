@@ -49,7 +49,7 @@ namespace binding_utils {
   template <typename T>
   T ApplyPrelu(T input, T alpha) {
     return input >= 0.0 ? input : input * alpha;
-  }  
+  }
 
   // Operation wrappers.
   void addFloat32Wrapper(const ArithmeticParams& op_params,
@@ -195,6 +195,90 @@ namespace binding_utils {
                         (uint8_t*)outputData, im2colShape, 
                         (uint8_t*)im2colData, &cpu_backend_context);
   }
+
+  void convUint8PerChannelWrapper(const ConvParams& params,
+                                  const intptr_t outputMultiplierData,
+                                  const intptr_t outputShiftData,
+                                  const RuntimeShape& inputShape,
+                                  const intptr_t inputData,
+                                  const RuntimeShape& filterShape,
+                                  const intptr_t filterData,
+                                  const RuntimeShape& biasShape,
+                                  const intptr_t biasData,
+                                  const RuntimeShape& outputShape,
+                                  intptr_t outputData) {
+  uint32_t numBatches = inputShape.Dims(0);
+  uint32_t inputHeight = inputShape.Dims(1);
+  uint32_t inputWidth = inputShape.Dims(2);
+  uint32_t inputDepth = inputShape.Dims(3);
+  uint32_t filterHeight = filterShape.Dims(1);
+  uint32_t filterWidth = filterShape.Dims(2);
+  uint32_t filterDepth = filterShape.Dims(3);
+  uint32_t outputHeight = outputShape.Dims(1);
+  uint32_t outputWidth = outputShape.Dims(2);
+  uint32_t outputDepth = outputShape.Dims(3);
+  int32_t paddingLeft = params.padding_values.width;
+  int32_t paddingRight = params.padding_values.width;
+  int32_t paddingTop = params.padding_values.height;
+  int32_t paddingBottom = params.padding_values.height;
+  int32_t strideWidth = params.stride_width;
+  int32_t strideHeight = params.stride_height;
+  int32_t dilationWidthFactor = params.dilation_width_factor;
+  int32_t dilationHeightFactor = params.dilation_height_factor;
+  int32_t inputOffset = params.input_offset;
+  int32_t outputOffset = params.output_offset;
+  int32_t output_activation_min = params.quantized_activation_min;
+  int32_t output_activation_max = params.quantized_activation_max;
+  const uint8_t* inputBase = (const uint8_t*)inputData;
+  const int32_t* outputMultiplier = (const int32_t*)outputMultiplierData;
+  const int32_t* outputShift = (const int32_t*)outputShiftData;
+  uint8_t* outPtr = (uint8_t*)outputData;
+  const int32_t* biasBase = (const int32_t*)biasData;
+  for (uint32_t b = 0; b < numBatches; b++) {
+      for (uint32_t h = 0; h < outputHeight; h++) {
+          for (uint32_t w = 0; w < outputWidth; w++) {
+              const int8_t* filterBase = (const int8_t*)filterData;
+
+              for (uint32_t d = 0; d < outputDepth; d++) {
+                  int32_t wInputOrigin = static_cast<int32_t>(w) * strideWidth - paddingLeft;
+                  int32_t hInputOrigin = static_cast<int32_t>(h) * strideHeight - paddingTop;
+                  int32_t sum = 0.0f;
+
+                  for (uint32_t i = 0; i < filterHeight; i++) {
+                      for (uint32_t j = 0; j < filterWidth; j++) {
+                          for (uint32_t k = 0; k < filterDepth; k++) {
+                              int32_t hInput = hInputOrigin +
+                                                dilationHeightFactor * static_cast<int32_t>(i);
+                              int32_t wInput = wInputOrigin +
+                                                dilationWidthFactor * static_cast<int32_t>(j);
+                              uint32_t dInput = k;
+                              if (hInput >= 0 && hInput < static_cast<int32_t>(inputHeight) &&
+                                  wInput >= 0 && wInput < static_cast<int32_t>(inputWidth)) {
+                                  uint32_t filterIndex =
+                                          i * filterWidth * filterDepth + j * filterDepth + k;
+                                  uint32_t inputIndex = hInput * inputWidth * inputDepth +
+                                                        wInput * inputDepth + dInput;
+                                  sum += (static_cast<int32_t>(filterBase[filterIndex])) *
+                                          (static_cast<int32_t>(inputBase[inputIndex]) +
+                                          inputOffset);
+                              }
+                          }
+                      }
+                  }
+                  sum += biasBase[d];
+                  sum = tflite::MultiplyByQuantizedMultiplier(sum, outputMultiplier[d],
+                                                              -outputShift[d]);
+                  sum += outputOffset;
+                  sum = std::max(std::min(sum, output_activation_max), output_activation_min);
+                  outPtr[d] = static_cast<uint8_t>(sum);
+                  filterBase += filterHeight * filterWidth * filterDepth;
+              }
+              outPtr += outputDepth;
+          }
+      }
+      inputBase += inputHeight * inputWidth * inputDepth;
+  }
+}
 
   void averagePoolFloat32Wrapper(const PoolParams op_params,
                                  const RuntimeShape& inputShape, 
@@ -450,6 +534,8 @@ EMSCRIPTEN_BINDINGS(nn)
   constant("UINT8_LOWEST", std::numeric_limits<uint8_t>::lowest());
   constant("UINT8_MIN", std::numeric_limits<uint8_t>::min());
   constant("INT32_MAX", std::numeric_limits<int32_t>::max());
+  constant("INT8_MIN", std::numeric_limits<int8_t>::min());
+  constant("INT8_MAX", std::numeric_limits<int8_t>::max());
 
   class_<RuntimeShape>("RuntimeShape")
     .constructor<int>()
@@ -620,6 +706,7 @@ EMSCRIPTEN_BINDINGS(nn)
   function("depthwiseConvUint8", &binding_utils::depthwiseConvUint8Wrapper, allow_raw_pointers());
   function("convFloat32", &binding_utils::convFloat32Wrapper, allow_raw_pointers());
   function("convUint8", &binding_utils::convUint8Wrapper, allow_raw_pointers());
+  function("convUint8PerChannel", &binding_utils::convUint8PerChannelWrapper, allow_raw_pointers());
   function("averagePoolFloat32", &binding_utils::averagePoolFloat32Wrapper, allow_raw_pointers());
   function("averagePoolUint8", &binding_utils::averagePoolUint8Wrapper, allow_raw_pointers());
   function("softmaxFloat32", &binding_utils::softmaxFloat32Wrapper, allow_raw_pointers());

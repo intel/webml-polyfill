@@ -57,6 +57,9 @@ export default class PreparedModel {
         runtimeOperand.runtimeshape = this._allocateRuntimeShape(operand);
         runtimeOperand.scale = operand.scale;
         runtimeOperand.zeroPoint = operand.zeroPoint;
+        if (operand.type === OperandCode.TENSOR_QUANT8_SYMM_PER_CHANNEL) {
+          runtimeOperand.channelQuant = operand.channelQuant;
+        }
         this._toDelete.tensorValue.push(runtimeOperand.value);
         this._toDelete.tensorShape.push(runtimeOperand.runtimeshape);
       } else {
@@ -657,20 +660,54 @@ export default class PreparedModel {
         let outBatch = output.runtimeshape.Dims(0);
         let outHeight = output.runtimeshape.Dims(1);
         let outWidth = output.runtimeshape.Dims(2);
+        let outDepth = output.runtimeshape.Dims(3);
         let inDepth = input.runtimeshape.Dims(3);
 
         let output_multiplier = 0, output_shift = 0;
+        let output_multipliers_data, output_shifts_data;
         let float_activation_min, float_activation_max,
             quantized_activation_min, quantized_activation_max;
         let typedArray = Float32Array;
         if (output.type === OperandCode.TENSOR_QUANT8_ASYMM) {
-          let real_multiplier = GetQuantizedConvolutionMultipler(input.scale, filter.scale,
-                                                                 bias.scale, output.scale);
-          [output_multiplier, output_shift] = QuantizeMultiplier(real_multiplier);
-          output_shift = -output_shift;
-          [float_activation_min, float_activation_max, quantized_activation_min,
-              quantized_activation_max] = calculateActivationRange(activation, output);
-          typedArray = Uint8Array;
+          if (filter.type === OperandCode.TENSOR_QUANT8_ASYMM) {
+            let real_multiplier =
+                GetQuantizedConvolutionMultipler(input.scale, filter.scale,
+                                                 bias.scale, output.scale);
+            [output_multiplier, output_shift] =
+                QuantizeMultiplier(real_multiplier);
+            output_shift = -output_shift;
+            [float_activation_min, float_activation_max,
+                quantized_activation_min, quantized_activation_max] =
+                    calculateActivationRange(activation, output);
+            typedArray = Uint8Array;
+          } else if (filter.type === OperandCode.TENSOR_QUANT8_SYMM_PER_CHANNEL) {
+            let output_multiplier_array = new Int32Array(outDepth, 0);
+            let output_shift_array = new Int32Array(outDepth, 0);
+            for (let i = 0; i < outDepth; ++i) {
+              const bias_scale = input.scale * filter.channelQuant.scales[i];
+              let real_multiplier =
+                  GetQuantizedConvolutionMultipler(input.scale, filter.channelQuant.scales[i],
+                                                   bias_scale, output.scale);
+              [output_multiplier, output_shift] =
+                  QuantizeMultiplier(real_multiplier);
+              output_multiplier_array[i] = output_multiplier;
+              output_shift_array[i] = - output_shift;
+            }
+            output_multipliers_data = this._allocateTensor({
+                type: OperandCode.TENSOR_INT32,
+                dimensions: [outDepth],
+                lifetime: OperandLifetime.CONSTANT_REFERENCE,
+                value: output_multiplier_array});
+            output_shifts_data = this._allocateTensor({
+                type: OperandCode.TENSOR_INT32,
+                dimensions: [outDepth],
+                lifetime: OperandLifetime.CONSTANT_REFERENCE,
+                value: output_shift_array});
+            [float_activation_min, float_activation_max,
+                quantized_activation_min, quantized_activation_max] =
+                    calculateActivationRange(activation, output);
+            typedArray = Int8Array;
+          }
         }
 
         // init im2col operand
@@ -688,7 +725,9 @@ export default class PreparedModel {
         let im2colData = this._allocateTensor(operand);
 
         // Error check
-        OPS_CHECK(input.type === filter.type);
+        if (filter.type !== OperandCode.TENSOR_QUANT8_SYMM_PER_CHANNEL) {
+          OPS_CHECK(input.type === filter.type);
+        }
         if (input.type === OperandCode.TENSOR_QUANT8_ASYMM) {
           OPS_CHECK(bias.type === OperandCode.TENSOR_INT32);
         } else {
@@ -719,8 +758,8 @@ export default class PreparedModel {
           input_offset: -input.zeroPoint || 0,
           weights_offset: -filter.zeroPoint || 0,
           output_offset: output.zeroPoint || 0,
-          output_multiplier: output_multiplier,
-          output_shift: -output_shift,
+          output_multiplier: output_multiplier || 0,
+          output_shift: -output_shift || 0,
           quantized_activation_min: quantized_activation_min,
           quantized_activation_max: quantized_activation_max
         }
@@ -733,12 +772,25 @@ export default class PreparedModel {
                              output.runtimeshape, output.value,
                              im2colShape, im2colData);
         } else if (output.type === OperandCode.TENSOR_QUANT8_ASYMM) {
-          nn_ops.convUint8(convParams,
-                           input.runtimeshape, input.value,
-                           filter.runtimeshape, filter.value,
-                           bias.runtimeshape, bias.value,
-                           output.runtimeshape, output.value,
-                           im2colShape, im2colData);
+          if (filter.type === OperandCode.TENSOR_QUANT8_ASYMM) {
+            nn_ops.convUint8(convParams,
+                             input.runtimeshape, input.value,
+                             filter.runtimeshape, filter.value,
+                             bias.runtimeshape, bias.value,
+                             output.runtimeshape, output.value,
+                             im2colShape, im2colData);
+          } else if (filter.type === OperandCode.TENSOR_QUANT8_SYMM_PER_CHANNEL) {
+            nn_ops.convUint8PerChannel(convParams,
+                                       output_multipliers_data, output_shifts_data,
+                                       input.runtimeshape, input.value,
+                                       filter.runtimeshape, filter.value,
+                                       bias.runtimeshape, bias.value,
+                                       output.runtimeshape, output.value);
+          } else {
+            throw new Error(`CONV_2D: filter type ${filter.type} is not supproted`);
+          }
+        } else {
+          throw new Error(`CONV_2D: output type ${output.type} is not supported`);
         }
         im2colShape.delete();
         nn_ops._free(im2colData);
