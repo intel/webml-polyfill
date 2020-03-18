@@ -1343,6 +1343,8 @@ export default class PreparedModel {
       nn_ops.HEAPU8.set(data, ptr);
     } else if (type === OperandCode.TENSOR_QUANT8_SYMM_PER_CHANNEL) {
       nn_ops.HEAP8.set(data, ptr);
+    } else if (type === OperandCode.TENSOR_QUANT8_ASYMM_SIGNED) {
+      nn_ops.HEAP8.set(data, ptr);
     } else {
       throw new Error(`Operand type ${type} is not supported`);
     }

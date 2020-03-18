@@ -7,14 +7,16 @@ export const operandCodeToTypedArrayMap = new Map([
   [OperandCode.TENSOR_FLOAT32, Float32Array],
   [OperandCode.TENSOR_INT32, Int32Array],
   [OperandCode.TENSOR_QUANT8_ASYMM, Uint8Array],
-  [OperandCode.TENSOR_QUANT8_SYMM_PER_CHANNEL, Int8Array]
+  [OperandCode.TENSOR_QUANT8_SYMM_PER_CHANNEL, Int8Array],
+  [OperandCode.TENSOR_QUANT8_ASYMM_SIGNED, Int8Array]
 ]);
 
 export function isTensor(type) {
   if (type === OperandCode.TENSOR_FLOAT32 ||
       type === OperandCode.TENSOR_INT32 ||
       type === OperandCode.TENSOR_QUANT8_ASYMM ||
-      type === OperandCode.TENSOR_QUANT8_SYMM_PER_CHANNEL) {
+      type === OperandCode.TENSOR_QUANT8_SYMM_PER_CHANNEL ||
+      type === OperandCode.TENSOR_QUANT8_ASYMM_SIGNED) {
     return true;
   } else {
     return false;

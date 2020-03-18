@@ -77,6 +77,20 @@ export const OperandCode = {
    *
    */
   TENSOR_QUANT8_SYMM_PER_CHANNEL: 11,
+  /**
+   * A tensor of 8 bit signed integers that represent real numbers.
+   *
+   * Attached to this tensor are two numbers that can be used to convert the
+   * 8 bit integer to the real value and vice versa. These two numbers are:
+   * - scale: a 32 bit floating point value greater than zero.
+   * - zeroPoint: a 32 bit integer, in range [-128, 127].
+   *
+   * The formula is:
+   * real_value = (integer_value - zeroPoint) * scale.
+   *
+   * Available since API level 30.
+   */
+  TENSOR_QUANT8_ASYMM_SIGNED: 14
 };
 
 export const PaddingCode = {
@@ -282,6 +296,17 @@ export const OperationCode = {
    * * * {@link TENSOR_INT32} for bias (scale set to 0.0,
    * * * each value scaling is separate and equal to input.scale * filter.scales[channel]).
    * 
+   * * * Quantized signed:
+   * * * {@link TENSOR_QUANT8_ASYMM_SIGNED} for input, filter, and output.
+   * * * {@link TENSOR_INT32} for bias (with scale set to
+   * * * input.scale * filter.scale).
+   * 
+   * * * Quantized signed with filter symmetric per channel quantization (since API level 30):
+   * * * {@link TENSOR_QUANT8_ASYMM_SIGNED} for input, and output.
+   * * * {@link TENSOR_QUANT8_SYMM_PER_CHANNEL} for filter.
+   * * * {@link TENSOR_INT32} for bias (scale set to 0.0,
+   * * * each value scaling is separate and equal to input.scale * filter.scales[channel]).
+   * 
    * Supported tensor rank: 4, with "NHWC" data layout.
    *
    * Both explicit padding and implicit padding are supported.
@@ -296,9 +321,10 @@ export const OperationCode = {
    * * 2: A 1-D tensor, of shape [depth_out], specifying the bias.
    *      For input tensor of {@link TENSOR_FLOAT32} type, the bias should
    *      also be of {@link TENSOR_FLOAT32}.
-   *      For input tensor of {@link TENSOR_QUANT8_ASYMM} type, the bias
-   *      should be of {@link TENSOR_INT32}, with zeroPoint of 0 and
-   *      bias_scale == input_scale * filter_scale.
+   *      For filter tensor of {@link TENSOR_QUANT8_ASYMM}
+   *      and {@link TENSOR_QUANT8_ASYMM_SIGNED},
+   *      the bias should be of {@link TENSOR_INT32}, with zeroPoint
+   *      of 0 and bias_scale == input_scale * filter_scale.
    *      For filter tensor of {@link TENSOR_QUANT8_SYMM_PER_CHANNEL},
    *      the bias should be of {@link TENSOR_INT32}, with zeroPoint of 0
    *      and bias_scale of 0. The actual scale of each value 'i' is equal to
@@ -324,9 +350,10 @@ export const OperationCode = {
    * * 2: A 1-D tensor, of shape [depth_out], specifying the bias.
    *      For input tensor of {@link TENSOR_FLOAT32} type, the bias should
    *      also be of {@link TENSOR_FLOAT32}.
-   *      For input tensor of {@link TENSOR_QUANT8_ASYMM} type, the bias
-   *      should be of {@link TENSOR_INT32}, with zeroPoint of 0 and
-   *      bias_scale == input_scale * filter_scale.
+   *      For filter tensor of {@link TENSOR_QUANT8_ASYMM}
+   *      and {@link TENSOR_QUANT8_ASYMM_SIGNED},
+   *      the bias should be of {@link TENSOR_INT32}, with zeroPoint
+   *      of 0 and bias_scale == input_scale * filter_scale.
    *      For filter tensor of {@link TENSOR_QUANT8_SYMM_PER_CHANNEL},
    *      the bias should be of {@link TENSOR_INT32}, with zeroPoint of 0
    *      and bias_scale of 0. The actual scale of each value 'i' is equal to
@@ -395,9 +422,10 @@ export const OperationCode = {
    * * 2: A 1-D tensor, of shape [depth_out], specifying the bias.
    *      For input tensor of {@link TENSOR_FLOAT32} type, the bias should
    *      also be of {@link TENSOR_FLOAT32}.
-   *      For input tensor of {@link TENSOR_QUANT8_ASYMM} type, the bias
-   *      should be of {@link TENSOR_INT32}, with zeroPoint of 0 and
-   *      bias_scale == input_scale * filter_scale.
+   *      For filter tensor of {@link TENSOR_QUANT8_ASYMM}
+   *      and {@link TENSOR_QUANT8_ASYMM_SIGNED},
+   *      the bias should be of {@link TENSOR_INT32}, with zeroPoint
+   *      of 0 and bias_scale == input_scale * filter_scale.
    *      For filter tensor of {@link TENSOR_QUANT8_SYMM_PER_CHANNEL},
    *      the bias should be of {@link TENSOR_INT32}, with zeroPoint of 0
    *      and bias_scale of 0. The actual scale of each value 'i' is equal to
@@ -424,9 +452,10 @@ export const OperationCode = {
    * * 2: A 1-D tensor, of shape [depth_out], specifying the bias.
    *      For input tensor of {@link TENSOR_FLOAT32} type, the bias should
    *      also be of {@link TENSOR_FLOAT32}.
-   *      For input tensor of {@link TENSOR_QUANT8_ASYMM} type, the bias
-   *      should be of {@link TENSOR_INT32}, with zeroPoint of 0 and
-   *      bias_scale == input_scale * filter_scale.
+   *      For filter tensor of {@link TENSOR_QUANT8_ASYMM}
+   *      and {@link TENSOR_QUANT8_ASYMM_SIGNED},
+   *      the bias should be of {@link TENSOR_INT32}, with zeroPoint
+   *      of 0 and bias_scale == input_scale * filter_scale.
    *      For filter tensor of {@link TENSOR_QUANT8_SYMM_PER_CHANNEL},
    *      the bias should be of {@link TENSOR_INT32}, with zeroPoint of 0
    *      and bias_scale of 0. The actual scale of each value 'i' is equal to

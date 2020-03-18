@@ -198,18 +198,26 @@ export default class Model {
       console.error(`Invalid type ${options.type}`);
       return false;
     }
-    if (type === OperandCode.TENSOR_QUANT8_ASYMM) {
-      if (typeof options.zeroPoint === 'undefined') {
-        console.error('zeroPoint is undefined');
-        return false;
-      } else if (options.zeroPoint < 0 || options.zeroPoint > 255) {
-        console.error(`Invalid zeroPoint value ${options.zeroPoint}`);
+    if (type === OperandCode.TENSOR_QUANT8_ASYMM ||
+        type === OperandCode.TENSOR_QUANT8_ASYMM_SIGNED) {
+      if (typeof options.zeroPoint !== 'number') {
+        console.error('Invalid zeroPoint type');
         return false;
       }
       if (options.scale < 0.0) {
         console.error(`Invalid scale ${options.scale}`);
         return false;
       }
+    }
+    if (type === OperandCode.TENSOR_QUANT8_ASYMM &&
+        (options.zeroPoint < 0 || options.zeroPoint > 255)) {
+      console.error(`Invalid zeroPoint value ${options.zeroPoint}`);
+      return false;
+    }
+    if (type == OperandCode.TENSOR_QUANT8_ASYMM_SIGNED &&
+      (options.zeroPoint < -128 || options.zeroPoint > 127)) {
+        console.error(`Invalid zeroPoint value ${options.zeroPoint}`);
+      return false;
     }
     return true;
   }
