@@ -711,7 +711,11 @@ export default class PreparedModel {
               [output_multiplier, output_shift] =
                   QuantizeMultiplier(real_multiplier);
               output_multiplier_array[i] = output_multiplier;
-              output_shift_array[i] = - output_shift;
+              if (!depth && output.type === OperandCode.TENSOR_QUANT8_ASYMM_SIGNED) {
+                output_shift_array[i] = output_shift;
+              } else {
+                output_shift_array[i] = -output_shift;
+              }
             }
             output_multipliers_data = this._allocateTensor({
                 type: OperandCode.TENSOR_INT32,
@@ -1411,6 +1415,8 @@ export default class PreparedModel {
     } else if (type === OperandCode.TENSOR_QUANT8_ASYMM) {
       view = new Uint8Array(nn_ops.HEAPU8.buffer, ptr, length);
     } else if (type === OperandCode.TENSOR_QUANT8_SYMM_PER_CHANNEL) {
+      view = new Int8Array(nn_ops.HEAP8.buffer, ptr, length);
+    } else if (type === OperandCode.TENSOR_QUANT8_ASYMM_SIGNED) {
       view = new Int8Array(nn_ops.HEAP8.buffer, ptr, length);
     } else {
       throw new Error(`Operand type ${type} is not supported`);
