@@ -11,6 +11,7 @@
 #include "external/tensorflow/tensorflow/lite/kernels/internal/reference/prelu.h"
 #include "external/tensorflow/tensorflow/lite/kernels/internal/reference/reference_ops.h"
 #include "external/tensorflow/tensorflow/lite/kernels/internal/reference/binary_function.h"
+#include "external/tensorflow/tensorflow/lite/kernels/internal/reference/integer_ops/conv.h"
 #include "fixedpoint/fixedpoint.h"
 #include "public/gemmlowp.h"
 
@@ -337,6 +338,58 @@ namespace binding_utils {
                         (uint8_t*)im2colData, &cpu_backend_context);
   }
 
+  
+  // Convert int8 quantized values to uint8 assuming that the scale is the same
+  // and the distance between offsets is 128.
+  void convertInt8ToUInt8(const int8_t* input, std::vector<uint8_t>* output) {
+      assert(input != nullptr);
+      assert(output != nullptr);
+      for (int i = 0; i < output->size(); ++i) {
+          (*output)[i] = static_cast<uint8_t>(static_cast<int32_t>(input[i]) + 128);
+      }
+  }
+
+  // Convert uint8 quantized values to int8 assuming that the scale is the same
+  // and the distance between offsets is 128.
+  void convertUInt8ToInt8(const std::vector<uint8_t>& input, int8_t* output) {
+      assert(output != nullptr);
+      for (int i = 0; i < input.size(); ++i) {
+          output[i] = static_cast<int8_t>(static_cast<int32_t>(input[i]) - 128);
+      }
+  }
+
+  void convInt8Wrapper(const ConvParams& convParams,
+                       const RuntimeShape& inputShape, 
+                       const intptr_t inputData,
+                       const RuntimeShape& filterShape,
+                       const intptr_t filterData,
+                       const RuntimeShape& biasShape,
+                       const intptr_t biasData,
+                       const RuntimeShape& outputShape,
+                       intptr_t outputData) {
+    ConvParams uint8ConvParams = convParams;
+    std::vector<uint8_t> unsignedInput(inputShape.DimensionsCount());
+    convertInt8ToUInt8((const int8_t*)inputData, &unsignedInput);
+    uint8ConvParams.input_offset += 128;
+
+    std::vector<uint8_t> unsignedFilter(filterShape.DimensionsCount());
+    convertInt8ToUInt8((const int8_t*)filterData, &unsignedFilter);
+    uint8ConvParams.weights_offset += 128;
+
+    std::vector<uint8_t> unsignedOutput(outputShape.DimensionsCount());
+    uint8ConvParams.output_offset += 128;
+
+    CONV_PARAMETERS(uint8_t);
+    optimized_ops::Conv(uint8ConvParams, inputShape,
+                        unsignedInput.data(), filterShape,
+                        unsignedFilter.data(), biasShape,
+                        (const int32_t*)biasData, outputShape,
+                        unsignedOutput.data(), im2colDim,
+                        (uint8_t*)im2colData, &cpu_backend_context);
+    
+    convertUInt8ToInt8(unsignedOutput, (int8_t*)outputData);
+  }
+
   void convUint8PerChannelWrapper(const ConvParams& convParams,
                                   const intptr_t outputMultiplierData,
                                   const intptr_t outputShiftData,
@@ -419,6 +472,26 @@ namespace binding_utils {
         }
         inputBase += inputHeight * inputWidth * inputDepth;
     }
+  }
+
+  void convInt8PerChannelWrapper(const ConvParams& convParams,
+                                 const intptr_t outputMultiplierData,
+                                 const intptr_t outputShiftData,
+                                 const RuntimeShape& inputShape,
+                                 const intptr_t inputData,
+                                 const RuntimeShape& filterShape,
+                                 const intptr_t filterData,
+                                 const RuntimeShape& biasShape,
+                                 const intptr_t biasData,
+                                 const RuntimeShape& outputShape,
+                                 intptr_t outputData) {
+    tflite::reference_integer_ops::ConvPerChannel(
+        convParams,
+        (const int32_t*)outputMultiplierData, (const int32_t*)outputShiftData,
+        inputShape, (const int8_t*)inputData,
+        filterShape, (const int8_t*)filterData,
+        biasShape, (const int32_t*)biasData,
+        outputShape, (int8_t*)outputData);
   }
 
   void averagePoolFloat32Wrapper(const PoolParams op_params,
@@ -849,6 +922,8 @@ EMSCRIPTEN_BINDINGS(nn)
   function("convFloat32", &binding_utils::convFloat32Wrapper, allow_raw_pointers());
   function("convUint8", &binding_utils::convUint8Wrapper, allow_raw_pointers());
   function("convUint8PerChannel", &binding_utils::convUint8PerChannelWrapper, allow_raw_pointers());
+  function("convInt8", &binding_utils::convInt8Wrapper, allow_raw_pointers());
+  function("convInt8PerChannel", &binding_utils::convInt8PerChannelWrapper, allow_raw_pointers());
   function("averagePoolFloat32", &binding_utils::averagePoolFloat32Wrapper, allow_raw_pointers());
   function("averagePoolUint8", &binding_utils::averagePoolUint8Wrapper, allow_raw_pointers());
   function("softmaxFloat32", &binding_utils::softmaxFloat32Wrapper, allow_raw_pointers());

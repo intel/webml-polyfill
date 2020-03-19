@@ -691,8 +691,9 @@ export default class PreparedModel {
 
         let output_multiplier = 0, output_shift = 0;
         let output_multipliers_data, output_shifts_data;
-        if (output.type === OperandCode.TENSOR_QUANT8_ASYMM) {
-          if (filter.type === OperandCode.TENSOR_QUANT8_ASYMM) {
+        if (output.type === OperandCode.TENSOR_QUANT8_ASYMM ||
+            output.type === OperandCode.TENSOR_QUANT8_ASYMM_SIGNED) {
+          if (filter.type === output.type) {
             let real_multiplier =
                 GetQuantizedConvolutionMultipler(input.scale, filter.scale,
                                                  bias.scale, output.scale);
@@ -735,7 +736,8 @@ export default class PreparedModel {
         if (filter.type !== OperandCode.TENSOR_QUANT8_SYMM_PER_CHANNEL) {
           OPS_CHECK(input.type === filter.type);
         }
-        if (input.type === OperandCode.TENSOR_QUANT8_ASYMM) {
+        if (input.type === OperandCode.TENSOR_QUANT8_ASYMM ||
+            input.type === OperandCode.TENSOR_QUANT8_ASYMM_SIGNED) {
           OPS_CHECK(bias.type === OperandCode.TENSOR_INT32);
         } else {
           OPS_CHECK(input.type === bias.type);
@@ -798,6 +800,25 @@ export default class PreparedModel {
                                          filter.runtimeshape, filter.value,
                                          bias.runtimeshape, bias.value,
                                          output.runtimeshape, output.value);
+              nn_ops._free(output_multipliers_data);
+              nn_ops._free(output_shifts_data);
+            } else {
+              throw new Error(`CONV_2D: filter type ${filter.type} is not supproted`);
+            }
+          } else if (output.type === OperandCode.TENSOR_QUANT8_ASYMM_SIGNED) {
+            if (filter.type === OperandCode.TENSOR_QUANT8_ASYMM_SIGNED) {
+              nn_ops.convInt8(convParams,
+                              input.runtimeshape, input.value,
+                              filter.runtimeshape, filter.value,
+                              bias.runtimeshape, bias.value,
+                              output.runtimeshape, output.value);
+            } else if (filter.type === OperandCode.TENSOR_QUANT8_SYMM_PER_CHANNEL) {
+              nn_ops.convInt8PerChannel(convParams,
+                                        output_multipliers_data, output_shifts_data,
+                                        input.runtimeshape, input.value,
+                                        filter.runtimeshape, filter.value,
+                                        bias.runtimeshape, bias.value,
+                                        output.runtimeshape, output.value);
               nn_ops._free(output_multipliers_data);
               nn_ops._free(output_shifts_data);
             } else {
@@ -1352,6 +1373,8 @@ export default class PreparedModel {
     } else if (type === OperandCode.TENSOR_QUANT8_ASYMM) {
       view = new Uint8Array(nn_ops.HEAPU8.buffer, ptr, buffer.length);
     } else if (type === OperandCode.TENSOR_QUANT8_SYMM_PER_CHANNEL) {
+      view = new Int8Array(nn_ops.HEAP8.buffer, ptr, buffer.length);
+    } else if (type === OperandCode.TENSOR_QUANT8_ASYMM_SIGNED) {
       view = new Int8Array(nn_ops.HEAP8.buffer, ptr, buffer.length);
     } else {
       throw new Error(`Operand type ${type} is not supported`);
