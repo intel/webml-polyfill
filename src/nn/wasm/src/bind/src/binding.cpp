@@ -51,6 +51,47 @@ namespace binding_utils {
     return input >= 0.0 ? input : input * alpha;
   }
 
+  constexpr size_t kStaticBufferSize = 1605632;
+  char static_scratch_buffer[kStaticBufferSize];
+
+  #define CONV_PARAMETERS(Type)                                               \
+    uint32_t height = inputShape.Dims(1);                                     \
+    uint32_t width = inputShape.Dims(2);                                      \
+    uint32_t filterHeight = filterShape.Dims(1);                              \
+    uint32_t filterWidth = filterShape.Dims(2);                               \
+    uint32_t outHeight = outputShape.Dims(1);                                 \
+    uint32_t outWidth = outputShape.Dims(2);                                  \
+    uint32_t inDepth = inputShape.Dims(3);                                    \
+                                                                              \
+    uint32_t paddingHeight = (uint32_t)convParams.padding_values.height;      \
+    uint32_t paddingWidth = (uint32_t)convParams.padding_values.width;        \
+                                                                              \
+    tflite::RuntimeShape im2colDim(4);                                        \
+    im2colDim.SetDim(0, (int)outputShape.Dims(0));                            \
+    im2colDim.SetDim(1, (int)outputShape.Dims(1));                            \
+    im2colDim.SetDim(2, (int)outputShape.Dims(2));                            \
+    im2colDim.SetDim(3, (int)inDepth * filterHeight * filterWidth);           \
+                                                                              \
+    Type* im2colData = nullptr;                                               \
+    uint64_t im2colByteSize = sizeof(Type);                                   \
+    std::unique_ptr<Type[]> im2colGuard;                                      \
+    for (int i = 0; i < 4; i++) {                                             \
+        im2colByteSize *= im2colDim.Dims(i);                                  \
+    }                                                                         \
+    /* http://b/77982879, tflite::optimized_ops::Conv uses int for offsets */ \
+    if (im2colByteSize >= 0x7fffffff) {                                       \
+        throw std::string("Conv size is too large, not enough memory");       \
+    }                                                                         \
+    if (im2colByteSize <= kStaticBufferSize) {                                \
+        im2colData = reinterpret_cast<Type*>(static_scratch_buffer);          \
+    } else {                                                                  \
+        im2colData = new (std::nothrow) Type[im2colByteSize / sizeof(Type)];  \
+        if (im2colData == nullptr) {                                          \
+            throw std::string("Conv size is too large, not enough memory");   \
+        }                                                                     \
+        im2colGuard.reset(im2colData);                                        \
+    }
+
   // Operation wrappers.
   void addFloat32Wrapper(const ArithmeticParams& op_params,
                          const RuntimeShape& input1_shape, 
@@ -125,7 +166,7 @@ namespace binding_utils {
                          output_shape, (float*)outputData);
   }
 
-  void depthwiseConvFloat32Wrapper(const DepthwiseParams& op_params,
+  void depthwiseConvFloat32Wrapper(const DepthwiseParams& convParams,
                                    const RuntimeShape& inputShape, 
                                    const intptr_t inputData, 
                                    const RuntimeShape& filterShape, 
@@ -135,68 +176,66 @@ namespace binding_utils {
                                    const RuntimeShape& outputShape, 
                                    intptr_t outputData) {
     tflite::GetCpuFlags(&cpu_backend_context, &cpu_flags);
-    optimized_ops::DepthwiseConv(op_params, inputShape,
+    optimized_ops::DepthwiseConv(convParams, inputShape,
                                  (const float*)inputData, filterShape,
                                  (const float*)filterData, biasShape,
                                  (const float*)biasData, outputShape,
                                  (float*)outputData, cpu_flags);
   }
 
-  void depthwiseConvUint8Wrapper(const DepthwiseParams& op_params,
-                                 const RuntimeShape& inputShape, 
-                                 const intptr_t inputData, 
-                                 const RuntimeShape& filterShape, 
-                                 const intptr_t filterData, 
-                                 const RuntimeShape& biasShape, 
-                                 const intptr_t biasData, 
-                                 const RuntimeShape& outputShape, 
+  void depthwiseConvUint8Wrapper(const DepthwiseParams& convParams,
+                                 const RuntimeShape& inputShape,
+                                 const intptr_t inputData,
+                                 const RuntimeShape& filterShape,
+                                 const intptr_t filterData,
+                                 const RuntimeShape& biasShape,
+                                 const intptr_t biasData,
+                                 const RuntimeShape& outputShape,
                                  intptr_t outputData) {
-    optimized_ops::DepthwiseConv(op_params, inputShape, 
+    optimized_ops::DepthwiseConv(convParams, inputShape,
                                  (const uint8_t*)inputData, filterShape,
-                                 (const uint8_t*)filterData, biasShape, 
+                                 (const uint8_t*)filterData, biasShape,
                                  (const int32_t*)biasData, outputShape,
                                  (uint8_t*)outputData, &gemm_context);
   }
 
-  void convFloat32Wrapper(const ConvParams& op_params, 
-                          const RuntimeShape& inputShape, 
-                          const intptr_t inputData, 
-                          const RuntimeShape& filterShape, 
-                          const intptr_t filterData, 
-                          const RuntimeShape& biasShape, 
-                          const intptr_t biasData, 
-                          const RuntimeShape& outputShape, 
-                          intptr_t outputData,
-                          const RuntimeShape& im2colShape, 
-                          intptr_t im2colData) {
-    optimized_ops::Conv(op_params, inputShape,
+  void convFloat32Wrapper(const ConvParams& convParams,
+                          const RuntimeShape& inputShape,
+                          const intptr_t inputData,
+                          const RuntimeShape& filterShape,
+                          const intptr_t filterData,
+                          const RuntimeShape& biasShape,
+                          const intptr_t biasData,
+                          const RuntimeShape& outputShape,
+                          intptr_t outputData) {
+    CONV_PARAMETERS(float);
+    optimized_ops::Conv(convParams, inputShape,
                         (const float*)inputData, filterShape,
                         (const float*)filterData, biasShape,
                         (const float*)biasData, outputShape,
-                        (float*)outputData, im2colShape,
+                        (float*)outputData, im2colDim,
                         (float*)im2colData, &cpu_backend_context);
   }
 
-  void convUint8Wrapper(const ConvParams& op_params, 
+  void convUint8Wrapper(const ConvParams& convParams,
                         const RuntimeShape& inputShape, 
-                        const intptr_t inputData, 
-                        const RuntimeShape& filterShape, 
-                        const intptr_t filterData, 
-                        const RuntimeShape& biasShape, 
-                        const intptr_t biasData, 
-                        const RuntimeShape& outputShape, 
-                        intptr_t outputData,
-                        const RuntimeShape& im2colShape, 
-                        intptr_t im2colData) {
-    optimized_ops::Conv(op_params, inputShape,
+                        const intptr_t inputData,
+                        const RuntimeShape& filterShape,
+                        const intptr_t filterData,
+                        const RuntimeShape& biasShape,
+                        const intptr_t biasData,
+                        const RuntimeShape& outputShape,
+                        intptr_t outputData) {
+    CONV_PARAMETERS(uint8_t);
+    optimized_ops::Conv(convParams, inputShape,
                         (const uint8_t*)inputData, filterShape,
                         (const uint8_t*)filterData, biasShape,
                         (const int32_t*)biasData, outputShape,
-                        (uint8_t*)outputData, im2colShape, 
+                        (uint8_t*)outputData, im2colDim,
                         (uint8_t*)im2colData, &cpu_backend_context);
   }
 
-  void convUint8PerChannelWrapper(const ConvParams& params,
+  void convUint8PerChannelWrapper(const ConvParams& convParams,
                                   const intptr_t outputMultiplierData,
                                   const intptr_t outputShiftData,
                                   const RuntimeShape& inputShape,
@@ -217,18 +256,18 @@ namespace binding_utils {
   uint32_t outputHeight = outputShape.Dims(1);
   uint32_t outputWidth = outputShape.Dims(2);
   uint32_t outputDepth = outputShape.Dims(3);
-  int32_t paddingLeft = params.padding_values.width;
-  int32_t paddingRight = params.padding_values.width;
-  int32_t paddingTop = params.padding_values.height;
-  int32_t paddingBottom = params.padding_values.height;
-  int32_t strideWidth = params.stride_width;
-  int32_t strideHeight = params.stride_height;
-  int32_t dilationWidthFactor = params.dilation_width_factor;
-  int32_t dilationHeightFactor = params.dilation_height_factor;
-  int32_t inputOffset = params.input_offset;
-  int32_t outputOffset = params.output_offset;
-  int32_t output_activation_min = params.quantized_activation_min;
-  int32_t output_activation_max = params.quantized_activation_max;
+  int32_t paddingLeft = convParams.padding_values.width;
+  int32_t paddingRight = convParams.padding_values.width;
+  int32_t paddingTop = convParams.padding_values.height;
+  int32_t paddingBottom = convParams.padding_values.height;
+  int32_t strideWidth = convParams.stride_width;
+  int32_t strideHeight = convParams.stride_height;
+  int32_t dilationWidthFactor = convParams.dilation_width_factor;
+  int32_t dilationHeightFactor = convParams.dilation_height_factor;
+  int32_t inputOffset = convParams.input_offset;
+  int32_t outputOffset = convParams.output_offset;
+  int32_t output_activation_min = convParams.quantized_activation_min;
+  int32_t output_activation_max = convParams.quantized_activation_max;
   const uint8_t* inputBase = (const uint8_t*)inputData;
   const int32_t* outputMultiplier = (const int32_t*)outputMultiplierData;
   const int32_t* outputShift = (const int32_t*)outputShiftData;

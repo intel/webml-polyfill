@@ -603,10 +603,29 @@ export default class PreparedModel {
         }
       } break;
       case OperationCode.CONV_2D:
-      case OperationCode.ATROUS_CONV_2D: {
+      case OperationCode.ATROUS_CONV_2D:
+      case OperationCode.DEPTHWISE_CONV_2D:
+      case OperationCode.ATROUS_DEPTHWISE_CONV_2D:
+      {
+        let depth = false;
+        if (op === OperationCode.DEPTHWISE_CONV_2D ||
+            op === OperationCode.ATROUS_DEPTHWISE_CONV_2D) {
+          depth = true;
+        }
+        let atrous = false;
+        if (op === OperationCode.ATROUS_CONV_2D ||
+            op === OperationCode.ATROUS_DEPTHWISE_CONV_2D) {
+          atrous = true;
+        }
         let inCount = inputs.length;
-        if (inCount !== 7 && inCount !== 10) {
-          throw new Error('Invalid parameters number of CONV_2D');
+        if (!depth) {
+          if (inCount !== 7 && inCount !== 10) {
+            throw new Error('Invalid parameters number of CONV_2D');
+          }
+        } else {
+          if (inCount !== 8 && inCount !== 11) {
+            throw new Error('Invalid parameters number of DEPTHWISE_CONV_2D');
+          }
         }
         allParametersPresent(inCount, 1);
         let i = 0;
@@ -619,13 +638,14 @@ export default class PreparedModel {
         let dilationWidth, dilationHeight;
         let filterWidth = filter.runtimeshape.Dims(2);
         let filterHeight = filter.runtimeshape.Dims(1);
-        let activation;
-        if (inCount === 10) {
+        let depthMultipler = 1.0;
+        let activation = FuseCode.NONE;
+        if (inCount === 10 || inCount === 11) {  // explict padding
           paddingLeft = operands[inputs[i++]].value[0];
           paddingRight = operands[inputs[i++]].value[0];
           paddingTop = operands[inputs[i++]].value[0];
           paddingBottom = operands[inputs[i++]].value[0];
-          if (op === OperationCode.CONV_2D) {
+          if (!atrous) {
             strideWidth = operands[inputs[i++]].value[0];
             strideHeight = operands[inputs[i++]].value[0];
             [dilationWidth, dilationHeight] = [1, 1];
@@ -634,10 +654,13 @@ export default class PreparedModel {
             dilationHeight = operands[inputs[i++]].value[0];
             [strideWidth, strideHeight] = [1, 1];
           }
+          if (depth) {
+            depthMultipler = operands[inputs[i++]].value[0];
+          }
           activation = operands[inputs[i++]].value[0];
-        } else {
+        } else {  // implict padding
           let paddingCode = operands[inputs[i++]].value[0];
-          if (op === OperationCode.CONV_2D) {
+          if (!atrous) {
             strideWidth = operands[inputs[i++]].value[0];
             strideHeight = operands[inputs[i++]].value[0];
             [dilationWidth, dilationHeight] = [1, 1];
@@ -645,6 +668,9 @@ export default class PreparedModel {
             dilationWidth = operands[inputs[i++]].value[0];
             dilationHeight = operands[inputs[i++]].value[0];
             [strideWidth, strideHeight] = [1, 1];
+          }
+          if (depth) {
+            depthMultipler = operands[inputs[i++]].value[0];
           }
           activation = operands[inputs[i++]].value[0];
 
@@ -665,9 +691,6 @@ export default class PreparedModel {
 
         let output_multiplier = 0, output_shift = 0;
         let output_multipliers_data, output_shifts_data;
-        let float_activation_min, float_activation_max,
-            quantized_activation_min, quantized_activation_max;
-        let typedArray = Float32Array;
         if (output.type === OperandCode.TENSOR_QUANT8_ASYMM) {
           if (filter.type === OperandCode.TENSOR_QUANT8_ASYMM) {
             let real_multiplier =
@@ -676,10 +699,6 @@ export default class PreparedModel {
             [output_multiplier, output_shift] =
                 QuantizeMultiplier(real_multiplier);
             output_shift = -output_shift;
-            [float_activation_min, float_activation_max,
-                quantized_activation_min, quantized_activation_max] =
-                    calculateActivationRange(activation, output);
-            typedArray = Uint8Array;
           } else if (filter.type === OperandCode.TENSOR_QUANT8_SYMM_PER_CHANNEL) {
             let output_multiplier_array = new Int32Array(outDepth, 0);
             let output_shift_array = new Int32Array(outDepth, 0);
@@ -703,26 +722,14 @@ export default class PreparedModel {
                 dimensions: [outDepth],
                 lifetime: OperandLifetime.CONSTANT_REFERENCE,
                 value: output_shift_array});
-            [float_activation_min, float_activation_max,
-                quantized_activation_min, quantized_activation_max] =
-                    calculateActivationRange(activation, output);
-            typedArray = Int8Array;
           }
         }
 
-        // init im2col operand
-        let im2colDepth = filterWidth * filterHeight * inDepth;
-        let im2colDims = [outBatch, outHeight, outWidth, im2colDepth];
-        let im2colValue = new typedArray(product(im2colDims));
-        let operand = {
-          type: OperandCode.TENSOR_FLOAT32,
-          dimensions: im2colDims,
-          numberOfConsumers: 0,
-          lifetime: OperandLifetime.CONSTANT_REFERENCE,
-          value: im2colValue
-        }
-        let im2colShape = this._allocateRuntimeShape(operand);
-        let im2colData = this._allocateTensor(operand);
+        let float_activation_min, float_activation_max,
+            quantized_activation_min, quantized_activation_max;
+        [float_activation_min, float_activation_max,
+            quantized_activation_min, quantized_activation_max] =
+                calculateActivationRange(activation, output);
 
         // Error check
         if (filter.type !== OperandCode.TENSOR_QUANT8_SYMM_PER_CHANNEL) {
@@ -739,14 +746,20 @@ export default class PreparedModel {
         OPS_CHECK(bias.runtimeshape.DimensionsCount() === 1);
         OPS_CHECK(output.runtimeshape.DimensionsCount() === 4);
 
-        OPS_CHECK(filter.runtimeshape.Dims(0) === bias.runtimeshape.Dims(0));
-        OPS_CHECK(filter.runtimeshape.Dims(3) === input.runtimeshape.Dims(3));
+        if (!depth) {
+          OPS_CHECK(filter.runtimeshape.Dims(0) === bias.runtimeshape.Dims(0));
+          OPS_CHECK(filter.runtimeshape.Dims(3) === input.runtimeshape.Dims(3));
+        } else {
+          OPS_CHECK(filter.runtimeshape.Dims(0) === 1);
+          OPS_CHECK(filter.runtimeshape.Dims(3) === bias.runtimeshape.Dims(0));
+        }
 
         // init convParams
         let PaddingValues = {
           width: paddingLeft,
           height: paddingTop
-        }
+        };
+
         let convParams = {
           padding_values: PaddingValues,
           stride_width: strideWidth,
@@ -762,156 +775,54 @@ export default class PreparedModel {
           output_shift: -output_shift || 0,
           quantized_activation_min: quantized_activation_min,
           quantized_activation_max: quantized_activation_max
-        }
+        };
 
-        if (output.type === OperandCode.TENSOR_FLOAT32) {
-          nn_ops.convFloat32(convParams,
-                             input.runtimeshape, input.value,
-                             filter.runtimeshape, filter.value,
-                             bias.runtimeshape, bias.value,
-                             output.runtimeshape, output.value,
-                             im2colShape, im2colData);
-        } else if (output.type === OperandCode.TENSOR_QUANT8_ASYMM) {
-          if (filter.type === OperandCode.TENSOR_QUANT8_ASYMM) {
-            nn_ops.convUint8(convParams,
-                             input.runtimeshape, input.value,
-                             filter.runtimeshape, filter.value,
-                             bias.runtimeshape, bias.value,
-                             output.runtimeshape, output.value,
-                             im2colShape, im2colData);
-          } else if (filter.type === OperandCode.TENSOR_QUANT8_SYMM_PER_CHANNEL) {
-            nn_ops.convUint8PerChannel(convParams,
-                                       output_multipliers_data, output_shifts_data,
-                                       input.runtimeshape, input.value,
-                                       filter.runtimeshape, filter.value,
-                                       bias.runtimeshape, bias.value,
-                                       output.runtimeshape, output.value);
+        if (!depth) {
+          if (output.type === OperandCode.TENSOR_FLOAT32) {
+            nn_ops.convFloat32(convParams,
+                               input.runtimeshape, input.value,
+                               filter.runtimeshape, filter.value,
+                               bias.runtimeshape, bias.value,
+                               output.runtimeshape, output.value);
+          } else if (output.type === OperandCode.TENSOR_QUANT8_ASYMM) {
+            if (filter.type === OperandCode.TENSOR_QUANT8_ASYMM) {
+              nn_ops.convUint8(convParams,
+                               input.runtimeshape, input.value,
+                               filter.runtimeshape, filter.value,
+                               bias.runtimeshape, bias.value,
+                               output.runtimeshape, output.value);
+            } else if (filter.type === OperandCode.TENSOR_QUANT8_SYMM_PER_CHANNEL) {
+              nn_ops.convUint8PerChannel(convParams,
+                                         output_multipliers_data, output_shifts_data,
+                                         input.runtimeshape, input.value,
+                                         filter.runtimeshape, filter.value,
+                                         bias.runtimeshape, bias.value,
+                                         output.runtimeshape, output.value);
+              nn_ops._free(output_multipliers_data);
+              nn_ops._free(output_shifts_data);
+            } else {
+              throw new Error(`CONV_2D: filter type ${filter.type} is not supproted`);
+            }
           } else {
-            throw new Error(`CONV_2D: filter type ${filter.type} is not supproted`);
+            throw new Error(`CONV_2D: output type ${output.type} is not supported`);
           }
-        } else {
-          throw new Error(`CONV_2D: output type ${output.type} is not supported`);
-        }
-        im2colShape.delete();
-        nn_ops._free(im2colData);
-      } break;
-      case OperationCode.DEPTHWISE_CONV_2D:
-      case OperationCode.ATROUS_DEPTHWISE_CONV_2D: {
-        let inCount = inputs.length;
-        if (inCount !== 8 && inCount !== 11) {
-          throw new Error('Invalid parameters number of DEPTHWISE_CONV_2D');
-        }
-        allParametersPresent(inCount, 1);
-        let i = 0;
-        let input = operands[inputs[i++]];
-        let filter = operands[inputs[i++]];
-        let bias = operands[inputs[i++]];
-        let paddingLeft, paddingRight;  // Just use paddingLeft as paddingWidth
-        let paddingTop, paddingBottom;  // Just use paddingTop as paddingHeight
-        let strideWidth, strideHeight;
-        let dilationWidth, dilationHeight;
-        let depthMultipler;
-        let activation;
-        if (inCount === 11) {
-          paddingLeft = operands[inputs[i++]].value[0];
-          paddingRight = operands[inputs[i++]].value[0];
-          paddingTop = operands[inputs[i++]].value[0];
-          paddingBottom = operands[inputs[i++]].value[0];
-          if (op === OperationCode.DEPTHWISE_CONV_2D) {
-            strideWidth = operands[inputs[i++]].value[0];
-            strideHeight = operands[inputs[i++]].value[0];
-            [dilationWidth, dilationHeight] = [1, 1];
-          } else {
-            dilationWidth = operands[inputs[i++]].value[0];
-            dilationHeight = operands[inputs[i++]].value[0];
-            [strideWidth, strideHeight] = [1, 1];
-          }
-          depthMultipler = operands[inputs[i++]].value[0];
-          activation = operands[inputs[i++]].value[0];
-        } else {
-          let paddingCode = operands[inputs[i++]].value[0];
-          if (op === OperationCode.DEPTHWISE_CONV_2D) {
-            strideWidth = operands[inputs[i++]].value[0];
-            strideHeight = operands[inputs[i++]].value[0];
-            [dilationWidth, dilationHeight] = [1, 1];
-          } else {
-            dilationWidth = operands[inputs[i++]].value[0];
-            dilationHeight = operands[inputs[i++]].value[0];
-            [strideWidth, strideHeight] = [1, 1];
-          }
-          depthMultipler = operands[inputs[i++]].value[0];
-          activation = operands[inputs[i++]].value[0];
-
-          let inputWidth = input.runtimeshape.Dims(2);
-          let inputHeight = input.runtimeshape.Dims(1);
-          let filterWidth = filter.runtimeshape.Dims(2);
-          let filterHeight = filter.runtimeshape.Dims(1);
-
-          [paddingLeft, paddingRight] =
-            calculateExplicitPadding(inputWidth, strideWidth, filterWidth, dilationWidth, paddingCode);
-          [paddingTop, paddingBottom] =
-            calculateExplicitPadding(inputHeight, strideHeight, filterHeight, dilationHeight, paddingCode);
-        }
-        let output = operands[outputs[0]];
-
-        let output_multiplier = 0, output_shift = 0;
-        if (output.type === OperandCode.TENSOR_QUANT8_ASYMM) {
-          let real_multiplier = GetQuantizedConvolutionMultipler(input.scale, filter.scale,
-                                                                 bias.scale, output.scale);
-          [output_multiplier, output_shift] = QuantizeMultiplierSmallerThanOne(real_multiplier);
-        }
-        let [float_activation_min, float_activation_max,
-             quantized_activation_min, quantized_activation_max] = calculateActivationRange(activation, output);
-
-        // Error check
-        OPS_CHECK(input.type === filter.type);
-        if (input.type === OperandCode.TENSOR_QUANT8_ASYMM) {
-          OPS_CHECK(bias.type === OperandCode.TENSOR_INT32);
-        } else {
-          OPS_CHECK(input.type === bias.type);
-        }
-
-        OPS_CHECK(input.runtimeshape.DimensionsCount() === 4);
-        OPS_CHECK(filter.runtimeshape.DimensionsCount() === 4);
-        OPS_CHECK(bias.runtimeshape.DimensionsCount() === 1);
-        OPS_CHECK(output.runtimeshape.DimensionsCount() === 4);
-
-        OPS_CHECK(filter.runtimeshape.Dims(3) === bias.runtimeshape.Dims(0));
-
-        // init depthwiseParams
-        let PaddingValues = {
-          width: paddingLeft,
-          height: paddingTop
-        }
-        let depthwiseParams = {
-          padding_values: PaddingValues,
-          stride_width: strideWidth,
-          stride_height: strideHeight,
-          dilation_width_factor: dilationWidth,
-          dilation_height_factor: dilationHeight,
-          float_activation_min: float_activation_min,
-          float_activation_max: float_activation_max,
-          depth_multiplier: depthMultipler,
-          input_offset: -input.zeroPoint || 0,
-          weights_offset: -filter.zeroPoint || 0,
-          output_offset: output.zeroPoint || 0,
-          output_multiplier: output_multiplier,
-          output_shift: -output_shift,
-          quantized_activation_min: quantized_activation_min,
-          quantized_activation_max: quantized_activation_max
-        }
-        if (output.type === OperandCode.TENSOR_FLOAT32) {
-          nn_ops.depthwiseConvFloat32(depthwiseParams,
+        } else {  // depthwise == true
+          convParams.depth_multiplier = depthMultipler;
+          if (output.type === OperandCode.TENSOR_FLOAT32) {
+            nn_ops.depthwiseConvFloat32(convParams,
+                                        input.runtimeshape, input.value,
+                                        filter.runtimeshape, filter.value,
+                                        bias.runtimeshape, bias.value,
+                                        output.runtimeshape, output.value);
+          } else if (output.type === OperandCode.TENSOR_QUANT8_ASYMM) {
+            nn_ops.depthwiseConvUint8(convParams,
                                       input.runtimeshape, input.value,
                                       filter.runtimeshape, filter.value,
                                       bias.runtimeshape, bias.value,
                                       output.runtimeshape, output.value);
-        } else if (output.type === OperandCode.TENSOR_QUANT8_ASYMM) {
-          nn_ops.depthwiseConvUint8(depthwiseParams,
-                                    input.runtimeshape, input.value,
-                                    filter.runtimeshape, filter.value,
-                                    bias.runtimeshape, bias.value,
-                                    output.runtimeshape, output.value);
+          } else {
+            throw new Error(`DEPTHWISE_CONV_2D: output type ${output.type} is not supported`);
+          }
         }
       } break;
       case OperationCode.AVERAGE_POOL_2D:
