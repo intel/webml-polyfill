@@ -815,11 +815,25 @@ export default class PreparedModel {
                                         bias.runtimeshape, bias.value,
                                         output.runtimeshape, output.value);
           } else if (output.type === OperandCode.TENSOR_QUANT8_ASYMM) {
-            nn_ops.depthwiseConvUint8(convParams,
-                                      input.runtimeshape, input.value,
-                                      filter.runtimeshape, filter.value,
-                                      bias.runtimeshape, bias.value,
-                                      output.runtimeshape, output.value);
+            if (filter.type === OperandCode.TENSOR_QUANT8_ASYMM) {
+              nn_ops.depthwiseConvUint8(convParams,
+                                        input.runtimeshape, input.value,
+                                        filter.runtimeshape, filter.value,
+                                        bias.runtimeshape, bias.value,
+                                        output.runtimeshape, output.value);
+            } else if (filter.type === OperandCode.TENSOR_QUANT8_SYMM_PER_CHANNEL) {
+              nn_ops.depthwiseConvUint8PerChannel(
+                  convParams,
+                  output_multipliers_data, output_shifts_data,
+                  input.runtimeshape, input.value,
+                  filter.runtimeshape, filter.value,
+                  bias.runtimeshape, bias.value,
+                  output.runtimeshape, output.value);
+              nn_ops._free(output_multipliers_data);
+              nn_ops._free(output_shifts_data);
+            } else {
+              throw new Error(`DEPTHWISE_CONV_2D: filter type ${filter.type} is not supproted`);
+            }
           } else {
             throw new Error(`DEPTHWISE_CONV_2D: output type ${output.type} is not supported`);
           }
