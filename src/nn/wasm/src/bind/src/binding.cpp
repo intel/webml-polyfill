@@ -92,6 +92,25 @@ namespace binding_utils {
         }                                                                     \
         im2colGuard.reset(im2colData);                                        \
     }
+ 
+  // Convert int8 quantized values to uint8 assuming that the scale is the same
+  // and the distance between offsets is 128.
+  void convertInt8ToUInt8(const int8_t* input, std::vector<uint8_t>* output) {
+      assert(input != nullptr);
+      assert(output != nullptr);
+      for (int i = 0; i < output->size(); ++i) {
+          (*output)[i] = static_cast<uint8_t>(static_cast<int32_t>(input[i]) + 128);
+      }
+  }
+
+  // Convert uint8 quantized values to int8 assuming that the scale is the same
+  // and the distance between offsets is 128.
+  void convertUInt8ToInt8(const std::vector<uint8_t>& input, int8_t* output) {
+      assert(output != nullptr);
+      for (int i = 0; i < input.size(); ++i) {
+          output[i] = static_cast<int8_t>(static_cast<int32_t>(input[i]) - 128);
+      }
+  }
 
   // Operation wrappers.
   void addFloat32Wrapper(const ArithmeticParams& op_params,
@@ -198,6 +217,36 @@ namespace binding_utils {
                                  (const uint8_t*)filterData, biasShape,
                                  (const int32_t*)biasData, outputShape,
                                  (uint8_t*)outputData, &gemm_context);
+  }
+
+  void depthwiseConvInt8Wrapper(const DepthwiseParams& convParams,
+                                const RuntimeShape& inputShape,
+                                const intptr_t inputData,
+                                const RuntimeShape& filterShape,
+                                const intptr_t filterData,
+                                const RuntimeShape& biasShape,
+                                const intptr_t biasData,
+                                const RuntimeShape& outputShape,
+                                intptr_t outputData) {
+    DepthwiseParams uint8ConvParams = convParams;
+    std::vector<uint8_t> unsignedInput(inputShape.DimensionsCount());
+    convertInt8ToUInt8((const int8_t*)inputData, &unsignedInput);
+    uint8ConvParams.input_offset += 128;
+
+    std::vector<uint8_t> unsignedFilter(filterShape.DimensionsCount());
+    convertInt8ToUInt8((const int8_t*)filterData, &unsignedFilter);
+    uint8ConvParams.weights_offset += 128;
+
+    std::vector<uint8_t> unsignedOutput(outputShape.DimensionsCount());
+    uint8ConvParams.output_offset += 128;
+
+    optimized_ops::DepthwiseConv(convParams, inputShape,
+                                 unsignedInput.data(), filterShape,
+                                 unsignedFilter.data(), biasShape,
+                                 (const int32_t*)biasData, outputShape,
+                                 unsignedOutput.data(), &gemm_context);
+    
+    convertUInt8ToInt8(unsignedOutput, (int8_t*)outputData);
   }
 
   template <typename T>
@@ -356,26 +405,6 @@ namespace binding_utils {
                         (const int32_t*)biasData, outputShape,
                         (uint8_t*)outputData, im2colDim,
                         (uint8_t*)im2colData, &cpu_backend_context);
-  }
-
-  
-  // Convert int8 quantized values to uint8 assuming that the scale is the same
-  // and the distance between offsets is 128.
-  void convertInt8ToUInt8(const int8_t* input, std::vector<uint8_t>* output) {
-      assert(input != nullptr);
-      assert(output != nullptr);
-      for (int i = 0; i < output->size(); ++i) {
-          (*output)[i] = static_cast<uint8_t>(static_cast<int32_t>(input[i]) + 128);
-      }
-  }
-
-  // Convert uint8 quantized values to int8 assuming that the scale is the same
-  // and the distance between offsets is 128.
-  void convertUInt8ToInt8(const std::vector<uint8_t>& input, int8_t* output) {
-      assert(output != nullptr);
-      for (int i = 0; i < input.size(); ++i) {
-          output[i] = static_cast<int8_t>(static_cast<int32_t>(input[i]) - 128);
-      }
   }
 
   void convInt8Wrapper(const ConvParams& convParams,
@@ -938,6 +967,7 @@ EMSCRIPTEN_BINDINGS(nn)
   function("floorFloat32", &binding_utils::floorFloat32Wrapper, allow_raw_pointers());
   function("depthwiseConvFloat32", &binding_utils::depthwiseConvFloat32Wrapper, allow_raw_pointers());
   function("depthwiseConvUint8", &binding_utils::depthwiseConvUint8Wrapper, allow_raw_pointers());
+  function("depthwiseConvInt8", &binding_utils::depthwiseConvInt8Wrapper, allow_raw_pointers());
   function("depthwiseConvUint8PerChannel", &binding_utils::depthwiseConvUint8PerChannelWrapper, allow_raw_pointers());
   function("depthwiseConvInt8PerChannel", &binding_utils::depthwiseConvInt8PerChannelWrapper, allow_raw_pointers());
   function("convFloat32", &binding_utils::convFloat32Wrapper, allow_raw_pointers());
