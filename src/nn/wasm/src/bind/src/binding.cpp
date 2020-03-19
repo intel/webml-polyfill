@@ -302,6 +302,26 @@ namespace binding_utils {
                                       outputShape, (uint8_t*)outputData);
   }
 
+  void depthwiseConvInt8PerChannelWrapper(const DepthwiseParams& convParams,
+                                          const intptr_t outputMultiplierData,
+                                          const intptr_t outputShiftData,
+                                          const RuntimeShape& inputShape,
+                                          const intptr_t inputData,
+                                          const RuntimeShape& filterShape,
+                                          const intptr_t filterData,
+                                          const RuntimeShape& biasShape,
+                                          const intptr_t biasData,
+                                          const RuntimeShape& outputShape,
+                                          intptr_t outputData) {
+    depthwiseConvQuant8PerChannelNhwc(convParams,
+                                      (const int32_t*)outputMultiplierData,
+                                      (const int32_t*)outputShiftData,
+                                      inputShape, (const int8_t*)inputData,
+                                      filterShape, (const int8_t*)filterData,
+                                      biasShape, (const int32_t*)biasData,
+                                      outputShape, (int8_t*)outputData);
+  }
+
   void convFloat32Wrapper(const ConvParams& convParams,
                           const RuntimeShape& inputShape,
                           const intptr_t inputData,
@@ -919,6 +939,7 @@ EMSCRIPTEN_BINDINGS(nn)
   function("depthwiseConvFloat32", &binding_utils::depthwiseConvFloat32Wrapper, allow_raw_pointers());
   function("depthwiseConvUint8", &binding_utils::depthwiseConvUint8Wrapper, allow_raw_pointers());
   function("depthwiseConvUint8PerChannel", &binding_utils::depthwiseConvUint8PerChannelWrapper, allow_raw_pointers());
+  function("depthwiseConvInt8PerChannel", &binding_utils::depthwiseConvInt8PerChannelWrapper, allow_raw_pointers());
   function("convFloat32", &binding_utils::convFloat32Wrapper, allow_raw_pointers());
   function("convUint8", &binding_utils::convUint8Wrapper, allow_raw_pointers());
   function("convUint8PerChannel", &binding_utils::convUint8PerChannelWrapper, allow_raw_pointers());
