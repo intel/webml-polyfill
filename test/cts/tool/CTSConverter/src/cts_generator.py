@@ -324,7 +324,7 @@ def typeToArray(targetType):
         str_array = "Int32Array"
     elif targetType in ["TENSOR_QUANT8_ASYMM"]:
         str_array = "Uint8Array"
-    elif targetType in ["TENSOR_QUANT8_SYMM_PER_CHANNEL"]:
+    elif targetType in ["TENSOR_QUANT8_SYMM_PER_CHANNEL", "TENSOR_QUANT8_ASYMM_SIGNED"]:
         str_array = "Int8Array"
     else :
         str_array = "Float32Array"
@@ -352,16 +352,15 @@ def DumpJSTest(model, example, js_fd):
                 t.type = "FLOAT32"
 
     '''
-    # select 'TENSOR_QUANT8_SYMM_PER_CHANNEL' type models
-    per_c_flag = False
-    select_types = ["TENSOR_QUANT8_SYMM_PER_CHANNEL"]
-    for t in model.GetTypes():
-        if t.type in select_types:
-            per_c_flag = True
+    # select specifying type models
+    select_specifying_flag = False
+    if model.operations[0].optype == "CONV_2D" or model.operations[0].optype == "DEPTHWISE_CONV_2D":
+        if model.operands[0].type.type == "TENSOR_QUANT8_ASYMM_SIGNED" and \
+           model.operands[1].type.type == "TENSOR_QUANT8_SYMM_PER_CHANNEL":
+            select_specifying_flag = True
 
-    if per_c_flag == False:
-        print ("    skip not select types: %s (%s)" %(
-               select_types, example.examplesName), file = sys.stderr)
+    if select_specifying_flag == False:
+        print ("    skip not select types: %s" %example.examplesName, file = sys.stderr)
         return
     '''
 
@@ -529,21 +528,21 @@ def DumpJSTest(model, example, js_fd):
 
         # set input and output types
         for t in model.GetTypes():
-            if t.scale == 0.0 and t.zeroPoint == 0 and t.extraParams is None:
-                if t.type in ["FLOAT32", "INT32", "UINT32"]:
-                    typeDef = "    let %s = {type: nn.%s};"%(t, t.type)
-                else :
-                    typeDef = "    let %s = {type: nn.%s, dimensions: [%s]};\n    let %s_length = product(%s.dimensions);"%(
-                              t, t.type, t.GetDimensionsString()[1:-1], t, t)
+            if t.type in ["FLOAT32", "INT32", "FLOAT16", "UINT32"]:
+                typeDef = "    let %s = {type: nn.%s};"%(t, t.type)
+            elif t.type in ["TENSOR_INT32", "TENSOR_FLOAT16", "TENSOR_FLOAT32"]:
+                typeDef = "    let %s = {type: nn.%s, dimensions: [%s]};\n    let %s_length = product(%s.dimensions);" \
+                          %(t, t.type, t.GetDimensionsString()[1:-1], t, t)
+            elif t.type in ["TENSOR_QUANT8_ASYMM", "TENSOR_QUANT8_ASYMM_SIGNED"]:
+                typeDef = "    let %s = {type: nn.%s, dimensions: [%s], scale: %s, zeroPoint: %d};\n    let %s_length = product(%s.dimensions);" \
+                          %(t, t.type, t.GetDimensionsString()[1:-1], tg.PrettyPrintAsFloat(t.scale)[:-1], t.zeroPoint, t, t)
+            elif t.type in ["TENSOR_QUANT8_SYMM_PER_CHANNEL"]:
+                typeDef = "    let %s = {type: nn.%s, dimensions: [%s]};\n    let %s_length = product(%s.dimensions);" \
+                          %(t, t.type, t.GetDimensionsString()[1:-1], t, t)
+                per_channel_types[str(t)] = t.extraParams.GetJSConstructor()
             else:
-                if t.extraParams is None or t.extraParams.hide:
-                    typeDef = "    let %s = {type: nn.%s, dimensions: [%s], scale: %s, zeroPoint: %d};\n    let %s_length = product(%s.dimensions);"%(
-                              t, t.type, t.GetDimensionsString()[1:-1], tg.PrettyPrintAsFloat(t.scale)[:-1], t.zeroPoint, t, t)
-                else:
-                    typeDef = "    let %s = {type: nn.%s, dimensions: [%s]};\n    let %s_length = product(%s.dimensions);"%(
-                              t, t.type, t.GetDimensionsString()[1:-1], t, t)
-
-                    per_channel_types[str(t)] = t.extraParams.GetJSConstructor()
+                traceback.print_exc()
+                sys.exit("Cannot support tensor of type: {}".format(t.type))
 
             print (typeDef, file = js_fd)
         print ("", file = js_fd)
@@ -554,7 +553,8 @@ def DumpJSTest(model, example, js_fd):
             print ("    model.addOperand(%s);"%op.type, file = js_fd)
 
             if str(op.type) in per_channel_types.keys():
-                print ("    model.setOperandSymmPerChannelQuantParams(operandIndex++, %s);"%per_channel_types[str(op.type)], file = js_fd)
+                print ("    model.setOperandSymmPerChannelQuantParams(%s, %s);"
+                       %(op, per_channel_types[str(op.type)]), file = js_fd)
         print ("", file = js_fd)
 
         # set other inputs value(support only one input)
