@@ -25,7 +25,7 @@ describe('CTS', function() {
     model.addOperand(type0);
     let op2 = operandIndex++;
     model.addOperand(type1);
-    model.setOperandSymmPerChannelQuantParams(operandIndex++, {channelDim: 3, scales: new Float32Array([0.5, 0.5])});
+    model.setOperandSymmPerChannelQuantParams(op2, {channelDim: 3, scales: new Float32Array([0.5, 0.5])});
     let op3 = operandIndex++;
     model.addOperand(type2);
     let param = operandIndex++;
@@ -104,7 +104,7 @@ describe('CTS', function() {
     model.addOperand(type0);
     let op2 = operandIndex++;
     model.addOperand(type11);
-    model.setOperandSymmPerChannelQuantParams(operandIndex++, {channelDim: 3, scales: new Float32Array([0.5, 0.5])});
+    model.setOperandSymmPerChannelQuantParams(op2, {channelDim: 3, scales: new Float32Array([0.5, 0.5])});
     let op3 = operandIndex++;
     model.addOperand(type2);
     let param = operandIndex++;
@@ -182,7 +182,7 @@ describe('CTS', function() {
     model.addOperand(type5);
     let op21 = operandIndex++;
     model.addOperand(type6);
-    model.setOperandSymmPerChannelQuantParams(operandIndex++, {channelDim: 3, scales: new Float32Array([1.0, 0.5, 1.0, 0.5])});
+    model.setOperandSymmPerChannelQuantParams(op21, {channelDim: 3, scales: new Float32Array([1.0, 0.5, 1.0, 0.5])});
     let op31 = operandIndex++;
     model.addOperand(type7);
     let param8 = operandIndex++;
@@ -261,7 +261,7 @@ describe('CTS', function() {
     model.addOperand(type5);
     let op21 = operandIndex++;
     model.addOperand(type12);
-    model.setOperandSymmPerChannelQuantParams(operandIndex++, {channelDim: 3, scales: new Float32Array([1.0, 0.5, 1.0, 0.5])});
+    model.setOperandSymmPerChannelQuantParams(op21, {channelDim: 3, scales: new Float32Array([1.0, 0.5, 1.0, 0.5])});
     let op31 = operandIndex++;
     model.addOperand(type7);
     let param8 = operandIndex++;
@@ -339,7 +339,7 @@ describe('CTS', function() {
     model.addOperand(type5);
     let op22 = operandIndex++;
     model.addOperand(type10);
-    model.setOperandSymmPerChannelQuantParams(operandIndex++, {channelDim: 3, scales: new Float32Array([1.0, 0.5, 1.0, 0.5])});
+    model.setOperandSymmPerChannelQuantParams(op22, {channelDim: 3, scales: new Float32Array([1.0, 0.5, 1.0, 0.5])});
     let op32 = operandIndex++;
     model.addOperand(type7);
     let param16 = operandIndex++;
@@ -418,7 +418,7 @@ describe('CTS', function() {
     model.addOperand(type5);
     let op22 = operandIndex++;
     model.addOperand(type13);
-    model.setOperandSymmPerChannelQuantParams(operandIndex++, {channelDim: 3, scales: new Float32Array([1.0, 0.5, 1.0, 0.5])});
+    model.setOperandSymmPerChannelQuantParams(op22, {channelDim: 3, scales: new Float32Array([1.0, 0.5, 1.0, 0.5])});
     let op32 = operandIndex++;
     model.addOperand(type7);
     let param16 = operandIndex++;
