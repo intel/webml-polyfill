@@ -157,7 +157,7 @@ describe('CTS', function() {
     let type32_length = product(type32.dimensions);
     let type33 = {type: nn.TENSOR_QUANT8_ASYMM, dimensions: [1, 2, 2, 1], scale: 0.125, zeroPoint: 0};
     let type33_length = product(type33.dimensions);
-    let type34 = {type: nn.TENSOR_INT32, dimensions: [1]};
+    let type34 = {type: nn.TENSOR_INT32, dimensions: [1], scale: 0.0625, zeroPoint: 0};
     let type34_length = product(type34.dimensions);
     let type4 = {type: nn.INT32};
 
@@ -230,7 +230,7 @@ describe('CTS', function() {
     let type33_length = product(type33.dimensions);
     let type35 = {type: nn.TENSOR_QUANT8_SYMM_PER_CHANNEL, dimensions: [1, 2, 2, 1]};
     let type35_length = product(type35.dimensions);
-    let type36 = {type: nn.TENSOR_INT32, dimensions: [1]};
+    let type36 = {type: nn.TENSOR_INT32, dimensions: [1], scale: 0.0, zeroPoint: 0};
     let type36_length = product(type36.dimensions);
     let type4 = {type: nn.INT32};
 
@@ -523,7 +523,7 @@ describe('CTS', function() {
     let type32_length = product(type32.dimensions);
     let type33 = {type: nn.TENSOR_QUANT8_ASYMM, dimensions: [1, 2, 2, 1], scale: 0.125, zeroPoint: 0};
     let type33_length = product(type33.dimensions);
-    let type34 = {type: nn.TENSOR_INT32, dimensions: [1]};
+    let type34 = {type: nn.TENSOR_INT32, dimensions: [1], scale: 0.0625, zeroPoint: 0};
     let type34_length = product(type34.dimensions);
     let type4 = {type: nn.INT32};
 
@@ -599,7 +599,7 @@ describe('CTS', function() {
     let type33_length = product(type33.dimensions);
     let type35 = {type: nn.TENSOR_QUANT8_SYMM_PER_CHANNEL, dimensions: [1, 2, 2, 1]};
     let type35_length = product(type35.dimensions);
-    let type36 = {type: nn.TENSOR_INT32, dimensions: [1]};
+    let type36 = {type: nn.TENSOR_INT32, dimensions: [1], scale: 0.0, zeroPoint: 0};
     let type36_length = product(type36.dimensions);
     let type4 = {type: nn.INT32};
 
@@ -871,7 +871,7 @@ describe('CTS', function() {
     let type46_length = product(type46.dimensions);
     let type47 = {type: nn.TENSOR_QUANT8_ASYMM, dimensions: [1, 3, 3, 1], scale: 0.5, zeroPoint: 127};
     let type47_length = product(type47.dimensions);
-    let type48 = {type: nn.TENSOR_INT32, dimensions: [1]};
+    let type48 = {type: nn.TENSOR_INT32, dimensions: [1], scale: 0.25, zeroPoint: 0};
     let type48_length = product(type48.dimensions);
     let type49 = {type: nn.TENSOR_QUANT8_ASYMM, dimensions: [1, 3, 4, 1], scale: 1.0, zeroPoint: 50};
     let type49_length = product(type49.dimensions);
@@ -937,7 +937,7 @@ describe('CTS', function() {
     let type49_length = product(type49.dimensions);
     let type50 = {type: nn.TENSOR_QUANT8_SYMM_PER_CHANNEL, dimensions: [1, 3, 3, 1]};
     let type50_length = product(type50.dimensions);
-    let type51 = {type: nn.TENSOR_INT32, dimensions: [1]};
+    let type51 = {type: nn.TENSOR_INT32, dimensions: [1], scale: 0.0, zeroPoint: 0};
     let type51_length = product(type51.dimensions);
 
     let op11 = operandIndex++;
@@ -1194,7 +1194,7 @@ describe('CTS', function() {
     let type46_length = product(type46.dimensions);
     let type47 = {type: nn.TENSOR_QUANT8_ASYMM, dimensions: [1, 3, 3, 1], scale: 0.5, zeroPoint: 127};
     let type47_length = product(type47.dimensions);
-    let type48 = {type: nn.TENSOR_INT32, dimensions: [1]};
+    let type48 = {type: nn.TENSOR_INT32, dimensions: [1], scale: 0.25, zeroPoint: 0};
     let type48_length = product(type48.dimensions);
     let type49 = {type: nn.TENSOR_QUANT8_ASYMM, dimensions: [1, 3, 4, 1], scale: 1.0, zeroPoint: 50};
     let type49_length = product(type49.dimensions);
@@ -1263,7 +1263,7 @@ describe('CTS', function() {
     let type49_length = product(type49.dimensions);
     let type50 = {type: nn.TENSOR_QUANT8_SYMM_PER_CHANNEL, dimensions: [1, 3, 3, 1]};
     let type50_length = product(type50.dimensions);
-    let type51 = {type: nn.TENSOR_INT32, dimensions: [1]};
+    let type51 = {type: nn.TENSOR_INT32, dimensions: [1], scale: 0.0, zeroPoint: 0};
     let type51_length = product(type51.dimensions);
 
     let op11 = operandIndex++;
@@ -1534,7 +1534,7 @@ describe('CTS', function() {
     let type57_length = product(type57.dimensions);
     let type58 = {type: nn.TENSOR_QUANT8_ASYMM, dimensions: [3, 1, 1, 3], scale: 0.5, zeroPoint: 0};
     let type58_length = product(type58.dimensions);
-    let type59 = {type: nn.TENSOR_INT32, dimensions: [3]};
+    let type59 = {type: nn.TENSOR_INT32, dimensions: [3], scale: 0.25, zeroPoint: 0};
     let type59_length = product(type59.dimensions);
 
     let op12 = operandIndex++;
@@ -1605,7 +1605,7 @@ describe('CTS', function() {
     let type57_length = product(type57.dimensions);
     let type60 = {type: nn.TENSOR_QUANT8_SYMM_PER_CHANNEL, dimensions: [3, 1, 1, 3]};
     let type60_length = product(type60.dimensions);
-    let type61 = {type: nn.TENSOR_INT32, dimensions: [3]};
+    let type61 = {type: nn.TENSOR_INT32, dimensions: [3], scale: 0.0, zeroPoint: 0};
     let type61_length = product(type61.dimensions);
 
     let op12 = operandIndex++;
@@ -1898,7 +1898,7 @@ describe('CTS', function() {
     let type57_length = product(type57.dimensions);
     let type58 = {type: nn.TENSOR_QUANT8_ASYMM, dimensions: [3, 1, 1, 3], scale: 0.5, zeroPoint: 0};
     let type58_length = product(type58.dimensions);
-    let type59 = {type: nn.TENSOR_INT32, dimensions: [3]};
+    let type59 = {type: nn.TENSOR_INT32, dimensions: [3], scale: 0.25, zeroPoint: 0};
     let type59_length = product(type59.dimensions);
 
     let op12 = operandIndex++;
@@ -1972,7 +1972,7 @@ describe('CTS', function() {
     let type57_length = product(type57.dimensions);
     let type60 = {type: nn.TENSOR_QUANT8_SYMM_PER_CHANNEL, dimensions: [3, 1, 1, 3]};
     let type60_length = product(type60.dimensions);
-    let type61 = {type: nn.TENSOR_INT32, dimensions: [3]};
+    let type61 = {type: nn.TENSOR_INT32, dimensions: [3], scale: 0.0, zeroPoint: 0};
     let type61_length = product(type61.dimensions);
 
     let op12 = operandIndex++;
@@ -2257,7 +2257,7 @@ describe('CTS', function() {
     let op43_expect = [15, 18, 21, 33, 40, 48, 51, 63, 75, 69, 86, 102, 87, 108, 129, 105, 130, 156];
 
     let type4 = {type: nn.INT32};
-    let type59 = {type: nn.TENSOR_INT32, dimensions: [3]};
+    let type59 = {type: nn.TENSOR_INT32, dimensions: [3], scale: 0.25, zeroPoint: 0};
     let type59_length = product(type59.dimensions);
     let type68 = {type: nn.TENSOR_QUANT8_ASYMM, dimensions: [1, 2, 3, 3], scale: 0.5, zeroPoint: 128};
     let type68_length = product(type68.dimensions);
@@ -2336,7 +2336,7 @@ describe('CTS', function() {
     let type70_length = product(type70.dimensions);
     let type71 = {type: nn.TENSOR_QUANT8_SYMM_PER_CHANNEL, dimensions: [3, 1, 1, 3]};
     let type71_length = product(type71.dimensions);
-    let type72 = {type: nn.TENSOR_INT32, dimensions: [3]};
+    let type72 = {type: nn.TENSOR_INT32, dimensions: [3], scale: 0.0, zeroPoint: 0};
     let type72_length = product(type72.dimensions);
 
     let op13 = operandIndex++;
@@ -2408,7 +2408,7 @@ describe('CTS', function() {
     let type73_length = product(type73.dimensions);
     let type74 = {type: nn.TENSOR_QUANT8_SYMM_PER_CHANNEL, dimensions: [3, 1, 1, 3]};
     let type74_length = product(type74.dimensions);
-    let type75 = {type: nn.TENSOR_INT32, dimensions: [3]};
+    let type75 = {type: nn.TENSOR_INT32, dimensions: [3], scale: 0.0, zeroPoint: 0};
     let type75_length = product(type75.dimensions);
 
     let op13 = operandIndex++;
@@ -2697,7 +2697,7 @@ describe('CTS', function() {
     let op43_expect = [15, 18, 21, 33, 40, 48, 51, 63, 75, 69, 86, 102, 87, 108, 129, 105, 130, 156];
 
     let type4 = {type: nn.INT32};
-    let type59 = {type: nn.TENSOR_INT32, dimensions: [3]};
+    let type59 = {type: nn.TENSOR_INT32, dimensions: [3], scale: 0.25, zeroPoint: 0};
     let type59_length = product(type59.dimensions);
     let type68 = {type: nn.TENSOR_QUANT8_ASYMM, dimensions: [1, 2, 3, 3], scale: 0.5, zeroPoint: 128};
     let type68_length = product(type68.dimensions);
@@ -2779,7 +2779,7 @@ describe('CTS', function() {
     let type70_length = product(type70.dimensions);
     let type71 = {type: nn.TENSOR_QUANT8_SYMM_PER_CHANNEL, dimensions: [3, 1, 1, 3]};
     let type71_length = product(type71.dimensions);
-    let type72 = {type: nn.TENSOR_INT32, dimensions: [3]};
+    let type72 = {type: nn.TENSOR_INT32, dimensions: [3], scale: 0.0, zeroPoint: 0};
     let type72_length = product(type72.dimensions);
 
     let op13 = operandIndex++;
@@ -2854,7 +2854,7 @@ describe('CTS', function() {
     let type73_length = product(type73.dimensions);
     let type74 = {type: nn.TENSOR_QUANT8_SYMM_PER_CHANNEL, dimensions: [3, 1, 1, 3]};
     let type74_length = product(type74.dimensions);
-    let type75 = {type: nn.TENSOR_INT32, dimensions: [3]};
+    let type75 = {type: nn.TENSOR_INT32, dimensions: [3], scale: 0.0, zeroPoint: 0};
     let type75_length = product(type75.dimensions);
 
     let op13 = operandIndex++;

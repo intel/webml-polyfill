@@ -17,7 +17,7 @@ describe('CTS', function() {
     let type0_length = product(type0.dimensions);
     let type1 = {type: nn.TENSOR_QUANT8_ASYMM, dimensions: [1, 1], scale: 0.5, zeroPoint: 0};
     let type1_length = product(type1.dimensions);
-    let type2 = {type: nn.TENSOR_INT32, dimensions: [1]};
+    let type2 = {type: nn.TENSOR_INT32, dimensions: [1], scale: 0.25, zeroPoint: 0};
     let type2_length = product(type2.dimensions);
     let type3 = {type: nn.TENSOR_QUANT8_ASYMM, dimensions: [3, 1], scale: 1.0, zeroPoint: 0};
     let type3_length = product(type3.dimensions);
