@@ -85,32 +85,6 @@
     <div class='filter mb-3 mt-2'>
       <table id='filter' class='t-filter table table-condensed'>
         <tbody>
-          <tr class='model'>
-            <th class='text-center'><a href='../model.html' title='View model details'>Model</a></th>
-            <td>
-              <img src='../static/img/l-tflite.png' alt='TensorFlow Lite Format' title='TensorFlow Lite Format'>
-              <input type='radio' class='d-none' name='m' id='ssd_mobilenetv1_face_tflite'
-                value='ssd_mobilenetv1_face_tflite' checked>
-              <label id='l-ssd_mobilenetv1_face_tflite' class='themodel' for='ssd_mobilenetv1_face_tflite'
-                title='SSD MobileNet v1'>SSD MobileNet v1</label>
-              <input type='radio' class='d-none' name='m' id='ssd_mobilenetv2_face_tflite'
-                value='ssd_mobilenetv2_face_tflite' checked>
-              <label id='l-ssd_mobilenetv2_face_tflite' class='themodel' for='ssd_mobilenetv2_face_tflite'
-                title='SSD MobileNet v2'>SSD MobileNet v2</label>
-              <input type='radio' class='d-none' name='m' id='ssdlite_mobilenetv2_face_tflite'
-                value='ssdlite_mobilenetv2_face_tflite' checked>
-              <label id='l-ssdlite_mobilenetv2_face_tflite' class='themodel' for='ssdlite_mobilenetv2_face_tflite'
-                title='SSDLite MobileNet v2'>SSDLite MobileNet v2</label>
-              <input type='radio' class='d-none' name='m' id='tiny_yolov2_face_tflite' value='tiny_yolov2_face_tflite'
-                checked>
-              <label id='l-tiny_yolov2_face_tflite' class='themodel' for='tiny_yolov2_face_tflite'
-                title='Tiny Yolo v2'>Tiny Yolo v2</label>
-              <input type='radio' class='d-none' name='l' id='face_landmark_tflite' value='face_landmark_tflite'
-                checked>
-              <label id='l-face_landmark_tflite' class='themodel' for='face_landmark_tflite'
-                title='Simple CNN'>SimpleCNN (TFlite)</label>
-            </td>
-          </tr>
           <tr class='backend'>
             <th class='text-center backendtitle'>Backend</th>
             <td>
@@ -279,10 +253,10 @@
     </div>
   </section>
 
-  <img id='image' crossorigin='anonymous' class='img-fluid' alt='Responsive image' src='./img/image1.jpg'>
+  <img id='feedElement' crossorigin='anonymous' class='img-fluid' alt='Responsive image' src='./img/image1.jpg'>
   <canvas id='canvas' width=300 height=300></canvas>
   <canvas id='canvas1' width=128 height=128></canvas>
-  <video id='video' autoplay playsinline></video>
+  <video id='feedMediaElement' autoplay playsinline></video>
 
   <footer>
     <div class='container'>
@@ -358,21 +332,30 @@
   <script src='../static/lib/greensock/tweenmax.js'></script>
   <script src='../static/lib/stats.customized.min.js'></script>
   <script src='../static/lib/protobuf.min.js'></script>
+
+  <script src='../static/js/ui.common.js'></script>
+
   <script src='../../dist/webml-polyfill.js'></script>
+
   <script src='../util/base.js'></script>
+  <script src='../util/modelZoo.js'></script>
+  <script src='../util/baseRunner.js'></script>
+  <script src='../util/baseApp.js'></script>
+  <script src='../util/baseExample.js'></script>
+  <script src='../util/baseCameraExample.js'></script>
+
   <script src='../util/tflite/flatbuffers/js/flatbuffers.js'></script>
   <script src='../util/tflite/schema/schema_generated.js'></script>
   <script src='../util/tflite/TfLiteModelUtils.js'></script>
   <script src='../util/tflite/TFliteModelImporter.js'></script>
   <script src='../util/decoders/SsdDecoder.js'></script>
   <script src='../util/decoders/Yolo2Decoder.js'></script>
-  <script src='../util/faceDetector.js'></script>
-  <script src='DrawOutput.js'></script>
-  <script src='utils.js'></script>
-  <script src='../static/js/main.common.js'></script>
+
+  <script src='../util/faceDetectorRunner.js'></script>
+
+  <script src='emotionAnalysisExample.js'></script>
   <script src='main.js'></script>
-  <script src='../static/js/ui.common.js'></script>
-  <script src='ui.js'></script>
+
   <script async src="https://www.googletagmanager.com/gtag/js?id=UA-147662084-1"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
