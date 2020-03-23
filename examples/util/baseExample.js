@@ -1,7 +1,7 @@
 class baseExample extends baseApp {
   constructor(models) {
     super(models);
-    this._currentInputType = 'file'; // input type: image, camera, audio, microphone
+    this._currentInputType = 'image'; // input type: image, camera, audio, microphone
     // <image> or <audio> element
     this._feedElement = document.getElementById('feedElement');
     // <video> or <audio> element when using live Camera or Microphone

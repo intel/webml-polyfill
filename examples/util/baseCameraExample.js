@@ -4,7 +4,7 @@ class baseCameraExample extends baseExample {
     this._bFrontCamera = false;
   }
 
-  setFrontCameraFlag = (flag) => {
+  useFrontFacingCamera = (flag) => {
     if (typeof flag == "undefined") {
       this._bFrontCamera = !this._bFrontCamera;
     } else {
@@ -50,7 +50,7 @@ class baseCameraExample extends baseExample {
 
       $('#cameraswitch').click(() => {
         $('.alert').hide();
-        this.setFrontCameraFlag();
+        this.useFrontFacingCamera();
         $('#cameraswitch').prop('checked', this.bIsFrontCamera);
         this.main();
       });

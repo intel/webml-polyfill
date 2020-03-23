@@ -228,7 +228,7 @@ const getTensorArray = (image, options, layout = 'NHWC') => {
     if (options.scaledFlag) {
       const resizeRatio = Math.max(Math.max(image.width, image.height) / width, 1);
       const scaledWidth = Math.floor(image.width / resizeRatio);
-      const scaledHeight = Math.floor(image.width / resizeRatio);
+      const scaledHeight = Math.floor(image.height / resizeRatio);
       canvasContext.drawImage(image, 0, 0, scaledWidth, scaledHeight);
     } else {
       canvasContext.drawImage(image, 0, 0, width, height);

@@ -1,7 +1,7 @@
 const example = new faceRecognitionExample({faceRecognition: faceRecognitionModels,
                                             faceDetection: faceDetectionModels});
 // use front facing camera
-example.setFrontCameraFlag(true);
+example.useFrontFacingCamera(true);
 
 $(document).ready(() => {
   example.UI();
