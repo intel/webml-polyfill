@@ -5,9 +5,8 @@ class baseRunner {
     this._currentModelInfo = {};
     this._inputTensor = [];
     this._outputTensor = [];
-    this._bSoftmaxOutput = false; // true: add softmax layer to the model graph when building model
     this._currentRequest = null;
-    this._progressHandle = null;
+    this._progressHandler = null;
     this._rawModel = null;
     this._bLoaded = false; // loaded status of raw model for Web NN API
     this._model = null; // get Web NN model by converting raw model
@@ -30,18 +29,14 @@ class baseRunner {
     this._currentModelInfo = modelInfo
   };
 
-  _setSoftmaxFlag = (flag) => {
-    this._bSoftmaxOutput = flag;
-  };
-
   _setRequest = (req) => {
     // Record current request, aborts the request if it has already been sent
     this._currentRequest = req;
   };
 
-  setProgressHandle = (handle) => {
-    // Use handle to prompt for model loading progress info
-    this._progressHandle = handle;
+  setProgressHandler = (handler) => {
+    // Use handler to prompt for model loading progress info
+    this._progressHandler = handler;
   };
 
   _setRawModel = (rawModel) => {
@@ -76,7 +71,7 @@ class baseRunner {
     this._inferenceTime = t;
   };
 
-  _loadURLAsync = async (url, handle = null, isBinary = false) => {
+  _loadURL = async (url, handle = null, isBinary = false) => {
     let _this = this;
     return new Promise((resolve, reject) => {
       if (_this._currentRequest != null) {
@@ -105,12 +100,12 @@ class baseRunner {
     });
   };
 
-  _getRawModelAsync = async (url) => {
+  _getRawModel = async (url) => {
     let status = 'ERROR';
     let rawModel = null;
 
     if (url !== undefined) {
-      const arrayBuffer = await this._loadURLAsync(url, this._progressHandle, true);
+      const arrayBuffer = await this._loadURL(url, this._progressHandler, true);
       const bytes = new Uint8Array(arrayBuffer);
       switch (url.split('.').pop()) {
         case 'tflite':
@@ -132,7 +127,7 @@ class baseRunner {
           break;
         case 'bin':
           const networkFile = url.replace(/bin$/, 'xml');
-          const networkText = await this._loadURLAsync(networkFile);
+          const networkText = await this._loadURL(networkFile);
           const weightsBuffer = bytes.buffer;
           rawModel = new OpenVINOModel(networkText, weightsBuffer);
           rawModel._rawFormat = 'OPENVINO';
@@ -150,16 +145,16 @@ class baseRunner {
     return status;
   };
 
-  _getOtherResourcesAsync = async () => {
+  _getOtherResources = async () => {
     // Overwrite by inherited if needed, likes load labels file
   };
 
-  _getModelResourcesAsync = async () => {
-    await this._getRawModelAsync(this._currentModelInfo.modelFile);
-    await this._getOtherResourcesAsync();
+  _getModelResources = async () => {
+    await this._getRawModel(this._currentModelInfo.modelFile);
+    await this._getOtherResources();
   };
 
-  initAsync = async (modelInfo) => {
+  loadModel = async (modelInfo) => {
     if (this._bLoaded && this._currentModelInfo.modelFile === modelInfo.modelFile) {
       return 'LOADED';
     }
@@ -170,15 +165,13 @@ class baseRunner {
     this._setBackend(null);
     this._setPrefer(null);
     this._setModelInfo(modelInfo);
-    const postOptions = modelInfo.postOptions || {};
-    this._setSoftmaxFlag(postOptions.softmax || false);
     this._setModelRequiredOps(new Set());
     this._setDeQuantizeParams([]);
     this._setSubgraphsSummary([]);
     this._initInputTensor();
     this._initOutputTensor();
 
-    await this._getModelResourcesAsync();
+    await this._getModelResources();
   };
 
   _getInputTensorTypedArray = () => {
@@ -210,7 +203,7 @@ class baseRunner {
     }
   };
 
-  initModelAsync = async (backend, prefer) => {
+  _compileModel = async (backend, prefer) => {
     if (!this._bLoaded) {
       return 'NOT_LOADED';
     }
@@ -222,11 +215,12 @@ class baseRunner {
     this._setBackend(backend);
     this._setPrefer(prefer);
     this._setInitializedFlag(false);
+    const postOptions = this._currentModelInfo.postOptions || {};
     const configs = {
       rawModel: this._rawModel,
       backend: this._currentBackend,
       prefer: this._currentPrefer,
-      softmax: this._bSoftmaxOutput,
+      softmax: postOptions.softmax || false,
     };
 
     let model = null;
@@ -274,12 +268,12 @@ class baseRunner {
     return 'SUCCESS';
   };
 
-  runAsync = async (src, options) => {
+  run = async (src, options) => {
     let status = 'ERROR';
     let tensorArray = [];
 
     if (src.tagName === 'AUDIO') {
-      tensorArray = await getTensorArrayByAudioAsync(src, options);
+      tensorArray = await getTensorArrayByAudio(src, options);
     } else {
       tensorArray = getTensorArray(src, options);
     }
@@ -331,7 +325,7 @@ class baseRunner {
   };
 
   // for debugging
-  iterateLayersAsync = async (configs, layerList) => {
+  iterateLayers = async (configs, layerList) => {
     if (!this._bInitialized) return;
 
     const iterators = [];

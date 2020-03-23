@@ -4,10 +4,10 @@ const example = new faceRecognitionExample({faceRecognition: faceRecognitionMode
 example.setFrontCameraFlag(true);
 
 $(document).ready(() => {
-  example.readyUI();
+  example.UI();
 });
 
 $(window).load(() => {
   // Execute inference
-  example.mainAsync();
+  example.main();
 });

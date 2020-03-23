@@ -3,26 +3,26 @@ class speechCommandsExample extends baseMircophoneExample {
     super(models);
   }
 
-  _readyCustomUI = () => {
+  _customUI = () => {
     let _this = this;
     let inputFileElement = document.getElementById('input');
     inputFileElement.addEventListener('change', (e) => {
       $('#controller div').removeClass('current');
-      this.mainAsync();
+      this.main();
     }, false);
 
     $('#controller div').click(function () {
       let t = $(this).attr('id');
       _this._currentInputElement.src = `audio/${t}.wav`;
       _this._currentInputElement.play();
-      _this.mainAsync();
+      _this.main();
       $('#controller div').removeClass('current');
       $(`#${t}`).addClass('current');
     });
 
     const recordButton = document.getElementById('record');
     recordButton.addEventListener('click', () => {
-      _this._predictStreamAsync();
+      _this._predictStream();
     }, false);
 
     Module.onRuntimeInitialized = () => {
@@ -32,11 +32,11 @@ class speechCommandsExample extends baseMircophoneExample {
 
   _createRunner = () => {
     const runner = new speechCommandsRunner();
-    runner.setProgressHandle(updateLoadingProgressComponent);
+    runner.setProgressHandler(updateLoadingProgressComponent);
     return runner;
   };
 
-  _predictAsync = async () => {
+  _predict = async () => {
     // Inference with 'VIDEO',  overwrite by inherited for 'AUIDO'
     try {
       this._stats.begin();
@@ -45,7 +45,7 @@ class speechCommandsExample extends baseMircophoneExample {
         sampleRate: this._currentModelInfo.sampleRate,
         mfccsOptions: this._currentModelInfo.mfccsOptions,
       };
-      await this._runner.runAsync(this._currentInputElement, audioOptions);
+      await this._runner.run(this._currentInputElement, audioOptions);
       this._processOutput();
       this._stats.end();
     } catch (e) {
@@ -54,21 +54,21 @@ class speechCommandsExample extends baseMircophoneExample {
     }
   }
 
-  _handleDataAvailableAsync = async (e) => {
+  _handleDataAvailable = async (e) => {
     let buffer = [];
     buffer.push(e.data);
     let blob = new Blob(buffer, { type: 'audio/wav' });
     this._feedMediaElement.src = window.URL.createObjectURL(blob);
     this._setInputElement(this._feedMediaElement);
-    await this._predictAsync();
-    await showProgressComponentAsync('done', 'done', 'done'); // 'COMPLETED_INFERENCE'
+    await this._predict();
+    await showProgressComponent('done', 'done', 'done'); // 'COMPLETED_INFERENCE'
     readyShowResultComponents();
     this._feedMediaElement.play();
   }
 
-  _recordAndPredictMicrophoneAsync = async (stream) => {
+  _recordAndPredictMicrophone = async (stream) => {
     let audioRecorder = new MediaRecorder(stream, { audio: true });
-    audioRecorder.ondataavailable = this._handleDataAvailableAsync;
+    audioRecorder.ondataavailable = this._handleDataAvailable;
     audioRecorder.start();
     await new Promise(() => setTimeout(() => {
       audioRecorder.stop();
@@ -79,11 +79,11 @@ class speechCommandsExample extends baseMircophoneExample {
     }, 1000));
   };
 
-  _predictStreamAsync = async () => {
+  _predictStream = async () => {
     const constraints = this._getMediaConstraints();
     let stream = await navigator.mediaDevices.getUserMedia(constraints);
     this._setTrack(stream.getTracks()[0]);
-    await new Promise(() => setTimeout(this._recordAndPredictMicrophoneAsync(stream), 500));
+    await new Promise(() => setTimeout(this._recordAndPredictMicrophone(stream), 500));
   };
 
   _processCustomOutput = () => {

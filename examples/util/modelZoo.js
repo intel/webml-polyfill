@@ -751,7 +751,7 @@ const modelZoo = {
   }],
 
   emotionAnalysisModels: [{
-    modelName: 'Simple CNN 7 (TFlite)',
+    modelName: 'Simple CNN (TFlite)',
     format: 'TFLite',
     modelId: 'emotion_analysis_tflite',
     modelSize: '7.3MB',

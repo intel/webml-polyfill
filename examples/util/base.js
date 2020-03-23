@@ -367,7 +367,7 @@ const getAudioMfccs = (pcm,
   return audioMfccs;
 };
 
-const getTensorArrayByAudioAsync = async (audio, options) => {
+const getTensorArrayByAudio = async (audio, options) => {
   const sampleRate = options.sampleRate;
   const mfccsOptions = options.mfccsOptions;
   const inputSize = options.inputSize.reduce((a, b) => a * b);

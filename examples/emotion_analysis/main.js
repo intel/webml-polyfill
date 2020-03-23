@@ -4,10 +4,10 @@ const example = new emotionAnalysisExample({emotionAnalysis: emotionAnalysisMode
 example.setFrontCameraFlag(true);
 
 $(document).ready(() => {
-  example.readyUI();
+  example.UI();
 });
 
 $(window).load(() => {
   // Execute inference
-  example.mainAsync();
+  example.main();
 });

@@ -3,7 +3,7 @@ class imageClassificationExample extends baseCameraExample {
     super(models);
   }
 
-  _readyCustomUI = () => {
+  _customUI = () => {
     $('#fullscreen i svg').click(() => {
       $('video').toggleClass('fullscreen');
     });
@@ -11,7 +11,7 @@ class imageClassificationExample extends baseCameraExample {
 
   _createRunner = () => {
     const runner = new imageClassificationRunner();
-    runner.setProgressHandle(updateLoadingProgressComponent);
+    runner.setProgressHandler(updateLoadingProgressComponent);
     return runner;
   };
 

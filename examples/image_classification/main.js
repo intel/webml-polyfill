@@ -1,10 +1,10 @@
 const example = new imageClassificationExample({model: imageClassificationModels});
 
 $(document).ready(() => {
-  example.readyUI();
+  example.UI();
 });
 
 $(window).load(() => {
   // Execute inference
-  example.mainAsync();
+  example.main();
 });

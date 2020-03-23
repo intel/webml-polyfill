@@ -37,7 +37,7 @@ class faceRecognitionExample extends baseCameraExample {
     this._bDrew = flag;
   };
 
-  _readyCustomUI = () => {
+  _customUI = () => {
     const targetImageElement = document.getElementById('targetImage');
     const cameraImageElement = document.getElementById('cameraImage');
     const inputElement = document.getElementById('input');
@@ -74,13 +74,13 @@ class faceRecognitionExample extends baseCameraExample {
     }, false);
 
     targetImageElement.addEventListener('load', () => {
-      this.mainAsync();
+      this.main();
     }, false);
 
     cameraImageElement.addEventListener('load', () => {
       this._setTargetEmbeddingsCamera(null);
       this._setDrewFlag(false);
-      this.mainAsync();
+      this.main();
     }, false);
 
     $('#targetInput').hide();
@@ -139,16 +139,16 @@ class faceRecognitionExample extends baseCameraExample {
     // Overwrite by inherited when example has co-work runners
     if (this._runner == null) {
       this._runner = new faceDetectorRunner();
-      this._runner.setProgressHandle(updateLoadingProgressComponent);
+      this._runner.setProgressHandler(updateLoadingProgressComponent);
     }
 
     if (this._coRunner == null) {
       this._coRunner = new baseRunner();
-      this._coRunner.setProgressHandle(updateLoadingProgressComponent);
+      this._coRunner.setProgressHandler(updateLoadingProgressComponent);
     }
   };
 
-  _initRunnerAsync = async () => {
+  _loadModel = async () => {
     let currentFDModelId = null;
     let currentFRModelId = null;
     let fdModelList = this._inferenceModels.faceDetection;
@@ -181,16 +181,16 @@ class faceRecognitionExample extends baseCameraExample {
 
     const modelInfo = getModelById(fdModelList, currentFDModelId);
     this._setModelInfo(modelInfo);
-    await this._runner.initAsync(modelInfo);
+    await this._runner.loadModel(modelInfo);
 
     const coModelInfo = getModelById(frModelList, currentFRModelId);
     this._setCoModelInfo(coModelInfo);
-    await this._coRunner.initAsync(coModelInfo);
+    await this._coRunner.loadModel(coModelInfo);
   };
 
-  _setRunnerModelAsync = async () => {
-    await this._runner.initModelAsync(this._currentBackend, this._currentPrefer);
-    await this._coRunner.initModelAsync(this._currentBackend, this._currentPrefer);
+  _compileModel = async () => {
+    await this._runner._compileModel(this._currentBackend, this._currentPrefer);
+    await this._coRunner._compileModel(this._currentBackend, this._currentPrefer);
   };
 
   _getRequiredOps = () => {
@@ -206,7 +206,7 @@ class faceRecognitionExample extends baseCameraExample {
     return fdSummary.concat(frSummary);
   };
 
-  _getEmbeddingsAsync = async (element) => {
+  _getEmbeddings = async (element) => {
     let inferenceTime = 0.0;
     let strokedRects = [];
     let embeddings = [];
@@ -217,7 +217,7 @@ class faceRecognitionExample extends baseCameraExample {
     };
     let fdOutput = null;
     let frOutput = null;
-    await this._runner.runAsync(element, fdDrawOptions);
+    await this._runner.run(element, fdDrawOptions);
     fdOutput = this._runner.getOutput();
     inferenceTime += parseFloat(fdOutput.inferenceTime);
     const height = element.height
@@ -249,7 +249,7 @@ class faceRecognitionExample extends baseCameraExample {
             dHeight: this._currentCoModelInfo.inputSize[0],
           },
         };
-        await this._coRunner.runAsync(element, frDrawOptions);
+        await this._coRunner.run(element, frDrawOptions);
         frOutput = this._coRunner.getOutput();
         inferenceTime += parseFloat(frOutput.inferenceTime);
         let [...normEmbedding] = Float32Array.from(frOutput.outputTensor);
@@ -279,7 +279,7 @@ class faceRecognitionExample extends baseCameraExample {
             dHeight: this._currentCoModelInfo.inputSize[0],
           },
         };
-        await this._coRunner.runAsync(this._currentInputElement, drawOptions);
+        await this._coRunner.run(this._currentInputElement, drawOptions);
         let frOutput = this._coRunner.getOutput();
         inferenceTime += parseFloat(frOutput.inferenceTime);
         let [...normEmbedding] = Float32Array.from(frOutput.outputTensor);
@@ -293,18 +293,18 @@ class faceRecognitionExample extends baseCameraExample {
 
   };
 
-  _predictAsync = async () => {
-    if (this._currentInputType === 'file') {
+  _predict = async () => {
+    if (this._currentInputType === 'image') {
       let flag1 = false;
       let flag2 = false;
       if (this._targetEmbeddings == null) {
         const targetImageElement = document.getElementById('targetImage');
-        const embeddings = await this._getEmbeddingsAsync(targetImageElement);
+        const embeddings = await this._getEmbeddings(targetImageElement);
         this._setTargetEmbeddings(embeddings);
         flag1 = true;
       }
       if (this._searchEmbeddings == null) {
-        const sEmbeddings = await this._getEmbeddingsAsync(this._feedElement);
+        const sEmbeddings = await this._getEmbeddings(this._feedElement);
         this._setSearchEmbeddings(sEmbeddings);
         flag2 = true;
       }
@@ -316,12 +316,12 @@ class faceRecognitionExample extends baseCameraExample {
         this._totalInferenceTime = this._searchEmbeddings.inferenceTime;
       }
 
-    } else if (this._currentInputType === 'stream') {
-      const scEmbeddings = await this._getEmbeddingsAsync(this._currentInputElement);
+    } else if (this._currentInputType === 'camera') {
+      const scEmbeddings = await this._getEmbeddings(this._currentInputElement);
       this._setSearchEmbeddingsCamera(scEmbeddings);
       if (this._targetEmbeddingsCamera == null) {
         const cameraImageElement = document.getElementById('cameraImage');
-        const cEmbeddings = await this._getEmbeddingsAsync(cameraImageElement);
+        const cEmbeddings = await this._getEmbeddings(cameraImageElement);
         this._setTargetEmbeddingsCamera(cEmbeddings);
         this._totalInferenceTime = this._targetEmbeddingsCamera.inferenceTime + this._searchEmbeddingsCamera.inferenceTime;
       } else {
@@ -335,7 +335,7 @@ class faceRecognitionExample extends baseCameraExample {
   _processCustomOutput = () => {
     const supportedOps = getSupportedOps(this._currentBackend, this._currentPrefer);
 
-    if (this._currentInputType === 'file') {
+    if (this._currentInputType === 'image') {
       let targetTextClasses = [];
       for (let i in this._targetEmbeddings.embeddings) {
         targetTextClasses.push(parseInt(i) + 1);
@@ -355,7 +355,7 @@ class faceRecognitionExample extends baseCameraExample {
                          searchCanvasShowElement,
                          this._searchEmbeddings.strokedRects,
                          searchTextClasses, 300);
-    } else if (this._currentInputType === 'stream') {
+    } else if (this._currentInputType === 'camera') {
       if (!this._bDrew) {
         let targetTextClassesCamera = [];
         for (let i in this._targetEmbeddingsCamera.embeddings) {

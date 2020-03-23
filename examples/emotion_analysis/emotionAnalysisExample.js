@@ -12,7 +12,7 @@ class emotionAnalysisExample extends baseCameraExample {
     this._currentCoModelInfo = modelInfo;
   };
 
-  _readyCustomUI = () => {
+  _customUI = () => {
     $('#fullscreen i svg').click(() => {
       $('#canvasshow').toggleClass('fullscreen');
     });
@@ -32,16 +32,16 @@ class emotionAnalysisExample extends baseCameraExample {
     // Overwrite by inherited when example has co-work runners
     if (this._runner == null) {
       this._runner = new faceDetectorRunner();
-      this._runner.setProgressHandle(updateLoadingProgressComponent);
+      this._runner.setProgressHandler(updateLoadingProgressComponent);
     }
 
     if (this._coRunner == null) {
       this._coRunner = new baseRunner();
-      this._coRunner.setProgressHandle(updateLoadingProgressComponent);
+      this._coRunner.setProgressHandler(updateLoadingProgressComponent);
     }
   };
 
-  _initRunnerAsync = async () => {
+  _loadModel = async () => {
     let currentFDModelId = null;
     let currentEAModelId = null;
     let fdModelList = this._inferenceModels.faceDetection;
@@ -74,16 +74,16 @@ class emotionAnalysisExample extends baseCameraExample {
 
     const modelInfo = getModelById(fdModelList, currentFDModelId);
     this._setModelInfo(modelInfo);
-    await this._runner.initAsync(modelInfo);
+    await this._runner.loadModel(modelInfo);
 
     const coModelInfo = getModelById(eaModelList, currentEAModelId);
     this._setCoModelInfo(coModelInfo);
-    await this._coRunner.initAsync(coModelInfo);
+    await this._coRunner.loadModel(coModelInfo);
   };
 
-  _setRunnerModelAsync = async () => {
-    await this._runner.initModelAsync(this._currentBackend, this._currentPrefer);
-    await this._coRunner.initModelAsync(this._currentBackend, this._currentPrefer);
+  _compileModel = async () => {
+    await this._runner._compileModel(this._currentBackend, this._currentPrefer);
+    await this._coRunner._compileModel(this._currentBackend, this._currentPrefer);
   };
 
   _getRequiredOps = () => {
@@ -99,7 +99,7 @@ class emotionAnalysisExample extends baseCameraExample {
     return fdSummary.concat(emSummary);
   };
 
-  _predictAsync = async () => {
+  _predict = async () => {
     this._strokedRects = [];
     this._keyPoints = [];
     this._totalInferenceTime = 0.0;
@@ -108,7 +108,7 @@ class emotionAnalysisExample extends baseCameraExample {
       preOptions: this._currentModelInfo.preOptions,
       imageChannels: 4,
     };
-    await this._runner.runAsync(this._currentInputElement, fdDrawOptions);
+    await this._runner.run(this._currentInputElement, fdDrawOptions);
     const fdOutput = this._runner.getOutput();
     this._totalInferenceTime += parseFloat(fdOutput.inferenceTime);
     const height = this._currentInputElement.height
@@ -141,7 +141,7 @@ class emotionAnalysisExample extends baseCameraExample {
             dHeight: this._currentCoModelInfo.inputSize[0],
           },
         };
-        await this._coRunner.runAsync(this._currentInputElement, drawOptions);
+        await this._coRunner.run(this._currentInputElement, drawOptions);
         let emOutput = this._coRunner.getOutput();
         this._totalInferenceTime += parseFloat(emOutput.inferenceTime);
         this._keyPoints.push(emOutput.outputTensor.slice());
@@ -170,7 +170,7 @@ class emotionAnalysisExample extends baseCameraExample {
             dHeight: this._currentCoModelInfo.inputSize[0],
           },
         };
-        await this._coRunner.runAsync(this._currentInputElement, drawOptions);
+        await this._coRunner.run(this._currentInputElement, drawOptions);
         let emOutput = this._coRunner.getOutput();
         this._totalInferenceTime += parseFloat(emOutput.inferenceTime);
         this._keyPoints.push(emOutput.outputTensor.slice());

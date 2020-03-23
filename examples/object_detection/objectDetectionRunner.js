@@ -40,14 +40,14 @@ class objectDetectionRunner extends baseRunner {
     this._labels = labels;
   };
 
-  _getLabelsAsync = async (url) => {
-    const result = await this._loadURLAsync(url);
+  _getLabels = async (url) => {
+    const result = await this._loadURL(url);
     this._setLabels(result.split('\n'));
     console.log(`labels: ${this._labels}`);
   };
 
-  _getOtherResourcesAsync = async () => {
-    await this._getLabelsAsync(this._currentModelInfo.labelsFile);
+  _getOtherResources = async () => {
+    await this._getLabels(this._currentModelInfo.labelsFile);
   };
 
   _updateOutput = (output) => {

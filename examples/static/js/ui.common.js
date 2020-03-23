@@ -357,7 +357,7 @@ const updateTitleComponent = (backend, prefer, modelIdStr, modelInfoDic) => {
   }
 };
 
-const showProgressComponentAsync = async (pm, pb, pi) => {
+const showProgressComponent = async (pm, pb, pi) => {
   let p = '';
   let modelicon = ``;
   if (pm === 'done') {

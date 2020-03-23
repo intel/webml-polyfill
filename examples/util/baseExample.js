@@ -1,7 +1,7 @@
 class baseExample extends baseApp {
   constructor(models) {
     super(models);
-    this._currentInputType = 'file'; // input type: file, stream
+    this._currentInputType = 'file'; // input type: image, camera, audio, microphone
     // <image> or <audio> element
     this._feedElement = document.getElementById('feedElement');
     // <video> or <audio> element when using live Camera or Microphone
@@ -13,6 +13,14 @@ class baseExample extends baseApp {
     // _hiddenControlsFlag ('0'/'1') is for UI shows/hides model & backend control
     this._hiddenControlsFlag = '0';
   }
+
+  _getDefaultInputType = () => {
+    // Overwrite by inherited
+  };
+
+  _getDefaultInputMediaType = () => {
+    // Overwrite by inherited
+  };
 
   _setInputType = (t) => {
     this._currentInputType = t;
@@ -45,7 +53,8 @@ class baseExample extends baseApp {
         this._setBackend('WASM');
         this._setPrefer('none');
         this._setModelId('none');
-        this._setInputType('file');
+        let inputType = this._getDefaultInputType();
+        this._setInputType(inputType);
         this._setInputElement(this._feedElement);
         this._setHiddenControlsFlag('0');
       } else {
@@ -60,10 +69,12 @@ class baseExample extends baseApp {
         const inputType = parseSearchParams('s');
         this._setInputType(inputType);
         switch (inputType.toLowerCase()) {
-          case 'file':
+          case 'image':
+          case 'audio':
             feedEle = this._feedElement;
             break;
-          case 'stream':
+          case 'camera':
+          case 'microphone':
             feedEle = this._feedMediaElement;
             break;
           default:
@@ -80,10 +91,10 @@ class baseExample extends baseApp {
     window.history.pushState(null, null, locSearch);
   };
 
-  _readyCommonUIExtra = () => {
+  _commonUIExtra = () => {
   };
 
-  _readyCommonUI = () => {
+  _commonUI = () => {
     // set model components
     setModelComponents(this._inferenceModels, this._currentModelId);
     // set preference tip components
@@ -127,10 +138,10 @@ class baseExample extends baseApp {
       }
       this._updateHistoryEntryURL();
       updateModelComponentsStyle(um);
-      this.mainAsync();
+      this.main();
     });
 
-    if (this._currentInputType === 'file') {
+    if (this._currentInputType === 'image' || this._currentInputType === 'audio') {
       $('.nav-pills li').removeClass('active');
       $('.nav-pills #img').addClass('active');
       $('#cameratab').removeClass('active');
@@ -207,7 +218,7 @@ class baseExample extends baseApp {
       updateBackendComponents(this._currentBackend, this._currentPrefer);
       this._updateHistoryEntryURL();
       this._freeMemoryResources();
-      this.mainAsync();
+      this.main();
     });
 
     // Click trigger of Polyfill Backend <input> element
@@ -242,7 +253,7 @@ class baseExample extends baseApp {
       updateBackendComponents(this._currentBackend, this._currentPrefer);
       this._updateHistoryEntryURL();
       this._freeMemoryResources();
-      this.mainAsync();
+      this.main();
     });
 
     // Click trigger of Native Backend <input> element
@@ -276,7 +287,7 @@ class baseExample extends baseApp {
       updateBackendComponents(this._currentBackend, this._currentPrefer);
       this._updateHistoryEntryURL();
       this._freeMemoryResources();
-      this.mainAsync();
+      this.main();
     });
 
     // Click trigger to do inference with <img> element
@@ -291,9 +302,10 @@ class baseExample extends baseApp {
 
       const element = this._feedElement;
       this._setInputElement(element);
-      this._setInputType('file');
+      let inputType = this._getDefaultInputType();
+      this._setInputType(inputType);
       this._updateHistoryEntryURL();
-      this.mainAsync();
+      this.main();
     });
 
     // Click trigger to do inference with <video> or <audio> media element
@@ -304,9 +316,10 @@ class baseExample extends baseApp {
       $('#cameratab').addClass('active');
       $('#imagetab').removeClass('active');
       this._setInputElement(this._feedMediaElement);
-      this._setInputType('stream');
+      let mediaType = this._getDefaultInputMediaType();
+      this._setInputType(mediaType);
       this._updateHistoryEntryURL();
-      this._feedMediaElement.onloadeddata = this.mainAsync();
+      this._feedMediaElement.onloadeddata = this.main();
     });
 
     // Click trigger to display or hide controls components
@@ -326,19 +339,19 @@ class baseExample extends baseApp {
 
     $('.offload').hide();
 
-    this._readyCommonUIExtra();
+    this._commonUIExtra();
   };
 
-  _readyCustomUI = () => {
+  _customUI = () => {
     // Overwrite by inherited if needed
   };
 
-  readyUI = () => {
+  UI = () => {
     this._updateHistoryEntryURL(location.search);
 
     // Show components and triggers
-    this._readyCommonUI();
-    this._readyCustomUI();
+    this._commonUI();
+    this._customUI();
   };
 
   _freeMemoryResources = () => {
@@ -351,7 +364,7 @@ class baseExample extends baseApp {
   _createRunner = () => {
     // Overwrite by inherited if needed
     const runner = new baseRunner();
-    runner.setProgressHandle(updateLoadingProgressComponent);
+    runner.setProgressHandler(updateLoadingProgressComponent);
     return runner;
   };
 
@@ -362,24 +375,24 @@ class baseExample extends baseApp {
     }
   };
 
-  _initRunnerAsync = async () => {
+  _loadModel = async () => {
     // Overwrite by inherited when example has co-work runners
     const modelInfo = getModelById(this._inferenceModels.model, this._currentModelId);
 
     if (modelInfo != null) {
       this._setModelInfo(modelInfo);
-      await this._runner.initAsync(modelInfo);
+      await this._runner.loadModel(modelInfo);
     } else {
       throw new Error('Unrecorgnized model, please check your typed url.');
     }
   };
 
-  _setRunnerModelAsync = async () => {
+  _compileModel = async () => {
     // Overwrite by inherited when example has co-work runners
-    await this._runner.initModelAsync(this._currentBackend, this._currentPrefer);
+    await this._runner._compileModel(this._currentBackend, this._currentPrefer);
   };
 
-  _predictAsync = async () => {
+  _predict = async () => {
     // Overwrite by inherited when example has co-work runners
     const drawOptions = {
       inputSize: this._currentModelInfo.inputSize,
@@ -395,7 +408,7 @@ class baseExample extends baseApp {
       //  dHeight: dh,
       //},
     };
-    await this._runner.runAsync(this._currentInputElement, drawOptions);
+    await this._runner.run(this._currentInputElement, drawOptions);
     this._processOutput();
   };
 
@@ -404,24 +417,24 @@ class baseExample extends baseApp {
     return {};
   };
 
-  _predictFrameAsync = async (stream) => {
-    if (this._currentInputType !== 'file')  {
+  _predictFrame = async (stream) => {
+    if (this._currentInputType === 'camera')  {
       this._stats.begin();
-      await this._predictAsync();
+      await this._predict();
       this._stats.end();
-      setTimeout(this._predictFrameAsync, 0);
+      setTimeout(this._predictFrame, 0);
     }
   };
 
-  _predictStreamAsync = async () => {
+  _predictStream = async () => {
     // overwrite by inherited for 'AUIDO'
     const constraints = this._getMediaConstraints();
     let stream = await navigator.mediaDevices.getUserMedia(constraints);
     this._currentInputElement.srcObject = stream;
     this._setTrack(stream.getTracks()[0]);
-    await showProgressComponentAsync('done', 'done', 'current'); // 'COMPLETED_COMPILATION'
-    await this._predictFrameAsync(stream);
-    await showProgressComponentAsync('done', 'done', 'done'); // 'COMPLETED_INFERENCE'
+    await showProgressComponent('done', 'done', 'current'); // 'COMPLETED_COMPILATION'
+    await this._predictFrame(stream);
+    await showProgressComponent('done', 'done', 'done'); // 'COMPLETED_INFERENCE'
     readyShowResultComponents();
   };
 
@@ -457,7 +470,7 @@ class baseExample extends baseApp {
     this._processCustomOutput();
   };
 
-  mainAsync = async () => {
+  main = async () => {
     // TODO check history entry url valid
     // Update UI title component info
     updateTitleComponent(this._currentBackend, this._currentPrefer, this._currentModelId, this._inferenceModels);
@@ -489,12 +502,12 @@ class baseExample extends baseApp {
       // Get Runner for execute inference
       this._getRunner();
       // UI shows model-loading progress
-      await showProgressComponentAsync('current', 'pending', 'pending');
+      await showProgressComponent('current', 'pending', 'pending');
       // Init runner
-      await this._initRunnerAsync();
+      await this._loadModel();
       // UI shows model-compiling progress, includes model-warmup
-      await showProgressComponentAsync('done', 'current', 'pending');
-      await this._setRunnerModelAsync();
+      await showProgressComponent('done', 'current', 'pending');
+      await this._compileModel();
       const supportedOps = getSupportedOps(this._currentBackend, this._currentPrefer);
       const requiredOps = this._getRequiredOps();
       // show offload ops info
@@ -503,20 +516,22 @@ class baseExample extends baseApp {
       const subgraphsSummary = this._getSubgraphsSummary();
       showSubGraphsSummary(subgraphsSummary);
       // UI shows inferencing progress
-      await showProgressComponentAsync('done', 'done', 'current');
+      await showProgressComponent('done', 'done', 'current');
       // Inference with Web NN API
       switch (this._currentInputType) {
-        case 'file':
+        case 'image':
+        case 'audio':
           // Stop webcam opened by navigator.getUserMedia
           if (this._track != null) {
             this._track.stop();
           }
-          await this._predictAsync();
-          await showProgressComponentAsync('done', 'done', 'done'); // 'COMPLETED_INFERENCE'
+          await this._predict();
+          await showProgressComponent('done', 'done', 'done'); // 'COMPLETED_INFERENCE'
           readyShowResultComponents();
           break;
-        case 'stream':
-          await this._predictStreamAsync();
+        case 'camera':
+        case 'microphone':
+          await this._predictStream();
           break;
         default:
         // Never goes here

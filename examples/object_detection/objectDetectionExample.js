@@ -3,7 +3,7 @@ class objectDetectionExample extends baseCameraExample {
     super(models);
   }
 
-  _readyCustomUI = () => {
+  _customUI = () => {
     $('#fullscreen i svg').click(() => {
       $('#canvasshow').toggleClass('fullscreen');
     });
@@ -11,7 +11,7 @@ class objectDetectionExample extends baseCameraExample {
 
   _createRunner = () => {
     const runner = new objectDetectionRunner();
-    runner.setProgressHandle(updateLoadingProgressComponent);
+    runner.setProgressHandler(updateLoadingProgressComponent);
     return runner;
   };
 

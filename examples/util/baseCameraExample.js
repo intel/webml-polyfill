@@ -12,15 +12,23 @@ class baseCameraExample extends baseExample {
     }
   };
 
+  _getDefaultInputType = () => {
+    return 'image';
+  };
+
+  _getDefaultInputMediaType = () => {
+    return 'camera';
+  };
+
   _getMediaConstraints = () => {
     const constraints = {audio: false, video: {facingMode: (this._bFrontCamera ? 'user' : 'environment')}};
     return constraints;
   };
 
-  _readyCommonUIExtra = () => {
+  _commonUIExtra = () => {
     if (/Mobi|Android|iPhone|iPad|iPod/.test(navigator.userAgent)) {
       // for mobile devices: smartphone, pad
-      if (this._currentInputElement.tagName == 'VIDEO') {
+      if (this._currentInputType === 'VIDEO') {
         $('#cameraswitcher').show();
       } else {
         $('#cameraswitcher').hide();
@@ -44,7 +52,7 @@ class baseCameraExample extends baseExample {
         $('.alert').hide();
         this.setFrontCameraFlag();
         $('#cameraswitch').prop('checked', this.bIsFrontCamera);
-        this.mainAsync();
+        this.main();
       });
 
       $('#fullscreen i svg').click(() => {
@@ -80,9 +88,9 @@ class baseCameraExample extends baseExample {
       $('#inference').toggleClass('fullscreen');
     });
 
-    if (this._currentInputElement.tagName == 'IMG') {
+    if (this._currentInputType == 'image') {
       this._currentInputElement.addEventListener('load', () => {
-        this.mainAsync();
+        this.main();
       }, false);
     }
   };
