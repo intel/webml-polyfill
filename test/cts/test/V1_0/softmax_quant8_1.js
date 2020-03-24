@@ -44,7 +44,7 @@ describe('CTS', function() {
     await execution.startCompute();
 
     for (let i = 0; i < type2_length; ++i) {
-      assert.isTrue(almostEqualCTS(output_output[i], output_expect[i]));
+      assert.isTrue(almostEqualCTSQuant8(output_output[i], output_expect[i]));
     }
   });
 });

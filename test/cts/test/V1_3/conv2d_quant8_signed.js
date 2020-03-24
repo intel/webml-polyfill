@@ -73,7 +73,7 @@ describe('CTS', function() {
     await execution.startCompute();
 
     for (let i = 0; i < type10_length; ++i) {
-      assert.isTrue(almostEqualCTS(op45_output[i], op45_expect[i]));
+      assert.isTrue(almostEqualCTSQuant8(op45_output[i], op45_expect[i]));
     }
   });
 
@@ -147,7 +147,7 @@ describe('CTS', function() {
     await execution.startCompute();
 
     for (let i = 0; i < type10_length; ++i) {
-      assert.isTrue(almostEqualCTS(op46_output[i], op46_expect[i]));
+      assert.isTrue(almostEqualCTSQuant8(op46_output[i], op46_expect[i]));
     }
   });
 
@@ -221,7 +221,7 @@ describe('CTS', function() {
     await execution.startCompute();
 
     for (let i = 0; i < type54_length; ++i) {
-      assert.isTrue(almostEqualCTS(op47_output[i], op47_expect[i]));
+      assert.isTrue(almostEqualCTSQuant8(op47_output[i], op47_expect[i]));
     }
   });
 
@@ -286,7 +286,7 @@ describe('CTS', function() {
     await execution.startCompute();
 
     for (let i = 0; i < type76_length; ++i) {
-      assert.isTrue(almostEqualCTS(op48_output[i], op48_expect[i]));
+      assert.isTrue(almostEqualCTSQuant8(op48_output[i], op48_expect[i]));
     }
   });
 
@@ -358,7 +358,7 @@ describe('CTS', function() {
     await execution.startCompute();
 
     for (let i = 0; i < type45_length; ++i) {
-      assert.isTrue(almostEqualCTS(op49_output[i], op49_expect[i]));
+      assert.isTrue(almostEqualCTSQuant8(op49_output[i], op49_expect[i]));
     }
   });
 
@@ -432,7 +432,7 @@ describe('CTS', function() {
     await execution.startCompute();
 
     for (let i = 0; i < type88_length; ++i) {
-      assert.isTrue(almostEqualCTS(op410_output[i], op410_expect[i]));
+      assert.isTrue(almostEqualCTSQuant8(op410_output[i], op410_expect[i]));
     }
   });
 
@@ -504,7 +504,7 @@ describe('CTS', function() {
     await execution.startCompute();
 
     for (let i = 0; i < type91_length; ++i) {
-      assert.isTrue(almostEqualCTS(op410_output[i], op410_expect[i]));
+      assert.isTrue(almostEqualCTSQuant8(op410_output[i], op410_expect[i]));
     }
   });
 });
