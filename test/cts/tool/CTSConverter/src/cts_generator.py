@@ -617,7 +617,10 @@ def DumpJSTest(model, example, js_fd):
         # assert output
         for output in example.model.GetOutputs():
             print ("    for (let i = 0; i < %s_length; ++i) {"%output.type, file = js_fd)
-            print ("      assert.isTrue(almostEqualCTS(%s_output[i], %s_expect[i]));"%(output, output), file = js_fd)
+            if output.type.type in ["TENSOR_QUANT8_ASYMM", "TENSOR_QUANT8_ASYMM_SIGNED", "TENSOR_QUANT8_SYMM_PER_CHANNEL", "INT32"]:
+                print ("      assert.isTrue(almostEqualCTSQuant8(%s_output[i], %s_expect[i]));"%(output, output), file = js_fd)
+            else:
+                print ("      assert.isTrue(almostEqualCTS(%s_output[i], %s_expect[i]));"%(output, output), file = js_fd)
             print ("    }", file = js_fd)
 
         print ("  });", file = js_fd)
