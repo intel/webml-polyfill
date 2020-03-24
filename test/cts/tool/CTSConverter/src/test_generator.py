@@ -76,6 +76,10 @@ def Quantize(v, ty):
         v = np.minimum(np.maximum(v, -127), 127)
     elif ty.type == "UINT32":
         v = np.maximum(v, 0)
+    # For js
+    elif ty.type == "TENSOR_QUANT8_ASYMM_SIGNED":
+        v = np.minimum(np.maximum(v, -128), 127)
+    # end
     return v
 
 @contextlib.contextmanager
