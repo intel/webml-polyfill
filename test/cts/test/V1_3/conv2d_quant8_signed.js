@@ -442,7 +442,7 @@ describe('CTS', function() {
     let operandIndex = 0;
 
     let op110_value = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17];
-    let op410_expect = [29, 35, 41, 65, 80, 95, 101, 125, 149, 137, 170, 203, 173, 215, 257, 209, 260, 311];
+    let op410_expect = [29, 35, 41, 65, 80, 95, 101, 125, 127, 127, 127, 127, 127, 127, 127, 127, 127, 127];
 
     let type4 = {type: nn.INT32};
     let type91 = {type: nn.TENSOR_QUANT8_ASYMM_SIGNED, dimensions: [1, 2, 3, 3], scale: 1.0, zeroPoint: -1};
