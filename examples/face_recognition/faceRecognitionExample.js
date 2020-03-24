@@ -189,8 +189,8 @@ class faceRecognitionExample extends baseCameraExample {
   };
 
   _compileModel = async () => {
-    await this._runner._compileModel(this._currentBackend, this._currentPrefer);
-    await this._coRunner._compileModel(this._currentBackend, this._currentPrefer);
+    await this._runner.compileModel(this._currentBackend, this._currentPrefer);
+    await this._coRunner.compileModel(this._currentBackend, this._currentPrefer);
   };
 
   _getRequiredOps = () => {

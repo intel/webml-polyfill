@@ -389,7 +389,7 @@ class baseExample extends baseApp {
 
   _compileModel = async () => {
     // Overwrite by inherited when example has co-work runners
-    await this._runner._compileModel(this._currentBackend, this._currentPrefer);
+    await this._runner.compileModel(this._currentBackend, this._currentPrefer);
   };
 
   _predict = async () => {

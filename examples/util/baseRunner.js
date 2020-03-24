@@ -203,7 +203,7 @@ class baseRunner {
     }
   };
 
-  _compileModel = async (backend, prefer) => {
+  compileModel = async (backend, prefer) => {
     if (!this._bLoaded) {
       return 'NOT_LOADED';
     }
