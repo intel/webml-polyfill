@@ -322,8 +322,10 @@ TEST_AVAILABLE_SINCE({version}, {test_name}, {namespace}::{create_model_name})\n
 def typeToArray(targetType):
     if targetType in ["INT32", "TENSOR_INT32", "UINT32"]:
         str_array = "Int32Array"
-    elif targetType == "TENSOR_QUANT8_ASYMM":
+    elif targetType in ["TENSOR_QUANT8_ASYMM"]:
         str_array = "Uint8Array"
+    elif targetType in ["TENSOR_QUANT8_SYMM_PER_CHANNEL", "TENSOR_QUANT8_ASYMM_SIGNED"]:
+        str_array = "Int8Array"
     else :
         str_array = "Float32Array"
     return str_array
@@ -337,7 +339,7 @@ def DumpJSTest(model, example, js_fd):
     for t in model.GetTypes():
         if t.type not in Configuration.support_types and \
            t.type not in str(Configuration.support_types).lower():
-            print ("    skip not support types: %s (%s)" %(
+            print ("    skip not support types: %s (%s)" % (
                    example.examplesName, t.type), file = sys.stderr)
             return
         else :
@@ -349,6 +351,19 @@ def DumpJSTest(model, example, js_fd):
             if t.type == "FLOAT16":
                 t.type = "FLOAT32"
 
+    '''
+    # select specifying type models
+    select_specifying_flag = False
+    if model.operations[0].optype in ["CONV_2D", "DEPTHWISE_CONV_2D"]:
+        if model.operands[0].type.type == "TENSOR_QUANT8_ASYMM_SIGNED" and \
+           model.operands[1].type.type == "TENSOR_QUANT8_SYMM_PER_CHANNEL":
+            select_specifying_flag = True
+
+    if not select_specifying_flag:
+        print ("    skip not select types: %s" % example.examplesName, file = sys.stderr)
+        return
+    '''
+
     # support layout: NHWC
     for p in example.model.GetParameters():
         if p.type.type == "BOOL":
@@ -359,7 +374,7 @@ def DumpJSTest(model, example, js_fd):
                     if p in op.ins:
                         op.ins.remove(p)
             else :
-                print ("    skip not support layout: %s (%s)" %(
+                print ("    skip not support layout: %s (%s)" % (
                        example.examplesName, p.GetValueAsNumpy()), file = sys.stderr)
                 return
 
@@ -367,7 +382,7 @@ def DumpJSTest(model, example, js_fd):
     for operation in model.operations:
         if operation.optype not in Configuration.check_list.keys() and \
            operation.optype not in str(Configuration.check_list.keys()).lower():
-            print ("    skip not support operation code: %s (%s)" %(
+            print ("    skip not support operation code: %s (%s)" % (
                    example.examplesName, operation.optype), file = sys.stderr)
             return
         else :
@@ -376,15 +391,15 @@ def DumpJSTest(model, example, js_fd):
                 c = Configuration.check_list[operation.optype]["inputs"]
                 if inputIndex in c:
                     if t.type not in c[inputIndex]["types"]:
-                        print ("    skip not support input(type): %s (%s)" %(
+                        print ("    skip not support input(type): %s (%s)" % (
                                example.examplesName, t.type), file = sys.stderr)
                         return
                     if len(t.dimensions) not in c[inputIndex]["dimensions"]:
-                        print ("    skip not support input(dimension): %s (%s)" %(
+                        print ("    skip not support input(dimension): %s (%s)" % (
                                example.examplesName, t.dimensions), file = sys.stderr)
                         return
                 else :
-                    print ("    skip not support input: %s (%s)" %(
+                    print ("    skip not support input: %s (%s)" % (
                            example.examplesName, example.model.GetInputs()[inputIndex]), file = sys.stderr)
                     return
 
@@ -394,15 +409,15 @@ def DumpJSTest(model, example, js_fd):
                 pii = parameterIndex + len(example.model.GetInputs())
                 if pii in c:
                     if t.type not in c[pii]["types"]:
-                        print ("    skip not support parameter(type): %s (%s)" %(
+                        print ("    skip not support parameter(type): %s (%s)" % (
                                example.examplesName, t.type), file = sys.stderr)
                         return
                     if len(t.dimensions) not in c[pii]["dimensions"]:
-                        print ("    skip not support parameter(dimension): %s (%s)" %(
+                        print ("    skip not support parameter(dimension): %s (%s)" % (
                                example.examplesName, t.dimensions), file = sys.stderr)
                         return
                 else :
-                    print ("    skip not support parameter: %s (%s)" %(
+                    print ("    skip not support parameter: %s (%s)" % (
                            example.examplesName, example.model.GetParameters()[parameterIndex]), file = sys.stderr)
                     return
 
@@ -411,15 +426,15 @@ def DumpJSTest(model, example, js_fd):
                 c = Configuration.check_list[operation.optype]["outputs"]
                 if outputIndex in c:
                     if t.type not in c[outputIndex]["types"]:
-                        print ("    skip not support output(type): %s (%s)" %(
+                        print ("    skip not support output(type): %s (%s)" % (
                                example.examplesName, t.type), file = sys.stderr)
                         return
                     if len(t.dimensions) not in c[outputIndex]["dimensions"]:
-                        print ("    skip not support output(dimension): %s (%s)" %(
+                        print ("    skip not support output(dimension): %s (%s)" % (
                                example.examplesName, t.dimensions), file = sys.stderr)
                         return
                 else :
-                    print ("    skip not support output: %s (%s)" %(
+                    print ("    skip not support output: %s (%s)" % (
                            example.examplesName, example.model.GetOutputs()[outputIndex]), file = sys.stderr)
                     return
 
@@ -440,7 +455,7 @@ def DumpJSTest(model, example, js_fd):
                     # set "perm" value
                     inputFeedDict[inputOpName] = perm_value
                 else :
-                    print ("    skip input value is None: %s (%s - %s)" %(
+                    print ("    skip input value is None: %s (%s - %s)" % (
                            example.examplesName, model.operations[0].optype, inputOpName), file = sys.stderr)
                     return
 
@@ -448,7 +463,7 @@ def DumpJSTest(model, example, js_fd):
     if model.operations[0].optype == "MUL" or model.operations[0].optype == "ADD":
         if model.operands[0].type != model.operands[1].type:
             if len(model.operands[0].type.dimensions) != 1 or len(model.operands[1].type.dimensions) != 1:
-                print ("    skip not support input(compatible dimensions): %s (%s - %s)" %(
+                print ("    skip not support input(compatible dimensions): %s (%s - %s)" % (
                        example.examplesName, model.operands[0].type.dimensions,
                        model.operands[1].type.dimensions), file = sys.stderr)
                 return
@@ -458,15 +473,18 @@ def DumpJSTest(model, example, js_fd):
         if model.operands[0].type.type == "TENSOR_QUANT8_ASYMM":
             if example.model.GetOutputs()[0].type.scale <= (
                model.operands[0].type.scale * model.operands[1].type.scale):
-                print ("    skip not support output(scale): %s (%s <= (%s * %s))" %(
+                print ("    skip not support output(scale): %s (%s <= (%s * %s))" % (
                        example.examplesName, example.model.GetOutputs()[0].type.scale,
                        model.operands[0].type.scale, model.operands[1].type.scale), file = sys.stderr)
                 return
 
     # set js test names
+    Configuration.example_count += 1
+
     test_name = ""
     test_index = ""
     args = "options"
+    per_channel_types = dict()
     test_info = tg.FileNames.specName.capitalize().replace("_", " ")
     test_name_array = test_info.split(" ")
 
@@ -485,53 +503,56 @@ def DumpJSTest(model, example, js_fd):
     for inputFeedDict, outputFeedDict in example.feedDicts:
         if Configuration.single_example_flag:
             if test_index == "":
-                print ("  it('check result for %s example', async function() {"%test_name, file = js_fd)
+                print ("  it('check result for %s example', async function() {" % test_name, file = js_fd)
             else:
-                print ("  it('check result for %s example/%s', async function() {"%(
+                print ("  it('check result for %s example/%s', async function() {" % (
                        test_name, test_index), file = js_fd)
         else:
             if test_index == "":
-                print ("  it('check result for %s example-%s', async function() {"%(
+                print ("  it('check result for %s example-%s', async function() {" % (
                        test_name, Configuration.example_count), file = js_fd)
             else:
-                print ("  it('check result for %s example/%s-%s', async function() {"%(
+                print ("  it('check result for %s example/%s-%s', async function() {" % (
                        test_name, test_index, Configuration.example_count), file = js_fd)
 
-        print ("    // For '%s' example: %s" %(test_name, example.examplesName), file = js_fd)
-        print ("    let model = await nn.createModel(%s);"%args, file = js_fd)
+        print ("    // For '%s' example: %s" % (test_name, example.examplesName), file = js_fd)
+        print ("    let model = await nn.createModel(%s);" % args, file = js_fd)
         print ("    let operandIndex = 0;\n", file = js_fd)
 
         # set input and output values
         for inputOpName in example.model.GetInputs():
-            print ("    let %s_value = %s;"%(inputOpName, inputFeedDict[inputOpName]), file = js_fd)
+            print ("    let %s_value = %s;" % (inputOpName, inputFeedDict[inputOpName]), file = js_fd)
         for outputOpName in example.model.GetOutputs():
-            print ("    let %s_expect = %s;"%(outputOpName, outputFeedDict[outputOpName]), file = js_fd)
+            print ("    let %s_expect = %s;" % (outputOpName, outputFeedDict[outputOpName]), file = js_fd)
         print ("", file = js_fd)
 
         # set input and output types
         for t in model.GetTypes():
             if t.scale == 0.0 and t.zeroPoint == 0 and t.extraParams is None:
                 if t.type in ["FLOAT32", "INT32", "UINT32"]:
-                    typeDef = "    let %s = {type: nn.%s};"%(t, t.type)
+                    typeDef = "    let %s = {type: nn.%s};" % (t, t.type)
                 else :
-                    typeDef = "    let %s = {type: nn.%s, dimensions: [%s]};\n    let %s_length = product(%s.dimensions);"%(
+                    typeDef = "    let %s = {type: nn.%s, dimensions: [%s]};\n    let %s_length = product(%s.dimensions);" % (
                               t, t.type, t.GetDimensionsString()[1:-1], t, t)
             else:
                 if t.extraParams is None or t.extraParams.hide:
-                    typeDef = "    let %s = {type: nn.%s, dimensions: [%s], scale: %s, zeroPoint: %d};\n    let %s_length = product(%s.dimensions);"%(
+                    typeDef = "    let %s = {type: nn.%s, dimensions: [%s], scale: %s, zeroPoint: %d};\n    let %s_length = product(%s.dimensions);" % (
                               t, t.type, t.GetDimensionsString()[1:-1], tg.PrettyPrintAsFloat(t.scale)[:-1], t.zeroPoint, t, t)
                 else:
-                    typeDef = "    let %s = {type: nn.%s, dimensions: [%s], scale: %s, zeroPoint: %d, %s};\n    let %s_length = product(%s.dimensions);"%(
-                              t, t.type, t.GetDimensionsString()[1:-1], tg.PrettyPrintAsFloat(t.scale)[:-1], t.zeroPoint,
-                              t.extraParams.GetConstructor(), t, t)
-
+                    typeDef = "    let %s = {type: nn.%s, dimensions: [%s]};\n    let %s_length = product(%s.dimensions);" % (
+                              t, t.type, t.GetDimensionsString()[1:-1], t, t)
+                    per_channel_types[str(t)] = t.extraParams.GetJSConstructor()
             print (typeDef, file = js_fd)
         print ("", file = js_fd)
 
         # set operands
         for op in model.operands:
-            print ("    let %s = operandIndex++;"%op, file = js_fd)
-            print ("    model.addOperand(%s);"%op.type, file = js_fd)
+            print ("    let %s = operandIndex++;" % op, file = js_fd)
+            print ("    model.addOperand(%s);" % op.type, file = js_fd)
+
+            if str(op.type) in per_channel_types.keys():
+                print ("    model.setOperandSymmPerChannelQuantParams(%s, %s);" % (
+                       op, per_channel_types[str(op.type)]), file = js_fd)
         print ("", file = js_fd)
 
         # set other inputs value(support only one input)
@@ -540,7 +561,7 @@ def DumpJSTest(model, example, js_fd):
                 if inputIndex is not 0:
                     inputType = example.model.GetInputs()[inputIndex].type.type
                     str_array = typeToArray(inputType)
-                    print ("    model.setOperandValue(%s, new %s(%s_value));"%(
+                    print ("    model.setOperandValue(%s, new %s(%s_value));" % (
                            example.model.GetInputs()[inputIndex], str_array,
                            example.model.GetInputs()[inputIndex]), file = js_fd)
             print ("", file = js_fd)
@@ -549,24 +570,24 @@ def DumpJSTest(model, example, js_fd):
         for p in model.GetParameters():
             parameterType = p.type.type
             str_array = typeToArray(parameterType)
-            print ("    model.setOperandValue(%s, new %s([%s]));"%(
+            print ("    model.setOperandValue(%s, new %s([%s]));" % (
                    p, str_array, GetJointStr(p.value)), file = js_fd)
 
         # set operations
         for op in model.operations:
-            print ("    model.addOperation(nn.%s, [%s], [%s]);"%(
+            print ("    model.addOperation(nn.%s, [%s], [%s]);" % (
                    op.optype, tg.GetJointStr(op.ins), tg.GetJointStr(op.outs)), file = js_fd)
         print ("", file = js_fd)
 
         # identify inputs and outputs
-        print ("    model.identifyInputsAndOutputs([%s], [%s]);"%(
+        print ("    model.identifyInputsAndOutputs([%s], [%s]);" % (
                example.model.GetInputs()[0], tg.GetJointStr(example.model.GetOutputs())), file = js_fd)
         print ("    await model.finish();", file = js_fd)
         print ("", file = js_fd)
 
         # compiling model
         print ("    let compilation = await model.createCompilation();", file = js_fd)
-        print ("    compilation.setPreference(getPreferenceCode(%s.prefer));"%args, file = js_fd)
+        print ("    compilation.setPreference(getPreferenceCode(%s.prefer));" % args, file = js_fd)
         print ("    await compilation.finish();", file = js_fd)
         print ("", file = js_fd)
 
@@ -577,17 +598,17 @@ def DumpJSTest(model, example, js_fd):
         # set input and output
         inputType = example.model.GetInputs()[0].type.type
         str_array = typeToArray(inputType)
-        print ("    let %s_input = new %s(%s_value);"%(
+        print ("    let %s_input = new %s(%s_value);" % (
                example.model.GetInputs()[0], str_array, example.model.GetInputs()[0]), file = js_fd)
-        print ("    execution.setInput(0, %s_input);"%example.model.GetInputs()[0], file = js_fd)
+        print ("    execution.setInput(0, %s_input);" % example.model.GetInputs()[0], file = js_fd)
 
         for outputIndex in range(len(example.model.GetOutputs())):
             outputType = example.model.GetOutputs()[outputIndex].type.type
             str_array = typeToArray(outputType)
-            print ("    let %s_output = new %s(%s_length);"%(
+            print ("    let %s_output = new %s(%s_length);" % (
                    example.model.GetOutputs()[outputIndex], str_array,
                    example.model.GetOutputs()[outputIndex].type), file = js_fd)
-            print ("    execution.setOutput(%s, %s_output);"%(
+            print ("    execution.setOutput(%s, %s_output);" % (
                    outputIndex, example.model.GetOutputs()[outputIndex]), file = js_fd)
         print ("", file = js_fd)
         print ("    await execution.startCompute();", file = js_fd)
@@ -595,13 +616,15 @@ def DumpJSTest(model, example, js_fd):
 
         # assert output
         for output in example.model.GetOutputs():
-            print ("    for (let i = 0; i < %s_length; ++i) {"%output.type, file = js_fd)
-            print ("      assert.isTrue(almostEqualCTS(%s_output[i], %s_expect[i]));"%(output, output), file = js_fd)
+            print ("    for (let i = 0; i < %s_length; ++i) {" % output.type, file = js_fd)
+            if output.type.type in ["TENSOR_QUANT8_ASYMM", "TENSOR_QUANT8_ASYMM_SIGNED", "TENSOR_QUANT8_SYMM_PER_CHANNEL", "INT32"]:
+                print ("      assert.isTrue(almostEqualCTSQuant8(%s_output[i], %s_expect[i]));" % (output, output), file = js_fd)
+            else:
+                print ("      assert.isTrue(almostEqualCTS(%s_output[i], %s_expect[i]));" % (output, output), file = js_fd)
             print ("    }", file = js_fd)
 
         print ("  });", file = js_fd)
 
-        Configuration.example_count = Configuration.example_count + 1
     model.dumped = True
 # end
 
@@ -616,7 +639,7 @@ if __name__ == '__main__':
         # For js
         if Configuration.force_regenerate or NeedRegenerateForJS():
         # end
-            print ("--Generating test(s) from spec: %s" %tg.FileNames.specFile, file = sys.stderr)
+            print ("--Generating test(s) from spec: %s" % tg.FileNames.specFile, file = sys.stderr)
             exec(open(tg.FileNames.specFile, "r").read())
 
             ''' Original
@@ -649,7 +672,11 @@ if __name__ == '__main__':
         else:
             print ("Skip file: %s" % tg.FileNames.specFile, file = sys.stderr)
 
-        print (">>Output JS CTS test: %s\n" %tg.FileNames.jsFile, file = sys.stderr)
+        if Configuration.example_count == 0:
+            os.remove(tg.FileNames.jsFile)
+            print (">>Remove empty JS CTS test: %s\n" % tg.FileNames.jsFile, file = sys.stderr)
+        else :
+            print (">>Output JS CTS test: %s\n" % tg.FileNames.jsFile, file = sys.stderr)
         ''' Original
         with SmartOpen(tg.FileNames.ctsFile, mode="a") as cts_fd:
             print("#include \"../generated/tests/%s.cpp\""%os.path.basename(tg.FileNames.specFile),

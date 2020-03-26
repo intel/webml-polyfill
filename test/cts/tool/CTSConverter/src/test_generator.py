@@ -76,6 +76,10 @@ def Quantize(v, ty):
         v = np.minimum(np.maximum(v, -127), 127)
     elif ty.type == "UINT32":
         v = np.maximum(v, 0)
+    # For js
+    elif ty.type == "TENSOR_QUANT8_ASYMM_SIGNED":
+        v = np.minimum(np.maximum(v, -128), 127)
+    # end
     return v
 
 @contextlib.contextmanager
@@ -160,6 +164,7 @@ class Type(NamedVariable):
         "TENSOR_QUANT16_SYMM": "int16_t",
         "TENSOR_BOOL8": "bool8",
         "TENSOR_QUANT8_SYMM_PER_CHANNEL": "int8_t",
+        "TENSOR_QUANT8_ASYMM_SIGNED": "int8_t",
 #     "OEM_SCALAR": this is service-defined.
         "TENSOR_OEM_BYTE": "uint8_t",
     }
@@ -290,6 +295,11 @@ class SymmPerChannelQuantParams():
     return "SymmPerChannelQuantParams{.scales={%s}, .channelDim=%d}" % (
         ", ".join(str(x) + "f" for x in self.scales), self.channelDim)
 
+  # For js
+  def GetJSConstructor(self):
+    return "{channelDim: %d, scales: new Float32Array([%s])}" % (self.channelDim,
+        ", ".join(str(x) for x in self.scales))
+  # end
 
 # An operand that can be fed into operations. Also, an operand is always
 # declared before operations.
@@ -1351,18 +1361,20 @@ class Configuration:
     force_regenerate = False
     test_dynamic_output_shape = True
     # For js
-    example_count = 1
+    example_count = 0
     single_example_flag = True
     support_types = [
-        "BOOL",                 # Layout: nhwc and nchw
-        "INT32",                # INT32
-        "UINT32",               # UINT32
-        "FLOAT32",              # FLOAT32
-        "FLOAT16",              # FLOAT32
-        "TENSOR_INT32",         # TENSOR_INT32
-        "TENSOR_FLOAT32",       # TENSOR_FLOAT32
-        "TENSOR_FLOAT16",       # TENSOR_FLOAT32
-        "TENSOR_QUANT8_ASYMM"   # TENSOR_QUANT8_ASYMM
+        "BOOL",                             # Layout: nhwc and nchw
+        "INT32",                            # INT32
+        "UINT32",                           # UINT32
+        "FLOAT32",                          # FLOAT32
+        "FLOAT16",                          # FLOAT32
+        "TENSOR_INT32",                     # TENSOR_INT32
+        "TENSOR_FLOAT32",                   # TENSOR_FLOAT32
+        "TENSOR_FLOAT16",                   # TENSOR_FLOAT32
+        "TENSOR_QUANT8_ASYMM",              # TENSOR_QUANT8
+        "TENSOR_QUANT8_ASYMM_SIGNED",       # TENSOR_QUANT8
+        "TENSOR_QUANT8_SYMM_PER_CHANNEL"    # TENSOR_QUANT8
     ]
     operation_code = [
         "ADD",
@@ -1501,17 +1513,17 @@ class Configuration:
             "inputs": {
                 0: {
                     "layout": ["NHWC"],
-                    "types": ["TENSOR_FLOAT32", "TENSOR_QUANT8_ASYMM"],
+                    "types": ["TENSOR_FLOAT32", "TENSOR_QUANT8_ASYMM", "TENSOR_QUANT8_ASYMM_SIGNED"],
                     "dimensions": [4]
                 },
                 1: {
                     "layout": ["NHWC"],
-                    "types": ["TENSOR_FLOAT32", "TENSOR_QUANT8_ASYMM"],
+                    "types": ["TENSOR_FLOAT32", "TENSOR_QUANT8_ASYMM", "TENSOR_QUANT8_SYMM_PER_CHANNEL"],
                     "dimensions": [4]
                 },
                 2: {
                     "layout": ["NHWC"],
-                    "types": ["TENSOR_FLOAT32", "TENSOR_INT32", "TENSOR_QUANT8_ASYMM"],
+                    "types": ["TENSOR_FLOAT32", "TENSOR_INT32"],
                     "dimensions": [1]
                 },
                 3: {
@@ -1558,7 +1570,7 @@ class Configuration:
             "outputs": {
                 0: {
                     "layout": ["NHWC"],
-                    "types": ["TENSOR_FLOAT32", "TENSOR_QUANT8_ASYMM"],
+                    "types": ["TENSOR_FLOAT32", "TENSOR_QUANT8_ASYMM", "TENSOR_QUANT8_ASYMM_SIGNED"],
                     "dimensions": [4]
                 }
             }
@@ -1567,17 +1579,17 @@ class Configuration:
             "inputs": {
                 0: {
                     "layout": ["NHWC"],
-                    "types": ["TENSOR_FLOAT32", "TENSOR_QUANT8_ASYMM"],
+                    "types": ["TENSOR_FLOAT32", "TENSOR_QUANT8_ASYMM", "TENSOR_QUANT8_ASYMM_SIGNED"],
                     "dimensions": [4]
                 },
                 1: {
                     "layout": ["NHWC"],
-                    "types": ["TENSOR_FLOAT32", "TENSOR_QUANT8_ASYMM"],
+                    "types": ["TENSOR_FLOAT32", "TENSOR_QUANT8_ASYMM", "TENSOR_QUANT8_SYMM_PER_CHANNEL"],
                     "dimensions": [4]
                 },
                 2: {
                     "layout": ["NHWC"],
-                    "types": ["TENSOR_FLOAT32", "TENSOR_INT32", "TENSOR_QUANT8_ASYMM"],
+                    "types": ["TENSOR_FLOAT32", "TENSOR_INT32"],
                     "dimensions": [1]
                 },
                 3: {
@@ -1619,7 +1631,7 @@ class Configuration:
             "outputs": {
                 0: {
                     "layout": ["NHWC"],
-                    "types": ["TENSOR_FLOAT32", "TENSOR_QUANT8_ASYMM"],
+                    "types": ["TENSOR_FLOAT32", "TENSOR_QUANT8_ASYMM", "TENSOR_QUANT8_ASYMM_SIGNED"],
                     "dimensions": [4]
                 }
             }
