@@ -11,6 +11,7 @@
 #include "external/tensorflow/tensorflow/lite/kernels/internal/reference/prelu.h"
 #include "external/tensorflow/tensorflow/lite/kernels/internal/reference/reference_ops.h"
 #include "external/tensorflow/tensorflow/lite/kernels/internal/reference/binary_function.h"
+#include "external/tensorflow/tensorflow/lite/kernels/internal/reference/integer_ops/conv.h"
 #include "fixedpoint/fixedpoint.h"
 #include "public/gemmlowp.h"
 
@@ -49,7 +50,67 @@ namespace binding_utils {
   template <typename T>
   T ApplyPrelu(T input, T alpha) {
     return input >= 0.0 ? input : input * alpha;
-  }  
+  }
+
+  constexpr size_t kStaticBufferSize = 1605632;
+  char static_scratch_buffer[kStaticBufferSize];
+
+  #define CONV_PARAMETERS(Type)                                               \
+    uint32_t height = inputShape.Dims(1);                                     \
+    uint32_t width = inputShape.Dims(2);                                      \
+    uint32_t filterHeight = filterShape.Dims(1);                              \
+    uint32_t filterWidth = filterShape.Dims(2);                               \
+    uint32_t outHeight = outputShape.Dims(1);                                 \
+    uint32_t outWidth = outputShape.Dims(2);                                  \
+    uint32_t inDepth = inputShape.Dims(3);                                    \
+                                                                              \
+    uint32_t paddingHeight = (uint32_t)convParams.padding_values.height;      \
+    uint32_t paddingWidth = (uint32_t)convParams.padding_values.width;        \
+                                                                              \
+    tflite::RuntimeShape im2colDim(4);                                        \
+    im2colDim.SetDim(0, (int)outputShape.Dims(0));                            \
+    im2colDim.SetDim(1, (int)outputShape.Dims(1));                            \
+    im2colDim.SetDim(2, (int)outputShape.Dims(2));                            \
+    im2colDim.SetDim(3, (int)inDepth * filterHeight * filterWidth);           \
+                                                                              \
+    Type* im2colData = nullptr;                                               \
+    uint64_t im2colByteSize = sizeof(Type);                                   \
+    std::unique_ptr<Type[]> im2colGuard;                                      \
+    for (int i = 0; i < 4; i++) {                                             \
+        im2colByteSize *= im2colDim.Dims(i);                                  \
+    }                                                                         \
+    /* http://b/77982879, tflite::optimized_ops::Conv uses int for offsets */ \
+    if (im2colByteSize >= 0x7fffffff) {                                       \
+        throw std::string("Conv size is too large, not enough memory");       \
+    }                                                                         \
+    if (im2colByteSize <= kStaticBufferSize) {                                \
+        im2colData = reinterpret_cast<Type*>(static_scratch_buffer);          \
+    } else {                                                                  \
+        im2colData = new (std::nothrow) Type[im2colByteSize / sizeof(Type)];  \
+        if (im2colData == nullptr) {                                          \
+            throw std::string("Conv size is too large, not enough memory");   \
+        }                                                                     \
+        im2colGuard.reset(im2colData);                                        \
+    }
+ 
+  // Convert int8 quantized values to uint8 assuming that the scale is the same
+  // and the distance between offsets is 128.
+  void convertInt8ToUInt8(const int8_t* input, std::vector<uint8_t>* output) {
+      assert(input != nullptr);
+      assert(output != nullptr);
+      for (int i = 0; i < output->size(); ++i) {
+          (*output)[i] = static_cast<uint8_t>(static_cast<int32_t>(input[i]) + 128);
+      }
+  }
+
+  // Convert uint8 quantized values to int8 assuming that the scale is the same
+  // and the distance between offsets is 128.
+  void convertUInt8ToInt8(const std::vector<uint8_t>& input, int8_t* output) {
+      assert(output != nullptr);
+      for (int i = 0; i < input.size(); ++i) {
+          output[i] = static_cast<int8_t>(static_cast<int32_t>(input[i]) - 128);
+      }
+  }
 
   // Operation wrappers.
   void addFloat32Wrapper(const ArithmeticParams& op_params,
@@ -125,7 +186,7 @@ namespace binding_utils {
                          output_shape, (float*)outputData);
   }
 
-  void depthwiseConvFloat32Wrapper(const DepthwiseParams& op_params,
+  void depthwiseConvFloat32Wrapper(const DepthwiseParams& convParams,
                                    const RuntimeShape& inputShape, 
                                    const intptr_t inputData, 
                                    const RuntimeShape& filterShape, 
@@ -135,65 +196,453 @@ namespace binding_utils {
                                    const RuntimeShape& outputShape, 
                                    intptr_t outputData) {
     tflite::GetCpuFlags(&cpu_backend_context, &cpu_flags);
-    optimized_ops::DepthwiseConv(op_params, inputShape,
+    optimized_ops::DepthwiseConv(convParams, inputShape,
                                  (const float*)inputData, filterShape,
                                  (const float*)filterData, biasShape,
                                  (const float*)biasData, outputShape,
                                  (float*)outputData, cpu_flags);
   }
 
-  void depthwiseConvUint8Wrapper(const DepthwiseParams& op_params,
-                                 const RuntimeShape& inputShape, 
-                                 const intptr_t inputData, 
-                                 const RuntimeShape& filterShape, 
-                                 const intptr_t filterData, 
-                                 const RuntimeShape& biasShape, 
-                                 const intptr_t biasData, 
-                                 const RuntimeShape& outputShape, 
+  void depthwiseConvUint8Wrapper(const DepthwiseParams& convParams,
+                                 const RuntimeShape& inputShape,
+                                 const intptr_t inputData,
+                                 const RuntimeShape& filterShape,
+                                 const intptr_t filterData,
+                                 const RuntimeShape& biasShape,
+                                 const intptr_t biasData,
+                                 const RuntimeShape& outputShape,
                                  intptr_t outputData) {
-    optimized_ops::DepthwiseConv(op_params, inputShape, 
+    optimized_ops::DepthwiseConv(convParams, inputShape,
                                  (const uint8_t*)inputData, filterShape,
-                                 (const uint8_t*)filterData, biasShape, 
+                                 (const uint8_t*)filterData, biasShape,
                                  (const int32_t*)biasData, outputShape,
                                  (uint8_t*)outputData, &gemm_context);
   }
 
-  void convFloat32Wrapper(const ConvParams& op_params, 
-                          const RuntimeShape& inputShape, 
-                          const intptr_t inputData, 
-                          const RuntimeShape& filterShape, 
-                          const intptr_t filterData, 
-                          const RuntimeShape& biasShape, 
-                          const intptr_t biasData, 
-                          const RuntimeShape& outputShape, 
-                          intptr_t outputData,
-                          const RuntimeShape& im2colShape, 
-                          intptr_t im2colData) {
-    optimized_ops::Conv(op_params, inputShape,
+  void depthwiseConvInt8Wrapper(const DepthwiseParams& convParams,
+                                const RuntimeShape& inputShape,
+                                const intptr_t inputData,
+                                const RuntimeShape& filterShape,
+                                const intptr_t filterData,
+                                const RuntimeShape& biasShape,
+                                const intptr_t biasData,
+                                const RuntimeShape& outputShape,
+                                intptr_t outputData) {
+    DepthwiseParams uint8ConvParams = convParams;
+    std::vector<uint8_t> unsignedInput(inputShape.DimensionsCount());
+    convertInt8ToUInt8((const int8_t*)inputData, &unsignedInput);
+    uint8ConvParams.input_offset += 128;
+
+    std::vector<uint8_t> unsignedFilter(filterShape.DimensionsCount());
+    convertInt8ToUInt8((const int8_t*)filterData, &unsignedFilter);
+    uint8ConvParams.weights_offset += 128;
+
+    std::vector<uint8_t> unsignedOutput(outputShape.DimensionsCount());
+    uint8ConvParams.output_offset += 128;
+
+    optimized_ops::DepthwiseConv(convParams, inputShape,
+                                 unsignedInput.data(), filterShape,
+                                 unsignedFilter.data(), biasShape,
+                                 (const int32_t*)biasData, outputShape,
+                                 unsignedOutput.data(), &gemm_context);
+    
+    convertUInt8ToInt8(unsignedOutput, (int8_t*)outputData);
+  }
+
+  template <typename T>
+  void depthwiseConvQuant8PerChannelNhwc(const DepthwiseParams& convParams,
+                                         const int32_t* outputMultiplier,
+                                         const int32_t* outputShift,
+                                         const RuntimeShape& inputShape,
+                                         const T* inputData,
+                                         const RuntimeShape& filterShape,
+                                         const int8_t* filterData,
+                                         const RuntimeShape& biasShape,
+                                         const int32_t* biasData,
+                                         const RuntimeShape& outputShape,
+                                         T* outputData) {
+    int32_t depthMultiplier = convParams.depth_multiplier;
+    uint32_t numBatches = inputShape.Dims(0);
+    uint32_t inputHeight = inputShape.Dims(1);
+    uint32_t inputWidth = inputShape.Dims(2);
+    uint32_t inputDepth = inputShape.Dims(3);
+    uint32_t filterHeight = filterShape.Dims(1);
+    uint32_t filterWidth = filterShape.Dims(2);
+    uint32_t filterDepth = filterShape.Dims(3);
+    uint32_t outputHeight = outputShape.Dims(1);
+    uint32_t outputWidth = outputShape.Dims(2);
+    uint32_t outputDepth = outputShape.Dims(3);
+    int32_t paddingLeft = convParams.padding_values.width;
+    int32_t paddingRight = convParams.padding_values.width;
+    int32_t paddingTop = convParams.padding_values.height;
+    int32_t paddingBottom = convParams.padding_values.height;
+    int32_t strideWidth = convParams.stride_width;
+    int32_t strideHeight = convParams.stride_height;
+    int32_t dilationWidthFactor = convParams.dilation_width_factor;
+    int32_t dilationHeightFactor = convParams.dilation_height_factor;
+    int32_t inputOffset = convParams.input_offset;
+    int32_t outputOffset = convParams.output_offset;
+    int32_t output_activation_min = convParams.quantized_activation_min;
+    int32_t output_activation_max = convParams.quantized_activation_max;
+    const T* inputBase = inputData;
+    T* outPtr = outputData;
+    for (uint32_t b = 0; b < numBatches; b++) {
+        for (uint32_t h = 0; h < outputHeight; h++) {
+            for (uint32_t w = 0; w < outputWidth; w++) {
+                for (uint32_t ic = 0; ic < inputDepth; ic++) {
+                    for (uint32_t m = 0; m < depthMultiplier; m++) {
+                        int32_t wInputOrigin = static_cast<int32_t>(w) * strideWidth - paddingLeft;
+                        int32_t hInputOrigin = static_cast<int32_t>(h) * strideHeight - paddingTop;
+                        const int oc = m + ic * depthMultiplier;
+
+                        int32_t sum = 0.0f;
+                        for (uint32_t i = 0; i < filterHeight; i++) {
+                            for (uint32_t j = 0; j < filterWidth; j++) {
+                                int32_t hInput = hInputOrigin +
+                                                 dilationHeightFactor * static_cast<int32_t>(i);
+                                int32_t wInput = wInputOrigin +
+                                                 dilationWidthFactor * static_cast<int32_t>(j);
+
+                                if (hInput >= 0 && hInput < static_cast<int32_t>(inputHeight) &&
+                                    wInput >= 0 && wInput < static_cast<int32_t>(inputWidth)) {
+                                    uint32_t filterIndex =
+                                            i * filterWidth * filterDepth + j * filterDepth + oc;
+                                    uint32_t inputIndex = hInput * inputWidth * inputDepth +
+                                                          wInput * inputDepth + ic;
+                                    sum += (static_cast<int32_t>(filterData[filterIndex])) *
+                                           (static_cast<int32_t>(inputBase[inputIndex]) +
+                                            inputOffset);
+                                }
+                            }
+                        }
+
+                        sum += biasData[oc];
+                        sum = tflite::MultiplyByQuantizedMultiplier(sum, outputMultiplier[oc],
+                                                                    -outputShift[oc]);
+                        sum += outputOffset;
+                        sum = std::max(std::min(sum, output_activation_max), output_activation_min);
+                        outPtr[m] = static_cast<T>(sum);
+                    }
+                    outPtr += depthMultiplier;
+                }
+            }
+        }
+        inputBase += inputHeight * inputWidth * inputDepth;
+    }
+  }
+
+  void depthwiseConvUint8PerChannelWrapper(const DepthwiseParams& convParams,
+                                           const intptr_t outputMultiplierData,
+                                           const intptr_t outputShiftData,
+                                           const RuntimeShape& inputShape,
+                                           const intptr_t inputData,
+                                           const RuntimeShape& filterShape,
+                                           const intptr_t filterData,
+                                           const RuntimeShape& biasShape,
+                                           const intptr_t biasData,
+                                           const RuntimeShape& outputShape,
+                                           intptr_t outputData) {
+    depthwiseConvQuant8PerChannelNhwc(convParams,
+                                      (const int32_t*)outputMultiplierData,
+                                      (const int32_t*)outputShiftData,
+                                      inputShape, (const uint8_t*)inputData,
+                                      filterShape, (const int8_t*)filterData,
+                                      biasShape, (const int32_t*)biasData,
+                                      outputShape, (uint8_t*)outputData);
+  }
+
+  void depthwiseConvInt8PerChannelWrapper(const DepthwiseParams& convParams,
+                                          const intptr_t outputMultiplierData,
+                                          const intptr_t outputShiftData,
+                                          const RuntimeShape& inputShape,
+                                          const intptr_t inputData,
+                                          const RuntimeShape& filterShape,
+                                          const intptr_t filterData,
+                                          const RuntimeShape& biasShape,
+                                          const intptr_t biasData,
+                                          const RuntimeShape& outputShape,
+                                          intptr_t outputData) {
+    depthwiseConvQuant8PerChannelNhwc(convParams,
+                                      (const int32_t*)outputMultiplierData,
+                                      (const int32_t*)outputShiftData,
+                                      inputShape, (const int8_t*)inputData,
+                                      filterShape, (const int8_t*)filterData,
+                                      biasShape, (const int32_t*)biasData,
+                                      outputShape, (int8_t*)outputData);
+  }
+
+  void convFloat32Wrapper(const ConvParams& convParams,
+                          const RuntimeShape& inputShape,
+                          const intptr_t inputData,
+                          const RuntimeShape& filterShape,
+                          const intptr_t filterData,
+                          const RuntimeShape& biasShape,
+                          const intptr_t biasData,
+                          const RuntimeShape& outputShape,
+                          intptr_t outputData) {
+    CONV_PARAMETERS(float);
+    optimized_ops::Conv(convParams, inputShape,
                         (const float*)inputData, filterShape,
                         (const float*)filterData, biasShape,
                         (const float*)biasData, outputShape,
-                        (float*)outputData, im2colShape,
+                        (float*)outputData, im2colDim,
                         (float*)im2colData, &cpu_backend_context);
   }
 
-  void convUint8Wrapper(const ConvParams& op_params, 
+  void convUint8Wrapper(const ConvParams& convParams,
                         const RuntimeShape& inputShape, 
-                        const intptr_t inputData, 
-                        const RuntimeShape& filterShape, 
-                        const intptr_t filterData, 
-                        const RuntimeShape& biasShape, 
-                        const intptr_t biasData, 
-                        const RuntimeShape& outputShape, 
-                        intptr_t outputData,
-                        const RuntimeShape& im2colShape, 
-                        intptr_t im2colData) {
-    optimized_ops::Conv(op_params, inputShape,
+                        const intptr_t inputData,
+                        const RuntimeShape& filterShape,
+                        const intptr_t filterData,
+                        const RuntimeShape& biasShape,
+                        const intptr_t biasData,
+                        const RuntimeShape& outputShape,
+                        intptr_t outputData) {
+    CONV_PARAMETERS(uint8_t);
+    optimized_ops::Conv(convParams, inputShape,
                         (const uint8_t*)inputData, filterShape,
                         (const uint8_t*)filterData, biasShape,
                         (const int32_t*)biasData, outputShape,
-                        (uint8_t*)outputData, im2colShape, 
+                        (uint8_t*)outputData, im2colDim,
                         (uint8_t*)im2colData, &cpu_backend_context);
+  }
+
+  void convInt8Wrapper(const ConvParams& convParams,
+                       const RuntimeShape& inputShape, 
+                       const intptr_t inputData,
+                       const RuntimeShape& filterShape,
+                       const intptr_t filterData,
+                       const RuntimeShape& biasShape,
+                       const intptr_t biasData,
+                       const RuntimeShape& outputShape,
+                       intptr_t outputData) {
+    ConvParams uint8ConvParams = convParams;
+    std::vector<uint8_t> unsignedInput(inputShape.DimensionsCount());
+    convertInt8ToUInt8((const int8_t*)inputData, &unsignedInput);
+    uint8ConvParams.input_offset += 128;
+
+    std::vector<uint8_t> unsignedFilter(filterShape.DimensionsCount());
+    convertInt8ToUInt8((const int8_t*)filterData, &unsignedFilter);
+    uint8ConvParams.weights_offset += 128;
+
+    std::vector<uint8_t> unsignedOutput(outputShape.DimensionsCount());
+    uint8ConvParams.output_offset += 128;
+
+    CONV_PARAMETERS(uint8_t);
+    optimized_ops::Conv(uint8ConvParams, inputShape,
+                        unsignedInput.data(), filterShape,
+                        unsignedFilter.data(), biasShape,
+                        (const int32_t*)biasData, outputShape,
+                        unsignedOutput.data(), im2colDim,
+                        (uint8_t*)im2colData, &cpu_backend_context);
+    
+    convertUInt8ToInt8(unsignedOutput, (int8_t*)outputData);
+  }
+
+  void convUint8PerChannelWrapper(const ConvParams& convParams,
+                                  const intptr_t outputMultiplierData,
+                                  const intptr_t outputShiftData,
+                                  const RuntimeShape& inputShape,
+                                  const intptr_t inputData,
+                                  const RuntimeShape& filterShape,
+                                  const intptr_t filterData,
+                                  const RuntimeShape& biasShape,
+                                  const intptr_t biasData,
+                                  const RuntimeShape& outputShape,
+                                  intptr_t outputData) {
+    uint32_t numBatches = inputShape.Dims(0);
+    uint32_t inputHeight = inputShape.Dims(1);
+    uint32_t inputWidth = inputShape.Dims(2);
+    uint32_t inputDepth = inputShape.Dims(3);
+    uint32_t filterHeight = filterShape.Dims(1);
+    uint32_t filterWidth = filterShape.Dims(2);
+    uint32_t filterDepth = filterShape.Dims(3);
+    uint32_t outputHeight = outputShape.Dims(1);
+    uint32_t outputWidth = outputShape.Dims(2);
+    uint32_t outputDepth = outputShape.Dims(3);
+    int32_t paddingLeft = convParams.padding_values.width;
+    int32_t paddingRight = convParams.padding_values.width;
+    int32_t paddingTop = convParams.padding_values.height;
+    int32_t paddingBottom = convParams.padding_values.height;
+    int32_t strideWidth = convParams.stride_width;
+    int32_t strideHeight = convParams.stride_height;
+    int32_t dilationWidthFactor = convParams.dilation_width_factor;
+    int32_t dilationHeightFactor = convParams.dilation_height_factor;
+    int32_t inputOffset = convParams.input_offset;
+    int32_t outputOffset = convParams.output_offset;
+    int32_t output_activation_min = convParams.quantized_activation_min;
+    int32_t output_activation_max = convParams.quantized_activation_max;
+    const uint8_t* inputBase = (const uint8_t*)inputData;
+    const int32_t* outputMultiplier = (const int32_t*)outputMultiplierData;
+    const int32_t* outputShift = (const int32_t*)outputShiftData;
+    uint8_t* outPtr = (uint8_t*)outputData;
+    const int32_t* biasBase = (const int32_t*)biasData;
+    for (uint32_t b = 0; b < numBatches; b++) {
+        for (uint32_t h = 0; h < outputHeight; h++) {
+            for (uint32_t w = 0; w < outputWidth; w++) {
+                const int8_t* filterBase = (const int8_t*)filterData;
+
+                for (uint32_t d = 0; d < outputDepth; d++) {
+                    int32_t wInputOrigin = static_cast<int32_t>(w) * strideWidth - paddingLeft;
+                    int32_t hInputOrigin = static_cast<int32_t>(h) * strideHeight - paddingTop;
+                    int32_t sum = 0.0f;
+
+                    for (uint32_t i = 0; i < filterHeight; i++) {
+                        for (uint32_t j = 0; j < filterWidth; j++) {
+                            for (uint32_t k = 0; k < filterDepth; k++) {
+                                int32_t hInput = hInputOrigin +
+                                                  dilationHeightFactor * static_cast<int32_t>(i);
+                                int32_t wInput = wInputOrigin +
+                                                  dilationWidthFactor * static_cast<int32_t>(j);
+                                uint32_t dInput = k;
+                                if (hInput >= 0 && hInput < static_cast<int32_t>(inputHeight) &&
+                                    wInput >= 0 && wInput < static_cast<int32_t>(inputWidth)) {
+                                    uint32_t filterIndex =
+                                            i * filterWidth * filterDepth + j * filterDepth + k;
+                                    uint32_t inputIndex = hInput * inputWidth * inputDepth +
+                                                          wInput * inputDepth + dInput;
+                                    sum += (static_cast<int32_t>(filterBase[filterIndex])) *
+                                            (static_cast<int32_t>(inputBase[inputIndex]) +
+                                            inputOffset);
+                                }
+                            }
+                        }
+                    }
+                    sum += biasBase[d];
+                    sum = tflite::MultiplyByQuantizedMultiplier(sum, outputMultiplier[d],
+                                                                -outputShift[d]);
+                    sum += outputOffset;
+                    sum = std::max(std::min(sum, output_activation_max), output_activation_min);
+                    outPtr[d] = static_cast<uint8_t>(sum);
+                    filterBase += filterHeight * filterWidth * filterDepth;
+                }
+                outPtr += outputDepth;
+            }
+        }
+        inputBase += inputHeight * inputWidth * inputDepth;
+    }
+  }
+
+  // FIXME: tflite::reference_integer_ops::ConvPerChannel doesn't handle
+  // min and max value correctly, copy its implementation here and fix it.
+  void ConvPerChannel(
+    const ConvParams& params, const int32* output_multiplier,
+    const int32* output_shift, const RuntimeShape& input_shape,
+    const int8* input_data, const RuntimeShape& filter_shape,
+    const int8* filter_data, const RuntimeShape& bias_shape,
+    const int32* bias_data, const RuntimeShape& output_shape,
+    int8* output_data) {
+    // Get parameters.
+    const int32 input_offset = params.input_offset;  // r = s(q - Z)
+    const int stride_width = params.stride_width;
+    const int stride_height = params.stride_height;
+    const int dilation_width_factor = params.dilation_width_factor;
+    const int dilation_height_factor = params.dilation_height_factor;
+    const int pad_width = params.padding_values.width;
+    const int pad_height = params.padding_values.height;
+    const int32 output_offset = params.output_offset;
+
+    // Set min and max value of the output.
+    const int32 output_activation_min = params.quantized_activation_min;
+    const int32 output_activation_max = params.quantized_activation_max;
+    // Sanity check.
+    TFLITE_DCHECK_LE(output_activation_min, output_activation_max);
+    TFLITE_DCHECK_EQ(input_shape.DimensionsCount(), 4);
+    TFLITE_DCHECK_EQ(filter_shape.DimensionsCount(), 4);
+    TFLITE_DCHECK_EQ(output_shape.DimensionsCount(), 4);
+    const int batches = MatchingDim(input_shape, 0, output_shape, 0);
+    const int input_depth = MatchingDim(input_shape, 3, filter_shape, 3);
+    const int output_depth = MatchingDim(filter_shape, 0, output_shape, 3);
+    if (bias_data) {
+      TFLITE_DCHECK_EQ(bias_shape.FlatSize(), output_depth);
+    }
+
+    // Check dimensions of the tensors.
+    const int input_height = input_shape.Dims(1);
+    const int input_width = input_shape.Dims(2);
+    const int filter_height = filter_shape.Dims(1);
+    const int filter_width = filter_shape.Dims(2);
+    const int output_height = output_shape.Dims(1);
+    const int output_width = output_shape.Dims(2);
+    for (int batch = 0; batch < batches; ++batch) {
+      for (int out_y = 0; out_y < output_height; ++out_y) {
+        for (int out_x = 0; out_x < output_width; ++out_x) {
+          for (int out_channel = 0; out_channel < output_depth; ++out_channel) {
+            const int in_x_origin = (out_x * stride_width) - pad_width;
+            const int in_y_origin = (out_y * stride_height) - pad_height;
+            int32 acc = 0;
+            for (int filter_y = 0; filter_y < filter_height; ++filter_y) {
+              for (int filter_x = 0; filter_x < filter_width; ++filter_x) {
+                for (int in_channel = 0; in_channel < input_depth; ++in_channel) {
+                  const int in_x = in_x_origin + dilation_width_factor * filter_x;
+                  const int in_y =
+                      in_y_origin + dilation_height_factor * filter_y;
+                  // Zero padding by omitting the areas outside the image.
+                  const bool is_point_inside_image =
+                      (in_x >= 0) && (in_x < input_width) && (in_y >= 0) &&
+                      (in_y < input_height);
+                  if (is_point_inside_image) {
+                    int32 input_val = input_data[Offset(input_shape, batch, in_y,
+                                                        in_x, in_channel)];
+                    int32 filter_val =
+                        filter_data[Offset(filter_shape, out_channel, filter_y,
+                                          filter_x, in_channel)];
+                    // Accumulate with 32 bits accumulator.
+                    // In the nudging process during model quantization, we force
+                    // real value of 0.0 be represented by a quantized value. This
+                    // guarantees that the input_offset is a int8, even though it
+                    // is represented using int32.
+                    // int32 += int8 * (int8 - int8) so the highest value we can
+                    // get from each accumulation is [-127, 127] * ([-128, 127] -
+                    // [-128, 127]), which is [-32512, 32512]. log2(32512)
+                    // = 14.98, which means we can accumulate at least 2^16
+                    // multiplications without overflow. The accumulator is
+                    // applied to a filter so the accumulation logic will hold as
+                    // long as the filter size (filter_y * filter_x * in_channel)
+                    // does not exceed 2^16, which is the case in all the models
+                    // we have seen so far.
+                    // TODO(jianlijianli): Add a check to make sure the
+                    // accumulator depth is smaller than 2^16.
+                    acc += filter_val * (input_val + input_offset);
+                  }
+                }
+              }
+            }
+
+            if (bias_data) {
+              acc += bias_data[out_channel];
+            }
+            acc = MultiplyByQuantizedMultiplier(
+                acc, output_multiplier[out_channel], output_shift[out_channel]);
+            acc += output_offset;
+            acc = std::max(acc, output_activation_min);
+            acc = std::min(acc, output_activation_max);
+            output_data[Offset(output_shape, batch, out_y, out_x, out_channel)] =
+                static_cast<int8_t>(acc);
+          }
+        }
+      }
+    }
+  }
+
+  void convInt8PerChannelWrapper(const ConvParams& convParams,
+                                 const intptr_t outputMultiplierData,
+                                 const intptr_t outputShiftData,
+                                 const RuntimeShape& inputShape,
+                                 const intptr_t inputData,
+                                 const RuntimeShape& filterShape,
+                                 const intptr_t filterData,
+                                 const RuntimeShape& biasShape,
+                                 const intptr_t biasData,
+                                 const RuntimeShape& outputShape,
+                                 intptr_t outputData) {
+    ConvPerChannel(
+        convParams,
+        (const int32_t*)outputMultiplierData, (const int32_t*)outputShiftData,
+        inputShape, (const int8_t*)inputData,
+        filterShape, (const int8_t*)filterData,
+        biasShape, (const int32_t*)biasData,
+        outputShape, (int8_t*)outputData);
   }
 
   void averagePoolFloat32Wrapper(const PoolParams op_params,
@@ -450,6 +899,8 @@ EMSCRIPTEN_BINDINGS(nn)
   constant("UINT8_LOWEST", std::numeric_limits<uint8_t>::lowest());
   constant("UINT8_MIN", std::numeric_limits<uint8_t>::min());
   constant("INT32_MAX", std::numeric_limits<int32_t>::max());
+  constant("INT8_MIN", std::numeric_limits<int8_t>::min());
+  constant("INT8_MAX", std::numeric_limits<int8_t>::max());
 
   class_<RuntimeShape>("RuntimeShape")
     .constructor<int>()
@@ -618,8 +1069,14 @@ EMSCRIPTEN_BINDINGS(nn)
   function("floorFloat32", &binding_utils::floorFloat32Wrapper, allow_raw_pointers());
   function("depthwiseConvFloat32", &binding_utils::depthwiseConvFloat32Wrapper, allow_raw_pointers());
   function("depthwiseConvUint8", &binding_utils::depthwiseConvUint8Wrapper, allow_raw_pointers());
+  function("depthwiseConvInt8", &binding_utils::depthwiseConvInt8Wrapper, allow_raw_pointers());
+  function("depthwiseConvUint8PerChannel", &binding_utils::depthwiseConvUint8PerChannelWrapper, allow_raw_pointers());
+  function("depthwiseConvInt8PerChannel", &binding_utils::depthwiseConvInt8PerChannelWrapper, allow_raw_pointers());
   function("convFloat32", &binding_utils::convFloat32Wrapper, allow_raw_pointers());
   function("convUint8", &binding_utils::convUint8Wrapper, allow_raw_pointers());
+  function("convUint8PerChannel", &binding_utils::convUint8PerChannelWrapper, allow_raw_pointers());
+  function("convInt8", &binding_utils::convInt8Wrapper, allow_raw_pointers());
+  function("convInt8PerChannel", &binding_utils::convInt8PerChannelWrapper, allow_raw_pointers());
   function("averagePoolFloat32", &binding_utils::averagePoolFloat32Wrapper, allow_raw_pointers());
   function("averagePoolUint8", &binding_utils::averagePoolUint8Wrapper, allow_raw_pointers());
   function("softmaxFloat32", &binding_utils::softmaxFloat32Wrapper, allow_raw_pointers());

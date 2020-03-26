@@ -36,6 +36,8 @@ export default class NeuralNetworkContext {
     this.TENSOR_FLOAT32 = OperandCode.TENSOR_FLOAT32;
     this.TENSOR_INT32 = OperandCode.TENSOR_INT32;
     this.TENSOR_QUANT8_ASYMM = OperandCode.TENSOR_QUANT8_ASYMM;
+    this.TENSOR_QUANT8_SYMM_PER_CHANNEL = OperandCode.TENSOR_QUANT8_SYMM_PER_CHANNEL;
+    this.TENSOR_QUANT8_ASYMM_SIGNED = OperandCode.TENSOR_QUANT8_ASYMM_SIGNED;
   }
 
   _initOperationTypes() {

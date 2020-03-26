@@ -43,17 +43,54 @@ export const OperandCode = {
   TENSOR_FLOAT32: 3,
   /** A tensor of 32 bit integer values. */
   TENSOR_INT32: 4,
-  /** A tensor of 8 bit integers that represent real numbers.
+  /**
+   * A tensor of 8 bit unsigned integers that represent real numbers.
    *
-   * Attached to this tensor are two numbers that can be used to convert
-   * the 8 bit integer to the real value and vice versa.  These two numbers are:
-   * - scale: a 32 bit non-negative floating point value.
-   * - zeroPoint: an 32 bit integer, in range [0, 255].
+   * Attached to this tensor are two numbers that can be used to convert the
+   * 8 bit integer to the real value and vice versa. These two numbers are:
+   * - scale: a 32 bit floating point value greater than zero.
+   * - zeroPoint: a 32 bit integer, in range [0, 255].
+   *
+   * The formula is:
+   *   real_value = (integer_value - zeroPoint) * scale.
+   */
+  TENSOR_QUANT8_ASYMM: 5,
+  /**
+   * A tensor of 8 bit signed integers that represent real numbers.
+   *
+   * This tensor is associated with additional fields that can
+   * be used to convert the 8 bit signed integer to the real value and vice versa.
+   * These fields are:
+   * - channelDim: a 32 bit unsigned integer indicating channel dimension.
+   * - scales: an array of positive 32 bit floating point values.
+   * The size of the scales array must be equal to dimensions[channelDim].
+   *
+   * {@link Model.setOperandSymmPerChannelQuantParams} must be used
+   * to set the parameters for an Operand of this type.
+   *
+   * The channel dimension of this tensor must not be unknown (dimensions[channelDim] != 0).
+   *
+   * The formula is:
+   * realValue[..., C, ...] =
+   *     integerValue[..., C, ...] * scales[C]
+   * where C is an index in the Channel dimension.
+   *
+   */
+  TENSOR_QUANT8_SYMM_PER_CHANNEL: 11,
+  /**
+   * A tensor of 8 bit signed integers that represent real numbers.
+   *
+   * Attached to this tensor are two numbers that can be used to convert the
+   * 8 bit integer to the real value and vice versa. These two numbers are:
+   * - scale: a 32 bit floating point value greater than zero.
+   * - zeroPoint: a 32 bit integer, in range [-128, 127].
    *
    * The formula is:
    * real_value = (integer_value - zeroPoint) * scale.
+   *
+   * Available since API level 30.
    */
-  TENSOR_QUANT8_ASYMM: 5,
+  TENSOR_QUANT8_ASYMM_SIGNED: 14
 };
 
 export const PaddingCode = {
@@ -244,10 +281,32 @@ export const OperationCode = {
    *             bias[channel]
    *         )
    *
-   * Supported tensor types:
-   * * {@link TENSOR_FLOAT32}
-   * * {@link TENSOR_QUANT8_ASYMM}
+   * Supported tensor {@link OperandCode} configurations:
+   * * 32 bit floating point:
+   * * * {@link TENSOR_FLOAT32} for input, filter, output, and bias.
+   * 
+   * * Quantized:
+   * * * {@link TENSOR_QUANT8_ASYMM} for input, filter, and output.
+   * * * {@link TENSOR_INT32} for bias (with scale set to
+   * * * input.scale * filter.scale).
    *
+   * * * Quantized with symmetric per channel quantization for the filter:
+   * * * {@link TENSOR_QUANT8_ASYMM} for input, and output.
+   * * * {@link TENSOR_QUANT8_SYMM_PER_CHANNEL} for filter.
+   * * * {@link TENSOR_INT32} for bias (scale set to 0.0,
+   * * * each value scaling is separate and equal to input.scale * filter.scales[channel]).
+   * 
+   * * * Quantized signed:
+   * * * {@link TENSOR_QUANT8_ASYMM_SIGNED} for input, filter, and output.
+   * * * {@link TENSOR_INT32} for bias (with scale set to
+   * * * input.scale * filter.scale).
+   * 
+   * * * Quantized signed with filter symmetric per channel quantization (since API level 30):
+   * * * {@link TENSOR_QUANT8_ASYMM_SIGNED} for input, and output.
+   * * * {@link TENSOR_QUANT8_SYMM_PER_CHANNEL} for filter.
+   * * * {@link TENSOR_INT32} for bias (scale set to 0.0,
+   * * * each value scaling is separate and equal to input.scale * filter.scales[channel]).
+   * 
    * Supported tensor rank: 4, with "NHWC" data layout.
    *
    * Both explicit padding and implicit padding are supported.
@@ -256,12 +315,20 @@ export const OperationCode = {
    * * 0: A 4-D tensor, of shape [batches, height, width, depth_in], specifying the input.
    * * 1: A 4-D tensor, of shape [depth_out, filter_height, filter_width, depth_in],
    *      specifying the filter.
+   *      For tensor of type {@link TENSOR_QUANT8_SYMM_PER_CHANNEL}
+   *      the channel dimension (SymmPerChannelQuantParams::channelDim)
+   *      must be set to 0.
    * * 2: A 1-D tensor, of shape [depth_out], specifying the bias.
    *      For input tensor of {@link TENSOR_FLOAT32} type, the bias should
    *      also be of {@link TENSOR_FLOAT32}.
-   *      For input tensor of {@link TENSOR_QUANT8_ASYMM} type, the bias
-   *      should be of {@link TENSOR_INT32}, with zeroPoint of 0 and
-   *      bias_scale == input_scale * filter_scale.
+   *      For filter tensor of {@link TENSOR_QUANT8_ASYMM}
+   *      and {@link TENSOR_QUANT8_ASYMM_SIGNED},
+   *      the bias should be of {@link TENSOR_INT32}, with zeroPoint
+   *      of 0 and bias_scale == input_scale * filter_scale.
+   *      For filter tensor of {@link TENSOR_QUANT8_SYMM_PER_CHANNEL},
+   *      the bias should be of {@link TENSOR_INT32}, with zeroPoint of 0
+   *      and bias_scale of 0. The actual scale of each value 'i' is equal to
+   *      bias_scale[i] = input_scale * filter_scale[i].
    * * 3: An INT32 value, specifying the padding on the left, in the ‘width’ dimension.
    * * 4: An INT32 value, specifying the padding on the right,in the ‘width’ dimension.
    * * 5: An INT32 value, specifying the padding on the top, in the ‘height’ dimension.
@@ -277,12 +344,20 @@ export const OperationCode = {
    * * 0: A 4-D tensor, of shape [batches, height, width, depth_in], specifying the input.
    * * 1: A 4-D tensor, of shape [depth_out, filter_height, filter_width, depth_in],
    *      specifying the filter.
+   *      For tensor of type {@link TENSOR_QUANT8_SYMM_PER_CHANNEL}
+   *      the channel dimension (SymmPerChannelQuantParams::channelDim)
+   *      must be set to 0.
    * * 2: A 1-D tensor, of shape [depth_out], specifying the bias.
    *      For input tensor of {@link TENSOR_FLOAT32} type, the bias should
    *      also be of {@link TENSOR_FLOAT32}.
-   *      For input tensor of {@link TENSOR_QUANT8_ASYMM} type, the bias
-   *      should be of {@link TENSOR_INT32}, with zeroPoint of 0 and
-   *      bias_scale == input_scale * filter_scale.
+   *      For filter tensor of {@link TENSOR_QUANT8_ASYMM}
+   *      and {@link TENSOR_QUANT8_ASYMM_SIGNED},
+   *      the bias should be of {@link TENSOR_INT32}, with zeroPoint
+   *      of 0 and bias_scale == input_scale * filter_scale.
+   *      For filter tensor of {@link TENSOR_QUANT8_SYMM_PER_CHANNEL},
+   *      the bias should be of {@link TENSOR_INT32}, with zeroPoint of 0
+   *      and bias_scale of 0. The actual scale of each value 'i' is equal to
+   *      bias_scale[i] = input_scale * filter_scale[i].
    * * 3: An INT32 value, specifying the implicit padding scheme, has to be one of the
    *      {@link PaddingCode} values.
    * * 4: An INT32 value, specifying the stride when walking through input
@@ -318,9 +393,20 @@ export const OperationCode = {
    *             filter[1, di, dj, k * channel_multiplier + q]
    *         )
    *
-   * Supported tensor types:
-   * * {@link TENSOR_FLOAT32}
-   * * {@link TENSOR_QUANT8_ASYMM}
+   * Supported tensor {@link OperandCode} configurations:
+   * * 32 bit floating point:
+   * * * {@link TENSOR_FLOAT32} for input, filter, output, and bias.
+   * 
+   * * Quantized:
+   * * * {@link TENSOR_QUANT8_ASYMM} for input, filter, and output.
+   * * * {@link TENSOR_INT32} for bias (with scale set to
+   * * * input.scale * filter.scale).
+   *
+   * * * Quantized with symmetric per channel quantization for the filter:
+   * * * {@link TENSOR_QUANT8_ASYMM} for input, and output.
+   * * * {@link TENSOR_QUANT8_SYMM_PER_CHANNEL} for filter.
+   * * * {@link TENSOR_INT32} for bias (scale set to 0.0,
+   * * * each value scaling is separate and equal to input.scale * filter.scales[channel]).
    *
    * Supported tensor rank: 4, with "NHWC" data layout.
    *
@@ -330,12 +416,20 @@ export const OperationCode = {
    * * 0: A 4-D tensor, of shape [batches, height, width, depth_in], specifying the input.
    * * 1: A 4-D tensor, of shape [1, filter_height, filter_width, depth_out],
    *      specifying the filter.
+   *      For tensor of type {@link TENSOR_QUANT8_SYMM_PER_CHANNEL}
+   *      the channel dimension (ANeuralNetworksSymmPerChannelQuantParams::channelDim)
+   *      must be set to 3.
    * * 2: A 1-D tensor, of shape [depth_out], specifying the bias.
    *      For input tensor of {@link TENSOR_FLOAT32} type, the bias should
    *      also be of {@link TENSOR_FLOAT32}.
-   *      For input tensor of {@link TENSOR_QUANT8_ASYMM} type, the bias
-   *      should be of {@link TENSOR_INT32}, with zeroPoint of 0 and
-   *      bias_scale == input_scale * filter_scale.
+   *      For filter tensor of {@link TENSOR_QUANT8_ASYMM}
+   *      and {@link TENSOR_QUANT8_ASYMM_SIGNED},
+   *      the bias should be of {@link TENSOR_INT32}, with zeroPoint
+   *      of 0 and bias_scale == input_scale * filter_scale.
+   *      For filter tensor of {@link TENSOR_QUANT8_SYMM_PER_CHANNEL},
+   *      the bias should be of {@link TENSOR_INT32}, with zeroPoint of 0
+   *      and bias_scale of 0. The actual scale of each value 'i' is equal to
+   *      bias_scale[i] = input_scale * filter_scale[i].
    * * 3: An INT32 value, specifying the padding on the left, in the ‘width’ dimension.
    * * 4: An INT32 value, specifying the padding on the right,in the ‘width’ dimension.
    * * 5: An INT32 value, specifying the padding on the top, in the ‘height’ dimension.
@@ -352,12 +446,20 @@ export const OperationCode = {
    * * 0: A 4-D tensor, of shape [batches, height, width, depth_in], specifying the input.
    * * 1: A 4-D tensor, of shape [1, filter_height, filter_width, depth_out],
    *      specifying the filter.
+   *      For tensor of type {@link TENSOR_QUANT8_SYMM_PER_CHANNEL}
+   *      the channel dimension (ANeuralNetworksSymmPerChannelQuantParams::channelDim)
+   *      must be set to 3.
    * * 2: A 1-D tensor, of shape [depth_out], specifying the bias.
    *      For input tensor of {@link TENSOR_FLOAT32} type, the bias should
    *      also be of {@link TENSOR_FLOAT32}.
-   *      For input tensor of {@link TENSOR_QUANT8_ASYMM} type, the bias
-   *      should be of {@link TENSOR_INT32}, with zeroPoint of 0 and
-   *      bias_scale == input_scale * filter_scale.
+   *      For filter tensor of {@link TENSOR_QUANT8_ASYMM}
+   *      and {@link TENSOR_QUANT8_ASYMM_SIGNED},
+   *      the bias should be of {@link TENSOR_INT32}, with zeroPoint
+   *      of 0 and bias_scale == input_scale * filter_scale.
+   *      For filter tensor of {@link TENSOR_QUANT8_SYMM_PER_CHANNEL},
+   *      the bias should be of {@link TENSOR_INT32}, with zeroPoint of 0
+   *      and bias_scale of 0. The actual scale of each value 'i' is equal to
+   *      bias_scale[i] = input_scale * filter_scale[i].
    * * 3: An INT32 value, specifying the implicit padding scheme, has to be one of the
    *      {@link PaddingCode} values.
    * * 4: An INT32 value, specifying the stride when walking through input
