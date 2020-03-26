@@ -212,7 +212,7 @@ describe('CTS', function() {
     await execution.startCompute();
 
     for (let i = 0; i < type33_length; ++i) {
-      assert.isTrue(almostEqualCTS(op4_output[i], op4_expect[i]));
+      assert.isTrue(almostEqualCTSQuant8(op4_output[i], op4_expect[i]));
     }
   });
 
@@ -286,7 +286,7 @@ describe('CTS', function() {
     await execution.startCompute();
 
     for (let i = 0; i < type33_length; ++i) {
-      assert.isTrue(almostEqualCTS(op4_output[i], op4_expect[i]));
+      assert.isTrue(almostEqualCTSQuant8(op4_output[i], op4_expect[i]));
     }
   });
 
@@ -579,7 +579,7 @@ describe('CTS', function() {
     await execution.startCompute();
 
     for (let i = 0; i < type33_length; ++i) {
-      assert.isTrue(almostEqualCTS(op4_output[i], op4_expect[i]));
+      assert.isTrue(almostEqualCTSQuant8(op4_output[i], op4_expect[i]));
     }
   });
 
@@ -656,7 +656,7 @@ describe('CTS', function() {
     await execution.startCompute();
 
     for (let i = 0; i < type33_length; ++i) {
-      assert.isTrue(almostEqualCTS(op4_output[i], op4_expect[i]));
+      assert.isTrue(almostEqualCTSQuant8(op4_output[i], op4_expect[i]));
     }
   });
 
@@ -918,7 +918,7 @@ describe('CTS', function() {
     await execution.startCompute();
 
     for (let i = 0; i < type49_length; ++i) {
-      assert.isTrue(almostEqualCTS(op41_output[i], op41_expect[i]));
+      assert.isTrue(almostEqualCTSQuant8(op41_output[i], op41_expect[i]));
     }
   });
 
@@ -983,7 +983,7 @@ describe('CTS', function() {
     await execution.startCompute();
 
     for (let i = 0; i < type49_length; ++i) {
-      assert.isTrue(almostEqualCTS(op41_output[i], op41_expect[i]));
+      assert.isTrue(almostEqualCTSQuant8(op41_output[i], op41_expect[i]));
     }
   });
 
@@ -1242,7 +1242,7 @@ describe('CTS', function() {
     await execution.startCompute();
 
     for (let i = 0; i < type49_length; ++i) {
-      assert.isTrue(almostEqualCTS(op41_output[i], op41_expect[i]));
+      assert.isTrue(almostEqualCTSQuant8(op41_output[i], op41_expect[i]));
     }
   });
 
@@ -1310,7 +1310,7 @@ describe('CTS', function() {
     await execution.startCompute();
 
     for (let i = 0; i < type49_length; ++i) {
-      assert.isTrue(almostEqualCTS(op41_output[i], op41_expect[i]));
+      assert.isTrue(almostEqualCTSQuant8(op41_output[i], op41_expect[i]));
     }
   });
 
@@ -1588,7 +1588,7 @@ describe('CTS', function() {
     await execution.startCompute();
 
     for (let i = 0; i < type57_length; ++i) {
-      assert.isTrue(almostEqualCTS(op42_output[i], op42_expect[i]));
+      assert.isTrue(almostEqualCTSQuant8(op42_output[i], op42_expect[i]));
     }
   });
 
@@ -1660,7 +1660,7 @@ describe('CTS', function() {
     await execution.startCompute();
 
     for (let i = 0; i < type57_length; ++i) {
-      assert.isTrue(almostEqualCTS(op42_output[i], op42_expect[i]));
+      assert.isTrue(almostEqualCTSQuant8(op42_output[i], op42_expect[i]));
     }
   });
 
@@ -1953,7 +1953,7 @@ describe('CTS', function() {
     await execution.startCompute();
 
     for (let i = 0; i < type57_length; ++i) {
-      assert.isTrue(almostEqualCTS(op42_output[i], op42_expect[i]));
+      assert.isTrue(almostEqualCTSQuant8(op42_output[i], op42_expect[i]));
     }
   });
 
@@ -2028,7 +2028,7 @@ describe('CTS', function() {
     await execution.startCompute();
 
     for (let i = 0; i < type57_length; ++i) {
-      assert.isTrue(almostEqualCTS(op42_output[i], op42_expect[i]));
+      assert.isTrue(almostEqualCTSQuant8(op42_output[i], op42_expect[i]));
     }
   });
 
@@ -2317,7 +2317,7 @@ describe('CTS', function() {
     await execution.startCompute();
 
     for (let i = 0; i < type70_length; ++i) {
-      assert.isTrue(almostEqualCTS(op43_output[i], op43_expect[i]));
+      assert.isTrue(almostEqualCTSQuant8(op43_output[i], op43_expect[i]));
     }
   });
 
@@ -2391,7 +2391,7 @@ describe('CTS', function() {
     await execution.startCompute();
 
     for (let i = 0; i < type70_length; ++i) {
-      assert.isTrue(almostEqualCTS(op43_output[i], op43_expect[i]));
+      assert.isTrue(almostEqualCTSQuant8(op43_output[i], op43_expect[i]));
     }
   });
 
@@ -2463,7 +2463,7 @@ describe('CTS', function() {
     await execution.startCompute();
 
     for (let i = 0; i < type73_length; ++i) {
-      assert.isTrue(almostEqualCTS(op43_output[i], op43_expect[i]));
+      assert.isTrue(almostEqualCTSQuant8(op43_output[i], op43_expect[i]));
     }
   });
 
@@ -2758,7 +2758,7 @@ describe('CTS', function() {
     await execution.startCompute();
 
     for (let i = 0; i < type70_length; ++i) {
-      assert.isTrue(almostEqualCTS(op43_output[i], op43_expect[i]));
+      assert.isTrue(almostEqualCTSQuant8(op43_output[i], op43_expect[i]));
     }
   });
 
@@ -2835,7 +2835,7 @@ describe('CTS', function() {
     await execution.startCompute();
 
     for (let i = 0; i < type70_length; ++i) {
-      assert.isTrue(almostEqualCTS(op43_output[i], op43_expect[i]));
+      assert.isTrue(almostEqualCTSQuant8(op43_output[i], op43_expect[i]));
     }
   });
 
@@ -2910,7 +2910,7 @@ describe('CTS', function() {
     await execution.startCompute();
 
     for (let i = 0; i < type73_length; ++i) {
-      assert.isTrue(almostEqualCTS(op43_output[i], op43_expect[i]));
+      assert.isTrue(almostEqualCTSQuant8(op43_output[i], op43_expect[i]));
     }
   });
 

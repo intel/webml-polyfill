@@ -3,7 +3,9 @@ const assert = chai.assert;
 let options = {};
 const EPISILON = 1e-5;
 const EPISILON5ULP = 5.0 * 0.0009765625;
+const EPISILONQUANT8 = 1;
 let episilonCTS = EPISILON;
+let episilonCTSQuant8 = EPISILONQUANT8;
 // refer to https://android.googlesource.com/platform/frameworks/ml/+/master/nn/runtime/test/TestGenerated.cpp#117
 let rtol = 5.0 * 1.1920928955078125e-7;
 
@@ -11,7 +13,7 @@ function product(array) {
   return array.reduce((accumulator, currentValue) => accumulator * currentValue);
 }
 
-function almostEqual(a, b, episilon=1e-6) {
+function almostEqual(a, b, episilon=1e-6, rtol=5.0*1.1920928955078125e-7) {
   let delta = Math.abs(a - b);
   if (delta <= episilon + rtol * Math.abs(b)) {
     return true;
@@ -34,6 +36,10 @@ function almostEqualRM(a, b) {
 
 function almostEqualCTS(a, b) {
   return almostEqual(a, b, episilonCTS)
+}
+
+function almostEqualCTSQuant8(a, b) {
+  return almostEqual(a, b, episilonCTSQuant8, 0)
 }
 
 function setOptionsPerLayer() {
@@ -209,5 +215,3 @@ async function assertDoesNotThrowAsync(fn, regExp) {
     assert.doesNotThrow(f, regExp);
   }
 }
-
-
