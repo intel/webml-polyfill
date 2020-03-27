@@ -71,20 +71,21 @@ if (jsonTypeCheck(RCjson, "chromiumPath", "string")) {
     chromiumPath = RCjson.chromiumPath;
 }
 
-if (jsonTypeCheck(RCjson["switch"]["linux"], "IEMYRIAD", "boolean") &&
-    jsonTypeCheck(RCjson["switch"]["linux"], "INFERENCE_ENGINE", "boolean") &&
-    jsonTypeCheck(RCjson["switch"]["mac"], "DNNL", "boolean") &&
-    jsonTypeCheck(RCjson["switch"]["windows"], "DML", "boolean") &&
-    jsonTypeCheck(RCjson["switch"]["windows"], "INFERENCE_ENGINE", "boolean")) {
-    preferSwitch = RCjson.switch;
-}
-
 if (jsonTypeCheck(RCjson, "webmlPolyfill", "boolean")) {
     webmlPolyfill = RCjson.webmlPolyfill;
 }
 
 if (jsonTypeCheck(RCjson, "webnn", "boolean")) {
     webnn = RCjson.webnn;
+}
+
+if (jsonTypeCheck(RCjson["switch"]["linux"], "INFERENCE_ENGINE", "boolean") &&
+    jsonTypeCheck(RCjson["switch"]["linux"], "BACKEND_LIST", "object") &&
+    jsonTypeCheck(RCjson["switch"]["mac"], "DNNL", "boolean") &&
+    jsonTypeCheck(RCjson["switch"]["windows"], "DML", "boolean") &&
+    jsonTypeCheck(RCjson["switch"]["windows"], "INFERENCE_ENGINE", "boolean") &&
+    jsonTypeCheck(RCjson["switch"]["windows"], "BACKEND_LIST", "object")) {
+    preferSwitch = RCjson.switch;
 }
 
 if (jsonTypeCheck(RCjson, "remoteURL", "string")) {
@@ -119,22 +120,26 @@ var getLDLibraryPath = function() {
 
 var testPrefers = new Array();
 if (testPlatform == "Linux") {
-    if (preferSwitch.linux.IEMYRIAD) {
-        testPrefers.push("Linux-WebNN-Low-IE-MYRIAD");
-    } else {
-        if (webmlPolyfill) {
-            testPrefers.push("Linux-Polyfill-Fast-WASM");
-            testPrefers.push("Linux-Polyfill-Sustained-WebGL");
-        }
+    if (webmlPolyfill) {
+        testPrefers.push("Linux-Polyfill-Fast-WASM");
+        testPrefers.push("Linux-Polyfill-Sustained-WebGL");
+    }
 
-        if (webnn) {
-            testPrefers.push("Linux-WebNN-Fast-DNNL");
-            testPrefers.push("Linux-WebNN-Sustained-clDNN");
+    if (webnn) {
+        testPrefers.push("Linux-WebNN-Fast-DNNL");
+        testPrefers.push("Linux-WebNN-Sustained-clDNN");
 
-            if (preferSwitch.linux.INFERENCE_ENGINE) {
-                testPrefers.push("Linux-WebNN-Fast-IE-MKLDNN");
-                testPrefers.push("Linux-WebNN-Sustained-IE-clDNN");
-                testPrefers.push("Linux-WebNN-Ultra-Low-IE-GNA");
+        if (preferSwitch.linux.INFERENCE_ENGINE) {
+            if (preferSwitch.linux.BACKEND_LIST.length !== 0) {
+                for (let backend of preferSwitch.linux.BACKEND_LIST) {
+                    if (backend === "IE-MKLDNN") testPrefers.push("Linux-WebNN-Fast-IE-MKLDNN");
+                    else if (backend === "IE-clDNN") testPrefers.push("Linux-WebNN-Sustained-IE-clDNN");
+                    else if (backend === "IE-MYRIAD") testPrefers.push("Linux-WebNN-Low-IE-MYRIAD");
+                    else if (backend === "IE-GNA") testPrefers.push("Linux-WebNN-Ultra-Low-IE-GNA");
+                    else throw new Error("Not support backend: " + backend + ", please check 'linux.BACKEND_LIST'");
+                }
+            } else {
+                throw new Error("'BACKEND_LIST' of linux platform is not null");
             }
         }
     }
@@ -179,10 +184,17 @@ if (testPlatform == "Linux") {
         }
 
         if (preferSwitch.windows.INFERENCE_ENGINE) {
-            testPrefers.push("Win-WebNN-Fast-IE-MKLDNN");
-            testPrefers.push("Win-WebNN-Sustained-IE-clDNN");
-            testPrefers.push("Win-WebNN-Low-IE-MYRIAD");
-            testPrefers.push("Win-WebNN-Ultra-Low-IE-GNA");
+            if (preferSwitch.windows.BACKEND_LIST.length !== 0) {
+                for (let backend of preferSwitch.windows.BACKEND_LIST) {
+                    if (backend === "IE-MKLDNN") testPrefers.push("Win-WebNN-Fast-IE-MKLDNN");
+                    else if (backend === "IE-clDNN") testPrefers.push("Win-WebNN-Sustained-IE-clDNN");
+                    else if (backend === "IE-MYRIAD") testPrefers.push("Win-WebNN-Low-IE-MYRIAD");
+                    else if (backend === "IE-GNA") testPrefers.push("Win-WebNN-Ultra-Low-IE-GNA");
+                    else throw new Error("Not support backend: " + backend + ", please check 'windows.BACKEND_LIST'");
+                }
+            } else {
+                throw new Error("'BACKEND_LIST' of windows platform is not null");
+            }
         }
     }
 }
@@ -1340,7 +1352,7 @@ var argumentsArray = new Array();
                     continue;
                 }
             } else if (testPrefer === "Linux-WebNN-Low-IE-MYRIAD") {
-                if (testPlatform === "Linux" && webnn && preferSwitch.linux.IEMYRIAD) {
+                if (testPlatform === "Linux" && webnn && preferSwitch.linux.INFERENCE_ENGINE) {
                     testURL = testURL + "?prefer=low";
                     chromeOption = chromeOption
                         .setChromeBinaryPath(chromiumPath)
