@@ -16,13 +16,24 @@ This is an automation tool kit to check regression easily for developers when su
       $ npm install chromedriver --chromedriver_cdnurl=http://cdn.npm.taobao.org/dist/chromedriver
 
 ## Set Configurations
-   There are nine fields in the config.json, for example:
+   There are fields in the config.json, for example:
 ```
    {
      "platform": "Mac",
      "chromiumPath": "/User/test/Downloads/Chromium.app/Contents/MacOS/Chromium",
-     "IEMYRIAD": false,
-     "supportSwitch": false,
+     "switch": {
+         "linux": {
+             "IEMYRIAD": false,
+             "INFERENCE_ENGINE": false
+         },
+         "mac": {
+             "DNNL": true
+         },
+         "windows": {
+             "DML": false,
+             "INFERENCE_ENGINE": false
+         }
+     },
      "webmlPolyfill": true,
      "webnn": true,
      "remoteURL": "https://brucedai.github.io/webnnt/test/index-local.html",
@@ -35,8 +46,19 @@ This is an automation tool kit to check regression easily for developers when su
    {
      "platform": "Windows",
      "chromiumPath": "C:\\test\\win_x64_SUCCEED\\Chrome-bin\\chrome.exe",
-     "IEMYRIAD": false,
-     "supportSwitch": false,
+     "switch": {
+         "linux": {
+             "IEMYRIAD": false,
+             "INFERENCE_ENGINE": false
+         },
+         "mac": {
+             "DNNL": false
+         },
+         "windows": {
+             "DML": false,
+             "INFERENCE_ENGINE": true
+         }
+     },
      "webmlPolyfill": true,
      "webnn": true,
      "remoteURL": "https://brucedai.github.io/webnnt/test/index-local.html",
@@ -47,8 +69,7 @@ This is an automation tool kit to check regression easily for developers when su
    You need modify these nine fields for the different platforms:
    + **_platform_**: `{string}`, target platform, support **Android**, **Mac**, **Linux** and **Windows**.
    + **_chromiumPath_**: `{string}`, **Mac**/**Linux**/**Windows**: the target chromium path   **Android**: the chrome or chromium path in above Prerequisites to show the final checking results.
-   + **_IEMYRIAD_**: `{boolean}`, support `IE-MYRIAD` on **Linux**, support **true** and **false**.
-   + **_supportSwitch_**: `{boolean}`, **Mac**: `--use-mkldnn`, **Linux**: `--use-inference-engine`, **Windows**: `--use-dml`, support **true** and **false**.
+   + **_switch_**: `{boolean}`, **Mac**: `--use-dnnl`, **Linux**: `IE-MYRIAD` and `--use-inference-engine`, **Windows**: `--use-dml` and `--use-inference-engine`, support **true** and **false**.
    + **_webmlPolyfill_**: `{boolean}`, run RegressionChecker tool with **webmlPolyfill** backends, support **true** and **false**.
    + **_webnn_**: `{boolean}`, run RegressionChecker tool with **webnn** backends, support **true** and **false**.
    + **_remoteURL_**: `{string}`, the remote URL of general test cases.

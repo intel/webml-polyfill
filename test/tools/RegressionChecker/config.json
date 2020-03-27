@@ -1,8 +1,19 @@
 {
     "platform": "Linux",
     "chromiumPath": "/usr/bin/chromium-browser-unstable",
-    "IEMYRIAD": false,
-    "supportSwitch": false,
+    "switch": {
+        "linux": {
+            "IEMYRIAD": false,
+            "INFERENCE_ENGINE": true
+        },
+        "mac": {
+            "DNNL": false
+        },
+        "windows": {
+            "DML": false,
+            "INFERENCE_ENGINE": false
+        }
+    },
     "webmlPolyfill": true,
     "webnn": true,
     "remoteURL": "https://brucedai.github.io/webnnt/test/index-local.html",

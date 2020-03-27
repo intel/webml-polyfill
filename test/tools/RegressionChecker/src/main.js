@@ -60,7 +60,7 @@ function jsonTypeCheck (json, field, expectType) {
     }
 }
 
-var testPlatform, chromiumPath, preferIEMYRIAD, supportSwitch, remoteURL,
+var testPlatform, chromiumPath, preferSwitch, remoteURL,
     webmlPolyfill, webnn, needCheckRealModelTC, localServerURL;
 var RCjson = JSON.parse(fs.readFileSync("./config.json"));
 if (jsonTypeCheck(RCjson, "platform", "string")) {
@@ -71,12 +71,12 @@ if (jsonTypeCheck(RCjson, "chromiumPath", "string")) {
     chromiumPath = RCjson.chromiumPath;
 }
 
-if (jsonTypeCheck(RCjson, "IEMYRIAD", "boolean")) {
-    preferIEMYRIAD = RCjson.IEMYRIAD;
-}
-
-if (jsonTypeCheck(RCjson, "supportSwitch", "boolean")) {
-    supportSwitch = RCjson.supportSwitch;
+if (jsonTypeCheck(RCjson["switch"]["linux"], "IEMYRIAD", "boolean") &&
+    jsonTypeCheck(RCjson["switch"]["linux"], "INFERENCE_ENGINE", "boolean") &&
+    jsonTypeCheck(RCjson["switch"]["mac"], "DNNL", "boolean") &&
+    jsonTypeCheck(RCjson["switch"]["windows"], "DML", "boolean") &&
+    jsonTypeCheck(RCjson["switch"]["windows"], "INFERENCE_ENGINE", "boolean")) {
+    preferSwitch = RCjson.switch;
 }
 
 if (jsonTypeCheck(RCjson, "webmlPolyfill", "boolean")) {
@@ -119,7 +119,7 @@ var getLDLibraryPath = function() {
 
 var testPrefers = new Array();
 if (testPlatform == "Linux") {
-    if (preferIEMYRIAD) {
+    if (preferSwitch.linux.IEMYRIAD) {
         testPrefers.push("Linux-WebNN-Low-IE-MYRIAD");
     } else {
         if (webmlPolyfill) {
@@ -131,9 +131,10 @@ if (testPlatform == "Linux") {
             testPrefers.push("Linux-WebNN-Fast-DNNL");
             testPrefers.push("Linux-WebNN-Sustained-clDNN");
 
-            if (supportSwitch) {
+            if (preferSwitch.linux.INFERENCE_ENGINE) {
                 testPrefers.push("Linux-WebNN-Fast-IE-MKLDNN");
                 testPrefers.push("Linux-WebNN-Sustained-IE-clDNN");
+                testPrefers.push("Linux-WebNN-Ultra-Low-IE-GNA");
             }
         }
     }
@@ -156,7 +157,7 @@ if (testPlatform == "Linux") {
         testPrefers.push("macOS-WebNN-Fast-BNNS");
         testPrefers.push("macOS-WebNN-Sustained-MPS");
 
-        if (supportSwitch) {
+        if (preferSwitch.mac.DNNL) {
             // Add process ENV: no need
             // process.env.LD_LIBRARY_PATH = getLDLibraryPath();
             testPrefers.push("macOS-WebNN-Fast-DNNL");
@@ -172,14 +173,21 @@ if (testPlatform == "Linux") {
         testPrefers.push("Win-WebNN-Fast-DNNL");
         testPrefers.push("Win-WebNN-Sustained-clDNN");
 
-        if (supportSwitch) {
+        if (preferSwitch.windows.DML) {
             testPrefers.push("Win-WebNN-Sustained-DML");
-//            testPrefers.push("Win-WebNN-Low-DML");
+            testPrefers.push("Win-WebNN-Low-DML");
+        }
+
+        if (preferSwitch.windows.INFERENCE_ENGINE) {
+            testPrefers.push("Win-WebNN-Fast-IE-MKLDNN");
+            testPrefers.push("Win-WebNN-Sustained-IE-clDNN");
+            testPrefers.push("Win-WebNN-Low-IE-MYRIAD");
+            testPrefers.push("Win-WebNN-Ultra-Low-IE-GNA");
         }
     }
 }
 
-RClog("console", "prefers: " + testPrefers);
+RClog("console", "prefers: \n    " + testPrefers.join(",\n    "));
 
 var testURLs = new Map();
 testURLs.set("general", remoteURL);
@@ -271,16 +279,21 @@ for (let [key1, value1] of Object.entries(baselinejson)) {
  *         "Win-Polyfill-Fast-WASM": value,
  *         "Win-Polyfill-Sustained-WebGL": value,
  *         "Win-WebNN-Fast-DNNL": value,
+ *         "Win-WebNN-Fast-IE-MKLDNN": value,
  *         "Win-WebNN-Sustained-DML": value,
+ *         "Win-WebNN-Sustained-IE-clDNN": value,
  *         "Win-WebNN-Sustained-clDNN": value,
  *         "Win-WebNN-Low-DML": value,
+ *         "Win-WebNN-Low-IE-MYRIAD": value,
+ *         "Win-WebNN-Ultra-Low-IE-GNA": value,
  *         "Linux-Polyfill-Fast-WASM": value,
  *         "Linux-Polyfill-Sustained-WebGL": value,
  *         "Linux-WebNN-Fast-DNNL": value,
- *         "Linux-WebNN-Sustained-clDNN": value,
  *         "Linux-WebNN-Fast-IE-MKLDNN": value,
+ *         "Linux-WebNN-Sustained-clDNN": value,
  *         "Linux-WebNN-Sustained-IE-clDNN": value,
- *         "Linux-WebNN-Low-IE-MYRIAD": value
+ *         "Linux-WebNN-Low-IE-MYRIAD": value,
+ *         "Linux-WebNN-Ultra-Low-IE-GNA": value
  *     }
  * }
  */
@@ -373,7 +386,7 @@ if (testPlatform == "Android") {
     var sys = os.type();
 
     if (sys == "Linux") {
-        adbPath = "../lib/adb-tool/Linux/adb";
+        adbPath = "./lib/adb-tool/Linux/adb";
 
         try {
             command = "killall adb";
@@ -384,7 +397,7 @@ if (testPlatform == "Android") {
             }
         }
     } else if (sys == "Darwin") {
-        adbPath = "../lib/adb-tool/Mac/adb";
+        adbPath = "./lib/adb-tool/Mac/adb";
 
         try {
             command = "killall adb";
@@ -395,7 +408,7 @@ if (testPlatform == "Android") {
             }
         }
     } else if (sys == "Windows_NT") {
-        adbPath = "..\\lib\\adb-tool\\Windows\\adb";
+        adbPath = ".\\lib\\adb-tool\\Windows\\adb";
 
         try {
             command = "taskkill /im adb.exe /f";
@@ -520,6 +533,7 @@ var continueFlag = false;
 var numberPasstoFail = 0;
 var numberFailtoPass = 0;
 var numberTotal = 0;
+var argumentsArray = new Array();
 
 (async function() {
     RClog("console", "checking chromium code is start");
@@ -725,32 +739,39 @@ var numberTotal = 0;
 
         for (let prefer of testPrefers) {
             if (prefer == "macOS-Polyfill-Fast-WASM" ||
-            prefer == "macOS-Polyfill-Sustained-WebGL" ||
-            prefer == "macOS-WebNN-Fast-BNNS" ||
-            prefer == "macOS-WebNN-Fast-DNNL" ||
-            prefer == "macOS-WebNN-Sustained-MPS" ||
-            prefer == "Android-Polyfill-Fast-WASM" ||
-            prefer == "Android-Polyfill-Sustained-WebGL" ||
-            prefer == "Android-WebNN-Sustained-NNAPI" ||
-            prefer == "Win-Polyfill-Fast-WASM" ||
-            prefer == "Win-Polyfill-Sustained-WebGL" ||
-            prefer == "Win-WebNN-Fast-DNNL" ||
-            prefer == "Win-WebNN-Sustained-clDNN" ||
-            prefer == "Linux-Polyfill-Fast-WASM" ||
-            prefer == "Linux-Polyfill-Sustained-WebGL" ||
-            prefer == "Linux-WebNN-Fast-DNNL" ||
-            prefer == "Linux-WebNN-Sustained-clDNN") {
+                prefer == "macOS-Polyfill-Sustained-WebGL" ||
+                prefer == "macOS-WebNN-Fast-BNNS" ||
+                prefer == "macOS-WebNN-Fast-DNNL" ||
+                prefer == "macOS-WebNN-Sustained-MPS" ||
+                prefer == "Android-Polyfill-Fast-WASM" ||
+                prefer == "Android-Polyfill-Sustained-WebGL" ||
+                prefer == "Android-WebNN-Sustained-NNAPI" ||
+                prefer == "Win-Polyfill-Fast-WASM" ||
+                prefer == "Win-Polyfill-Sustained-WebGL" ||
+                prefer == "Win-WebNN-Fast-DNNL" ||
+                prefer == "Win-WebNN-Sustained-clDNN" ||
+                prefer == "Linux-Polyfill-Fast-WASM" ||
+                prefer == "Linux-Polyfill-Sustained-WebGL" ||
+                prefer == "Linux-WebNN-Fast-DNNL" ||
+                prefer == "Linux-WebNN-Sustained-clDNN") {
                 resultHTMLStream.write(space + "      <li id='box-menu-" + prefer + "' data-info='" + prefer +
-                "' onclick='javascript:click_box_menu(this)'>log-" + prefer.split("-")[3] + "</li>\n");
+                "' onclick='javascript:click_box_menu(this)'>" + prefer.split("-")[3] + "</li>\n");
             } else if (prefer == "Win-WebNN-Sustained-DML" ||
-            prefer == "Win-WebNN-Low-DML") {
+                       prefer == "Win-WebNN-Low-DML") {
                 resultHTMLStream.write(space + "      <li id='box-menu-" + prefer + "' data-info='" + prefer +
-                "' onclick='javascript:click_box_menu(this)'>log-" + prefer.split("-")[2] + "-" + prefer.split("-")[3] + "</li>\n");
-            } else if (prefer == "Linux-WebNN-Fast-IE-MKLDNN" ||
-            prefer == "Linux-WebNN-Sustained-IE-clDNN" ||
-            prefer == "Linux-WebNN-Low-IE-MYRIAD") {
+                "' onclick='javascript:click_box_menu(this)'>" + prefer.split("-")[2] + "-" + prefer.split("-")[3] + "</li>\n");
+            } else if (prefer == "Win-WebNN-Fast-IE-MKLDNN" ||
+                       prefer == "Win-WebNN-Sustained-IE-clDNN" ||
+                       prefer == "Win-WebNN-Low-IE-MYRIAD" ||
+                       prefer == "Linux-WebNN-Fast-IE-MKLDNN" ||
+                       prefer == "Linux-WebNN-Sustained-IE-clDNN" ||
+                       prefer == "Linux-WebNN-Low-IE-MYRIAD") {
                 resultHTMLStream.write(space + "      <li id='box-menu-" + prefer + "' data-info='" + prefer +
-                "' onclick='javascript:click_box_menu(this)'>log-" + prefer.split("-")[3] + "-" + prefer.split("-")[4] + "</li>\n");
+                "' onclick='javascript:click_box_menu(this)'>" + prefer.split("-")[3] + "-" + prefer.split("-")[4] + "</li>\n");
+            } else if (prefer == "Win-WebNN-Ultra-Low-IE-GNA" ||
+                       prefer == "Linux-WebNN-Ultra-Low-IE-GNA") {
+                resultHTMLStream.write(space + "      <li id='box-menu-" + prefer + "' data-info='" + prefer +
+                "' onclick='javascript:click_box_menu(this)'>" + prefer.split("-")[4] + "-" + prefer.split("-")[5] + "</li>\n");
             }
         }
 
@@ -1024,6 +1045,7 @@ var numberTotal = 0;
             graspDataSummary["fail"] = 0;
             graspDataSummary["block"] = 0;
             continueFlag = false;
+            argumentsArray = [];
 
             // Categories filter
             if (testPrefer === "macOS-Polyfill-Fast-WASM") {
@@ -1032,6 +1054,7 @@ var numberTotal = 0;
                     chromeOption = chromeOption
                         .setChromeBinaryPath(chromiumPath)
                         .addArguments("--disable-features=WebML");
+                    argumentsArray.push("--disable-features=WebML");
                 } else {
                     continue;
                 }
@@ -1041,6 +1064,7 @@ var numberTotal = 0;
                     chromeOption = chromeOption
                         .setChromeBinaryPath(chromiumPath)
                         .addArguments("--disable-features=WebML");
+                    argumentsArray.push("--disable-features=WebML");
                 } else {
                     continue;
                 }
@@ -1050,17 +1074,21 @@ var numberTotal = 0;
                     chromeOption = chromeOption
                         .setChromeBinaryPath(chromiumPath)
                         .addArguments("--enable-features=WebML");
+                    argumentsArray.push("--enable-features=WebML");
                 } else {
                     continue;
                 }
             } else if (testPrefer === "macOS-WebNN-Fast-DNNL") {
-                if (testPlatform === "Mac" && webnn && supportSwitch) {
+                if (testPlatform === "Mac" && webnn && preferSwitch.mac.DNNL) {
                     testURL = testURL + "?prefer=fast";
                     chromeOption = chromeOption
                         .setChromeBinaryPath(chromiumPath)
                         .addArguments("--use-dnnl")
                         .addArguments("--no-sandbox")
                         .addArguments("--enable-features=WebML");
+                    argumentsArray.push("--use-dnnl");
+                    argumentsArray.push("--no-sandbox");
+                    argumentsArray.push("--enable-features=WebML");
                 } else {
                     continue;
                 }
@@ -1070,6 +1098,7 @@ var numberTotal = 0;
                     chromeOption = chromeOption
                         .setChromeBinaryPath(chromiumPath)
                         .addArguments("--enable-features=WebML");
+                    argumentsArray.push("--enable-features=WebML");
                 } else {
                     continue;
                 }
@@ -1080,6 +1109,7 @@ var numberTotal = 0;
                         .androidPackage("org.chromium.chrome")
                         .addArguments("--disable-features=WebML")
                         .androidDeviceSerial(androidSN);
+                    argumentsArray.push("--disable-features=WebML");
                 } else {
                     continue;
                 }
@@ -1090,6 +1120,7 @@ var numberTotal = 0;
                         .androidPackage("org.chromium.chrome")
                         .addArguments("--disable-features=WebML")
                         .androidDeviceSerial(androidSN);
+                    argumentsArray.push("--disable-features=WebML");
                 } else {
                     continue;
                 }
@@ -1100,6 +1131,7 @@ var numberTotal = 0;
                         .androidPackage("org.chromium.chrome")
                         .addArguments("--enable-features=WebML")
                         .androidDeviceSerial(androidSN);
+                    argumentsArray.push("--disable-features=WebML");
                 } else {
                     continue;
                 }
@@ -1109,7 +1141,9 @@ var numberTotal = 0;
                     chromeOption = chromeOption
                         .setChromeBinaryPath(chromiumPath)
                         .addArguments("--no-sandbox")
-                        .addArguments("--disable-features=WebML")
+                        .addArguments("--disable-features=WebML");
+                    argumentsArray.push("--no-sandbox");
+                    argumentsArray.push("--disable-features=WebML");
                 } else {
                     continue;
                 }
@@ -1119,7 +1153,9 @@ var numberTotal = 0;
                     chromeOption = chromeOption
                         .setChromeBinaryPath(chromiumPath)
                         .addArguments("--no-sandbox")
-                        .addArguments("--disable-features=WebML")
+                        .addArguments("--disable-features=WebML");
+                    argumentsArray.push("--no-sandbox");
+                    argumentsArray.push("--disable-features=WebML");
                 } else {
                     continue;
                 }
@@ -1130,17 +1166,50 @@ var numberTotal = 0;
                         .setChromeBinaryPath(chromiumPath)
                         .addArguments("--no-sandbox")
                         .addArguments("--enable-features=WebML");
+                    argumentsArray.push("--no-sandbox");
+                    argumentsArray.push("--enable-features=WebML");
+                } else {
+                    continue;
+                }
+            } else if (testPrefer === "Win-WebNN-Fast-IE-MKLDNN") {
+                if (testPlatform === "Windows" && webnn && preferSwitch.windows.INFERENCE_ENGINE) {
+                    testURL = testURL + "?prefer=fast";
+                    chromeOption = chromeOption
+                        .setChromeBinaryPath(chromiumPath)
+                        .addArguments("--use-inference-engine")
+                        .addArguments("--no-sandbox")
+                        .addArguments("--enable-features=WebML");
+                    argumentsArray.push("--use-inference-engine");
+                    argumentsArray.push("--no-sandbox");
+                    argumentsArray.push("--enable-features=WebML");
                 } else {
                     continue;
                 }
             } else if (testPrefer === "Win-WebNN-Sustained-DML") {
-                if (testPlatform === "Windows" && webnn && supportSwitch) {
+                if (testPlatform === "Windows" && webnn && preferSwitch.windows.DML) {
                     testURL = testURL + "?prefer=sustained";
                     chromeOption = chromeOption
                         .setChromeBinaryPath(chromiumPath)
-                        .addArguments("--no-sandbox")
                         .addArguments("--use-dml")
+                        .addArguments("--no-sandbox")
                         .addArguments("--enable-features=WebML");
+                    argumentsArray.push("--use-dml");
+                    argumentsArray.push("--no-sandbox");
+                    argumentsArray.push("--enable-features=WebML");
+                } else {
+                    continue;
+                }
+            } else if (testPrefer === "Win-WebNN-Sustained-IE-clDNN") {
+                if (testPlatform === "Windows" && webnn && preferSwitch.windows.INFERENCE_ENGINE) {
+                    testURL = testURL + "?prefer=sustained";
+                    chromeOption = chromeOption
+                        .setChromeBinaryPath(chromiumPath)
+                        .addArguments("--use-inference-engine")
+                        .addArguments("--no-sandbox")
+                        .addArguments("--enable-features=WebML");
+                    argumentsArray.push("--use-inference-engine");
+                    argumentsArray.push("--no-sandbox");
+                    argumentsArray.push("--enable-features=WebML");
                 } else {
                     continue;
                 }
@@ -1151,17 +1220,50 @@ var numberTotal = 0;
                         .setChromeBinaryPath(chromiumPath)
                         .addArguments("--no-sandbox")
                         .addArguments("--enable-features=WebML");
+                    argumentsArray.push("--no-sandbox");
+                    argumentsArray.push("--enable-features=WebML");
                 } else {
                     continue;
                 }
             } else if (testPrefer === "Win-WebNN-Low-DML") {
-                if (testPlatform === "Windows" && webnn && supportSwitch) {
+                if (testPlatform === "Windows" && webnn && preferSwitch.windows.DML) {
                     testURL = testURL + "?prefer=low";
                     chromeOption = chromeOption
                         .setChromeBinaryPath(chromiumPath)
-                        .addArguments("--no-sandbox")
                         .addArguments("--use-dml")
+                        .addArguments("--no-sandbox")
                         .addArguments("--enable-features=WebML");
+                    argumentsArray.push("--use-dml");
+                    argumentsArray.push("--no-sandbox");
+                    argumentsArray.push("--enable-features=WebML");
+                } else {
+                    continue;
+                }
+            } else if (testPrefer === "Win-WebNN-Low-IE-MYRIAD") {
+                if (testPlatform === "Windows" && webnn && preferSwitch.windows.INFERENCE_ENGINE) {
+                    testURL = testURL + "?prefer=low";
+                    chromeOption = chromeOption
+                        .setChromeBinaryPath(chromiumPath)
+                        .addArguments("--use-inference-engine")
+                        .addArguments("--no-sandbox")
+                        .addArguments("--enable-features=WebML");
+                    argumentsArray.push("--use-inference-engine");
+                    argumentsArray.push("--no-sandbox");
+                    argumentsArray.push("--enable-features=WebML");
+                } else {
+                    continue;
+                }
+            } else if (testPrefer === "Win-WebNN-Ultra-Low-IE-GNA") {
+                if (testPlatform === "Windows" && webnn && preferSwitch.windows.INFERENCE_ENGINE) {
+                    testURL = testURL + "?prefer=Ultra-Low";
+                    chromeOption = chromeOption
+                        .setChromeBinaryPath(chromiumPath)
+                        .addArguments("--use-inference-engine")
+                        .addArguments("--no-sandbox")
+                        .addArguments("--enable-features=WebML");
+                    argumentsArray.push("--use-inference-engine");
+                    argumentsArray.push("--no-sandbox");
+                    argumentsArray.push("--enable-features=WebML");
                 } else {
                     continue;
                 }
@@ -1171,6 +1273,7 @@ var numberTotal = 0;
                     chromeOption = chromeOption
                         .setChromeBinaryPath(chromiumPath)
                         .addArguments("--disable-features=WebML");
+                    argumentsArray.push("--disable-features=WebML");
                 } else {
                     continue;
                 }
@@ -1180,6 +1283,7 @@ var numberTotal = 0;
                     chromeOption = chromeOption
                         .setChromeBinaryPath(chromiumPath)
                         .addArguments("--disable-features=WebML");
+                    argumentsArray.push("--disable-features=WebML");
                 } else {
                     continue;
                 }
@@ -1188,8 +1292,10 @@ var numberTotal = 0;
                     testURL = testURL + "?prefer=fast";
                     chromeOption = chromeOption
                         .setChromeBinaryPath(chromiumPath)
-                        .addArguments("--enable-features=WebML")
-                        .addArguments("--no-sandbox");
+                        .addArguments("--no-sandbox")
+                        .addArguments("--enable-features=WebML");
+                    argumentsArray.push("--no-sandbox");
+                    argumentsArray.push("--enable-features=WebML");
                 } else {
                     continue;
                 }
@@ -1198,41 +1304,66 @@ var numberTotal = 0;
                     testURL = testURL + "?prefer=sustained";
                     chromeOption = chromeOption
                         .setChromeBinaryPath(chromiumPath)
-                        .addArguments("--enable-features=WebML")
-                        .addArguments("--no-sandbox");
+                        .addArguments("--no-sandbox")
+                        .addArguments("--enable-features=WebML");
+                    argumentsArray.push("--no-sandbox");
+                    argumentsArray.push("--enable-features=WebML");
                 } else {
                     continue;
                 }
             } else if (testPrefer === "Linux-WebNN-Fast-IE-MKLDNN") {
-                if (testPlatform === "Linux" && webnn && supportSwitch) {
+                if (testPlatform === "Linux" && webnn && preferSwitch.linux.INFERENCE_ENGINE) {
                     testURL = testURL + "?prefer=fast";
                     chromeOption = chromeOption
                         .setChromeBinaryPath(chromiumPath)
-                        .addArguments("--enable-features=WebML")
                         .addArguments("--use-inference-engine")
-                        .addArguments("--no-sandbox");
+                        .addArguments("--no-sandbox")
+                        .addArguments("--enable-features=WebML");
+                    argumentsArray.push("--use-inference-engine");
+                    argumentsArray.push("--no-sandbox");
+                    argumentsArray.push("--enable-features=WebML");
                 } else {
                     continue;
                 }
             } else if (testPrefer === "Linux-WebNN-Sustained-IE-clDNN") {
-                if (testPlatform === "Linux" && webnn && supportSwitch) {
+                if (testPlatform === "Linux" && webnn && preferSwitch.linux.INFERENCE_ENGINE) {
                     testURL = testURL + "?prefer=sustained";
                     chromeOption = chromeOption
                         .setChromeBinaryPath(chromiumPath)
-                        .addArguments("--enable-features=WebML")
                         .addArguments("--use-inference-engine")
-                        .addArguments("--no-sandbox");
+                        .addArguments("--no-sandbox")
+                        .addArguments("--enable-features=WebML");
+                    argumentsArray.push("--use-inference-engine");
+                    argumentsArray.push("--no-sandbox");
+                    argumentsArray.push("--enable-features=WebML");
                 } else {
                     continue;
                 }
             } else if (testPrefer === "Linux-WebNN-Low-IE-MYRIAD") {
-                if (testPlatform === "Linux" && webnn && supportSwitch) {
+                if (testPlatform === "Linux" && webnn && preferSwitch.linux.IEMYRIAD) {
                     testURL = testURL + "?prefer=low";
                     chromeOption = chromeOption
                         .setChromeBinaryPath(chromiumPath)
-                        .addArguments("--enable-features=WebML")
                         .addArguments("--use-inference-engine")
-                        .addArguments("--no-sandbox");
+                        .addArguments("--no-sandbox")
+                        .addArguments("--enable-features=WebML");
+                    argumentsArray.push("--use-inference-engine");
+                    argumentsArray.push("--no-sandbox");
+                    argumentsArray.push("--enable-features=WebML");
+                } else {
+                    continue;
+                }
+            } else if (testPrefer === "Linux-WebNN-Ultra-Low-IE-GNA") {
+                if (testPlatform === "Linux" && webnn && preferSwitch.linux.INFERENCE_ENGINE) {
+                    testURL = testURL + "?prefer=Ultra-Low";
+                    chromeOption = chromeOption
+                        .setChromeBinaryPath(chromiumPath)
+                        .addArguments("--use-inference-engine")
+                        .addArguments("--no-sandbox")
+                        .addArguments("--enable-features=WebML");
+                    argumentsArray.push("--use-inference-engine");
+                    argumentsArray.push("--no-sandbox");
+                    argumentsArray.push("--enable-features=WebML");
                 } else {
                     continue;
                 }
@@ -1264,9 +1395,12 @@ var numberTotal = 0;
                 .setChromeOptions(chromeOption)
                 .build();
 
+            RClog("console", "checking with '" + testPrefer + "' prefer is start");
+
             await driver.get(testURL);
             await driver.wait(Until.elementLocated(By.xpath("//*[@id='mocha-stats']/li[1]/canvas")), 200000).then(function() {
                 RClog("console", "open remote URL: " + testURL);
+                RClog("console", "with arguments: \n    " + argumentsArray.join(",\n    "));
             }).catch(function() {
                 throw new Error("failed to load web page");
             });
@@ -1322,7 +1456,6 @@ var numberTotal = 0;
                 continue;
             }
 
-            RClog("console", "checking with '" + testPrefer + "' prefer is start");
             RClog("console", "checking....\n");
 
             await driver.executeScript("return document.documentElement.outerHTML").then(async function(html) {
