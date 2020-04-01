@@ -20,6 +20,8 @@ class Utils {
     this.frameError = {};
     this.totalError = {};
     this.referenceTensor;
+    this.arkInput;
+    this.targetMax = 16384;
   }
 
   async loadModel(model) {
@@ -74,6 +76,7 @@ class Utils {
         const weightsBuffer = resultBytes.buffer;
         this.rawModel = new OpenVINOModel(networkText, weightsBuffer);
         this.rawModel._rawFormat = 'OPENVINO';
+        this.arkInput = await this.loadKaldiArkFile(this.arkFile);
         break;
       default:
         throw new Error('Unrecognized model format');
@@ -97,6 +100,7 @@ class Utils {
       backend: backend,
       prefer: prefer,
       softmax: this.postOptions.softmax || false,
+      inputScaleFactor:this.arkInput.inputScaleFactor,
     };
     switch (this.rawModel._rawFormat) {
       case 'TFLITE':
@@ -148,12 +152,11 @@ class Utils {
     if (arkPath == undefined) arkPath = this.arkFile;
 
     let totalTime = 0;
-    let arkInput = await this.loadKaldiArkFile(arkPath);
     let arkScore = await this.loadKaldiArkFile(this.scoreFile);
     this.initError(this.totalError);
 
-    for (let i=0; i<arkInput.rows; i++) {
-      this.inputTensor.set(arkInput.data.subarray(i*arkInput.columns, (i+1)*arkInput.columns));
+    for (let i=0; i<this.arkInput.rows; i++) {
+      this.inputTensor.set(this.arkInput.data.subarray(i*this.arkInput.columns, (i+1)*this.arkInput.columns));
       let start = performance.now();
       await this.model.compute([this.inputTensor], [this.outputTensor]);
       let elapsed = performance.now() - start;
@@ -201,6 +204,26 @@ class Utils {
     });
   }
 
+  // The function refer with speech_sample https://github.com/opencv/dldt/blob/2020/inference-engine/samples/speech_sample/main.cpp#L166.
+  scaleFactorForQuantization(data, targetMax, numElements) {
+    let max = 0.0;
+    let scaleFactor;
+
+    for (let i = 0; i < numElements; i++) {
+      let absData = Math.abs(data[i]);
+      if (absData > max) {
+        max = absData;
+      }
+    }
+    if (max == 0) {
+      scaleFactor = 1.0;
+    } else {
+      scaleFactor = targetMax / max;
+    }
+
+    return scaleFactor;
+  }
+
   async loadKaldiArkFile(arkPath) {
     let request = new Request(arkPath);
     let response = await fetch(request);
@@ -214,11 +237,13 @@ class Utils {
     let dataLength = arkRows * arkColumns * 4;
     let dataBuffer = new Uint8Array(arkBytesArray.subarray(EOF+10, EOF+10+dataLength)).buffer;  // read buffer of data
     let arkData = new Float32Array(dataBuffer);  // read number of data
+    let inputScaleFactor = this.scaleFactorForQuantization(arkData, this.targetMax, arkRows * arkColumns);
 
     return {
       rows: arkRows,
       columns: arkColumns,
-      data: arkData
+      data: arkData,
+      inputScaleFactor: inputScaleFactor,
     }
   }
 

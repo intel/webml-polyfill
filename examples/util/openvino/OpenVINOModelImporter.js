@@ -16,6 +16,7 @@ class OpenVINOModelImporter {
     this._operandIndex = 0;
     this._backend = kwargs.backend;
     this._prefer = kwargs.prefer;
+    this._inputScaleFactor = kwargs.inputScaleFactor;
     if (this._backend === 'WebML') {
       if (nnNative === null) {
         throw Error('Fails to initialize neural network context');
@@ -245,8 +246,9 @@ class OpenVINOModelImporter {
 
     for (const input of graph.inputs) {
       const inputName = input.graphId();
+      const scale = this._inputScaleFactor == undefined ? 1.0 : this._inputScaleFactor;
       const inputType = {
-        type: this._getTypeCode(input.dataType()), dimensions: input.shape()
+        type: this._getTypeCode(input.dataType()), dimensions: input.shape(), scale
       };
       this._addNamedOperand(inputName, inputType);
     }
