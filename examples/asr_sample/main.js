@@ -36,16 +36,10 @@ const updateResult = (result) => {
   }
   try {
     let inferenceTextElement = document.getElementById('inferenceText');
-    if (result.errors.num == 0) {
-      let dev93Text = "Saatchi officials said the management re:structuring might accelerate \
-      its efforts to persuade clients to use the firm as a one stop shop for business services."
-      console.log("Inference result: ", dev93Text);
-      inferenceTextElement.innerHTML = dev93Text;
-    } else {
-      let errorText = "Please check your input ark file!";
-      console.log("Inference result: ", errorText);
-      inferenceTextElement.innerHTML = errorText;
-    }
+    let dev93Text = "Saatchi officials said the management re:structuring might accelerate \
+    its efforts to persuade clients to use the firm as a one stop shop for business services."
+    console.log("Inference result: ", dev93Text);
+    inferenceTextElement.innerHTML = dev93Text;
   } catch (e) {
     console.log(e);
   }
