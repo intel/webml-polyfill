@@ -301,7 +301,7 @@ const updateBackendComponents = (backend, prefer) => {
   }
 };
 
-const updateTitleComponent = (backend, prefer, modelIdStr, modelInfoDic) => {
+const updateTitleComponent = (backend, prefer, modelIdStr = null, modelInfoDic = null) => {
   const getExampleName = () => {
     const pathArray = location.pathname.split('/');
     const dirName = pathArray[pathArray.length - 2];
@@ -324,36 +324,45 @@ const updateTitleComponent = (backend, prefer, modelIdStr, modelInfoDic) => {
     backendText = backend + ' + WebNN';
   }
 
-  if (modelIdStr != 'none') {
-    let modelIdArray;
-    if (modelIdStr.includes('+') || modelIdStr.includes(' ')) {
-      if (modelIdStr.includes('+')) {
-        modelIdArray = modelIdStr.split('+');
-      } else if (modelIdStr.includes(' ')) {
-        modelIdArray = modelIdStr.split(' ');
-      }
-      for (let modelId of modelIdArray) {
-        let targetModelInfo = getModelFromGivenModels(modelInfoDic, modelId);
-        if (modelShow === null) {
-          modelShow = getModelFromGivenModels(modelInfoDic, modelId).modelName;
-        } else {
-          modelShow = modelShow + ' + ' + getModelFromGivenModels(modelInfoDic, modelId).modelName;
+  if (modelIdStr != null) {
+    if (modelIdStr != 'none') {
+      let modelIdArray;
+      if (modelIdStr.includes('+') || modelIdStr.includes(' ')) {
+        if (modelIdStr.includes('+')) {
+          modelIdArray = modelIdStr.split('+');
+        } else if (modelIdStr.includes(' ')) {
+          modelIdArray = modelIdStr.split(' ');
         }
+        for (let modelId of modelIdArray) {
+          let targetModelInfo = getModelFromGivenModels(modelInfoDic, modelId);
+          if (modelShow === null) {
+            modelShow = getModelFromGivenModels(modelInfoDic, modelId).modelName;
+          } else {
+            modelShow = modelShow + ' + ' + getModelFromGivenModels(modelInfoDic, modelId).modelName;
+          }
+        }
+      } else {
+        let targetModelInfo = getModelFromGivenModels(modelInfoDic, modelIdStr);
+        modelShow = targetModelInfo.modelName;
       }
     } else {
-      let targetModelInfo = getModelFromGivenModels(modelInfoDic, modelIdStr);
-      modelShow = targetModelInfo.modelName;
+      modelShow = 'None';
+    }
+    if (currentPreferText === 'None') {
+      $('#ictitle').html(`${sampleName} / ${backendText} / ${modelShow}`);
+    } else if(prefer === 'sustained' & currentOS === 'Mac OS') {
+      $('#ictitle').html(`${sampleName} / ${backendText} (${currentPreferText}/MPS) / ${modelShow}`);
+    } else {
+      $('#ictitle').html(`${sampleName} / ${backendText} (${currentPreferText}) / ${modelShow}`);
     }
   } else {
-    modelShow = 'None';
-  }
-
-  if (currentPreferText === 'None') {
-    $('#ictitle').html(`${sampleName} / ${backendText} / ${modelShow}`);
-  } else if(prefer === 'sustained' & currentOS === 'Mac OS') {
-    $('#ictitle').html(`${sampleName} / ${backendText} (${currentPreferText}/MPS) / ${modelShow}`);
-  } else {
-    $('#ictitle').html(`${sampleName} / ${backendText} (${currentPreferText}) / ${modelShow}`);
+    if (currentPreferText === 'None') {
+      $('#ictitle').html(`${sampleName} / ${backendText}`);
+    } else if(prefer === 'sustained' & currentOS === 'Mac OS') {
+      $('#ictitle').html(`${sampleName} / ${backendText} (${currentPreferText}/MPS)`);
+    } else {
+      $('#ictitle').html(`${sampleName} / ${backendText} (${currentPreferText})`);
+    }
   }
 };
 

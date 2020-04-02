@@ -23,13 +23,12 @@ class facialLandmarkDetectionExample extends baseCameraExample {
       this._runner.deleteAll();
     }
 
-    if (this.corRunner) {
+    if (this._coRunner) {
       this._coRunner.deleteAll();
     }
   };
 
   _getRunner = () => {
-    // Overwrite by inherited when example has co-work runners
     if (this._runner == null) {
       this._runner = new faceDetectorRunner();
       this._runner.setProgressHandler(updateLoadingProgressComponent);
@@ -79,6 +78,11 @@ class facialLandmarkDetectionExample extends baseCameraExample {
     const coModelInfo = getModelById(fldModelList, currentFLDModelId);
     this._setCoModelInfo(coModelInfo);
     await this._coRunner.loadModel(coModelInfo);
+  };
+
+  _setSupportedOps = (ops) => {
+    this._runner.setSupportedOps(ops);
+    this._coRunner.setSupportedOps(ops);
   };
 
   _compileModel = async () => {

@@ -14,6 +14,8 @@ class baseRunner {
     this._modelRequiredOps = null;
     this._deQuantizeParams = null;
     this._bInitialized = false; // initialized status for model
+    this._bEagerMode = false;
+    this._supportedOps = new Set();
     this._inferenceTime = 0.0; // ms
   }
 
@@ -37,6 +39,14 @@ class baseRunner {
   setProgressHandler = (handler) => {
     // Use handler to prompt for model loading progress info
     this._progressHandler = handler;
+  };
+
+  setEagerMode = (flag) => {
+    this._bEagerMode = flag;
+  };
+
+  setSupportedOps = (ops) => {
+    this._supportedOps = ops;
   };
 
   _setRawModel = (rawModel) => {
@@ -146,7 +156,7 @@ class baseRunner {
   };
 
   _getOtherResources = async () => {
-    // Overwrite by inherited if needed, likes load labels file
+    // Override by inherited if needed, likes load labels file
   };
 
   _getModelResources = async () => {
@@ -175,7 +185,7 @@ class baseRunner {
   };
 
   _getInputTensorTypedArray = () => {
-    // Overwrite by inherited if needed
+    // Override by inherited if needed
     const typedArray = this._currentModelInfo.isQuantized || false ? Uint8Array : Float32Array;
     return typedArray;
   };
@@ -186,13 +196,13 @@ class baseRunner {
   };
 
   _getOutputTensorTypedArray = () => {
-    // Overwrite by inherited if needed
+    // Override by inherited if needed
     const typedArray = this._currentModelInfo.isQuantized || false ? Uint8Array : Float32Array;
     return typedArray;
   };
 
   _initOutputTensor = () => {
-    // Overwrite by inherited if needed
+    // Override by inherited if needed
     const typedArray = this._getOutputTensorTypedArray();
     const outputSize = this._currentModelInfo.outputSize;
 
@@ -240,7 +250,8 @@ class baseRunner {
     }
 
     this._setModel(model);
-    this._model.setSupportedOps(getSupportedOps(this._currentBackend, this._currentPrefer));
+    this._model.setSupportedOps(this._supportedOps);
+    this._model.setEagerMode(this._bEagerMode);
     const compileStart = performance.now();
     const compileStatus = await this._model.createCompiledModel();
     const compileDelta = performance.now() - compileStart;
@@ -303,7 +314,7 @@ class baseRunner {
   };
 
   _updateOutput = (output) => {
-    // Overwrite by inherited if needed
+    // Override by inherited if needed
   };
 
   getOutput = () => {

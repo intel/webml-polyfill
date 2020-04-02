@@ -37,7 +37,6 @@ class speechCommandsExample extends baseMircophoneExample {
   };
 
   _predict = async () => {
-    // Inference with 'VIDEO',  overwrite by inherited for 'AUIDO'
     try {
       this._stats.begin();
       const audioOptions = {

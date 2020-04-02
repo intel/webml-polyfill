@@ -30,33 +30,33 @@ class baseApp {
   };
 
   _getRunner = () => {
-    // Overwrite by inherited
+    // Override by inherited
   };
 
   _loadModel = async () => {
-    // Overwrite by inherited
+    // Override by inherited
   };
 
   _compileModel = async () => {
-    // Overwrite by inherited
+    // Override by inherited
   };
 
   _predict = async () => {
-    // Overwrite by inherited
+    // Override by inherited
   };
 
   _processOutput = () => {
-    // Overwrite by inherited
+    // Override by inherited
   };
 
   UI = () => {
-    // Overwrite by inherited
+    // Override by inherited
     // 1._setInputElement
     // 2.ready for runner: _setModelId -> _setBackend -> _setPrefer
   };
 
   main = async () => {
-    // Overwrite by inherited
+    // Override by inherited
     // _getRunner -> _loadModel -> _compileModel -> _predict -> _processOutput
   };
 };

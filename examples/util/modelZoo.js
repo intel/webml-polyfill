@@ -841,6 +841,69 @@ const modelZoo = {
   }]
 };
 
+
+// mobileNetArchitecture = [layerName, stride]
+// conv2d: convolution layer
+// separableConv: depthwise convolution layer + pointwise convolution layer
+const mobileNet100Architecture = [
+  ['conv2d', 2],
+  ['separableConv', 1],
+  ['separableConv', 2],
+  ['separableConv', 1],
+  ['separableConv', 2],
+  ['separableConv', 1],
+  ['separableConv', 2],
+  ['separableConv', 1],
+  ['separableConv', 1],
+  ['separableConv', 1],
+  ['separableConv', 1],
+  ['separableConv', 1],
+  ['separableConv', 2],
+  ['separableConv', 1]
+];
+
+const mobileNet75Architecture = [
+  ['conv2d', 2],
+  ['separableConv', 1],
+  ['separableConv', 2],
+  ['separableConv', 1],
+  ['separableConv', 2],
+  ['separableConv', 1],
+  ['separableConv', 2],
+  ['separableConv', 1],
+  ['separableConv', 1],
+  ['separableConv', 1],
+  ['separableConv', 1],
+  ['separableConv', 1],
+  ['separableConv', 1],
+  ['separableConv', 1]
+];
+
+const mobileNet50Architecture = [
+  ['conv2d', 2],
+  ['separableConv', 1],
+  ['separableConv', 2],
+  ['separableConv', 1],
+  ['separableConv', 2],
+  ['separableConv', 1],
+  ['separableConv', 2],
+  ['separableConv', 1],
+  ['separableConv', 1],
+  ['separableConv', 1],
+  ['separableConv', 1],
+  ['separableConv', 1],
+  ['separableConv', 1],
+  ['separableConv', 1]
+];
+
+// ModelArch is for skeleton detection example
+const ModelArch = new Map([
+  [0.5, mobileNet50Architecture],
+  [0.75, mobileNet75Architecture],
+  [1.0, mobileNet100Architecture],
+  [1.01, mobileNet100Architecture],
+]);
+
 // extract model lists into the browser env for backward compatiblity
 for (const modelListName in modelZoo) {
   window[modelListName] = modelZoo[modelListName];

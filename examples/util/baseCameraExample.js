@@ -28,30 +28,28 @@ class baseCameraExample extends baseExample {
   _commonUIExtra = () => {
     if (/Mobi|Android|iPhone|iPad|iPod/.test(navigator.userAgent)) {
       // for mobile devices: smartphone, pad
-      if (this._currentInputType === 'VIDEO') {
+      if (this._currentInputType === 'camera') {
         $('#cameraswitcher').show();
       } else {
         $('#cameraswitcher').hide();
       }
 
-      $('#cameraswitch').prop('checked', this.bIsFrontCamera);
+      $('#cameraswitch').prop('checked', this._bFrontCamera);
 
       $('#img').click(() => {
         $('#cameraswitcher').hide();
-        const element = document.getElementById('feedElement');
-        this._setInputElement(element);
+        this._setInputElement(this._feedElement);
       });
 
       $('#cam').click(() => {
         $('#cameraswitcher').fadeIn();
-        const element = document.getElementById('feedMediaElement');
-        this._setInputElement(element);
+        this._setInputElement(this._feedMediaElement);
       });
 
       $('#cameraswitch').click(() => {
         $('.alert').hide();
         this.useFrontFacingCamera();
-        $('#cameraswitch').prop('checked', this.bIsFrontCamera);
+        $('#cameraswitch').prop('checked', this._bFrontCamera);
         this.main();
       });
 
