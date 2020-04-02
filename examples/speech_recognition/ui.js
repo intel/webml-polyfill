@@ -1,7 +1,7 @@
 $(document).ready(() => {
 
-  updateTitle('ASR Sample', ub, up, um);
-  constructModelTable(asrSampleModels);
+  updateTitle('Speech Recognition', ub, up, um);
+  constructModelTable(speechRecognitionModels);
 
   inputElement.addEventListener('change', (e) => {
     let files = e.target.files;

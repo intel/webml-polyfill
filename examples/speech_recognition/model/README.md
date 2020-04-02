@@ -8,7 +8,7 @@ OpenVINO
 Install OpenVINO toolkit follow the [Install Guides](https://docs.openvinotoolkit.org/latest/_docs_install_guides_installing_openvino_linux.html).
 
 ### 2. Download wsj_dnn5b_smbr model
-Download the pre-trained model from https://download.01.org/openvinotoolkit/models_contrib/speech/kaldi/wsj_dnn5b_smbr/ or using the OpenVINO [Model Downloader](https://github.com/opencv/open_model_zoo/tree/2018/model_downloader).
+Download the pre-trained model from https://download.01.org/openvinotoolkit/models_contrib/speech/kaldi/wsj_dnn5b_smbr/ or using the [converted model](https://drive.google.com/drive/folders/1oGeppm0zgxivRXbTEhlbalhFUL8Atwaz?usp=sharing).
 
 ### 3. Convert model
 You can use the following model optimizer command to convert a Kaldi nnet1 or nnet2 neural network to Intel IR format:

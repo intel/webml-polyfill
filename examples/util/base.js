@@ -805,16 +805,16 @@ speechCommandModels: [{
     paperUrl: 'https://arxiv.org/pdf/1711.07128.pdf'
 }],
 
-asrSampleModels: [{
+speechRecognitionModels: [{
   modelName: 'wsj_dnn5b (OpenVINO)',
   format: 'OpenVINO',
   modelId: 'wsj_dnn5b_openvino',
   modelSize: '115.6MB',
   inputSize: [1, 440],
   outputSize: [1, 3425],
-  modelFile: '../asr_sample/model/wsj_dnn5b.bin',
-  arkFile: '../asr_sample/ark/dev93_10.ark',
-  scoreFile: '../asr_sample/ark/dev93_scores_10.ark',
+  modelFile: '../speech_recognition/model/wsj_dnn5b.bin',
+  arkFile: '../speech_recognition/ark/dev93_10.ark',
+  scoreFile: '../speech_recognition/ark/dev93_scores_10.ark',
   preOptions: {
     mfccs: true
   },
