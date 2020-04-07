@@ -4,7 +4,7 @@
 * https://github.com/tensorflow/models/blob/master/research/object_detection/box_coders/faster_rcnn_box_coder.py
 *
 */
-function decodeOutputBoxTensor(options, outputBoxTensor, anchors) {
+const decodeOutputBoxTensor = (options, outputBoxTensor, anchors) => {
   const {
     box_size = 4,
     num_boxes = 1083 + 600 + 150 + 54 + 24 + 6
@@ -18,6 +18,7 @@ function decodeOutputBoxTensor(options, outputBoxTensor, anchors) {
   const scale_factors = [10.0, 10.0, 5.0, 5.0];
   let boxOffset = 0;
   let ty, tx, th, tw, w, h, ycenter, xcenter;
+
   for (let y = 0; y < num_boxes; ++y) {
     const [ycenter_a, xcenter_a, ha, wa] = anchors[y]
     ty = outputBoxTensor[boxOffset] / scale_factors[0];
@@ -35,7 +36,7 @@ function decodeOutputBoxTensor(options, outputBoxTensor, anchors) {
     outputBoxTensor[boxOffset + 3] = xcenter + w / 2;
     boxOffset += box_size;
   }
-}
+};
 
 /**
 * Get IOU(intersection-over-union) of 2 boxes
@@ -44,7 +45,7 @@ function decodeOutputBoxTensor(options, outputBoxTensor, anchors) {
 * @param {number[4]} boxCord2 - An 4 element Array of box coordinate.
 * @returns {number} IOU
 */
-function IOU(boxCord1, boxCord2) {
+const IOU = (boxCord1, boxCord2) => {
   if (boxCord1.length !== 4 || boxCord2.length !== 4) {
     throw new Error('[box_decode] Each input length should be 4!');
   }
@@ -60,13 +61,15 @@ function IOU(boxCord1, boxCord2) {
   let intersection = height * width;
   let area1 = (ymax1 - ymin1) * (xmax1 - xmin1);
   let area2 = (ymax2 - ymin2) * (xmax2 - xmin2);
-  let areaSum = area1 + area2 - intersection
+  let areaSum = area1 + area2 - intersection;
+
   if (areaSum === 0) {
     throw new Error('[IOU] areaSum can not be 0!');
   }
+
   let IOU = intersection / areaSum;
   return IOU;
-}
+};
 
 /**
 * Generate anchors
@@ -75,7 +78,7 @@ function IOU(boxCord1, boxCord2) {
 * https://github.com/tensorflow/models/blob/master/research/object_detection/samples/configs/ssd_mobilenet_v1_coco.config
 *
 */
-function generateAnchors(options) {
+const generateAnchors = (options) => {
   const {
     min_scale = 0.2,
     max_scale = 0.95,
@@ -87,14 +90,12 @@ function generateAnchors(options) {
   } = options;
   const num_layers = feature_map_shape_list.length;
   let box_specs_list = [];
-
   let scales = [];
 
   for (let i = 0; i < num_layers; ++i) {
     let scale = min_scale + (max_scale - min_scale) * i / (num_layers - 1);
     scales.push(scale);
   }
-  // console.log(scales)
 
   scales.forEach((scale, i) => {
     let scale_next = (i === scales.length - 1) ? 1.0 : scales[i + 1];
@@ -114,12 +115,12 @@ function generateAnchors(options) {
   });
 
   let anchors = [];
+
   for (let i = 0; i < num_layers; ++i) {
     const grid_height = feature_map_shape_list[i][0];
     const grid_width = feature_map_shape_list[i][1];
     let anchor_stride = [1.0 / grid_height, 1.0 / grid_width];
     let anchor_offset = [anchor_stride[0] / 2, anchor_stride[1] / 2];
-
     for (let h = 0; h < grid_height; ++h) {
       for (let w = 0; w < grid_width; ++w) {
         box_specs_list[i].forEach((layer_box_spec, j) => {
@@ -134,8 +135,7 @@ function generateAnchors(options) {
       }
     }
   }
-  // console.log('box_specs_list', box_specs_list)
-  // console.log('anchors', anchors)
+
   return anchors;
 }
 
@@ -146,7 +146,7 @@ function generateAnchors(options) {
 *
 * @param {object} options - Some options.
 */
-function NMS(options, outputBoxTensor, outputClassScoresTensor) {
+const NMS = (options, outputBoxTensor, outputClassScoresTensor) => {
   // Using a little higher threshold and lower max detections can save inference time with little performance loss.
   const {
     score_threshold = 0.1, // 1e-8
@@ -176,12 +176,9 @@ function NMS(options, outputBoxTensor, outputClassScoresTensor) {
         scores.push(outputClassScoresTensor[scoreIndex]);
       }
     }
-    // console.log(`NMS time${x}: ${(performance.now() - startNMS).toFixed(2)} ms`);
     let boxForClassi = [];
     let scoreForClassi = [];
     let classi = [];
-    // console.log('boxes', boxes);
-    // console.log('scores', scores);
     while (scores.length !== 0 && scoreForClassi.length < max_detections_per_class) {
       let max = 0;
       let maxIndex = 0;
@@ -209,16 +206,9 @@ function NMS(options, outputBoxTensor, outputClassScoresTensor) {
       boxes = retainBoxes;
       scores = retainScores;
     }
-    // console.log('boxForClassi', boxForClassi);
-    // console.log('scoreForClassi', scoreForClassi);
-    // console.log('classi', classi);
     boxesList = boxesList.concat(boxForClassi);
     scoresList = scoresList.concat(scoreForClassi);
     classesList = classesList.concat(classi);
-    // console.log(`boxesList`, boxesList)
-    // console.log(`scoresList`, scoresList)
-    // console.log(`classesList`, classesList)
-    // console.log(`NMS time${x}: ${(performance.now() - startNMS).toFixed(2)} ms`);
   }
 
   if (scoresList.length > max_total_detections) {
@@ -266,11 +256,9 @@ function NMS(options, outputBoxTensor, outputClassScoresTensor) {
   } else {
     totalDetections = scoresList.length;
   }
-  // console.log(`boxesList`, boxesList)
-  // console.log(`scoresList`, scoresList)
-  // console.log(`classesList`, classesList)
+
   return [totalDetections, boxesList, scoresList, classesList];
-}
+};
 
 
 /**
@@ -278,35 +266,34 @@ function NMS(options, outputBoxTensor, outputClassScoresTensor) {
 *
 * @param {object} imageSource - Input image element
 */
-function cropSSDBox(imageSource, totalDetections, boxesList, margin) {
+const cropSSDBox = (imageSource, totalDetections, boxesList, margin) => {
   let imWidth = imageSource.naturalWidth || imageSource.videoWidth;
   let imHeight = imageSource.naturalHeight || imageSource.videoHeight;
+
   for (let i = 0; i < totalDetections; ++i) {
     let [ymin, xmin, ymax, xmax] = boxesList[i];
-
-    boxesList[i][0] = Math.max(0, (ymax + ymin)/2 - (ymax - ymin)/2 * margin[2]);
-    boxesList[i][2] = Math.min(imHeight, (ymax + ymin)/2 + (ymax - ymin)/2 * margin[3]);
-    boxesList[i][1] = Math.max(0, (xmax + xmin)/2 - (xmax - xmin)/2 * margin[0]);
-    boxesList[i][3] = Math.min(imWidth, (xmax + xmin)/2 + (xmax - xmin)/2 * margin[1]);
+    boxesList[i][0] = Math.max(0, (ymax + ymin) / 2 - (ymax - ymin) / 2 * margin[2]);
+    boxesList[i][2] = Math.min(imHeight, (ymax + ymin) / 2 + (ymax - ymin) / 2 * margin[3]);
+    boxesList[i][1] = Math.max(0, (xmax + xmin) / 2 - (xmax - xmin) / 2 * margin[0]);
+    boxesList[i][3] = Math.min(imWidth, (xmax + xmin) / 2 + (xmax - xmin) / 2 * margin[1]);
   }
+
   return boxesList;
-}
+};
 
 /**
 * Draw img and box
 *
 * @param {object} imageSource - Input image element
 */
-function visualize(canvasShowElement, totalDetections, imageSource, boxesList, scoresList, classesList, labels) {
+const visualize = (canvasShowElement, totalDetections, imageSource, boxesList, scoresList, classesList, labels) => {
   let ctx = canvasShowElement.getContext('2d');
   let imWidth = imageSource.naturalWidth || imageSource.videoWidth;
   let imHeight = imageSource.naturalHeight || imageSource.videoHeight;
   canvasShowElement.width = imWidth / imHeight * canvasShowElement.height;
-
   let colors = ['#ff3860', '#ff0000', '#00b067', '#704e99', '#17a2b8', '#ffc107'];
-  ctx.drawImage(imageSource, 0, 0,
-                canvasShowElement.width,
-                canvasShowElement.height);
+  ctx.drawImage(imageSource, 0, 0, canvasShowElement.width, canvasShowElement.height);
+
   for (let i = 0; i < totalDetections; ++i) {
     // Skip background and blank
     let label = labels[classesList[i]];
@@ -321,7 +308,6 @@ function visualize(canvasShowElement, totalDetections, imageSource, boxesList, s
       ymax *= canvasShowElement.height;
       xmax *= canvasShowElement.width;
       let prob = 1 / (1 + Math.exp(-scoresList[i]));
-
       ctx.strokeStyle = colors[classesList[i] % colors.length];
       ctx.fillStyle = colors[classesList[i] % colors.length];
       ctx.lineWidth = 3;
@@ -335,11 +321,11 @@ function visualize(canvasShowElement, totalDetections, imageSource, boxesList, s
         ctx.textAlign = 'start';
         ctx.fillText(text, xmin, ymin - 3);
       } else {
-        ctx.fillRect(xmin + 2, ymin , width + 4,  parseInt(ctx.font, 10));
+        ctx.fillRect(xmin + 2, ymin, width + 4, parseInt(ctx.font, 10));
         ctx.fillStyle = "white";
         ctx.textAlign = 'start';
         ctx.fillText(text, xmin + 2, ymin + 15);
       }
     }
   }
-}
+};

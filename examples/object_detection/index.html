@@ -253,9 +253,9 @@
     </div>
   </section>
 
-  <img id='image' crossorigin='anonymous' class='img-fluid' alt='Responsive image' src='./img/image1.jpg'>
+  <img id='feedElement' crossorigin='anonymous' class='img-fluid' alt='Responsive image' src='./img/image1.jpg'>
   <canvas id='canvas' width=640 height=480></canvas>
-  <video id='video' autoplay playsinline></video>
+  <video id='feedMediaElement' autoplay playsinline></video>
 
   <footer>
     <div class='container'>
@@ -331,19 +331,30 @@
   <script src='../static/lib/greensock/tweenmax.js'></script>
   <script src='../static/lib/stats.customized.min.js'></script>
   <script src='../static/lib/protobuf.min.js'></script>
+
+  <script src='../static/js/ui.common.js'></script>
+
   <script src='../../dist/webml-polyfill.js'></script>
+
   <script src='../util/base.js'></script>
+  <script src='../util/modelZoo.js'></script>
+  <script src='../util/baseRunner.js'></script>
+  <script src='../util/baseApp.js'></script>
+  <script src='../util/baseExample.js'></script>
+  <script src='../util/baseCameraExample.js'></script>
+
   <script src='../util/tflite/flatbuffers/js/flatbuffers.js'></script>
   <script src='../util/tflite/schema/schema_generated.js'></script>
   <script src='../util/tflite/TfLiteModelUtils.js'></script>
   <script src='../util/tflite/TFliteModelImporter.js'></script>
   <script src='../util/decoders/SsdDecoder.js'></script>
   <script src='../util/decoders/Yolo2Decoder.js'></script>
-  <script src='utils.js'></script>
-  <script src='../static/js/main.common.js'></script>
+
+  <script src='objectDetectionRunner.js'></script>
+  <script src='objectDetectionExample.js'></script>
   <script src='main.js'></script>
-  <script src='../static/js/ui.common.js'></script>
-  <script src='ui.js'></script>
+
+
   <script async src="https://www.googletagmanager.com/gtag/js?id=UA-147662084-1"></script>
   <script>
     window.dataLayer = window.dataLayer || [];

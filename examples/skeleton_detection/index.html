@@ -288,11 +288,14 @@
         </div>
       </div>
 
+
       <div id='inference' class='shoulddisplay mt-3' style='display: none;'>
-        <div class='row text-center tc' id='inferencetitle'>
+          <div class='row text-center tc' id='inferencetitle'>
           <div id='inferenceTime'></div>
         </div>
       </div>
+
+
 
       <div class='tab-content clearfix row'>
         <div class='tab-pane text-center active col-sm' id='imagetab'>
@@ -300,11 +303,12 @@
             <div class='col-lg-12 col-xs-12 text-center'>
               <div class='row'>
                 <div class='col bt-3 mb-3'>
+                  <img id='feedElement' hidden crossorigin='anonymous' class='img-fluid' alt='Responsive image' src='./img/download.png'>
                   <canvas id='canvas'></canvas>
                   <h4>Single Pose Estimation</h4>
                 </div>
                 <div class='multi col bt-3 mb-3'>
-                  <canvas id='canvasmulti'></canvas>
+                  <canvas id='canvasMulti'></canvas>
                   <h4>Multiple Pose Estimation</h4>
                 </div>
               </div>
@@ -343,11 +347,10 @@
                 </svg>
               </i>
             </div>
+            <video id='feedMediaElement' autoplay playsinline hidden></video>
             <div id='showcanvas' class='text-center'>
-              <canvas id='canvasvideo'></canvas>
+              <canvas id='canvasvideo' width=640 height=480 ></canvas>
             </div>
-            <video id='video' autoplay playsinline hidden></video>
-            <canvas hidden id='scalevideo' width='640' height='480'></canvas>
             <div id='cameraswitcher' class='custom-control custom-switch'>
               <input type='checkbox' class='custom-control-input' id='cameraswitch'>
               <label class='custom-control-label' for='cameraswitch'>Front-facing</label>
@@ -357,7 +360,6 @@
       </div>
     </div>
   </section>
-  <canvas hidden id='scaleimage'></canvas>
   <footer>
     <div class='container'>
       <div class='row'>
@@ -430,18 +432,25 @@
   <script src='../static/lib/stickyjs/sticky.js'></script>
   <script src='../static/lib/greensock/tweenmax.js'></script>
   <script src='../static/lib/stats.customized.min.js'></script>
+
+  <script src='../static/js/ui.common.js'></script>
+
   <script src='../../dist/webml-polyfill.js'></script>
+
   <script src='../util/base.js'></script>
+  <script src='../util/modelZoo.js'></script>
+
   <script src='src/helperFunc.js'></script>
   <script src='src/PoseNet.js'></script>
   <script src='src/MaxHeap.js'></script>
   <script src='src/decodePose.js'></script>
   <script src='src/DrawOutputs.js'></script>
-  <script src='utils.js'></script>
-  <script src='../static/js/main.common.js'></script>
+
+  <script src='skeletonDetectionRunner.js'></script>
+  <script src='skeletonDetectionExample.js'></script>
   <script src='main.js'></script>
-  <script src='../static/js/ui.common.js'></script>
-  <script src='ui.js'></script>
+
+
   <script async src="https://www.googletagmanager.com/gtag/js?id=UA-147662084-1"></script>
   <script>
     window.dataLayer = window.dataLayer || [];

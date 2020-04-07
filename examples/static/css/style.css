@@ -1278,9 +1278,7 @@ video {
   text-align: center;
   max-width: 470px;
   max-height: 280px;
-  border: 1px solid rgba(0, 0, 0, 0.1);
   margin-top: -1.25rem;
-  box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.2), inset 0 0 1px 0 rgba(255, 255, 255, 1);
 }
 
 video.fullscreen, #canvasvideo.fullscreen, #canvasshow.fullscreen {
@@ -1723,8 +1721,18 @@ button.xclose {
 #posenet canvas {
   width: 100%;
   height: 100%;
-  display: block; 
+  display: block;
   margin-bottom: 0.5rem;
+}
+
+#posenet #canvasvideo.fullscreen {
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 402;
+  margin: 0;
 }
 
 #posenet #canvasvideo {
@@ -1842,7 +1850,7 @@ button.xclose {
     width: 100%;
     height: 100%;
   }
-  
+
   #posenet #fullscreen i svg {
     left: 85%;
   }
@@ -1857,7 +1865,7 @@ button.xclose {
 }
 
 #posenet #my-gui-container.fullscreen ul li {
-  margin-bottom: 0.3rem; 
+  margin-bottom: 0.3rem;
 }
 #posenet #my-gui-container.fullscreen ul li .c input[type=checkbox]:before {
   border-color: rgba(255, 255, 255, 0.2);
@@ -2033,8 +2041,8 @@ button.xclose {
     margin-top: 1.3rem;
   }
 }
- 
-#semanticsegmentation #image {
+
+#semanticsegmentation #feedElement {
   display: none;
 }
 
@@ -2306,7 +2314,7 @@ button.xclose {
   }
 }
 
-#objectdetection #image, #objectdetection #video {
+#objectdetection #feedElement, #objectdetection #feedMediaElement {
   display: none;
 }
 
@@ -2368,7 +2376,7 @@ button.xclose {
 }
 
 @media (max-width: 768px) {
-  
+
   #objectdetection #canvasshow, #faciallandmarkdetection #canvasshow, #emotionanalysis #canvasshow {
     max-width: 100%;
   }
@@ -2384,7 +2392,7 @@ button.xclose {
   }
 }
 
-#superresolution #image {
+#superresolution #feedElement {
   display: none;
 }
 
@@ -2436,23 +2444,11 @@ button.xclose {
   }
 }
 
-#faciallandmarkdetection #l-face_landmark_tflite, #emotionanalysis #l-face_landmark_tflite {
-  color: rgba(255, 255, 255, 1.0);
-  background-color: rgba(25, 190, 225, 0.8);
-  border: 1px solid rgba(25, 190, 225, 0.9);
-  padding: 0px 6px;
-}
-
-#faciallandmarkdetection #l-face_landmark_tflite:hover, #emotionanalysis #l-face_landmark_tflite:hover  {
-  background-color: rgba(25, 190, 225, 0.9);
-  border: 1px solid rgba(25, 190, 225, 1.0);
-}
-
-#faciallandmarkdetection #image, #faciallandmarkdetection #video, #faciallandmarkdetection #canvas1 {
+#faciallandmarkdetection #feedElement, #faciallandmarkdetection #feedMediaElement, #faciallandmarkdetection #canvas1 {
   display: none;
 }
 
-#emotionanalysis #image, #emotionanalysis #video, #emotionanalysis #canvas1 {
+#emotionanalysis #feedElement, #emotionanalysis #feedMediaElement, #emotionanalysis #canvas1 {
   display: none;
 }
 
@@ -2643,7 +2639,7 @@ button.xclose {
   margin-left: -23px;
   z-index: 100;
   /* border-top-right-radius: 50%;
-  border-top-left-radius: 50%; 
+  border-top-left-radius: 50%;
   border-bottom-right-radius: 50%;
   border-bottom-left-radius: 50%;
   */
@@ -2706,7 +2702,7 @@ button.xclose {
   }
 }
 
-/* 
+/*
   color scheme:
   rgba(255, 111, 97, 1.0);
   rgba(73, 193, 100, 1.0);
@@ -2724,7 +2720,7 @@ button.xclose {
 }
 
 .custom-switch {
-  
+
 }
 
 .custom-control-label::before {
@@ -2941,7 +2937,7 @@ button.xclose {
   height: 34px;
   border-radius: 0;
   }
-  
+
 
 .labelblock {
   display: block;
@@ -3003,7 +2999,7 @@ tr.model th {
 
 #facerecognition #inferenceTime {
   display: inline-block;
-  width: auto; 
+  width: auto;
 }
 
 #facerecognition .icdisplay .expand {
