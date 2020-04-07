@@ -95,6 +95,13 @@ function setOptionsPerLayer() {
             "prefer": 'low',
             'iterations': iterations
           };
+        } else if (prefer === "ultra-low") {
+          prefer = nn.PREFER_ULTRA_LOW_POWER;
+          options = {
+            "backend": 'WebML',
+            "prefer": 'ultra-low',
+            'iterations': iterations
+          };
         }
       }
     }
@@ -152,6 +159,13 @@ function setOptions() {
           "prefer": 'low',
           'iterations': "1"
         };
+      } else if (prefer === "ultra-low") {
+        prefer = nn.PREFER_ULTRA_LOW_POWER;
+        options = {
+          "backend": 'WebML',
+          "prefer": 'ultra-low',
+          'iterations': "1"
+        };
       }
     }
   }
@@ -165,6 +179,8 @@ function getPreferenceCode(preferenceStr) {
     prefer = nn.PREFER_FAST_SINGLE_ANSWER;
   } else if (preferenceStr === 'low') {
     prefer = nn.PREFER_LOW_POWER;
+  } else if (preferenceStr === 'ultra-low') {
+    prefer = nn.PREFER_ULTRA_LOW_POWER;
   }else {
     console.error('Invalid preference string.');
   }

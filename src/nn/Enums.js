@@ -137,6 +137,10 @@ export const PreferenceCode = {
    * processing successive frames coming from the camera.
    */
   SUSTAINED_SPEED: 2,
+  /**
+   * Prefer executing in a way using GNA plugin that minimizes battery drain.
+   */
+  ULTRA_LOW_POWER: 3,
 };
 
 export const OperationCode = {
