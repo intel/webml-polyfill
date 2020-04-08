@@ -1,10 +1,22 @@
 {
     "platform": "Linux",
     "chromiumPath": "/usr/bin/chromium-browser-unstable",
-    "IEMYRIAD": false,
-    "supportSwitch": false,
     "webmlPolyfill": true,
     "webnn": true,
+    "switch": {
+        "linux": {
+            "INFERENCE_ENGINE": true,
+            "BACKEND_LIST": ["IE-MKLDNN", "IE-clDNN", "IE-MYRIAD", "IE-GNA"]
+        },
+        "mac": {
+            "DNNL": false
+        },
+        "windows": {
+            "DML": false,
+            "INFERENCE_ENGINE": false,
+            "BACKEND_LIST": ["IE-MKLDNN", "IE-clDNN", "IE-MYRIAD", "IE-GNA"]
+        }
+    },
     "remoteURL": "https://brucedai.github.io/webnnt/test/index-local.html",
     "needCheckRealModelTC": false,
     "localServerURL": "http://localhost:8081/test/onnx-realmodel-test.html"
