@@ -1,0 +1,4 @@
+assets/js/owt/**/*.js
+assets/js/webnn/**/*.js
+static/js/webnn/**/*.js
+static/js/ss/**/*.js
