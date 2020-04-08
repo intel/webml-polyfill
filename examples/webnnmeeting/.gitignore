@@ -5,6 +5,7 @@
 *.key
 *.pem
 
+*.tflite
 
 # Logs
 /logs
