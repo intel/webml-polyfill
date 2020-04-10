@@ -1,4 +1,4 @@
-class speechCommandsExample extends baseMircophoneExample {
+class SpeechCommandsExample extends BaseMircophoneExample {
   constructor(models) {
     super(models);
   }
@@ -31,7 +31,7 @@ class speechCommandsExample extends baseMircophoneExample {
   };
 
   _createRunner = () => {
-    const runner = new speechCommandsRunner();
+    const runner = new SpeechCommandsRunner();
     runner.setProgressHandler(updateLoadingProgressComponent);
     return runner;
   };

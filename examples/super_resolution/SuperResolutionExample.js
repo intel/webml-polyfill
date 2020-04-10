@@ -1,4 +1,4 @@
-class superResolutionExample extends baseCameraExample {
+class SuperResolutionExample extends BaseCameraExample {
   constructor(models) {
     super(models);
   }

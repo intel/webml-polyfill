@@ -1,4 +1,4 @@
-class facialLandmarkDetectionExample extends baseCameraExample {
+class FacialLandmarkDetectionExample extends BaseCameraExample {
   constructor(models) {
     super(models);
     this._coRunner = null; // if more co-work runners, add this._coRunner2 ...
@@ -30,12 +30,12 @@ class facialLandmarkDetectionExample extends baseCameraExample {
 
   _getRunner = () => {
     if (this._runner == null) {
-      this._runner = new faceDetectorRunner();
+      this._runner = new FaceDetectorRunner();
       this._runner.setProgressHandler(updateLoadingProgressComponent);
     }
 
     if (this._coRunner == null) {
-      this._coRunner = new baseRunner();
+      this._coRunner = new BaseRunner();
       this._coRunner.setProgressHandler(updateLoadingProgressComponent);
     }
   };

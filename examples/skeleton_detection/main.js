@@ -1,4 +1,4 @@
-const example = new skeletonDetectionExample({model: humanPoseEstimationModels});
+const example = new SkeletonDetectionExample({model: humanPoseEstimationModels});
 // use front facing camera
 example.useFrontFacingCamera(true);
 

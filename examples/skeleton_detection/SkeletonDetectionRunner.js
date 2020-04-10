@@ -1,4 +1,4 @@
-class skeletonDetectionRunner {
+class SkeletonDetectionRunner {
   constructor() {
     this._currentModelInfo = {};
     this._modelConfig;

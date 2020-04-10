@@ -1,4 +1,4 @@
-const example = new emotionAnalysisExample({emotionAnalysis: emotionAnalysisModels,
+const example = new EmotionAnalysisExample({emotionAnalysis: emotionAnalysisModels,
                                             faceDetection: faceDetectionModels});
 // use front facing camera
 example.useFrontFacingCamera(true);

@@ -1,4 +1,4 @@
-class semanticSegmentationExample extends baseCameraExample {
+class SemanticSegmentationExample extends BaseCameraExample {
   constructor(models) {
     super(models);
     this._renderer = new Renderer(document.getElementById('canvasvideo'));
@@ -138,7 +138,7 @@ class semanticSegmentationExample extends baseCameraExample {
   };
 
   _createRunner = () => {
-    const runner = new semanticSegmentationRunner();
+    const runner = new SemanticSegmentationRunner();
     runner.setProgressHandler(updateLoadingProgressComponent);
     return runner;
   };

@@ -1,4 +1,4 @@
-class baseCameraExample extends baseExample {
+class BaseCameraExample extends BaseExample {
   constructor(models) {
     super(models);
     this._bFrontCamera = false;

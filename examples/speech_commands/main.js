@@ -1,4 +1,4 @@
-const example = new speechCommandsExample({ model: speechCommandModels});
+const example = new SpeechCommandsExample({ model: speechCommandModels});
 
 $(document).ready(() => {
   example.UI();

@@ -1,4 +1,4 @@
-class baseRunner {
+class BaseRunner {
   constructor() {
     this._currentBackend = null;
     this._currentPrefer = null;
