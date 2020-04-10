@@ -246,17 +246,14 @@ class baseRunner {
         model = new OpenVINOModelImporter(configs);
         break;
       default:
-        throw new Error(`Unsupported '${rawModel._rawFormat}' input, require 'IMAGE' | 'VIDEO' | 'AUDIO' input.`);
+        throw new Error(`Unsupported '${rawModel._rawFormat}' input.`);
     }
 
     this._setModel(model);
     this._model.setSupportedOps(this._supportedOps);
     this._model.setEagerMode(this._bEagerMode);
-    const compileStart = performance.now();
     const compileStatus = await this._model.createCompiledModel();
-    const compileDelta = performance.now() - compileStart;
     console.log(`Compilation Status: [${compileStatus}]`);
-    console.log(`Compiled Model Time: ${compileDelta.toFixed(2)} ms`);
 
     this._setModelRequiredOps(this._model.getRequiredOps());
 
@@ -281,16 +278,12 @@ class baseRunner {
 
   run = async (src, options) => {
     let status = 'ERROR';
-    let tensorArray = [];
 
     if (src.tagName === 'AUDIO') {
-      tensorArray = await getTensorArrayByAudio(src, options);
+      await getTensorArrayByAudio(src, this._inputTensor, options);
     } else {
-      tensorArray = getTensorArray(src, options);
+      getTensorArray(src, this._inputTensor, options);
     }
-
-    const typedArray = this._getInputTensorTypedArray();
-    this._inputTensor = [new typedArray(tensorArray)];
 
     const start = performance.now();
     status = await this._model.compute(this._inputTensor, this._outputTensor);

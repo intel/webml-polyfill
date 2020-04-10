@@ -201,8 +201,8 @@ const hasSearchParam = (key) => {
   return searchParams.has(key);
 };
 
-const getTensorArray = (image, options, layout = 'NHWC') => {
-  let tensor = [];
+const getTensorArray = (image, inputTensor, options, layout = 'NHWC') => {
+  let tensor = inputTensor[0];
 
   image.width = image.videoWidth || image.naturalWidth;
   image.height = image.videoHeight || image.naturalHeight;
@@ -300,8 +300,6 @@ const getTensorArray = (image, options, layout = 'NHWC') => {
   } else {
     throw new Error(`Unsupport '${channelScheme}' Layout`);
   }
-
-  return tensor;
 };
 
 const downsampleAudioBuffer = (buffer, rate, baseRate) => {
@@ -367,11 +365,11 @@ const getAudioMfccs = (pcm,
   return audioMfccs;
 };
 
-const getTensorArrayByAudio = async (audio, options) => {
+const getTensorArrayByAudio = async (audio, inputTensor, options) => {
   const sampleRate = options.sampleRate;
   const mfccsOptions = options.mfccsOptions;
   const inputSize = options.inputSize.reduce((a, b) => a * b);
-  let tensor = new Array(inputSize).fill(0);
+  let tensor = inputTensor[0];
   let audioContext = new (window.AudioContext || window.webkitAudioContext)();
   let rate = audioContext.sampleRate;
 
@@ -402,8 +400,6 @@ const getTensorArrayByAudio = async (audio, options) => {
       tensor[i] = abuffer[i];
     }
   }
-
-  return tensor;
 };
 
 const prepareOutputTensorSSD = (outputBoxTensor, outputClassScoresTensor, options) => {
