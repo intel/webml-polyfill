@@ -81,7 +81,7 @@ class SkeletonDetectionRunner {
     const result = await this._model.createCompiledModel();
     console.log(`Created and compiled model status: [${result}]`);
 
-    this._inputTensor = new Float32Array(scaleSize.reduce((a, b) => a * b));
+    this._inputTensor = [new Float32Array(scaleSize.reduce((a, b) => a * b))];
     let heatmapTensorSize;
 
     if ((this._modelConfig.version == 0.75 || this._modelConfig.version == 0.5) && this._modelConfig.outputStride == 32) {
@@ -95,7 +95,7 @@ class SkeletonDetectionRunner {
     this._displacementFwd = new Float32Array(heatmapTensorSize / 17 * 32);
     this._displacementBwd = new Float32Array(heatmapTensorSize / 17 * 32);
     const start = performance.now();
-    await this._model.compute(this._inputTensor, this._heatmapTensor,
+    await this._model.compute(this._inputTensor[0], this._heatmapTensor,
                               this._offsetTensor, this._displacementFwd,
                               this._displacementBwd);
     const delta = performance.now() - start;
@@ -120,10 +120,9 @@ class SkeletonDetectionRunner {
   run = async (src, options) => {
     if (!this._bInitialized) return;
 
-    let tensorArray = getTensorArray(src, options);
-    this._inputTensor = new Float32Array(tensorArray);
+    getTensorArray(src, this._inputTensor, options);
     const start = performance.now();
-    await this._model.compute(this._inputTensor, this._heatmapTensor,
+    await this._model.compute(this._inputTensor[0], this._heatmapTensor,
                               this._offsetTensor, this._displacementFwd,
                               this._displacementBwd);
     const delta = performance.now() - start;
