@@ -180,7 +180,7 @@ if (testPlatform == "Linux") {
 
         if (preferSwitch.windows.DML) {
             testPrefers.push("Win-WebNN-Sustained-DML");
-            testPrefers.push("Win-WebNN-Low-DML");
+            // testPrefers.push("Win-WebNN-Low-DML");
         }
 
         if (preferSwitch.windows.INFERENCE_ENGINE) {
