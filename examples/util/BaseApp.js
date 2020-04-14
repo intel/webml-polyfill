@@ -1,4 +1,4 @@
-class baseApp {
+class BaseApp {
   constructor(models) {
     this._inferenceModels = models;
     this._currentModelId = 'none';

@@ -1,4 +1,4 @@
-const example = new semanticSegmentationExample({model: semanticSegmentationModels});
+const example = new SemanticSegmentationExample({model: semanticSegmentationModels});
 // use front facing camera
 example.useFrontFacingCamera(true);
 

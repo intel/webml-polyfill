@@ -1,4 +1,4 @@
-class baseMircophoneExample extends baseExample {
+class BaseMircophoneExample extends BaseExample {
   constructor(models) {
     super(models);
   }

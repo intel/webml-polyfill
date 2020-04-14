@@ -1,4 +1,4 @@
-class semanticSegmentationRunner extends baseRunner {
+class SpeechCommandsRunner extends BaseRunner {
   constructor() {
     super();
     this._labels = null;
@@ -16,10 +16,6 @@ class semanticSegmentationRunner extends baseRunner {
 
   _getOtherResources = async () => {
     await this._getLabels(this._currentModelInfo.labelsFile);
-  };
-
-  _getOutputTensorTypedArray = () => {
-    return Int32Array;
   };
 
   _updateOutput = (output) => {

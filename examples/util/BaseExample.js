@@ -1,7 +1,7 @@
-class skeletonDetectionExample {
+class BaseExample extends BaseApp {
   constructor(models) {
-    this._currentModelInfo = models.model[0];
-    this._currentInputType = 'image'; // input type: image, camera
+    super(models);
+    this._currentInputType = 'image'; // input type: image, camera, audio, microphone
     // <image> or <audio> element
     this._feedElement = document.getElementById('feedElement');
     // <video> or <audio> element when using live Camera or Microphone
@@ -9,56 +9,29 @@ class skeletonDetectionExample {
     // track and stats serve for 'VIDEO' | 'AUDIO' input
     this._track = null;
     this._stats = new Stats();
+    this._currentModelInfo = {};
     // _hiddenControlsFlag ('0'/'1') is for UI shows/hides model & backend control
     this._hiddenControlsFlag = '0';
-    this._currentInputElement = null;
-    // Backend type: 'WASM' | 'WebGL' | 'WebML'
-    this._currentBackend = 'WASM';
-    // Prefer type: 'none' | 'fast' | 'sustained' | 'low'
-    this._currentPrefer = 'none';
-    this._modelConfig = {
-      version: 1.01,
-      outputStride: 16,
-      scaleFactor: 0.5,
-      useAtrousConv: true,
-    };
-    this._showConfig = {
-      minScore: 0.15,
-      maxDetections: 15,
-      nmsRadius: 20.0,
-      showPose: true,
-      showBoundingBox: false,
-    };
-    this._bFrontCamera = false;
-    this._runner = null;
   }
+
+  _getDefaultInputType = () => {
+    // Override by inherited
+  };
+
+  _getDefaultInputMediaType = () => {
+    // Override by inherited
+  };
 
   _setInputType = (t) => {
     this._currentInputType = t;
   };
 
-  _setInputElement = (element) => {
-    this._currentInputElement = element;
-  };
-
-  useFrontFacingCamera = (flag) => {
-    if (typeof flag == "undefined") {
-      this._bFrontCamera = !this._bFrontCamera;
-    } else {
-      this._bFrontCamera = flag;
-    }
-  };
-
-  _setBackend = (backend) => {
-    this._currentBackend = backend;
-  };
-
-  _setPrefer = (prefer) => {
-    this._currentPrefer = prefer;
-  };
-
   _setTrack = (track) => {
     this._track = track;
+  };
+
+  _setModelInfo = (modelInfo) => {
+    this._currentModelInfo = modelInfo;
   };
 
   _setHiddenControlsFlag = (flag) => {
@@ -79,7 +52,9 @@ class skeletonDetectionExample {
       if (url === "") {
         this._setBackend('WASM');
         this._setPrefer('none');
-        this._setInputType('image');
+        this._setModelId('none');
+        let inputType = this._getDefaultInputType();
+        this._setInputType(inputType);
         this._setInputElement(this._feedElement);
         this._setHiddenControlsFlag('0');
       } else {
@@ -88,14 +63,18 @@ class skeletonDetectionExample {
         this._setPrefer(prefer);
         const backend = parseSearchParams('b');
         this._setBackend(backend);
+        let modelId = parseSearchParams('m');
+        this._setModelId(modelId);
         let feedEle = null;
         const inputType = parseSearchParams('s');
         this._setInputType(inputType);
         switch (inputType.toLowerCase()) {
           case 'image':
+          case 'audio':
             feedEle = this._feedElement;
             break;
           case 'camera':
+          case 'microphone':
             feedEle = this._feedMediaElement;
             break;
           default:
@@ -108,12 +87,18 @@ class skeletonDetectionExample {
       }
     }
 
-    const locSearch = `?prefer=${this._currentPrefer}&b=${this._currentBackend}&s=${this._currentInputType}&d=${this._hiddenControlsFlag}`;
+    const locSearch = `?prefer=${this._currentPrefer}&b=${this._currentBackend}&m=${this._currentModelId}&s=${this._currentInputType}&d=${this._hiddenControlsFlag}`;
     window.history.pushState(null, null, locSearch);
   };
 
-  UI = () => {
-    this._updateHistoryEntryURL(location.search);
+  _commonUIExtra = () => {
+  };
+
+  _commonUI = () => {
+    // set model components
+    setModelComponents(this._inferenceModels, this._currentModelId);
+    // set preference tip components
+    setPreferenceTipComponents();
 
     //set backend components
     if (hasSearchParam('b')) {
@@ -132,7 +117,31 @@ class skeletonDetectionExample {
 
     updateBackendComponents(this._currentBackend, this._currentPrefer);
 
-    if (this._currentInputType === 'image') {
+    // Click trigger of model <input> element
+    $('input:radio[name=m]').click(() => {
+      $('.alert').hide();
+      $('.offload').hide();
+      let um = $('input:radio[name="m"]:checked').attr('id');
+      this._setModelId(um);
+      const modelClasss = getModelListByClass();
+      const seatModelClass = $('#' + um).parent().parent().attr('id');
+      if (modelClasss.length > 1) {
+        for (let modelClass of modelClasss) {
+          if (seatModelClass !== modelClass) {
+            let modelName = $('.model[id=' + modelClass + '] input:radio[checked="checked"]').attr('id');
+            if (typeof modelName !== 'undefined') {
+              um = um + '+' + modelName;
+              this._setModelId(um);
+            }
+          }
+        }
+      }
+      this._updateHistoryEntryURL();
+      updateModelComponentsStyle(um);
+      this.main();
+    });
+
+    if (this._currentInputType === 'image' || this._currentInputType === 'audio') {
       $('.nav-pills li').removeClass('active');
       $('.nav-pills #img').addClass('active');
       $('#cameratab').removeClass('active');
@@ -291,7 +300,8 @@ class skeletonDetectionExample {
       $('#imagetab').addClass('active');
       $('#cameratab').removeClass('active');
       this._setInputElement(this._feedElement);
-      this._setInputType('image');
+      let inputType = this._getDefaultInputType();
+      this._setInputType(inputType);
       this._updateHistoryEntryURL();
       this.main();
     });
@@ -304,7 +314,8 @@ class skeletonDetectionExample {
       $('#cameratab').addClass('active');
       $('#imagetab').removeClass('active');
       this._setInputElement(this._feedMediaElement);
-      this._setInputType('camera');
+      let mediaType = this._getDefaultInputMediaType();
+      this._setInputType(mediaType);
       this._updateHistoryEntryURL();
       this._feedMediaElement.onloadeddata = this.main();
     });
@@ -326,135 +337,63 @@ class skeletonDetectionExample {
 
     $('.offload').hide();
 
-    if (/Mobi|Android|iPhone|iPad|iPod/.test(navigator.userAgent)) {
-      // for mobile devices: smartphone, pad
-      if (this._currentInputType === 'camera') {
-        $('#cameraswitcher').show();
-      } else {
-        $('#cameraswitcher').hide();
-      }
+    this._commonUIExtra();
+  };
 
-      $('#cameraswitch').prop('checked', this._bFrontCamera);
+  _customUI = () => {
+    // Override by inherited if needed
+  };
 
-      $('#img').click(() => {
-        $('#cameraswitcher').hide();
-        this._setInputElement(this._feedElement);
-      });
+  UI = () => {
+    this._updateHistoryEntryURL(location.search);
 
-      $('#cam').click(() => {
-        $('#cameraswitcher').fadeIn();
-        this._setInputElement(this._feedMediaElement);
-      });
-
-      $('#cameraswitch').click(() => {
-        $('.alert').hide();
-        this.useFrontFacingCamera();
-        $('#cameraswitch').prop('checked', this._bFrontCamera);
-        this.main();
-      });
-
-      $('#fullscreen i svg').click(() => {
-        $('#cameraswitcher').toggleClass('fullscreen');
-      })
-    } else {
-      $('#cameraswitcher').hide();
-    }
-
-    $('#cam').click(() => {
-      $('#fps').show();
-    });
-
-    $('#fullscreen i svg').click(() => {
-      const toggleFullScreen = () => {
-        let doc = window.document;
-        let docEl = doc.documentElement;
-        let requestFullScreen = docEl.requestFullscreen || docEl.mozRequestFullScreen || docEl.webkitRequestFullScreen || docEl.msRequestFullscreen;
-        let cancelFullScreen = doc.exitFullscreen || doc.mozCancelFullScreen || doc.webkitExitFullscreen || doc.msExitFullscreen;
-        if (!doc.fullscreenElement && !doc.mozFullScreenElement && !doc.webkitFullscreenElement && !doc.msFullscreenElement) {
-          requestFullScreen.call(docEl);
-        } else {
-          cancelFullScreen.call(doc);
-        }
-      };
-
-      $('#fullscreen i').toggle();
-      toggleFullScreen();
-      $('#feedMediaElement').toggleClass('fullscreen');
-      // $('#overlay').toggleClass('video-overlay');
-      $('#fps').toggleClass('fullscreen');
-      $('#fullscreen i').toggleClass('fullscreen');
-      $('#ictitle').toggleClass('fullscreen');
-      $('#inference').toggleClass('fullscreen');
-      $('#canvasvideo').toggleClass('fullscreen');
-      $('#my-gui-container').toggleClass('fullscreen');
-    });
-
-    this._feedElement.addEventListener('load', () => {
-      this.main();
-    }, false);
-
-    $('#option').show();
-
-    $('#sdmodel').change(() => {
-      this._modelConfig.version = $('#sdmodel').find('option:selected').attr('value');
-      this.main();
-    });
-
-    $('#sdstride').change(() => {
-      this._modelConfig.outputStride = parseInt($('#sdstride').find('option:selected').attr('value'));
-      this.main();
-    });
-
-    $('#scalefactor').change(() => {
-      this._modelConfig.scaleFactor = parseFloat($('#scalefactor').find('option:selected').attr('value'));
-      this.main();
-    });
-
-    $('#sdscorethreshold').change(() => {
-      this._showConfig.minScore = parseFloat($('#sdscorethreshold').val());
-      this._processOutput();
-    });
-
-    $('#sdnmsradius').change(() => {
-      this._showConfig.nmsRadius = parseInt($('#sdnmsradius').val());
-      this._processOutput();
-    });
-
-    $('#sdmaxdetections').change(() => {
-      this._showConfig.maxDetections = parseInt($('#sdmaxdetections').val());
-      this._processOutput();
-    });
-
-    $('#sdshowpose').change(() => {
-      this._showConfig.showPose = $('#sdshowpose').prop('checked');
-      this._processOutput();
-    });
-
-    $('#sduseatrousconvops').change(() => {
-      this._modelConfig.useAtrousConv = $('#sduseatrousconvops').prop('checked');
-      this.main();
-    });
-
-    $('#sdshowboundingbox').change(() => {
-      this._showConfig.showBoundingBox = $('#sdshowboundingbox').prop('checked');
-      this._processOutput();
-    });
+    // Show components and triggers
+    this._commonUI();
+    this._customUI();
   };
 
   _freeMemoryResources = () => {
+    // Override by inherited when example has co-work runners
     if (this._runner) {
       this._runner.deleteAll();
     }
   };
 
+  _createRunner = () => {
+    // Override by inherited if needed
+    const runner = new BaseRunner();
+    runner.setProgressHandler(updateLoadingProgressComponent);
+    return runner;
+  };
+
+  _getRunner = () => {
+    // Override by inherited when example has co-work runners
+    if (this._runner == null) {
+      this._runner = this._createRunner();
+    }
+  };
+
+  _loadModel = async () => {
+    // Override by inherited when example has co-work runners
+    const modelInfo = getModelById(this._inferenceModels.model, this._currentModelId);
+
+    if (modelInfo != null) {
+      this._setModelInfo(modelInfo);
+      await this._runner.loadModel(modelInfo);
+    } else {
+      throw new Error('Unrecorgnized model, please check your typed url.');
+    }
+  };
+
+  _compileModel = async () => {
+    // Override by inherited when example has co-work runners
+    await this._runner.compileModel(this._currentBackend, this._currentPrefer);
+  };
+
   _predict = async () => {
-    const inputSize = this._currentModelInfo.inputSize;
-    const outputStride = Number(this._modelConfig.outputStride);
-    const scaleFactor = this._modelConfig.scaleFactor;
-    const scaleWidth = getValidResolution(scaleFactor, inputSize[1], outputStride);
-    const scaleHeight = getValidResolution(scaleFactor, inputSize[0], outputStride);
+    // Override by inherited when example has co-work runners
     const drawOptions = {
-      inputSize: [scaleHeight, scaleWidth, inputSize[2]],
+      inputSize: this._currentModelInfo.inputSize,
       preOptions: this._currentModelInfo.preOptions,
       imageChannels: 4,
     };
@@ -462,7 +401,12 @@ class skeletonDetectionExample {
     this._processOutput();
   };
 
-  _predictFrame = async () => {
+  _getMediaConstraints = () => {
+    // Override by inherited
+    return {};
+  };
+
+  _predictFrame = async (stream) => {
     if (this._currentInputType === 'camera')  {
       this._stats.begin();
       await this._predict();
@@ -472,128 +416,105 @@ class skeletonDetectionExample {
   };
 
   _predictStream = async () => {
-    let stream = await navigator.mediaDevices.getUserMedia({audio: false, video: {facingMode: (this._bFrontCamera ? 'user' : 'environment')}});
+    // Override by inherited for 'AUIDO'
+    const constraints = this._getMediaConstraints();
+    let stream = await navigator.mediaDevices.getUserMedia(constraints);
     this._currentInputElement.srcObject = stream;
     this._setTrack(stream.getTracks()[0]);
     await showProgressComponent('done', 'done', 'current'); // 'COMPLETED_COMPILATION'
-    await this._predictFrame();
+    await this._predictFrame(stream);
     await showProgressComponent('done', 'done', 'done'); // 'COMPLETED_INFERENCE'
     readyShowResultComponents();
   };
 
-  _processOutput = () => {
-    const drawPoses = (src, canvas, poses, options) => {
-      const ctx = canvas.getContext('2d');
-      const width = src.naturalWidth || src.videoWidth;
-      const height = src.naturalHeight || src.videoHeight;
-      canvas.setAttribute('width', width);
-      canvas.setAttribute('height', height);
-      if (src.videoWidth) {
-        ctx.scale(-1, 1);
-        ctx.translate(-width, 0);
-      }
-      ctx.drawImage(src, 0, 0, width, height);
-      if (poses.length == 0) {
-        return;
-      }
-      poses.forEach((pose) => {
-        const scaleX = canvas.width / options.scaleWidth;
-        const scaleY = canvas.height / options.scaleHeight;
-        if (pose.score >= options.minScore) {
-          if (options.showPose) {
-            drawKeypoints(pose.keypoints, options.minScore, ctx, scaleX, scaleY);
-            drawSkeleton(pose.keypoints, options.minScore, ctx, scaleX, scaleY);
-          }
-          if (options.showBoundingBox) {
-            drawBoundingBox(pose.keypoints, ctx, scaleX, scaleY);
-          }
-        }
-      });
-    };
+  _setSupportedOps = (ops) => {
+    this._runner.setSupportedOps(ops);
+  };
 
-    const output = this._runner.getOutput();
-    const inferenceTime = output.inferenceTime;
-    console.log(`Inference time: ${inferenceTime} ms`);
-    const inferenceTimeElement = document.getElementById('inferenceTime');
-    const inputSize = this._currentModelInfo.inputSize;
-    const outputStride = Number(this._modelConfig.outputStride);
-    const scaleFactor = this._modelConfig.scaleFactor;
-    const scaleWidth = getValidResolution(scaleFactor, inputSize[1], outputStride);
-    const scaleHeight = getValidResolution(scaleFactor, inputSize[0], outputStride);
-    const scaleInputSize = [1, scaleHeight, scaleWidth, this._currentModelInfo.inputSize[2]];
-    if (this._currentInputType === 'image') {
-        const singlePose = decodeSinglepose(sigmoid(output.heatmapTensor),
-                                            output.offsetTensor,
-                                            toHeatmapsize(scaleInputSize, outputStride),
-                                            outputStride);
-        const start = performance.now();
-        const multiPoses = decodeMultiPose(sigmoid(output.heatmapTensor), output.offsetTensor,
-                                           output.displacementFwd, output.displacementBwd,
-                                           outputStride, this._showConfig.maxDetections, this._showConfig.minScore,
-                                           this._showConfig.nmsRadius, toHeatmapsize(scaleInputSize, outputStride));
-        const decodeTime = performance.now() - start;
-        console.log(`Decode time: ${decodeTime} ms`);
-        inferenceTimeElement.innerHTML = `Inference Time: <span class='ir'>${inferenceTime.toFixed(2)} ms</span> Decoding Time: <span class='ir'>${decodeTime.toFixed(2)} ms</span>`;
-        let options = {
-          inputHeight: this._currentModelInfo.inputSize[0],
-          inputWidth: this._currentModelInfo.inputSize[1],
-          scaleHeight: scaleHeight,
-          scaleWidth: scaleWidth,
-          minScore: this._showConfig.minScore,
-          showPose: this._showConfig.showPose,
-          showBoundingBox: this._showConfig.showBoundingBox,
-        }
-        const canvasSingle = document.getElementById('canvas');
-        drawPoses(this._currentInputElement, canvasSingle, singlePose, options);
-        const canvasMulti = document.getElementById('canvasMulti');
-        drawPoses(this._currentInputElement, canvasMulti, multiPoses, options);
+  _getRequiredOps = () => {
+    return this._runner.getRequiredOps();
+  };
+
+  _getSubgraphsSummary = () => {
+    return this._runner.getSubgraphsSummary();
+  };
+
+  _processCustomOutput = () => {
+    // Override by inherited if needed
+  };
+
+  _processOutput = () => {
+    let inferenceTime = 0;
+
+    if (Object.keys(this._inferenceModels).length === 1) {
+      const output = this._runner.getOutput();
+      inferenceTime = output.inferenceTime;
     } else {
-      const start = performance.now();
-      const multiPoses = decodeMultiPose(sigmoid(output.heatmapTensor), output.offsetTensor,
-                                         output.displacementFwd, output.displacementBwd,
-                                         outputStride, this._showConfig.maxDetections, this._showConfig.minScore,
-                                         this._showConfig.nmsRadius, toHeatmapsize(scaleInputSize, outputStride));
-      const decodeTime = performance.now() - start;
-      console.log(`Decode time: ${decodeTime} ms`);
-      inferenceTimeElement.innerHTML = `Inference Time: <span class='ir'>${inferenceTime.toFixed(2)} ms</span>`;
-      let options = {
-        inputHeight: this._currentModelInfo.inputSize[0],
-        inputWidth: this._currentModelInfo.inputSize[1],
-        scaleHeight: scaleHeight,
-        scaleWidth: scaleWidth,
-        minScore: this._showConfig.minScore,
-        showPose: this._showConfig.showPose,
-        showBoundingBox: this._showConfig.showBoundingBox,
-      }
-      const canvas = document.getElementById('canvasvideo');
-      drawPoses(this._currentInputElement, canvas, multiPoses, options);
+      // show cumulative inference time by multi runners
+      inferenceTime = this._totalInferenceTime;
     }
+
+    // show inference time
+    console.log(`Inference time: ${inferenceTime} ms`);
+    let inferenceTimeElement = document.getElementById('inferenceTime');
+    inferenceTimeElement.innerHTML = `inference time: <span class='ir'>${inferenceTime.toFixed(2)} ms</span>`;
+
+    // show custom output info
+    this._processCustomOutput();
   };
 
   main = async () => {
     // Update UI title component info
-    updateTitleComponent(this._currentBackend, this._currentPrefer);
+    updateTitleComponent(this._currentBackend, this._currentPrefer, this._currentModelId, this._inferenceModels);
 
-    try {
-      if (this._runner == null) {
-        this._runner = new skeletonDetectionRunner();
+    if (this._currentModelId === 'none') {
+      showErrorComponent('No model selected', 'Please select model to start prediction.');
+      return;
+    } else {
+      const modelCategoryLen = Object.keys(this._inferenceModels).length;
+      if (modelCategoryLen > 1) {
+        if (this._currentModelId.includes('+') || this._currentModelId.includes(' ')) {
+          let modelIdArray;
+          if (this._currentModelId.includes('+')) {
+            modelIdArray = this._currentModelId.split('+');
+          } else if (this._currentModelId.includes(' ')) {
+            modelIdArray = this._currentModelId.split(' ');
+          }
+          if (modelCategoryLen > modelIdArray.length) {
+            showErrorComponent('Not enough selected models', `Please select ${modelCategoryLen} kinds of models to start prediction.`);
+            return;
+          }
+        } else {
+          showErrorComponent('Not enough selected models', `Please select ${modelCategoryLen} kinds of models to start prediction.`);
+          return;
+        }
       }
+    }
+    try {
+      // Get Runner for execute inference
+      this._getRunner();
       const supportedOps = getSupportedOps(this._currentBackend, this._currentPrefer);
-      this._runner.setSupportedOps(supportedOps);
-      // UI shows model-loading progress
+      this._setSupportedOps(supportedOps);
+      // UI shows loading model progress
       await showProgressComponent('current', 'pending', 'pending');
-      await this._runner.loadAndCompileModel(this._currentBackend, this._currentPrefer, this._currentModelInfo, this._modelConfig);
-      const requiredOps = this._runner.getRequiredOps();
+      // Load model
+      await this._loadModel();
+      // UI shows compiling model progress, includes warm up model
+      await showProgressComponent('done', 'current', 'pending');
+      // Compile model
+      await this._compileModel();
+      const requiredOps = this._getRequiredOps();
       // show offload ops info
       showHybridComponent(supportedOps, requiredOps, this._currentBackend, this._currentPrefer);
       // show sub graphs summary
-      const subgraphsSummary = this._runner.getSubgraphsSummary();
+      const subgraphsSummary = this._getSubgraphsSummary();
       showSubGraphsSummary(subgraphsSummary);
       // UI shows inferencing progress
       await showProgressComponent('done', 'done', 'current');
       // Inference with Web NN API
       switch (this._currentInputType) {
         case 'image':
+        case 'audio':
           // Stop webcam opened by navigator.getUserMedia
           if (this._track != null) {
             this._track.stop();
@@ -603,6 +524,7 @@ class skeletonDetectionExample {
           readyShowResultComponents();
           break;
         case 'camera':
+        case 'microphone':
           await this._predictStream();
           break;
         default:

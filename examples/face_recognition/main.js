@@ -1,4 +1,4 @@
-const example = new faceRecognitionExample({faceRecognition: faceRecognitionModels,
+const example = new FaceRecognitionExample({faceRecognition: faceRecognitionModels,
                                             faceDetection: faceDetectionModels});
 // use front facing camera
 example.useFrontFacingCamera(true);

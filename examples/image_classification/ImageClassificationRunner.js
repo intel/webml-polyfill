@@ -1,4 +1,4 @@
-class imageClassificationRunner extends baseRunner {
+class ImageClassificationRunner extends BaseRunner {
   constructor() {
     super();
     this._labels = null;
