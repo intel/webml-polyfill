@@ -1,4 +1,4 @@
-class objectDetectionRunner extends baseRunner {
+class ObjectDetectionRunner extends BaseRunner {
   constructor() {
     super();
     this._labels = null;

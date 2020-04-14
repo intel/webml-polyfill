@@ -1,4 +1,4 @@
-class objectDetectionExample extends baseCameraExample {
+class ObjectDetectionExample extends BaseCameraExample {
   constructor(models) {
     super(models);
   }
@@ -10,7 +10,7 @@ class objectDetectionExample extends baseCameraExample {
   };
 
   _createRunner = () => {
-    const runner = new objectDetectionRunner();
+    const runner = new ObjectDetectionRunner();
     runner.setProgressHandler(updateLoadingProgressComponent);
     return runner;
   };

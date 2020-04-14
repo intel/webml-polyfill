@@ -1,4 +1,4 @@
-const example = new imageClassificationExample({model: imageClassificationModels});
+const example = new ImageClassificationExample({model: imageClassificationModels});
 
 $(document).ready(() => {
   example.UI();

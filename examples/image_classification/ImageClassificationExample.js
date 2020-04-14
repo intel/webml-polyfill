@@ -1,4 +1,4 @@
-class imageClassificationExample extends baseCameraExample {
+class ImageClassificationExample extends BaseCameraExample {
   constructor(models) {
     super(models);
   }
@@ -10,7 +10,7 @@ class imageClassificationExample extends baseCameraExample {
   };
 
   _createRunner = () => {
-    const runner = new imageClassificationRunner();
+    const runner = new ImageClassificationRunner();
     runner.setProgressHandler(updateLoadingProgressComponent);
     return runner;
   };

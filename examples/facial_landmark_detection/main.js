@@ -1,4 +1,4 @@
-const example = new facialLandmarkDetectionExample({facialLandmarkDetection: facialLandmarkDetectionModels,
+const example = new FacialLandmarkDetectionExample({facialLandmarkDetection: facialLandmarkDetectionModels,
                                                     faceDetection: faceDetectionModels});
 // use front facing camera
 example.useFrontFacingCamera(true);

@@ -1,4 +1,4 @@
-const app = new objectDetectionExample({model: objectDetectionModels});
+const app = new ObjectDetectionExample({model: objectDetectionModels});
 
 $(document).ready(() => {
   app.UI();

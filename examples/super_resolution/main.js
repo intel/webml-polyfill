@@ -1,4 +1,4 @@
-const example = new superResolutionExample({model: superResolutionModels});
+const example = new SuperResolutionExample({model: superResolutionModels});
 
 $(document).ready(() => {
   example.UI();
