@@ -14,7 +14,7 @@ class bounding_box {
     this.score = -1;
   }
 
-  get_label() {
+  get_label = () => {
     if (this.label === -1) {
       let max = 0;
       let index = 0;
@@ -28,17 +28,17 @@ class bounding_box {
     }
 
     return this.label;
-  }
+  };
 
-  get_score() {
+  get_score = () => {
     if (this.score === -1)
       this.score = this.classes[this.get_label()];
 
     return this.score;
-  }
+  };
 }
 
-function decodeYOLOv2(options, output, anchors) {
+const decodeYOLOv2 = (options, output, anchors) => {
   const {
     nb_class = 80,
     nb_box = 5,
@@ -47,7 +47,6 @@ function decodeYOLOv2(options, output, anchors) {
     obj_threshold = 0.5,
     nms_threshold = 0.3,
   } = options;
-
   let size = 4 + 1 + nb_class;  // (x, y, w, h) + confidence + classes
 
   // decode the output by the network
@@ -57,6 +56,7 @@ function decodeYOLOv2(options, output, anchors) {
 
   let classes = [];
   let indexes = [];
+
   for (let i = 0; i < grid_h * grid_w * nb_box; ++i) {
     let classes_i = output.slice((nb_class + 5) * i + 5, (nb_class + 5) * (i + 1));
     classes_i = _softmax(classes_i);
@@ -89,8 +89,7 @@ function decodeYOLOv2(options, output, anchors) {
     w = anchors[2 * b + 0] * Math.exp(w) / grid_w;   // unit: image width
     h = anchors[2 * b + 1] * Math.exp(h) / grid_h;   // unit: image height
     confidence = output[size * index + 4];
-
-    box = new bounding_box(x-w/2, y-h/2, x+w/2, y+h/2, confidence, class_i);
+    box = new bounding_box(x - w / 2, y - h / 2, x + w / 2, y + h / 2, confidence, class_i);
     boxes.push(box);
   });
 
@@ -101,7 +100,7 @@ function decodeYOLOv2(options, output, anchors) {
     for (let i = 0; i < boxes.length; ++i) {
       tmp_boxes[i] = [boxes[i], i];
     }
-    sorted_boxes = tmp_boxes.sort((a, b) => { return (b[0].classes[c] - a[0].classes[c]);});
+    sorted_boxes = tmp_boxes.sort((a, b) => { return (b[0].classes[c] - a[0].classes[c]); });
     for (let i = 0; i < sorted_boxes.length; ++i) {
       if (sorted_boxes[i][0].classes[c] === 0) continue;
       else {
@@ -123,6 +122,7 @@ function decodeYOLOv2(options, output, anchors) {
   });
 
   let result = [];
+
   for (let i = 0; i < true_boxes.length; ++i) {
     if (Math.max(...true_boxes[i].classes) === 0) continue;
     let predicted_class_id = true_boxes[i].get_label();
@@ -133,11 +133,13 @@ function decodeYOLOv2(options, output, anchors) {
     let d = (true_boxes[i].ymax - true_boxes[i].ymin);
     result.push([predicted_class_id, a, b, c, d, score]);
   }
-  return result;
-}
 
-function getBoxes(results, margin) {
+  return result;
+};
+
+const getBoxes = (results, margin) => {
   let object_boxes = [];
+
   for (let i = 0; i < results.length; ++i) {
     // display detected object
     let class_id = results[i][0];
@@ -146,21 +148,20 @@ function getBoxes(results, margin) {
     let w = results[i][3];
     let h = results[i][4];
     let prob = results[i][5];
-
     [xmin, xmax, ymin, ymax] = cropYoloBox(x, y, w, h, margin);
     object_boxes.push([class_id, xmin, xmax, ymin, ymax, prob]);
   }
-  return object_boxes;
-}
 
-function drawBoxes(image, canvas, object_boxes, labels) {
+  return object_boxes;
+};
+
+const drawBoxes = (image, canvas, object_boxes, labels) => {
   ctx = canvas.getContext('2d');
   let imWidth = image.naturalWidth || image.videoWidth;
   let imHeight = image.naturalHeight || image.videoHeight;
   // drawImage
   canvas.width = imWidth / imHeight * canvas.height;
   ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
-
   // drawBox
   let colors = ['#ff0000', '#ffc107', '#00b067', '#704e99', '#ff3860', '#009bea'];
   object_boxes.forEach(box => {
@@ -189,9 +190,9 @@ function drawBoxes(image, canvas, object_boxes, labels) {
       ctx.fillText(text, xmin + 2, ymin + 15);
     }
   });
-}
+};
 
-function bbox_iou(box1, box2) {
+const bbox_iou = (box1, box2) => {
   let intersect_w = _interval_overlap([box1.xmin, box1.xmax], [box2.xmin, box2.xmax]);
   let intersect_h = _interval_overlap([box1.ymin, box1.ymax], [box2.ymin, box2.ymax]);
   let intersect = intersect_w * intersect_h;
@@ -201,9 +202,9 @@ function bbox_iou(box1, box2) {
   let h2 = box2.ymax - box2.ymin;
   let union = w1 * h1 + w2 * h2 - intersect;
   return intersect / union;
-}
+};
 
-function _interval_overlap(interval_a, interval_b) {
+const _interval_overlap = (interval_a, interval_b) => {
   let [x1, x2] = interval_a;
   let [x3, x4] = interval_b;
 
@@ -218,34 +219,36 @@ function _interval_overlap(interval_a, interval_b) {
     else
       return Math.min(x2, x4) - x3;
   }
-}
+};
 
-function _sigmoid(x) {
+const _sigmoid = (x) => {
   return 1 / (1 + Math.exp(-x));
-}
+};
 
-function _softmax(arr) {
+const _softmax = (arr) => {
   const max = Math.max(...arr);
   let sum = 0;
+
   for (let i = 0; i < arr.length; ++i) {
     sum = Math.exp(arr[i] - max) + sum;
   }
+
   for (let i = 0; i < arr.length; ++i) {
     arr[i] = Math.exp(arr[i] - max) / sum;
   }
+
   return arr;
-}
+};
 
 // crop box
-function cropYoloBox(x, y, w, h, margin) {
-  let xmin = x - w/2 * margin[0];
-  let xmax = x + w/2 * margin[1];
-  let ymin = y - h/2 * margin[2];
-  let ymax = y + h/2 * margin[3];
-
+const cropYoloBox = (x, y, w, h, margin) => {
+  let xmin = x - w / 2 * margin[0];
+  let xmax = x + w / 2 * margin[1];
+  let ymin = y - h / 2 * margin[2];
+  let ymax = y + h / 2 * margin[3];
   if (xmin < 0) xmin = 0;
   if (ymin < 0) ymin = 0;
   if (xmax > 1) xmax = 1;
   if (ymax > 1) ymax = 1;
   return [xmin, xmax, ymin, ymax];
-}
+};

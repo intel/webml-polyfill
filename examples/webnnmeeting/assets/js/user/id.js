@@ -9,9 +9,9 @@ import {
 } from '~/assets/js/rest'
 import getTime from '~/assets/js/user/time'
 import {
-  baseRunner,
-  semanticSegmentationRunner
-} from '~/assets/js/webnn/util/runner'
+  BaseRunner,
+  SemanticSegmentationRunner
+} from '~/assets/js/webnn/util/BaseRunner'
 import Renderer from '~/assets/js/webnn/webgl/DrawOutputs'
 import Control from '~/components/Control.vue'
 import Clock from '~/components/Clock.vue'
@@ -327,27 +327,14 @@ export default {
         this.renderer.backgroundImageSource = this.$refs.defaultbgimg
       }
     },
-    getClippedSize(source) {
-      const width = config.semanticsegmentation.inputSize[0]
-      const imWidth = source.naturalWidth | source.videoWidth
-      const imHeight = source.naturalHeight | source.videoHeight
-      const resizeRatio = Math.max(Math.max(imWidth, imHeight) / width, 1)
-      const scaledWidth = Math.floor(imWidth / resizeRatio)
-      const scaledHeight = Math.floor(imHeight / resizeRatio)
-      return [scaledWidth, scaledHeight]
-    },
-    drawResultComponents(data, source) {
-      this.renderer.uploadNewTexture(source, this.getClippedSize(source))
-      this.renderer.drawOutputs(data)
-    },
     initRunner() {
       // eslint-disable-next-line new-cap
-      this.baserunner = new baseRunner(
+      this.baserunner = new BaseRunner(
         config.semanticsegmentation,
         this.updateProgress
       )
       // eslint-disable-next-line new-cap
-      this.runner = new semanticSegmentationRunner(
+      this.runner = new SemanticSegmentationRunner(
         config.semanticsegmentation,
         this.updateProgress
       )
@@ -374,44 +361,54 @@ export default {
     //   this.getSSStream()
     //   this.$refs.ssvideo.srcObject = this.ssstream
     // },
-    handleInferencedResult(result, source) {
-      const showInferenceTime = (time) => {
-        try {
-          this.inferencetime = time.toFixed(2)
-          console.log(`Inference time: ${this.inferencetime} ms`)
-        } catch (e) {
-          console.log(e)
-        }
-      }
-      try {
-        if (result) {
-          showInferenceTime(result.time)
-          this.stats.begin()
-          this.drawResultComponents(result.drawData, source)
-          this.showfps = fps
-          this.stats.end()
-        }
-      } catch (e) {
-        console.log(e)
-      }
+    getClippedSize(source) {
+      const width = config.semanticsegmentation.inputSize[0]
+      const imWidth = source.videoWidth
+      const imHeight = source.videoHeight
+      const resizeRatio = Math.max(Math.max(imWidth, imHeight) / width, 1)
+      const scaledWidth = Math.floor(imWidth / resizeRatio)
+      const scaledHeight = Math.floor(imHeight / resizeRatio)
+      return [scaledWidth, scaledHeight]
     },
-    async runPredict(source) {
-      // const inputSize = config.semanticsegmentation.inputSize
-      const options = {
+    getSegMap() {
+      const output = this.runner.getOutput()
+      const segMap = {
+        data: output.outputTensor,
+        outputShape: config.semanticsegmentation.outputSize,
+        labels: output.labels
+      }
+      return segMap
+    },
+    customOutput(source) {
+      this.renderer.uploadNewTexture(source, this.getClippedSize(source))
+      this.stats.begin()
+      this.renderer.drawOutputs(this.getSegMap())
+      this.stats.end()
+    },
+    output() {
+      const source = this.$refs.localvideo
+      const output = this.runner.getOutput()
+      this.inferencetime = output.inferenceTime.toFixed(2)
+      this.showfps = fps
+      console.log(
+        `Inference time: ${this.inferencetime} ms / FPS: ${this.showfps}`
+      )
+      this.customOutput(source)
+    },
+    async predict(source) {
+      const drawOptions = {
         inputSize: config.semanticsegmentation.inputSize,
         preOptions: config.semanticsegmentation.preOptions || {},
-        imageChannels: 4, // RGBA
-        drawWH: this.getClippedSize(source)
+        imageChannels: 4,
+        scaledFlag: true
       }
-      const ret = await this.runner.predict(source, options)
-      return ret
+      await this.runner.run(source, drawOptions)
     },
-    async startPredictCamera() {
-      const ret = await this.runPredict(this.$refs.localvideo)
-      this.handleInferencedResult(ret, this.$refs.localvideo)
-      // this.sstimer = requestAnimationFrame(this.startPredictCamera)
-      // not using nAF because that limites us to 60FPS
-      this.sstimer = setTimeout(this.startPredictCamera, 0)
+    async predictFrame() {
+      const source = this.$refs.localvideo
+      await this.predict(source)
+      this.output()
+      this.sstimer = setTimeout(this.predictFrame, 0)
     },
     async stopSS() {
       this.ssmode = false
@@ -448,7 +445,7 @@ export default {
       }
       this.getSSStream()
       this.initRenderer(effect)
-      await this.startPredictCamera()
+      this.predictFrame()
       deleteStream(this.roomId, this.localPublication.id)
       await this.publishLocal(true)
       // updateStream(this.roomId, this.localPublication.id)
@@ -456,12 +453,12 @@ export default {
     async initSS() {
       this.initRunner()
       if (this.runner) {
-        await this.runner.loadModel()
+        await this.runner.loadModel(config.semanticsegmentation)
         // await this.runner.initModel('WebML', 'sustained')
         if (this.backend === 'webml') {
           this.backend = 'WebML'
         }
-        await this.runner.initModel(this.backend, this.prefer)
+        await this.runner.compileModel(this.backend, this.prefer)
       }
       this.initss = true
     },

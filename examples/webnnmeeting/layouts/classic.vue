@@ -17,7 +17,7 @@ export default {
         defer: true
       },
       {
-        src: '../../js/webnn/util/tflite/flatbuffers.js',
+        src: '../../js/webnn/util/tflite/flatbuffers/js/flatbuffers.js',
         defer: true
       },
       {

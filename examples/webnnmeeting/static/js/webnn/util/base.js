@@ -7,871 +7,13 @@ if (navigator.ml.isPolyfill) {
   nnPolyfill = navigator.ml_polyfill.getNeuralNetworkContext();
 }
 
-const preferMap = {
-  'MPS': 'sustained',
-  'BNNS': 'fast',
-  'sustained': 'SUSTAINED_SPEED',
-  'fast': 'FAST_SINGLE_ANSWER',
-  'low': 'LOW_POWER',
-};
-
-const modelZoo = {
-
-imageClassificationModels: [{
-  modelName: 'MobileNet v1 (TFLite)',
-  format: 'TFLite',
-  modelId: 'mobilenet_v1_tflite',
-  modelSize: '16.9MB',
-  inputSize: [224, 224, 3],
-  outputSize: 1001,
-  modelFile: '../image_classification/model/mobilenet_v1_1.0_224.tflite',
-  labelsFile: '../image_classification/model/labels1001.txt',
-  preOptions: {
-    mean: [127.5, 127.5, 127.5],
-    std: [127.5, 127.5, 127.5],
-  },
-  intro: 'An efficient Convolutional Neural Networks for Mobile Vision Applications.',
-  paperUrl: 'https://arxiv.org/pdf/1704.04861.pdf'
-}, {
-  modelName: 'MobileNet v1 Quant (TFLite)',
-  format: 'TFLite',
-  modelId: 'mobilenet_v1_quant_tflite',
-  isQuantized: true,
-  modelSize: '4.3MB',
-  inputSize: [224, 224, 3],
-  outputSize: 1001,
-  modelFile: '../image_classification/model/mobilenet_v1_1.0_224_quant.tflite',
-  labelsFile: '../image_classification/model/labels1001.txt',
-  intro: 'Quantized version of Mobilenet v1',
-  paperUrl: 'https://arxiv.org/pdf/1712.05877.pdf'
-}, {
-  modelName: 'MobileNet v2 (TFLite)',
-  format: 'TFLite',
-  modelId: 'mobilenet_v2_tflite',
-  modelSize: '14.0MB',
-  inputSize: [224, 224, 3],
-  outputSize: 1001,
-  modelFile: '../image_classification/model/mobilenet_v2_1.0_224.tflite',
-  labelsFile: '../image_classification/model/labels1001.txt',
-  preOptions: {
-    mean: [127.5, 127.5, 127.5],
-    std: [127.5, 127.5, 127.5],
-  },
-  intro: 'MobileNetV2 improves the state of the art performance of mobile models.',
-  paperUrl: 'https://arxiv.org/abs/1801.04381'
-}, {
-  modelName: 'MobileNet v2 Quant (TFLite)',
-  format: 'TFLite',
-  modelId: 'mobilenet_v2_quant_tflite',
-  isQuantized: true,
-  modelSize: '6.9MB',
-  inputSize: [224, 224, 3],
-  outputSize: 1001,
-  modelFile: '../image_classification/model/mobilenet_v2_1.0_224_quant.tflite',
-  labelsFile: '../image_classification/model/labels1001.txt',
-  postOptions: {
-    softmax: true,
-  },
-  intro: 'Quantized version of Mobilenet v2',
-  paperUrl: 'https://arxiv.org/abs/1806.08342'
-}, {
-  modelName: 'SqueezeNet (TFLite)',
-  format: 'TFLite',
-  modelId: 'squeezenet_tflite',
-  modelSize: '5.0MB',
-  inputSize: [224, 224, 3],
-  outputSize: 1001,
-  modelFile: '../image_classification/model/squeezenet.tflite',
-  labelsFile: '../image_classification/model/labels1001.txt',
-  preOptions: {
-    mean: [127.5, 127.5, 127.5],
-    std: [127.5, 127.5, 127.5],
-  },
-  intro: 'A light-weight CNN providing Alexnet level accuracy with 50X fewer parameters.',
-  paperUrl: 'https://arxiv.org/abs/1602.07360'
-}, {
-  modelName: 'Inception v3 (TFLite)',
-  format: 'TFLite',
-  modelId: 'inception_v3_tflite',
-  modelSize: '95.3MB',
-  inputSize: [299, 299, 3],
-  outputSize: 1001,
-  modelFile: '../image_classification/model/inception_v3.tflite',
-  labelsFile: '../image_classification/model/labels1001.txt',
-  preOptions: {
-    mean: [127.5, 127.5, 127.5],
-    std: [127.5, 127.5, 127.5],
-  },
-  intro: 'Inception-v3 is trained for the ImageNet Large Visual Recognition Challenge.',
-  paperUrl: 'http://arxiv.org/abs/1512.00567'
-}, {
-  modelName: 'Inception v3 Quant (TFLite)',
-  format: 'TFLite',
-  modelId: 'inception_v3_quant_tflite',
-  isQuantized: true,
-  modelSize: '23.9MB',
-  inputSize: [299, 299, 3],
-  outputSize: 1001,
-  modelFile: '../image_classification/model/inception_v3_quant.tflite',
-  labelsFile: '../image_classification/model/labels1001.txt',
-  postOptions: {
-    softmax: true,
-  },
-  intro: 'Quantized version of Inception v3.',
-  paperUrl: 'https://arxiv.org/abs/1806.08342'
-}, {
-  modelName: 'Inception v4 (TFLite)',
-  format: 'TFLite',
-  modelId: 'inception_v4_tflite',
-  modelSize: '170.7MB',
-  inputSize: [299, 299, 3],
-  outputSize: 1001,
-  modelFile: '../image_classification/model/inception_v4.tflite',
-  labelsFile: '../image_classification/model/labels1001.txt',
-  preOptions: {
-    mean: [127.5, 127.5, 127.5],
-    std: [127.5, 127.5, 127.5],
-  },
-  intro: 'Inception architecture that has been shown to achieve very good performance at relatively low computational cost.',
-  paperUrl: 'https://arxiv.org/abs/1602.07261'
-}, {
-  modelName: 'Inception v4 Quant (TFLite)',
-  format: 'TFLite',
-  modelId: 'inception_v4_quant_tflite',
-  isQuantized: true,
-  modelSize: '42.9MB',
-  inputSize: [299, 299, 3],
-  outputSize: 1001,
-  modelFile: '../image_classification/model/inception_v4_299_quant.tflite',
-  labelsFile: '../image_classification/model/labels1001.txt',
-  intro: 'Quantized version of Inception v4.',
-  paperUrl: 'https://arxiv.org/abs/1602.07261'
-}, {
-  modelName: 'Inception ResNet v2 (TFLite)',
-  format: 'TFLite',
-  modelId: 'inception_resnet_v2_tflite',
-  modelSize: '121.0MB',
-  inputSize: [299, 299, 3],
-  outputSize: 1001,
-  modelFile: '../image_classification/model/inception_resnet_v2.tflite',
-  labelsFile: '../image_classification/model/labels1001.txt',
-  preOptions: {
-    mean: [127.5, 127.5, 127.5],
-    std: [127.5, 127.5, 127.5],
-  },
-  postOptions: {
-    softmax: true,
-  },
-  intro: 'Inception architecture that has been shown to achieve very good performance at relatively low computational cost, and training with residual connections accelerates the training of Inception networks significantly. There is also some evidence of residual Inception networks outperforming similarly expensive Inception networks without residual connections.',
-  paperUrl: 'https://arxiv.org/abs/1602.07261'
-}, {
-  modelName: 'SqueezeNet (ONNX)',
-  format: 'ONNX',
-  modelId: 'squeezenet_onnx',
-  modelSize: '5.0MB',
-  modelFile: '../image_classification/model/squeezenet1.1.onnx',
-  labelsFile: '../image_classification/model/labels1000.txt',
-  inputSize: [224, 224, 3],
-  outputSize: 1000,
-  preOptions: {
-    // https://github.com/onnx/models/tree/master/models/image_classification/squeezenet#preprocessing
-    mean: [0.485, 0.456, 0.406],
-    std: [0.229, 0.224, 0.225],
-    norm: true
-  },
-  postOptions: {
-    softmax: true,
-  },
-  intro: 'A light-weight CNN providing Alexnet level accuracy with 50X fewer parameters.',
-  paperUrl: 'https://arxiv.org/abs/1602.07360'
-}, {
-  modelName: 'MobileNet v2 (ONNX)',
-  format: 'ONNX',
-  modelId: 'mobilenet_v2_onnx',
-  modelSize: '14.2MB',
-  modelFile: '../image_classification/model/mobilenetv2-1.0.onnx',
-  labelsFile: '../image_classification/model/labels1000.txt',
-  inputSize: [224, 224, 3],
-  outputSize: 1000,
-  preOptions: {
-    // https://github.com/onnx/models/tree/master/models/image_classification/mobilenet#preprocessing
-    mean: [0.485, 0.456, 0.406],
-    std: [0.229, 0.224, 0.225],
-    norm: true
-  },
-  postOptions: {
-    softmax: true,
-  },
-  intro: 'MobileNetV2 improves the state of the art performance of mobile models.',
-  paperUrl: 'https://arxiv.org/abs/1801.04381'
-}, {
-  modelName: 'ResNet50 v1 (ONNX)',
-  format: 'ONNX',
-  modelId: 'resnet_v1_onnx',
-  modelSize: '102.6MB',
-  modelFile: '../image_classification/model/resnet50v1.onnx',
-  labelsFile: '../image_classification/model/labels1000.txt',
-  inputSize: [224, 224, 3],
-  outputSize: 1000,
-  preOptions: {
-    // https://github.com/onnx/models/tree/master/models/image_classification/resnet#preprocessing
-    mean: [0.485, 0.456, 0.406],
-    std: [0.229, 0.224, 0.225],
-    norm: true
-  },
-  postOptions: {
-    softmax: true,
-  },
-  intro: 'A residual learning framework to ease the training of networks that are substantially deeper than those used previously. This result won the 1st place on the ILSVRC 2015 classification task.',
-  paperUrl: 'https://arxiv.org/abs/1512.03385'
-}, {
-  modelName: 'ResNet50 v2 (ONNX)',
-  format: 'ONNX',
-  modelId: 'resnet_v2_onnx',
-  modelSize: '102.4MB',
-  modelFile: '../image_classification/model/resnet50v2.onnx',
-  labelsFile: '../image_classification/model/labels1000.txt',
-  inputSize: [224, 224, 3],
-  outputSize: 1000,
-  preOptions: {
-    // https://github.com/onnx/models/tree/master/models/image_classification/resnet#preprocessing
-    mean: [0.485, 0.456, 0.406],
-    std: [0.229, 0.224, 0.225],
-    norm: true
-  },
-  postOptions: {
-    softmax: true,
-  },
-  intro: 'Deep residual networks have emerged as a family of extremely deep architectures showing compelling accuracy and nice convergence behaviors. It reports improved results using a 1001-layer ResNet on CIFAR-10 (4.62% error) and CIFAR-100, and a 200-layer ResNet on ImageNet.',
-  paperUrl: 'https://arxiv.org/abs/1603.05027'
-}, {
-  modelName: 'Inception v2 (ONNX)',
-  format: 'ONNX',
-  modelId: 'inception_v2_onnx',
-  modelSize: '45.0MB',
-  modelFile: '../image_classification/model/inceptionv2.onnx',
-  labelsFile: '../image_classification/model/ilsvrc2012labels.txt',
-  inputSize: [224, 224, 3],
-  outputSize: 1000,
-  intro: 'Inception-v2 is trained for the ImageNet Large Visual Recognition Challenge.',
-  paperUrl: 'https://arxiv.org/abs/1512.00567'
-}, {
-  modelName: 'DenseNet 121 (ONNX)',
-  format: 'ONNX',
-  modelId: 'densenet_121_onnx',
-  modelSize: '32.7MB',
-  modelFile: '../image_classification/model/densenet121.onnx',
-  labelsFile: '../image_classification/model/labels1000.txt',
-  inputSize: [224, 224, 3],
-  outputSize: 1000,
-  preOptions: {
-    // mean and std should also be in BGR order
-    mean: [0.406, 0.456, 0.485],
-    std: [0.225, 0.224, 0.229],
-    norm: true,
-    channelScheme: 'BGR',
-  },
-  postOptions: {
-    softmax: true,
-  },
-  intro: 'Dense Convolutional Network (DenseNet) connects each layer to every other layer in a feed-forward fashion. DenseNets have several compelling advantages: they alleviate the vanishing-gradient problem, strengthen feature propagation, encourage feature reuse, and substantially reduce the number of parameters. ',
-  paperUrl: 'https://arxiv.org/abs/1608.06993'
-}, {
-  modelName: 'SqueezeNet (OpenVino)',
-  format: 'OpenVINO',
-  modelId: 'squeezenet_openvino',
-  modelSize: '4.9MB',
-  modelFile: '../image_classification/model/squeezenet1.1.bin',
-  labelsFile: '../image_classification/model/labels1000.txt',
-  inputSize: [227, 227, 3],
-  outputSize: 1000,
-  preOptions: {
-    channelScheme: 'BGR',
-  },
-  intro: 'A light-weight CNN providing Alexnet level accuracy with 50X fewer parameters.',
-  paperUrl: 'https://arxiv.org/abs/1602.07360'
-}, {
-  modelName: 'MobileNet v1 (OpenVino)',
-  format: 'OpenVINO',
-  modelId: 'mobilenet_v1_openvino',
-  modelSize: '16.9MB',
-  modelFile: '../image_classification/model/mobilenet_v1_1.0_224.bin',
-  labelsFile: '../image_classification/model/labels1001.txt',
-  inputSize: [224, 224, 3],
-  outputSize: 1001,
-  preOptions: {
-    mean: [127.5, 127.5, 127.5],
-    std: [127.5, 127.5, 127.5],
-  },
-  intro: 'An efficient Convolutional Neural Networks for Mobile Vision Applications.',
-  paperUrl: 'https://arxiv.org/pdf/1704.04861.pdf'
-}, {
-  modelName: 'MobileNet v2 (OpenVino)',
-  format: 'OpenVINO',
-  modelId: 'mobilenet_v2_openvino',
-  modelSize: '14.0MB',
-  modelFile: '../image_classification/model/mobilenet_v2_1.0_224.bin',
-  labelsFile: '../image_classification/model/labels1001.txt',
-  inputSize: [224, 224, 3],
-  outputSize: 1001,
-  preOptions: {
-    mean: [127.5, 127.5, 127.5],
-    std: [127.5, 127.5, 127.5],
-  },
-  intro: 'MobileNetV2 improves the state of the art performance of mobile models.',
-  paperUrl: 'https://arxiv.org/abs/1801.04381'
-}, {
-  modelName: 'ResNet50 v1 (OpenVino)',
-  format: 'OpenVINO',
-  modelId: 'resnet50_v1_openvino',
-  modelSize: '102.1MB',
-  modelFile: '../image_classification/model/resnet-50.bin',
-  labelsFile: '../image_classification/model/labels1000.txt',
-  inputSize: [224, 224, 3],
-  outputSize: 1000,
-  preOptions: {
-    channelScheme: 'BGR',
-  },
-  intro: 'A residual learning framework to ease the training of networks that are substantially deeper than those used previously. This result won the 1st place on the ILSVRC 2015 classification task.',
-  paperUrl: 'https://arxiv.org/abs/1512.03385'
-}, {
-  modelName: 'DenseNet 121 (OpenVino)',
-  format: 'OpenVINO',
-  modelId: 'densenet_121_openvino',
-  modelSize: '31.9MB',
-  modelFile: '../image_classification/model/densenet-121.bin',
-  labelsFile: '../image_classification/model/labels1000.txt',
-  inputSize: [224, 224, 3],
-  outputSize: 1000,
-  preOptions: {
-    mean: [0.406, 0.456, 0.485],
-    std: [0.225, 0.224, 0.229],
-    norm: true,
-    channelScheme: 'BGR',
-  },
-  postOptions: {
-    softmax: true,
-  },
-  intro: 'Dense Convolutional Network (DenseNet) connects each layer to every other layer in a feed-forward fashion. DenseNets have several compelling advantages: they alleviate the vanishing-gradient problem, strengthen feature propagation, encourage feature reuse, and substantially reduce the number of parameters. ',
-  paperUrl: 'https://arxiv.org/abs/1608.06993'
-}, {
-  modelName: 'Inception v2 (OpenVino)',
-  format: 'OpenVINO',
-  modelId: 'inception_v2_openvino',
-  modelSize: '44.7MB',
-  modelFile: '../image_classification/model/googlenet-v2.bin',
-  labelsFile: '../image_classification/model/ilsvrc2012labels.txt',
-  inputSize: [224, 224, 3],
-  outputSize: 1000,
-  preOptions: {
-    channelScheme: 'BGR',
-  },
-  intro: 'Inception-v2 is trained for the ImageNet Large Visual Recognition Challenge.',
-  paperUrl: 'https://arxiv.org/abs/1512.00567'
-}, {
-  modelName: 'Inception v4 (OpenVino)',
-  format: 'OpenVINO',
-  modelId: 'inception_v4_openvino',
-  modelSize: '170.6MB',
-  modelFile: '../image_classification/model/googlenet-v4.bin',
-  labelsFile: '../image_classification/model/labels1000.txt',
-  inputSize: [299, 299, 3],
-  outputSize: 1000,
-  preOptions: {
-    mean: [127.5, 127.5, 127.5],
-    std: [127.5, 127.5, 127.5],
-  },
-  intro: 'Inception architecture that has been shown to achieve very good performance at relatively low computational cost.',
-  paperUrl: 'https://arxiv.org/abs/1602.07261'
-}],
-
-objectDetectionModels: [{
-  modelName: 'SSD MobileNet v1 (TFLite)',
-  format: 'TFLite',
-  modelId: 'ssd_mobilenet_v1_tflite',
-  modelSize: '27.3MB',
-  modelFile: '../object_detection/model/ssd_mobilenet_v1.tflite',
-  labelsFile: '../object_detection/model/coco_classes.txt',
-  type: 'SSD',
-  box_size: 4,
-  num_classes: 91,
-  num_boxes: 1083 + 600 + 150 + 54 + 24 + 6,
-  margin: [1, 1, 1, 1],
-  inputSize: [300, 300, 3],
-  preOptions: {
-    mean: [127.5, 127.5, 127.5],
-    std: [127.5, 127.5, 127.5],
-  },
-  intro: 'SSD (Single Shot MultiBox Detector) is an unified framework for object detection with a single network. Loading SSD MobileNet model (converted from Tensorflow SSD MobileNet model) trained by COCO in TensorFlow Lite format, constructs and inferences it by WebML API.',
-  paperUrl: 'https://arxiv.org/abs/1803.08225'
-}, {
-  modelName: 'SSD MobileNet v1 Quant (TFLite)',
-  format: 'TFLite',
-  modelId: 'ssd_mobilenet_v1_quant_tflite',
-  isQuantized: true,
-  modelSize: '6.9MB',
-  modelFile: '../object_detection/model/ssd_mobilenet_v1_quant.tflite',
-  labelsFile: '../object_detection/model/coco_classes.txt',
-  type: 'SSD',
-  box_size: 4,
-  num_classes: 91,
-  num_boxes: 1083 + 600 + 150 + 54 + 24 + 6,
-  margin: [1, 1, 1, 1],
-  inputSize: [300, 300, 3],
-  intro: 'Quantized version of SSD Mobilenet v1',
-  paperUrl: 'https://arxiv.org/pdf/1712.05877.pdf'
-}, {
-  modelName: 'SSD MobileNet v2 (TFLite)',
-  format: 'TFLite',
-  modelId: 'ssd_mobilenet_v2_tflite',
-  modelSize: '67.3MB',
-  modelFile: '../object_detection/model/ssd_mobilenet_v2.tflite',
-  labelsFile: '../object_detection/model/coco_classes.txt',
-  type: 'SSD',
-  box_size: 4,
-  num_classes: 91,
-  num_boxes: 1083 + 600 + 150 + 54 + 24 + 6,
-  margin: [1, 1, 1, 1],
-  inputSize: [300, 300, 3],
-  preOptions: {
-    mean: [127.5, 127.5, 127.5],
-    std: [127.5, 127.5, 127.5],
-  },
-  intro: 'SSD MobileNet V2 is slower than SSD Mobilenet V1, but has higher accuracy.',
-  paperUrl: 'https://arxiv.org/abs/1801.04381'
-}, {
-  modelName: 'SSD MobileNet v2 Quant (TFLite)',
-  format: 'TFLite',
-  modelId: 'ssd_mobilenet_v2_quant_tflite',
-  isQuantized: true,
-  modelSize: '6.2MB',
-  modelFile: '../object_detection/model/ssd_mobilenet_v2_quant.tflite',
-  labelsFile: '../object_detection/model/coco_classes.txt',
-  type: 'SSD',
-  box_size: 4,
-  num_classes: 91,
-  num_boxes: 1083 + 600 + 150 + 54 + 24 + 6,
-  margin: [1, 1, 1, 1],
-  inputSize: [300, 300, 3],
-  intro: 'Quantized version of SSD Mobilenet v2',
-  paperUrl: 'https://arxiv.org/abs/1806.08342'
-}, {
-  modelName: 'SSDLite MobileNet v2 (TFLite)',
-  format: 'TFLite',
-  modelId: 'ssdlite_mobilenet_v2_tflite',
-  modelSize: '17.9MB',
-  modelFile: '../object_detection/model/ssdlite_mobilenet_v2.tflite',
-  labelsFile: '../object_detection/model/coco_classes.txt',
-  type: 'SSD',
-  box_size: 4,
-  num_classes: 91,
-  num_boxes: 1083 + 600 + 150 + 54 + 24 + 6,
-  margin: [1, 1, 1, 1],
-  inputSize: [300, 300, 3],
-  preOptions: {
-    mean: [127.5, 127.5, 127.5],
-    std: [127.5, 127.5, 127.5],
-  },
-  intro: 'SSDLite MobileNet V2 is an upgraded version of SSD MobileNet V2. Compared with SSD Mobilenet V2, SSDLite Mobilenet V2 is much faster, and almost has no loss of the accuracy.',
-  paperUrl: 'https://arxiv.org/abs/1801.04381'
-}, {
-  modelName: 'Tiny Yolo v2 COCO (TFLite)',
-  format: 'TFLite',
-  modelId: 'tiny_yolov2_coco_tflite',
-  modelSize: '44.9MB',
-  modelFile: '../object_detection/model/tiny_yolov2_coco.tflite',
-  labelsFile: '../object_detection/model/coco_classes_part.txt',
-  type: 'YOLO',
-  num_classes: 80,
-  margin: [1, 1, 1, 1],
-  inputSize: [416, 416, 3],
-  outputSize: 1 * 13 * 13 * 425,
-  anchors: [0.57273, 0.677385, 1.87446, 2.06253, 3.33843, 5.47434, 7.88282, 3.52778, 9.77052, 9.16828],
-  preOptions: {
-    norm: true,
-  },
-  intro: 'Tiny YOLO is based off of the Darknet reference network and is much faster but less accurate than the normal YOLO model. And this model is trained by COCO dataset.',
-  paperUrl: 'https://arxiv.org/abs/1612.08242'
-}, {
-  modelName: 'Tiny Yolo v2 VOC (TFLite)',
-  format: 'TFLite',
-  modelId: 'tiny_yolov2_voc_tflite',
-  modelSize: '63.4MB',
-  modelFile: '../object_detection/model/tiny_yolov2_voc.tflite',
-  labelsFile: '../object_detection/model/pascal_classes.txt',
-  type: 'YOLO',
-  num_classes: 20,
-  margin: [1, 1, 1, 1],
-  inputSize: [416, 416, 3],
-  outputSize: 1 * 13 * 13 * 125,
-  anchors: [1.08, 1.19, 3.42, 4.41, 6.63, 11.38, 9.42, 5.11, 16.62, 10.52],
-  preOptions: {
-    norm: true,
-  },
-  intro: 'Tiny YOLO is based off of the Darknet reference network and is much faster but less accurate than the normal YOLO model. And this model is trained by VOC dataset.',
-  paperUrl: 'https://arxiv.org/abs/1612.08242'
-}],
-
-humanPoseEstimationModels: [{
-  modelName: 'PoseNet',
-  format: '',
-  modelId: 'posenet',
-  modelSize: '13.3MB',
-  modelFile: '../skeleton_detection/model/mobilenet_v1_101',
-  inputSize: [513, 513, 3],
-  preOptions: {
-    mean: [127.5, 127.5, 127.5],
-    std: [127.5, 127.5, 127.5],
-  },
-  intro: 'PoseNet is a machine learning model that allows for Real-time Human Pose Estimation which can be used to estimate either a single pose or multiple poses.',
-  paperUrl: 'https://arxiv.org/abs/1803.08225'
-}],
-
-semanticSegmentationModels: [{
-    modelName: 'Deeplab 224 (TFLite)',
-    format: 'TFLite',
-    modelId: 'deeplab_mobilenet_v2_224_tflite',
-    modelSize: '9.5MB',
-    modelFile: '../semantic_segmentation/model/deeplab_mobilenetv2_224.tflite',
-    labelsFile: '../semantic_segmentation/model/labels.txt',
-    inputSize: [224, 224, 3],
-    outputSize: [224, 224, 1],
-    preOptions: {
-      mean: [127.5, 127.5, 127.5],
-      std: [127.5, 127.5, 127.5],
-    },
-    intro: 'DeepLab is a state-of-art deep learning model for semantic image segmentation, where the goal is to assign semantic labels (e.g., person, dog, cat and so on) to every pixel in the input image.',
-    paperUrl: 'https://arxiv.org/abs/1802.02611'
-  }, {
-    modelName: 'Deeplab 224 Atrous (TFLite)',
-    format: 'TFLite',
-    modelId: 'deeplab_mobilenet_v2_224_atrous_tflite',
-    modelSize: '8.4MB',
-    modelFile: '../semantic_segmentation/model/deeplab_mobilenetv2_224_dilated.tflite',
-    labelsFile: '../semantic_segmentation/model/labels.txt',
-    inputSize: [224, 224, 3],
-    outputSize: [224, 224, 1],
-    preOptions: {
-      mean: [127.5, 127.5, 127.5],
-      std: [127.5, 127.5, 127.5],
-    },
-    intro: 'Equivalent to the model above (without dilated suffix) but only available on platforms that natively support atrous convolution.',
-    paperUrl: 'https://arxiv.org/abs/1802.02611'
-  }, {
-    modelName: 'Deeplab 257 (TFLite)',
-    format: 'TFLite',
-    modelId: 'deeplab_mobilenet_v2_257_tflite',
-    modelSize: '9.5MB',
-    modelFile: '../semantic_segmentation/model/deeplab_mobilenetv2_257.tflite',
-    labelsFile: '../semantic_segmentation/model/labels.txt',
-    inputSize: [257, 257, 3],
-    outputSize: [257, 257, 1],
-    preOptions: {
-      mean: [127.5, 127.5, 127.5],
-      std: [127.5, 127.5, 127.5],
-    },
-    intro: 'DeepLab is a state-of-art deep learning model for semantic image segmentation, where the goal is to assign semantic labels (e.g., person, dog, cat and so on) to every pixel in the input image.',
-    paperUrl: 'https://arxiv.org/abs/1802.02611'
-  }, {
-    modelName: 'Deeplab 257 Atrous (TFLite)',
-    format: 'TFLite',
-    modelId: 'deeplab_mobilenet_v2_257_atrous_tflite',
-    modelSize: '8.4MB',
-    modelFile: '../semantic_segmentation/model/deeplab_mobilenetv2_257_dilated.tflite',
-    labelsFile: '../semantic_segmentation/model/labels.txt',
-    inputSize: [257, 257, 3],
-    outputSize: [257, 257, 1],
-    preOptions: {
-      mean: [127.5, 127.5, 127.5],
-      std: [127.5, 127.5, 127.5],
-    },
-    intro: 'Equivalent to the model above (without dilated suffix) but only available on platforms that natively support atrous convolution.',
-    paperUrl: 'https://arxiv.org/abs/1802.02611'
-  }, {
-    modelName: 'Deeplab 321 (TFLite)',
-    format: 'TFLite',
-    modelId: 'deeplab_mobilenet_v2_321_tflite',
-    modelSize: '9.5MB',
-    modelFile: '../semantic_segmentation/model/deeplab_mobilenetv2_321.tflite',
-    labelsFile: '../semantic_segmentation/model/labels.txt',
-    inputSize: [321, 321, 3],
-    outputSize: [321, 321, 1],
-    preOptions: {
-      mean: [127.5, 127.5, 127.5],
-      std: [127.5, 127.5, 127.5],
-    },
-    intro: 'DeepLab is a state-of-art deep learning model for semantic image segmentation, where the goal is to assign semantic labels (e.g., person, dog, cat and so on) to every pixel in the input image.',
-    paperUrl: 'https://arxiv.org/abs/1802.02611'
-  }, {
-    modelName: 'Deeplab 321 Atrous (TFLite)',
-    format: 'TFLite',
-    modelId: 'deeplab_mobilenet_v2_321_atrous_tflite',
-    modelSize: '8.4MB',
-    modelFile: '../semantic_segmentation/model/deeplab_mobilenetv2_321_dilated.tflite',
-    labelsFile: '../semantic_segmentation/model/labels.txt',
-    inputSize: [321, 321, 3],
-    outputSize: [321, 321, 1],
-    preOptions: {
-      mean: [127.5, 127.5, 127.5],
-      std: [127.5, 127.5, 127.5],
-    },
-    intro: 'Equivalent to the model above (without dilated suffix) but only available on platforms that natively support atrous convolution.',
-    paperUrl: 'https://arxiv.org/abs/1802.02611'
-  }, {
-    modelName: 'Deeplab 513 (TFLite)',
-    format: 'TFLite',
-    modelId: 'deeplab_mobilenet_v2_513_tflite',
-    modelSize: '9.5MB',
-    modelFile: '../semantic_segmentation/model/deeplab_mobilenetv2_513.tflite',
-    labelsFile: '../semantic_segmentation/model/labels.txt',
-    inputSize: [513, 513, 3],
-    outputSize: [513, 513, 1],
-    preOptions: {
-      mean: [127.5, 127.5, 127.5],
-      std: [127.5, 127.5, 127.5],
-    },
-    intro: 'DeepLab is a state-of-art deep learning model for semantic image segmentation, where the goal is to assign semantic labels (e.g., person, dog, cat and so on) to every pixel in the input image.',
-    paperUrl: 'https://arxiv.org/abs/1802.02611'
-  }, {
-    modelName: 'Deeplab 513 Atrous (TFLite)',
-    format: 'TFLite',
-    modelId: 'deeplab_mobilenet_v2_513_atrous_tflite',
-    modelSize: '8.4MB',
-    modelFile: '../semantic_segmentation/model/deeplab_mobilenetv2_513_dilated.tflite',
-    labelsFile: '../semantic_segmentation/model/labels.txt',
-    inputSize: [513, 513, 3],
-    outputSize: [513, 513, 1],
-    preOptions: {
-      mean: [127.5, 127.5, 127.5],
-      std: [127.5, 127.5, 127.5],
-    },
-    intro: 'Equivalent to the model above (without dilated suffix) but only available on platforms that natively support atrous convolution.',
-    paperUrl: 'https://arxiv.org/abs/1802.02611'
-}],
-
-superResolutionModels: [
-  {
-    modelName: 'SRGAN 96x4 (TFLite)',
-    format: 'TFLite',
-    modelId: 'srgan_96x4_tflite',
-    modelSize: '6.1MB',
-    inputSize: [96, 96, 3],
-    outputSize: [384, 384, 3],
-    scale: 4,
-    modelFile: '../super_resolution/model/srgan_96_4.tflite',
-    preOptions: {
-      mean: [127.5, 127.5, 127.5],
-      std: [127.5, 127.5, 127.5],
-    },
-    intro: 'Photo-realistic single image Super-Resolution using a generative adversarial network.',
-    paperUrl: 'https://arxiv.org/abs/1609.04802'
-  },
-  {
-    modelName: 'SRGAN 128x4 (TFLite)',
-    format: 'TFLite',
-    modelId: 'srgan_128x4_tflite',
-    modelSize: '6.1MB',
-    inputSize: [128, 128, 3],
-    outputSize: [512, 512, 3],
-    scale: 4,
-    modelFile: '../super_resolution/model/srgan_128_4.tflite',
-    preOptions: {
-      mean: [127.5, 127.5, 127.5],
-      std: [127.5, 127.5, 127.5],
-    },
-    intro: 'Photo-realistic single image Super-Resolution using a generative adversarial network.',
-    paperUrl: 'https://arxiv.org/abs/1609.04802'
-  }
-],
-
-faceDetectionModels: [{
-    modelName: 'SSD MobileNet v1 Face (TFlite)',
-    format: 'TFLite',
-    modelId: 'ssd_mobilenetv1_face_tflite',
-    modelSize: '22.0MB',
-    type: 'SSD',
-    modelFile: '../facial_landmark_detection/model/ssd_mobilenetv1_face.tflite',
-    box_size: 4,
-    num_classes: 2,
-    num_boxes: 1083 + 600 + 150 + 54 + 24 + 6,
-    margin: [1.2,1.2,0.8,1.1],
-    inputSize: [300, 300, 3],
-    preOptions: {
-      mean: [127.5, 127.5, 127.5],
-      std: [127.5, 127.5, 127.5],
-    },
-    intro: 'SSD Mobilenet V1 Face is based on SSD Mobilenet V1 model structure, and is trained by Tensorflow Object Detection API with WIDER_FACE dataset for face detection task.',
-    paperUrl: 'https://arxiv.org/abs/1803.08225'
-  }, {
-    modelName: 'SSD MobileNet v2 Face (TFlite)',
-    format: 'TFLite',
-    modelId: 'ssd_mobilenetv2_face_tflite',
-    modelSize: '18.4MB',
-    type: 'SSD',
-    modelFile: '../facial_landmark_detection/model/ssd_mobilenetv2_face.tflite',
-    box_size: 4,
-    num_classes: 2,
-    num_boxes: 1083 + 600 + 150 + 54 + 24 + 6,
-    margin: [1.2,1.2,0.8,1.1],
-    inputSize: [300, 300, 3],
-    preOptions: {
-      mean: [127.5, 127.5, 127.5],
-      std: [127.5, 127.5, 127.5],
-    },
-    intro: 'SSD Mobilenet V2 Face is based on SSD Mobilenet V2 model structure, and is trained by Tensorflow Object Detection API with WIDER_FACE dataset for face detection task.',
-    paperUrl: 'https://arxiv.org/abs/1801.04381'
-  }, {
-    modelName: 'SSDLite MobileNet v2 Face (TFlite)',
-    format: 'TFLite',
-    modelId: 'ssdlite_mobilenetv2_face_tflite',
-    modelSize: '12.1MB',
-    type: 'SSD',
-    modelFile: '../facial_landmark_detection/model/ssdlite_mobilenetv2_face.tflite',
-    box_size: 4,
-    num_classes: 2,
-    num_boxes: 1083 + 600 + 150 + 54 + 24 + 6,
-    margin: [1.2,1.2,0.8,1.1],
-    inputSize: [300, 300, 3],
-    preOptions: {
-      mean: [127.5, 127.5, 127.5],
-      std: [127.5, 127.5, 127.5],
-    },
-    intro: 'SSDLite Mobilenet V2 Face is based on SSDLite Mobilenet V2 model structure, and is trained by Tensorflow Object Detection API with WIDER_FACE dataset for face detection task.',
-    paperUrl: 'https://arxiv.org/abs/1801.04381'
-  }, {
-    modelName: 'Tiny Yolo v2 Face (TFlite)',
-    format: 'TFLite',
-    modelId: 'tiny_yolov2_face_tflite',
-    modelSize: '44.1MB',
-    modelFile: '../facial_landmark_detection/model/tiny_yolov2_face.tflite',
-    type: 'YOLO',
-    margin: [1.15, 1.15, 0.6, 1.15],
-    inputSize: [416, 416, 3],
-    outputSize: 1 * 13 * 13 * 30,
-    anchors: [0.57273, 0.677385, 1.87446, 2.06253, 3.33843, 5.47434, 7.88282, 3.52778, 9.77052, 9.16828],
-    preOptions: {
-      norm: true,
-    },
-    intro: 'Tiny YOLO V2 Face is based off the Darknet reference network and trained with WIDER_FACE dataset for face detection task.',
-    paperUrl: 'https://arxiv.org/abs/1612.08242'
-}],
-
-facialLandmarkDetectionModels: [{
-  modelName: 'SimpleCNN (TFlite)',
-  format: 'TFLite',
-  modelId: 'face_landmark_tflite',
-  modelSize: '29.4MB',
-  modelFile: '../facial_landmark_detection/model/face_landmark.tflite',
-  inputSize: [128, 128, 3],
-  outputSize: 136,
-  intro: 'A simple CNN model uses regression methods to map human facial features to 68 key points.',
-  paperUrl: 'https://www.sciencedirect.com/science/article/pii/S0262885615001341'
-}],
-
-emotionAnalysisModels: [{
-  modelName: 'Simple CNN 7 (TFlite)',
-  format: 'TFLite',
-  modelId: 'emotion_analysis_tflite',
-  modelSize: '7.3MB',
-  modelFile: '../emotion_analysis/model/emotion_classification_7.tflite',
-  labels: ['anger', 'disgust', 'fear', 'happy', 'sad', 'surprise', 'neutral'],
-  inputSize: [48, 48, 1],
-  outputSize: 7,
-  preOptions: {
-    norm: true,
-  },
-  intro: 'A simple CNN model uses regression methods to map human facial features to seven different types of emotion class.',
-  paperUrl: ''
-}],
-
-speechCommandModels: [{
-    modelName: 'KWS CNN (TFLite)',
-    format: 'TFLite',
-    modelId: 'kws_cnn_tflite',
-    modelSize: '3.4MB',
-    inputSize: [1, 16000],
-    outputSize: [1, 1, 12],
-    sampleRate: 16000,
-    modelFile: '../speech_commands/model/kws_cnn.tflite',
-    labelsFile: '../speech_commands/model/labels.txt',
-    intro: 'Use Convolutional Neural Networks (CNNs) for a small-footprint keyword spotting (KWS) task.',
-    paperUrl: 'https://www.isca-speech.org/archive/interspeech_2015/papers/i15_1478.pdf'
-  }, {
-      modelName: 'KWS DNN (OpenVINO)',
-      format: 'OpenVINO',
-      modelId: 'kws_dnn_openvino',
-      modelSize: '320kB',
-      inputSize: [1, 250],
-      outputSize: [1, 12],
-      sampleRate: 16000,
-      modelFile: '../speech_commands/model/kws_dnn.bin',
-      labelsFile: '../speech_commands/model/labels2.txt',
-      preOptions: {
-        mfccs: true
-      },
-      intro: 'A small-footprint keyword spotting (KWS) on Microcontroller.',
-      paperUrl: 'https://arxiv.org/pdf/1711.07128.pdf'
-    }],
-
-faceRecognitionModels: [{
-    modelName: 'FaceNet (OpenVINO)',
-    format: 'OpenVino',
-    modelId: 'facenet_recognition_openvino',
-    modelSize: '93.9MB',
-    modelFile: '../face_recognition/model/facenet.bin',
-    inputSize: [160, 160, 3],
-    outputSize: 512,
-    threshold: 1.26,
-    preOptions: {
-      mean: [0, 0, 0, 0],
-      std: [1, 1, 1, 1],
-      channelScheme: 'BGR',
-      format: 'NHWC'
-    },
-    intro: 'This is a CNN model for face recognition which learns discriminative features of faces and produces embeddings for input face images.',
-    paperUrl: 'https://arxiv.org/abs/1503.03832'
-  }, {
-    modelName: 'Face Reidentification (OpenVINO)',
-    format: 'OpenVino',
-    modelId: 'facereidentification_recognition_openvino',
-    modelSize: '4.4MB',
-    modelFile: '../face_recognition/model/face-reidentification-retail-0095.bin',
-    inputSize: [128, 128, 3],
-    outputSize: 256,
-    threshold: 0.8,
-    preOptions: {
-      mean: [0, 0, 0, 0],
-      std: [1, 1, 1, 1],
-      channelScheme: 'BGR',
-      format: 'NHWC'
-    },
-    intro: 'This is a lightweight network for the face re-identification scenario that is\
-      based on MobileNet V2. The model produces feature vectors which should be close in cosine distance for similar faces and far for different faces.'
-}]
-
-};
-
-// extract model lists into the browser env for backward compatiblity
-for (const modelListName in modelZoo) {
-  window[modelListName] = modelZoo[modelListName];
-}
-
-const getModelById = (id) => {
-  for (const model of Object.values(modelZoo).flat()) {
-    if (id === model.modelId) {
-      return model;
-    }
-  }
-  return {};
-};
-
 const getOS = () => {
-  var userAgent = window.navigator.userAgent,
-    platform = window.navigator.platform,
-    macosPlatforms = ['Macintosh', 'MacIntel', 'MacPPC', 'Mac68K'],
-    windowsPlatforms = ['Win32', 'Win64', 'Windows', 'WinCE'],
-    iosPlatforms = ['iPhone', 'iPad', 'iPod'],
-    os = null;
+  const userAgent = window.navigator.userAgent;
+  const platform = window.navigator.platform;
+  const macosPlatforms = ['Macintosh', 'MacIntel', 'MacPPC', 'Mac68K'];
+  const windowsPlatforms = ['Win32', 'Win64', 'Windows', 'WinCE'];
+  const iosPlatforms = ['iPhone', 'iPad', 'iPod'];
+  let os = null;
 
   if (macosPlatforms.indexOf(platform) !== -1) {
     os = 'Mac OS';
@@ -886,15 +28,13 @@ const getOS = () => {
   }
 
   return os;
-}
+};
 
 const currentOS = getOS();
-let eager = false;
-let supportedOps = new Set();
 
 const getNativeAPI = (preferString) => {
   // if you are going to modify the backend name, please change the
-  // `backendEnums` in the `getWebNNSupportedOps` below
+  // `backendEnums` in the `getDefaultSupportedOps` below
   const apiMapping = {
     'Android': {
       'sustained': 'NN',
@@ -918,7 +58,7 @@ const getNativeAPI = (preferString) => {
   return apiMapping[currentOS][preferString];
 }
 
-const getWebNNSupportedOps = (backend, prefer) => {
+const getSupportedOps = (backend, prefer) => {
   if (prefer === 'none' && backend !== 'WebML') {
     // if `prefer` is none, all ops should only run in polyfill
     return new Set();
@@ -946,11 +86,13 @@ const getWebNNSupportedOps = (backend, prefer) => {
   const nn = navigator.ml.getNeuralNetworkContext();
   const supportedOps = new Set();
   const backendId = backendEnums[getNativeAPI(prefer)];
+
   for (const opName in supportedTable) {
     if (supportedTable[opName][backendId]) {
       supportedOps.add(nn[opName]);
     }
   }
+
   return supportedOps;
 };
 
@@ -991,20 +133,16 @@ const operationTypes = {
    65: 'MAXIMUM',
    10003: 'ATROUS_CONV_2D',
    10004: 'ATROUS_DEPTHWISE_CONV_2D'
-}
+};
 
-const getUrlParams = (prop) => {
-  var params = {};
-  var search = decodeURIComponent(window.location.href.slice(window.location.href.indexOf('?') + 1));
-  var definitions = search.split('&');
+const preferMap = {
+  'MPS': 'sustained',
+  'BNNS': 'fast',
+  'sustained': 'SUSTAINED_SPEED',
+  'fast': 'FAST_SINGLE_ANSWER',
+  'low': 'LOW_POWER',
+};
 
-  definitions.forEach((val, key) => {
-    var parts = val.split('=', 2);
-    params[parts[0]] = parts[1];
-  });
-
-  return (prop && prop in params) ? params[prop] : params;
-}
 
 const getPreferParam = () => {
   // workaround for using MPS backend on Mac OS by visiting URL with 'prefer=sustained'
@@ -1053,151 +191,461 @@ const getPreferCode = (backend, prefer) => {
   return preferCode;
 };
 
-const getSearchParamsPrefer = () => {
+const parseSearchParams = (key) => {
   let searchParams = new URLSearchParams(location.search);
-  return searchParams.has('prefer') ? searchParams.get('prefer') : '';
-}
-
-const getSearchParamsBackend = () => {
-  let searchParams = new URLSearchParams(location.search);
-  return searchParams.has('b') ? searchParams.get('b') : '';
-}
-const getSearchParamsModel = () => {
-  let searchParams = new URLSearchParams(location.search);
-  return searchParams.has('m') ? searchParams.get('m') : 'none';
-}
-
-const getExampleDirectoryName = () => {
-  const pathArray = location.pathname.split('/');
-  const dirName = pathArray[pathArray.length - 2];
-  return dirName.replace(/_/g, ' ');
+  return searchParams.get(key);
 };
 
-const loadModelAndLabels = async (modelUrl, process, labelsUrl) => {
-  let arrayBuffer = await loadUrl(modelUrl, true, process);
-  let bytes = new Uint8Array(arrayBuffer);
-  let text;
-  if (labelsUrl !== undefined) {
-    text = await loadUrl(labelsUrl);
-  }
-  return {bytes: bytes, text: text};
+const hasSearchParam = (key) => {
+  let searchParams = new URLSearchParams(location.search);
+  return searchParams.has(key);
 };
 
-const loadUrl = async (url, binary, progress, outstandingRequest) => {
-  return new Promise((resolve, reject) => {
-    if (outstandingRequest) {
-      outstandingRequest.abort();
-    }
-    let request = new XMLHttpRequest();
-    outstandingRequest = request;
-    request.open('GET', url, true);
-    if (binary) {
-      request.responseType = 'arraybuffer';
-    }
-    request.onload = function(ev) {
-      outstandingRequest = null;
-      if (request.readyState === 4) {
-        if (request.status === 200) {
-          resolve(request.response);
-        } else {
-          reject(new Error('Failed to load ' + url + ' status: ' + request.status));
-        }
-      }
-    };
-    if (progress) {
-      request.onprogress = progress;
-    }
-    request.send();
-  });
-};
-
-const prepareInputTensor = (source, optoins, inputTensor) => {
-  source.width = source.videoWidth || source.naturalWidth || source.offsetWidth;
-  source.height = source.videoHeight || source.naturalHeight || source.offsetHeight;
+const getTensorArray = (image, inputTensor, options, layout = 'NHWC') => {
   let tensor = inputTensor[0];
-  const width = optoins.inputSize[1];
-  const height = optoins.inputSize[0];
-  const channels = optoins.inputSize[2];
-  const preOptions = optoins.preOptions || {};
+
+  image.width = image.videoWidth || image.naturalWidth;
+  image.height = image.videoHeight || image.naturalHeight;
+
+  const [height, width, channels] = options.inputSize;
+  const preOptions = options.preOptions || {};
   const mean = preOptions.mean || [0, 0, 0, 0];
-  const std = preOptions.std  || [1, 1, 1, 1];
-  const norm = preOptions.norm || false;
+  const std = preOptions.std || [1, 1, 1, 1];
+  const normlizationFlag = preOptions.norm || false;
   const channelScheme = preOptions.channelScheme || 'RGB';
-  const imageChannels = optoins.imageChannels;
-  const drawWH = optoins.drawWH
+  const imageChannels = options.imageChannels || 4; // RGBA
+  const drawOptions = options.drawOptions;
+
   let canvasElement = document.createElement('canvas');
   canvasElement.width = width;
   canvasElement.height = height;
   let canvasContext = canvasElement.getContext('2d');
-  if (optoins.box) {
-    let box = optoins.box;
-    // canvasContext.clearRect(0, 0, width, height);
-    canvasContext.drawImage(source, box[0], box[2],
-                                 box[1]-box[0], box[3]-box[2], 0, 0,
-                                 width, height);
+
+  if (drawOptions) {
+    canvasContext.drawImage(image, drawOptions.sx, drawOptions.sy, drawOptions.sWidth, drawOptions.sHeight,
+      0, 0, drawOptions.dWidth, drawOptions.dHeight);
   } else {
-    canvasContext.drawImage(source, 0, 0, drawWH[0], drawWH[1]);
+    if (options.scaledFlag) {
+      const resizeRatio = Math.max(Math.max(image.width, image.height) / width, 1);
+      const scaledWidth = Math.floor(image.width / resizeRatio);
+      const scaledHeight = Math.floor(image.height / resizeRatio);
+      canvasContext.drawImage(image, 0, 0, scaledWidth, scaledHeight);
+    } else {
+      canvasContext.drawImage(image, 0, 0, width, height);
+    }
   }
+
   let pixels = canvasContext.getImageData(0, 0, width, height).data;
-  if (norm) {
+
+  if (normlizationFlag) {
     pixels = new Float32Array(pixels).map(p => p / 255);
   }
-  if (channelScheme === 'RGB') {
-    // NHWC layout
-    for (let y = 0; y < height; ++y) {
-      for (let x = 0; x < width; ++x) {
-        for (let c = 0; c < channels; ++c) {
-          let value = pixels[y * width * imageChannels + x * imageChannels + c];
-          // let index = y*width*imageChannels + x*imageChannels + c;
-          // let value = (pixels[index]+pixels[index+1]+pixels[index+2]) / 3 //EA
-          tensor[y * width * channels + x * channels + c] = (value - mean[c]) / std[c];
+
+  if (layout === 'NHWC') {
+    if (channelScheme === 'RGB') {
+      if (channels > 1) {
+        for (let h = 0; h < height; ++h) {
+          for (let w = 0; w < width; ++w) {
+            for (let c = 0; c < channels; ++c) {
+              let value = pixels[h * width * imageChannels + w * imageChannels + c];
+              tensor[h * width * channels + w * channels + c] = (value - mean[c]) / std[c];
+            }
+          }
+        }
+      } else if (channels === 1) {
+        for (let h = 0; h < height; ++h) {
+          for (let w = 0; w < width; ++w) {
+            for (let c = 0; c < channels; ++c) {
+              let index = h * width * imageChannels + w * imageChannels + c;
+              let value = (pixels[index] + pixels[index + 1] + pixels[index + 2]) / 3;
+              tensor[h * width * channels + w * channels + c] = (value - mean[c]) / std[c];
+            }
+          }
         }
       }
+    } else if (channelScheme === 'BGR') {
+      for (let h = 0; h < height; ++h) {
+        for (let w = 0; w < width; ++w) {
+          for (let c = 0; c < channels; ++c) {
+            let value = pixels[h * width * imageChannels + w * imageChannels + (channels - c - 1)];
+            tensor[h * width * channels + w * channels + c] = (value - mean[c]) / std[c];
+          }
+        }
+      }
+    } else {
+      throw new Error(`Unsupport '${channelScheme}' Color Channel Scheme `);
     }
-  } else if (channelScheme === 'BGR') {
-    // NHWC layout
-    for (let y = 0; y < height; ++y) {
-      for (let x = 0; x < width; ++x) {
-        for (let c = 0; c < channels; ++c) {
-          let value = pixels[y * width * imageChannels + x * imageChannels + (channels - c - 1)];
-          tensor[y * width * channels + x * channels + c] = (value - mean[c]) / std[c];
+  } else if (layout === 'NCHW') {
+    if (channelScheme === 'RGB') {
+      for (let c = 0; c < channels; ++c) {
+        for (let h = 0; h < height; ++h) {
+          for (let w = 0; w < width; ++w) {
+            let value = pixels[h * width * imageChannels + w * imageChannels + c];
+            tensor[h * width * channels + w * channels + c] = (value - mean[c]) / std[c];
+          }
         }
       }
+    } else if (channelScheme === 'BGR') {
+      for (let c = 0; c < channels; ++c) {
+        for (let h = 0; h < height; ++h) {
+          for (let w = 0; w < width; ++w) {
+            let value = pixels[h * width * imageChannels + w * imageChannels + (channels - c - 1)];
+            tensor[h * width * channels + w * channels + c] = (value - mean[c]) / std[c];
+          }
+        }
+      }
+    } else {
+      throw new Error(`Unsupport '${channelScheme}' Color Channel Scheme `);
+    }
+  } else {
+    throw new Error(`Unsupport '${channelScheme}' Layout`);
+  }
+};
+
+const downsampleAudioBuffer = (buffer, rate, baseRate) => {
+  if (rate == baseRate) {
+    return buffer;
+  }
+
+  if (baseRate > rate) {
+    throw "downsampling rate show be smaller than original sample rate";
+  }
+
+  const sampleRateRatio = Math.round(rate / baseRate);
+  const newLength = Math.round(buffer.length / sampleRateRatio);
+  let abuffer = new Float32Array(newLength);
+  let offsetResult = 0;
+  let offsetBuffer = 0;
+
+  while (offsetResult < abuffer.length) {
+    let nextOffsetBuffer = Math.round((offsetResult + 1) * sampleRateRatio);
+    let accum = 0;
+    let count = 0;
+    for (let i = offsetBuffer; i < nextOffsetBuffer && i < buffer.length; i++) {
+      accum += buffer[i];
+      count++;
+    }
+    abuffer[offsetResult] = accum / count;
+    offsetResult++;
+    offsetBuffer = nextOffsetBuffer;
+  }
+  return abuffer;
+};
+
+const getAudioMfccs = (pcm,
+                       sampleRate,
+                       windowSize,
+                       windowStride,
+                       upperFrequencyLimit = 4000,
+                       lowerFrequencyLimit = 20,
+                       filterbankChannelCount = 40,
+                       dctCoefficientCount = 13) => {
+  let pcmPtr = Module._malloc(8 * pcm.length);
+  let lenPtr = Module._malloc(4);
+
+  for (let i = 0; i < pcm.length; i++) {
+    Module.HEAPF64[pcmPtr / 8 + i] = pcm[i];
+  };
+
+  Module.HEAP32[lenPtr / 4] = pcm.length;
+  let tfMfccs = Module.cwrap('tf_mfccs', 'number',
+        ['number', 'number', 'number', 'number',
+         'number', 'number', 'number', 'number', 'number']);
+  let mfccsPtr = tfMfccs(pcmPtr, lenPtr, sampleRate, windowSize,
+        windowStride, upperFrequencyLimit, lowerFrequencyLimit,
+        filterbankChannelCount, dctCoefficientCount);
+  let mfccsLen = Module.HEAP32[lenPtr >> 2];
+  let audioMfccs = [mfccsLen];
+
+  for (let i = 0; i < mfccsLen; i++) {
+    audioMfccs[i] = Module.HEAPF64[(mfccsPtr >> 3) + i];
+  }
+
+  Module._free(pcmPtr, lenPtr, mfccsPtr);
+  return audioMfccs;
+};
+
+const getTensorArrayByAudio = async (audio, inputTensor, options) => {
+  const sampleRate = options.sampleRate;
+  const mfccsOptions = options.mfccsOptions;
+  const inputSize = options.inputSize.reduce((a, b) => a * b);
+  let tensor = inputTensor[0];
+  let audioContext = new (window.AudioContext || window.webkitAudioContext)();
+  let rate = audioContext.sampleRate;
+
+  let request = new Request(audio.src);
+  let response = await fetch(request);
+  let audioFileData = await response.arrayBuffer();
+  let audioDecodeData = await audioContext.decodeAudioData(audioFileData);
+  let audioPCMData = audioDecodeData.getChannelData(0);
+  let abuffer = downsampleAudioBuffer(audioPCMData, rate, sampleRate);
+
+  if (typeof mfccsOptions !== 'undefined') {
+    abuffer = getAudioMfccs(abuffer,
+                           sampleRate,
+                           mfccsOptions.windowSize,
+                           mfccsOptions.windowStride,
+                           mfccsOptions.upperFrequencyLimit,
+                           mfccsOptions.lowerFrequencyLimit,
+                           mfccsOptions.filterbankChannelCount,
+                           mfccsOptions.dctCoefficientCount);
+  }
+
+  if (abuffer.length >= inputSize) {
+    for (let i = 0; i < inputSize; i++) {
+      tensor[i] = abuffer[i];
+    }
+  } else {
+    for (let i = 0; i < abuffer.length; i++) {
+      tensor[i] = abuffer[i];
     }
   }
 };
 
-const getTopClasses = (tensor, labels, k = 5, isQuantized, deQuantizeParams) => {
-  let classes = [];
-  if (typeof tensor[0] == 'number') {
-    let probs = Array.from(tensor);
-    let indexes = probs.map((prob, index) => [prob, index]);
-    let sorted = indexes.sort((a, b) => {
-      if (a[0] === b[0]) {return 0;}
-      return a[0] < b[0] ? -1 : 1;
-    });
-    sorted.reverse();
-    for (let i = 0; i < k; ++i) {
-      let prob;
-      if (isQuantized) {
-        prob = deQuantizeParams[0].scale * (sorted[i][0] - deQuantizeParams[0].zeroPoint);
-      } else {
-        prob = sorted[i][0];
-      }
-      let index = sorted[i][1];
-      let c = {
-        label: labels[index],
-        prob: (prob * 100).toFixed(2)
-      }
-      classes.push(c);
-    }
-  } else {
-    tensor.forEach(t => {
-      let cc = getTopClasses(t, labels, k, isQuantized, deQuantizeParams);
-      cc.forEach(v => {
-        classes.push(v);
-      })
-    });
+const prepareOutputTensorSSD = (outputBoxTensor, outputClassScoresTensor, options) => {
+  const numBoxes = options.numBoxes;
+  const boxSize = options.boxSize;
+  const numClasses = options.numClasses;
+  let outputTensor = [];
+  let boxOffset = 0;
+  let classOffset = 0;
+  let boxTensor;
+  let classTensor;
+
+  for (let i = 0; i < numBoxes.length; ++i) {
+    boxTensor = outputBoxTensor.subarray(boxOffset, boxOffset + boxSize * numBoxes[i]);
+    classTensor = outputClassScoresTensor.subarray(classOffset, classOffset + numClasses * numBoxes[i]);
+    outputTensor[2 * i] = boxTensor;
+    outputTensor[2 * i + 1] = classTensor;
+    boxOffset += boxSize * numBoxes[i];
+    classOffset += numClasses * numBoxes[i];
   }
+
+  return outputTensor;
+}
+
+const deQuantizeOutputTensor = (outputBoxTensor, outputClassScoresTensor,
+        deQuantizedOutputBoxTensor, deQuantizedOutputClassScoresTensor,
+        deQuantizeParams, options) => {
+  const numBoxes = options.numBoxes;
+  const boxSize = options.boxSize;
+  const numClasses = options.numClasses;
+  let boxOffset = 0;
+  let classOffset = 0;
+  let dqBoxOffset = 0;
+  let dqClassOffset = 0;
+  let boxTensor, classTensor;
+  let boxScale, boxZeroPoint, classScale, classZeroPoint;
+
+  for (let i = 0; i < numBoxes.length; ++i) {
+    boxTensor = outputBoxTensor.subarray(boxOffset, boxOffset + boxSize * numBoxes[i]);
+    classTensor = outputClassScoresTensor.subarray(classOffset, classOffset + numClasses * numBoxes[i]);
+    boxScale = deQuantizeParams[2 * i].scale;
+    boxZeroPoint = deQuantizeParams[2 * i].zeroPoint;
+    classScale = deQuantizeParams[2 * i + 1].scale;
+    classZeroPoint = deQuantizeParams[2 * i + 1].zeroPoint;
+    for (let j = 0; j < boxTensor.length; ++j) {
+      deQuantizedOutputBoxTensor[dqBoxOffset] = boxScale* (boxTensor[j] - boxZeroPoint);
+      ++dqBoxOffset;
+    }
+    for (let j = 0; j < classTensor.length; ++j) {
+      deQuantizedOutputClassScoresTensor[dqClassOffset] = classScale * (classTensor[j] - classZeroPoint);
+      ++dqClassOffset;
+    }
+    boxOffset += boxSize * numBoxes[i];
+    classOffset += numClasses * numBoxes[i];
+  }
+
+  return [deQuantizedOutputBoxTensor, deQuantizedOutputClassScoresTensor];
+};
+
+const postOutputTensorAudio = (tensor) => {
+  const tensorRuduceMax = Math.max.apply(null, tensor);
+  const tensorExp = tensor.map((t) => Math.exp(t - tensorRuduceMax));
+  const tensorSum = eval(tensorExp.join("+"));
+  const outputTensor = tensorExp.map((e) => e / tensorSum )
+  return outputTensor;
+};
+
+const getTopClasses = (tensor, labels, k = 5, deQuantizeParams = []) => {
+  const probs = Array.from(tensor);
+  const indexes = probs.map((prob, index) => [prob, index]);
+  let sorted = indexes.sort((a, b) => {
+    if (a[0] === b[0]) {
+      return 0;
+    }
+    return a[0] < b[0] ? -1 : 1;
+  });
+  sorted.reverse();
+  const classes = [];
+
+  for (let i = 0; i < k; ++i) {
+    let prob;
+    if (deQuantizeParams.length > 0) {
+      prob = deQuantizeParams[0].scale * (sorted[i][0] - deQuantizeParams[0].zeroPoint);
+    } else {
+      prob = sorted[i][0];
+    }
+    let index = sorted[i][1];
+    let c = {
+      label: labels[index],
+      prob: (prob * 100).toFixed(2)
+    }
+    classes.push(c);
+  }
+
   return classes;
+};
+
+const drawFaceRectangles = (image, canvas, faceRects, texts, canvasH) => {
+  if (typeof canvasH !== 'undefined') {
+    canvas.height = canvasH;
+  }
+
+  canvas.width = image.width / image.height * canvas.height;
+  // draw image
+  let ctx = canvas.getContext('2d');
+  ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+  // draw face rectangles
+  faceRects.forEach((rect, i) => {
+    let x = rect[0] / image.height * canvas.height;
+    let y = rect[1] / image.height * canvas.height;
+    let w = rect[2] / image.height * canvas.height;
+    let h = rect[3] / image.height * canvas.height;
+    ctx.strokeStyle = "#009bea";
+    ctx.fillStyle = "#009bea";
+    ctx.lineWidth = 3;
+    ctx.strokeRect(x, y, w, h);
+    ctx.font = "20px Arial";
+    let text = texts[i];
+    let width = ctx.measureText(text).width;
+    if (x >= 2 && y >= parseInt(ctx.font, 10)) {
+      ctx.fillRect(x - 2, y - parseInt(ctx.font, 10), width + 4, parseInt(ctx.font, 10));
+      ctx.fillStyle = "white";
+      ctx.textAlign = 'start';
+      ctx.fillText(text, x, y - 3);
+    } else {
+      ctx.fillRect(x + 2, y, width + 4, parseInt(ctx.font, 10));
+      ctx.fillStyle = "white";
+      ctx.textAlign = 'start';
+      ctx.fillText(text, x + 2, y + 15);
+    }
+  });
+};
+
+const drawKeyPoints = (image, canvas, keyPoints, rects) => {
+  let ctx = canvas.getContext('2d');
+  rects.forEach((rect, n) => {
+    let keyPoint = keyPoints[n];
+    for (let i = 0; i < 136; i = i + 2) {
+      // decode keyPoint
+      let x = (rect[2] * keyPoint[i] + rect[0]) / image.height * canvas.height;
+      let y = (rect[3] * keyPoint[i + 1] + rect[1]) / image.height * canvas.height;
+      // draw keyPoint
+      ctx.beginPath();
+      ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.8)";
+      ctx.arc(x, y, 2, 0, 2 * Math.PI);
+      ctx.fill();
+      ctx.closePath();
+    }
+  });
+};
+
+const getFRClass = (targetEmbeddings, searchEmbeddings, options) => {
+  const euclideanDistance = (embeddings1, embeddings2) => {
+    let embeddingSum = 0;
+
+    for (let i = 0; i < embeddings1.length; i++) {
+      embeddingSum = embeddingSum + Math.pow((embeddings1[i] - embeddings2[i]), 2);
+    }
+
+    return Math.sqrt(embeddingSum);
+  };
+
+  const cosineDistance = (embeddings1, embeddings2) => {
+    let dotSum = 0;
+    let norm1 = 0;
+    let norm2 = 0;
+
+    for (let i = 0; i < embeddings1.length; i++) {
+      dotSum = dotSum + embeddings1[i] * embeddings2[i];
+      norm1 = norm1 + Math.pow(embeddings1[i], 2);
+      norm2 = norm2 + Math.pow(embeddings2[i], 2);
+    }
+
+    norm1 = Math.sqrt(norm1);
+    norm2 = Math.sqrt(norm2);
+    return 1 - dotSum / (norm1 * norm2);
+  };
+
+    // Embeddings L2-Normalization
+  const L2Normalization = (embeddings) => {
+    // norm(L2) = (|x0|^2 + |x1|^2 + |x2|^2 + |xi|^2)^1/2
+    let embeddingSum = 0;
+
+    for (let i = 0; i < embeddings.length; i++) {
+      if (embeddings[i] !== 0) {
+        embeddingSum = embeddingSum + Math.pow(Math.abs(embeddings[i]), 2);
+      }
+    }
+
+    let L2 = Math.sqrt(embeddingSum);
+    let embeddingsNorm = new Float32Array(embeddings.length);
+
+    for (let i = 0; i < embeddings.length; i++) {
+      if (embeddings[i] !== 0) {
+        embeddingsNorm[i] = (embeddings[i] / L2).toFixed(10);
+      } else {
+        embeddingsNorm[i] = 0;
+      }
+    }
+
+    return embeddingsNorm;
+  };
+
+  let results = new Array();
+  let distanceMap = new Map();
+
+  for (let i in targetEmbeddings) {
+    for (let j in searchEmbeddings) {
+      // Set default status 'unknown' as 'X'
+      results[j] = 'X';
+      let distance;
+      if (options.distanceMetric === "euclidean") {
+        let [...targetEmbeddingsTmp] = Float32Array.from(L2Normalization(targetEmbeddings[i]));
+        let [...searchEmbeddingsTmp] = Float32Array.from(L2Normalization(searchEmbeddings[j]));
+        distance = euclideanDistance(targetEmbeddingsTmp, searchEmbeddingsTmp);
+      } else if (options.distanceMetric === "cosine") {
+        distance = cosineDistance(targetEmbeddings[i], searchEmbeddings[j]);
+      }
+      if (!distanceMap.has(j)) distanceMap.set(j, new Map());
+      distanceMap.get(j).set(i, distance);
+    }
+  }
+
+  console.dir(distanceMap);
+
+  for (let key1 of distanceMap.keys()) {
+    let num = null;
+    let minDis = null;
+    for (let [key2, value2] of distanceMap.get(key1).entries()) {
+      if (minDis == null) {
+        num = key2;
+        minDis = value2;
+      } else {
+        if (minDis > value2) {
+          num = key2;
+          minDis = value2;
+        }
+      }
+    }
+
+    if (results[key1] === 'X' && minDis < options.threshold) {
+      results[key1] = parseInt(num) + 1;
+    }
+  }
+
+  return results;
 };

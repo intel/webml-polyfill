@@ -24,13 +24,23 @@ class TFliteModelImporter {
     } else if (this._backend === 'WASM' || this._backend === 'WebGL') {
       this._nn = nnPolyfill;
     }
+    this._bEagerMode = false;
+    this._supportedOps = new Set();
   }
+
+  setEagerMode = (flag) => {
+    this._bEagerMode = flag;
+  };
+
+  setSupportedOps = (ops) => {
+    this._supportedOps = ops;
+  };
 
   async createCompiledModel() {
     let options = {
       backend: this._backend,
-      eager: eager || false,
-      supportedOps: supportedOps,
+      eager: this._bEagerMode,
+      supportedOps: this._supportedOps,
     };
     this._model = await this._nn.createModel(options);
 
@@ -144,7 +154,7 @@ class TFliteModelImporter {
       value: null
     }
     if (typeof value !== 'undefined')
-      this._setOperandValue(index, value); 
+      this._setOperandValue(index, value);
     return index;
   }
 
@@ -250,7 +260,7 @@ class TFliteModelImporter {
       let opCode = this._rawModel.operatorCodes(operator.opcodeIndex()).builtinCode();
       let opType;
       // some input/output tensors might be mapped to tensors
-      // e.g., skipped nodes in RESIZE_BILINEAR 
+      // e.g., skipped nodes in RESIZE_BILINEAR
       let inputs = Array.from(operator.inputsArray()).map(i => this._tensorIds[i]);
       let outputs = Array.from(operator.outputsArray()).map(i => this._tensorIds[i]);
       switch (opCode) {
@@ -376,7 +386,7 @@ class TFliteModelImporter {
           this._tensorIds.push(tensorId);
           this._model.setOperandValue(tensorId, new Int32Array([1, 1001]));
           inputs.push(tensorId);
-          opType = this._nn.RESHAPE;         
+          opType = this._nn.RESHAPE;
         } break;
         case tflite.BuiltinOperator.FULLY_CONNECTED: {
           let options = operator.builtinOptions(new tflite.FullyConnectedOptions());
@@ -429,7 +439,7 @@ class TFliteModelImporter {
         }
       }
 
-      if (i === operatorsLength - 1) { 
+      if (i === operatorsLength - 1) {
         if (this._options.softmax && opCode != tflite.BuiltinOperator.SOFTMAX) {
           this._addOperation(opType, inputs, outputs);
           let outputTensor = graph.tensors(outputs[0]);

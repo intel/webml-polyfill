@@ -24,13 +24,23 @@ class OpenVINOModelImporter {
     } else if (this._backend === 'WASM' || this._backend === 'WebGL') {
       this._nn = nnPolyfill;
     }
+    this._bEagerMode = false;
+    this._supportedOps = new Set();
   }
+
+  setEagerMode = (flag) => {
+    this._bEagerMode = flag;
+  };
+
+  setSupportedOps = (ops) => {
+    this._supportedOps = ops;
+  };
 
   async createCompiledModel() {
     let options = {
       backend: this._backend,
-      eager: eager || false,
-      supportedOps: supportedOps,
+      eager: this._bEagerMode,
+      supportedOps: this._supportedOps,
     };
     this._model = await this._nn.createModel(options);
 
@@ -458,7 +468,8 @@ class OpenVINOModelImporter {
           const bias = node.inputs[2];
           const weightsTensor = weights.getInitializer();
           const biasTensor = bias.getInitializer();
-          const dims = [weightsTensor.length];
+          // put length into channel of NHWC
+          const dims = [1, 1, 1, weightsTensor.length];
 
           // add intputs for Mul
           inputs.push(this._getTensorId(input));
@@ -830,7 +841,7 @@ class OpenVINOModelImporter {
     return i - 1;
   }
 
-  async getRequiredOps() {
+  getRequiredOps() {
     return this._requiredOps;
   }
 }

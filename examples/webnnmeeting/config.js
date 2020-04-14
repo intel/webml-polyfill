@@ -40,6 +40,7 @@ module.exports = {
     modelSize: '8.4MB',
     modelFile: '../../js/webnn/ss/model/deeplab_mobilenetv2_257_dilated.tflite',
     labelsFile: '../../js/webnn/ss/model/labels.txt',
+    isQuantized: false,
     inputSize: [257, 257, 3],
     outputSize: [257, 257, 1],
     preOptions: {
