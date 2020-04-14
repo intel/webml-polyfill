@@ -8,10 +8,7 @@ import {
   getStreams
 } from '~/assets/js/rest'
 import getTime from '~/assets/js/user/time'
-import {
-  BaseRunner,
-  SemanticSegmentationRunner
-} from '~/assets/js/webnn/util/BaseRunner'
+import { SemanticSegmentationRunner } from '~/assets/js/webnn/util/BaseRunner'
 import Renderer from '~/assets/js/webnn/webgl/DrawOutputs'
 import Control from '~/components/Control.vue'
 import Clock from '~/components/Clock.vue'
@@ -329,15 +326,8 @@ export default {
     },
     initRunner() {
       // eslint-disable-next-line new-cap
-      this.baserunner = new BaseRunner(
-        config.semanticsegmentation,
-        this.updateProgress
-      )
-      // eslint-disable-next-line new-cap
-      this.runner = new SemanticSegmentationRunner(
-        config.semanticsegmentation,
-        this.updateProgress
-      )
+      this.runner = new SemanticSegmentationRunner()
+      this.runner.setProgressHandler(this.updateProgress)
     },
     getSSStream() {
       this.ssstream = this.$refs.sscanvas.captureStream()
