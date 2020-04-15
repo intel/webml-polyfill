@@ -227,6 +227,7 @@ class BaseExample extends BaseApp {
       let polyfillId = $('input:radio[name="bp"]:checked').attr('id') || $('input:radio[name="bp"][checked="checked"]').attr('id');
       if (isBackendSwitch()) {
         if (polyfillId !== this._currentBackend) {
+          this._freeMemoryResources();
           $('.b-polyfill input').removeAttr('checked');
           $('.b-polyfill label').removeClass('checked');
           $('#' + polyfillId).attr('checked', 'checked');
@@ -235,12 +236,16 @@ class BaseExample extends BaseApp {
           showAlertComponent('At least one backend required, please select other backends if needed.');
           return;
         } else {
+          this._freeMemoryResources();
           $('.b-polyfill input').removeAttr('checked');
           $('.b-polyfill label').removeClass('checked');
           polyfillId = 'WebML';
         }
         this._setBackend(polyfillId);
       } else {
+        if (polyfillId !== this._currentBackend) {
+          this._freeMemoryResources();
+        }
         $('.b-polyfill input').removeAttr('checked');
         $('.b-polyfill label').removeClass('checked');
         $('.b-webnn input').removeAttr('checked');
@@ -252,13 +257,13 @@ class BaseExample extends BaseApp {
       }
       updateBackendComponents(this._currentBackend, this._currentPrefer);
       this._updateHistoryEntryURL();
-      this._freeMemoryResources();
       this.main();
     });
 
     // Click trigger of Native Backend <input> element
     $('input:radio[name=bw]').click(() => {
       $('.alert').hide();
+      this._freeMemoryResources();
       let webnnId = $('input:radio[name="bw"]:checked').attr('id') || $('input:radio[name="bw"][checked="checked"]').attr('id');
       if (isBackendSwitch()) {
         if (webnnId !== this._currentPrefer) {
@@ -286,7 +291,6 @@ class BaseExample extends BaseApp {
       this._setPrefer(webnnId);
       updateBackendComponents(this._currentBackend, this._currentPrefer);
       this._updateHistoryEntryURL();
-      this._freeMemoryResources();
       this.main();
     });
 
