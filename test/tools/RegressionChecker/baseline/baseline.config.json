@@ -1,6 +1,6 @@
 {
     "Version": {
-        "chromium": "2e4d91c",
+        "chromium": "d370896",
         "polyfill": "e0aab19"
     },
     "Android-Polyfill-Fast-WASM": {
@@ -29,13 +29,13 @@
     },
     "Android-WebNN-Sustained-NNAPI": {
         "total": 898,
-        "pass": 612,
-        "fail": 286,
+        "pass": 610,
+        "fail": 288,
         "block": 0,
         "realModel": {
             "total": 269,
-            "pass": 202,
-            "fail": 67,
+            "pass": 167,
+            "fail": 102,
             "block": 0
         }
     },
@@ -77,8 +77,8 @@
     },
     "Linux-WebNN-Fast-IE-MKLDNN": {
         "total": 898,
-        "pass": 418,
-        "fail": 480,
+        "pass": 422,
+        "fail": 476,
         "block": 0,
         "realModel": {
             "total": 269,
@@ -89,8 +89,8 @@
     },
     "Linux-WebNN-Sustained-IE-clDNN": {
         "total": 898,
-        "pass": 412,
-        "fail": 486,
+        "pass": 416,
+        "fail": 482,
         "block": 0,
         "realModel": {
             "total": 269,
@@ -108,6 +108,18 @@
             "total": 269,
             "pass": 198,
             "fail": 71,
+            "block": 0
+        }
+    },
+    "Linux-WebNN-Ultra-Low-IE-GNA": {
+        "total": 898,
+        "pass": 194,
+        "fail": 704,
+        "block": 0,
+        "realModel": {
+            "total": 269,
+            "pass": 0,
+            "fail": 269,
             "block": 0
         }
     },
@@ -147,6 +159,18 @@
             "block": 0
         }
     },
+    "Win-WebNN-Fast-IE-MKLDNN": {
+        "total": 898,
+        "pass": 422,
+        "fail": 476,
+        "block": 0,
+        "realModel": {
+            "total": 269,
+            "pass": 200,
+            "fail": 69,
+            "block": 0
+        }
+    },
     "Win-WebNN-Sustained-DML": {
         "total": 898,
         "pass": 529,
@@ -159,6 +183,18 @@
             "block": 0
         }
     },
+    "Win-WebNN-Sustained-IE-clDNN": {
+        "total": 898,
+        "pass": 416,
+        "fail": 482,
+        "block": 0,
+        "realModel": {
+            "total": 269,
+            "pass": 267,
+            "fail": 2,
+            "block": 0
+        }
+    },
     "Win-WebNN-Sustained-clDNN": {
         "total": 898,
         "pass": 553,
@@ -168,6 +204,18 @@
             "total": 269,
             "pass": 269,
             "fail": 0,
+            "block": 0
+        }
+    },
+    "Win-WebNN-Ultra-Low-IE-GNA": {
+        "total": 898,
+        "pass": 194,
+        "fail": 704,
+        "block": 0,
+        "realModel": {
+            "total": 269,
+            "pass": 0,
+            "fail": 269,
             "block": 0
         }
     },
