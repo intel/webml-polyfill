@@ -62,7 +62,7 @@ ubuntu 18.04.4 lts
 ...
 ```
 
-Please copy and paste `sampleServiceId` and `sampleServiceKey` values, which will be used in `webrtcserver.id` and `webrtcserver.key` of `config.js` in main folder. Please run `ifconfig` on WebRTC server to get IP like 10.239.47.52 for `webrtcserver`.`url` of `config.js` in main folder.
+Please copy and paste `sampleServiceId` and `sampleServiceKey` values, which will be used in `webrtcserver.id` and `webrtcserver.key` of `config.js` in main folder. Please run `ifconfig` on WebRTC server to get IP xxx.xxx.xxx.xxx like 10.239.47.52 or provide webrtc server domain for `webrtcserver`.`url` of `config.js` in main folder.
 
 If you want to enable GPU-acceleration through Intel Media Server Studio, use following command:
 

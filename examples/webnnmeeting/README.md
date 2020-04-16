@@ -50,7 +50,7 @@ $ openssl req -new -x509 -nodes -sha256 -days 365 -key webnnmeeting.key -out web
 
 Please update configurations in `config.js` under main folder.
 
-In 'Launch the OWT Server as Single Node' section of [Open WebRTC Toolkit (OWT) Server Setup](doc/Server.md), you could get values of `webrtcserver`.`id`, `webrtcserver`.`key` and `webrtcserver`.`url` like `10.239.47.52`.
+In 'Launch the OWT Server as Single Node' section of [Open WebRTC Toolkit (OWT) Server Setup](doc/Server.md), you could get values of `webrtcserver`.`id`, `webrtcserver`.`key` and `webrtcserver`.`url` like `xxx.xxx.xxx.xxx` or `https://<webrtcserver.com>`.
 
 Run following commands,
 
@@ -68,7 +68,7 @@ Update `config.js` with correct data:
     id: '5df9ca6f7415937c7a91d774',
     key:
       'rGtTQokQM/OeG/9oDzK9TtFjd+OOeUmFN2dZl52mvaI4cSj1waduIJB8x21Wa9MaGqtZzV1KTWBvr7heBIgSjQjQyeBWI0RFzCTSyhFtd9jmZ994xE50Gkmb2zxkQYALef8oj8do3gT/cWfOfgq1zPooCkRtbMK1xm44Avduyj4=',
-    url: 'https://10.239.47.52',
+    url: 'https://xxx.xxx.xxx.xxx',
     port: '3000',
     restapiport: '3004'
   },
@@ -114,8 +114,8 @@ If error happens related to port conflict, you could change ports in `config.js`
 
 If you are running the code locally, the browser will show "Your connection is not private" when accessing Intel OWT server and WebNN Meeting web pages.
 
-- Visit https://10.239.47.52:8080/socket.io/?EIO=3&transport=polling
-- Click "Advanced" button -> Click "Proceed to 10.239.47.52 (unsafe)"
+- Visit https://xxx.xxx.xxx.xxx:8080/socket.io/?EIO=3&transport=polling
+- Click "Advanced" button -> Click "Proceed to xxx.xxx.xxx.xxx (unsafe)"
 - Visit WebNN Meeting URL set in config.js, e.g: https://127.0.0.1:8888/
 - Click "Advanced" button -> Click "Proceed to 127.0.0.1 (unsafe)"
 
