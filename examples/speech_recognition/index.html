@@ -3,13 +3,13 @@
 
 <head>
   <meta charset='utf-8'>
-  <title>Web Neural Network API - Examples - Image Classification</title>
+  <title>Web Neural Network API - Examples - Speech Recognition</title>
   <meta content='width=device-width, initial-scale=1.0' name='viewport'>
   <meta
-    content='Image Classification, WebML, Web Machine Learning, Machine Learning for Web, Neural Networks, WebNN, WebNN API, Web Neural Network API'
+    content='Speech Recognition, WebML, Web Machine Learning, Machine Learning for Web, Neural Networks, WebNN, WebNN API, Web Neural Network API'
     name='keywords'>
   <meta
-    content='Image Classification, WebML, Web Machine Learning, Machine Learning for Web, Neural Networks, WebNN, WebNN API, Web Neural Network API'
+    content='Speech Recognition, WebML, Web Machine Learning, Machine Learning for Web, Neural Networks, WebNN, WebNN API, Web Neural Network API'
     name='description'>
   <link rel='apple-touch-icon' sizes='57x57' href='../static/img/favicon/apple-icon-57x57.png'>
   <link rel='apple-touch-icon' sizes='60x60' href='../static/img/favicon/apple-icon-60x60.png'>
@@ -32,7 +32,7 @@
   <link href='../static/css/style.css' rel='stylesheet'>
 </head>
 
-<body id='speechcommands'>
+<body id='speechrecognition'>
   <header id='header'>
     <div class='container'>
       <div id='logo' class='pull-left'>
@@ -128,7 +128,7 @@
     <div class='container' id='container'>
       <a id='extra' href='#' class='mb-1 mt-3'>
         <h3 class='text-center ex' id='ictitle'>
-          Speech Commands
+          Speech Recognition
         </h3>
         <span class='fa chevron-up'>
           <svg aria-hidden='true' data-prefix='fas' data-icon='chevron-up' class='svg-inline--fa fa-chevron-up fa-w-14'
@@ -151,9 +151,9 @@
         <li id='img' class='active'>
           <a href='#image' data-toggle='tab'>Audio</a>
         </li>
-        <li id='cam'>
+        <!-- <li id='cam'>
           <a href='#camera' data-toggle='tab'>Live Microphone</a>
-        </li>
+        </li> -->
       </ul>
       <div id='progressContainer'>
         <div class='mb-2'>
@@ -191,164 +191,64 @@
       <div class='tab-content clearfix row'>
         <div class='tab-pane text-center active col-sm' id='imagetab'>
           <div class='icdisplay' style='display: none;'>
+            <div id='inferenceCycles' style="text-transform: capitalize; width: 100%;"></div>
+            <div style="text-transform: capitalize; margin-bottom: 10px; width: 100%;">inference text:</div>
+            <div id='inferenceText' style="color: rgba(25, 190, 225, 1.0); width: 100%;"></div>
             <div class='col-lg-12 col-xs-12 text-center'>
-              <!-- <figure class='item'> -->
-              <!-- <div class='inner'> -->
-              <audio id='feedElement' src='audio/yes.wav' controls='controls'></audio>
-              <!-- </div> -->
-              <!-- </figure> -->
-              <div id='controller'>
-                <div id='on'>On</div> <div id='off'>Off</div> <div id='yes'>Yes</div> <div id='no'>No</div> <div id='go'>Go</div>
-                <div id='stop'>Stop</div> <div id='up'>Up</div> <div id='down'>Down</div> <div id='left'>Left</div> <div id='right'>Right</div>
-              </div>
-              <div class='row mt-3'>
-                <div class='col'>
-                  <div class='box'>
-                    <input type='file' name='f[]' id='input' accept='audio/*' class='inputfile inputf' />
-                    <label for='input'>
-                      <svg width='20' height='17' viewBox='0 0 20 17'>
-                        <path d='M10 0l-5.2 4.9h3.3v5.1h3.8v-5.1h3.3l-5.2-4.9zm9.3 11.5l-3.2-2.1h-2l3.4 2.6h-3.5c-.1 0-.2.1-.2.1l-.8 2.3h-6l-.8-2.2c-.1-.1-.1-.2-.2-.2h-3.6l3.4-2.6h-2l-3.2 2.1c-.4.3-.7 1-.6 1.5l.6 3.1c.1.5.7.9 1.2.9h16.3c.6 0 1.1-.4 1.3-.9l.6-3.1c.1-.5-.2-1.2-.7-1.5z' />
-                      </svg>
-                      <span>Select Audio</span>
-                    </label>
-                  </div>
+            <div class='row mt-3'>
+              <div class='col'>
+                <div class='box'>
+                  <input type='file' name='f[]' id='input' accept='*' class='inputfile inputf' />
+                  <label for='input'>
+                    <svg width='20' height='17' viewBox='0 0 20 17'>
+                      <path d='M10 0l-5.2 4.9h3.3v5.1h3.8v-5.1h3.3l-5.2-4.9zm9.3 11.5l-3.2-2.1h-2l3.4 2.6h-3.5c-.1 0-.2.1-.2.1l-.8 2.3h-6l-.8-2.2c-.1-.1-.1-.2-.2-.2h-3.6l3.4-2.6h-2l-3.2 2.1c-.4.3-.7 1-.6 1.5l.6 3.1c.1.5.7.9 1.2.9h16.3c.6 0 1.1-.4 1.3-.9l.6-3.1c.1-.5-.2-1.2-.7-1.5z' />
+                    </svg>
+                    <span>Select Ark File</span>
+                  </label>
                 </div>
               </div>
-              <canvas id='canvas' width=224 height=224></canvas>
             </div>
-          </div>
-        </div>
-        <div class='tab-pane text-center col-sm' id='cameratab'>
-          <div class='icdisplay' style='display: none;'>
-            <div id='fps'></div>
-            <audio id='feedMediaElement' src='audio/yes.wav' controls='controls'></audio>
-            <div id='record'>
-              <svg aria-hidden='true' focusable='false' data-prefix='fas' data-icon='microphone'
-                   class='svg-inline--fa fa-microphone fa-w-11' viewBox='0 0 352 512'>
-                <title>Please read following words by clicking microphone icon</title>
-                <path fill='currentColor'
-                      d='M176 352c53.02 0 96-42.98 96-96V96c0-53.02-42.98-96-96-96S80 42.98 80 96v160c0 53.02 42.98 96 96 96zm160-160h-16c-8.84 0-16 7.16-16 16v48c0 74.8-64.49 134.82-140.79 127.38C96.71 376.89 48 317.11 48 250.3V208c0-8.84-7.16-16-16-16H16c-8.84 0-16 7.16-16 16v40.16c0 89.64 63.97 169.55 152 181.69V464H96c-8.84 0-16 7.16-16 16v16c0 8.84 7.16 16 16 16h160c8.84 0 16-7.16 16-16v-16c0-8.84-7.16-16-16-16h-56v-33.77C285.71 418.47 352 344.9 352 256v-48c0-8.84-7.16-16-16-16z'>
-                </path>
-              </svg>
             </div>
-            <label class='labelblock'>On, Off, Yes, No, Go, Stop, Up, Down, Left, Right</label>
           </div>
         </div>
         <div id='inference' class='shoulddisplay col-sm' style='display: none;'>
           <div class='row text-center tc' id='inferencetitle'>
-            <div id='scresult'>
-              <svg id='ron' aria-hidden='true' focusable='false' data-prefix='fas' data-icon='toggle-on'
-                   class='svg-inline--fa fa-toggle-on fa-w-18' viewBox='0 0 576 512'>
-                <title>On</title>
-                <path fill='currentColor'
-                      d='M384 64H192C86 64 0 150 0 256s86 192 192 192h192c106 0 192-86 192-192S490 64 384 64zm0 320c-70.8 0-128-57.3-128-128 0-70.8 57.3-128 128-128 70.8 0 128 57.3 128 128 0 70.8-57.3 128-128 128z'>
-                </path>
-              </svg>
-
-              <svg id='roff' aria-hidden='true' focusable='false' data-prefix='fas' data-icon='toggle-off'
-                   class='svg-inline--fa fa-toggle-off fa-w-18' viewBox='0 0 576 512'>
-                <title>Off</title>
-                <path fill='currentColor'
-                      d='M384 64H192C85.961 64 0 149.961 0 256s85.961 192 192 192h192c106.039 0 192-85.961 192-192S490.039 64 384 64zM64 256c0-70.741 57.249-128 128-128 70.741 0 128 57.249 128 128 0 70.741-57.249 128-128 128-70.741 0-128-57.249-128-128zm320 128h-48.905c65.217-72.858 65.236-183.12 0-256H384c70.741 0 128 57.249 128 128 0 70.74-57.249 128-128 128z'>
-                </path>
-              </svg>
-              <svg id='ryes' aria-hidden='true' focusable='false' data-prefix='far' data-icon='check-circle'
-                   class='svg-inline--fa fa-check-circle fa-w-16' viewBox='0 0 512 512'>
-                <title>Yes</title>
-                <path fill='currentColor'
-                      d='M256 8C119.033 8 8 119.033 8 256s111.033 248 248 248 248-111.033 248-248S392.967 8 256 8zm0 48c110.532 0 200 89.451 200 200 0 110.532-89.451 200-200 200-110.532 0-200-89.451-200-200 0-110.532 89.451-200 200-200m140.204 130.267l-22.536-22.718c-4.667-4.705-12.265-4.736-16.97-.068L215.346 303.697l-59.792-60.277c-4.667-4.705-12.265-4.736-16.97-.069l-22.719 22.536c-4.705 4.667-4.736 12.265-.068 16.971l90.781 91.516c4.667 4.705 12.265 4.736 16.97.068l172.589-171.204c4.704-4.668 4.734-12.266.067-16.971z'>
-                </path>
-              </svg>
-
-              <svg id='rno' aria-hidden='true' focusable='false' data-prefix='far' data-icon='times-circle'
-                   class='svg-inline--fa fa-times-circle fa-w-16' viewBox='0 0 512 512'>
-                <title>No</title>
-                <path fill='currentColor'
-                      d='M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm0 448c-110.5 0-200-89.5-200-200S145.5 56 256 56s200 89.5 200 200-89.5 200-200 200zm101.8-262.2L295.6 256l62.2 62.2c4.7 4.7 4.7 12.3 0 17l-22.6 22.6c-4.7 4.7-12.3 4.7-17 0L256 295.6l-62.2 62.2c-4.7 4.7-12.3 4.7-17 0l-22.6-22.6c-4.7-4.7-4.7-12.3 0-17l62.2-62.2-62.2-62.2c-4.7-4.7-4.7-12.3 0-17l22.6-22.6c4.7-4.7 12.3-4.7 17 0l62.2 62.2 62.2-62.2c4.7-4.7 12.3-4.7 17 0l22.6 22.6c4.7 4.7 4.7 12.3 0 17z'>
-                </path>
-              </svg>
-
-              <svg id='rgo' aria-hidden='true' focusable='false' data-prefix='far' data-icon='play-circle'
-                   class='svg-inline--fa fa-play-circle fa-w-16' viewBox='0 0 512 512'>
-                <title>Go</title>
-                <path fill='currentColor'
-                      d='M371.7 238l-176-107c-15.8-8.8-35.7 2.5-35.7 21v208c0 18.4 19.8 29.8 35.7 21l176-101c16.4-9.1 16.4-32.8 0-42zM504 256C504 119 393 8 256 8S8 119 8 256s111 248 248 248 248-111 248-248zm-448 0c0-110.5 89.5-200 200-200s200 89.5 200 200-89.5 200-200 200S56 366.5 56 256z'>
-                </path>
-              </svg>
-
-              <svg id='rstop' aria-hidden='true' focusable='false' data-prefix='far' data-icon='stop-circle'
-                   class='svg-inline--fa fa-stop-circle fa-w-16' viewBox='0 0 512 512'>
-                <title>Stop</title>
-                <path fill='currentColor'
-                      d='M504 256C504 119 393 8 256 8S8 119 8 256s111 248 248 248 248-111 248-248zm-448 0c0-110.5 89.5-200 200-200s200 89.5 200 200-89.5 200-200 200S56 366.5 56 256zm296-80v160c0 8.8-7.2 16-16 16H176c-8.8 0-16-7.2-16-16V176c0-8.8 7.2-16 16-16h160c8.8 0 16 7.2 16 16z'>
-                </path>
-              </svg>
-              <svg id='rup' aria-hidden='true' focusable='false' data-prefix='far' data-icon='arrow-alt-circle-up'
-                   class='svg-inline--fa fa-arrow-alt-circle-up fa-w-16' viewBox='0 0 512 512'>
-                <title>Up</title>
-                <path fill='currentColor'
-                      d='M256 504c137 0 248-111 248-248S393 8 256 8 8 119 8 256s111 248 248 248zm0-448c110.5 0 200 89.5 200 200s-89.5 200-200 200S56 366.5 56 256 145.5 56 256 56zm20 328h-40c-6.6 0-12-5.4-12-12V256h-67c-10.7 0-16-12.9-8.5-20.5l99-99c4.7-4.7 12.3-4.7 17 0l99 99c7.6 7.6 2.2 20.5-8.5 20.5h-67v116c0 6.6-5.4 12-12 12z'>
-                </path>
-              </svg>
-
-              <svg id='rdown' aria-hidden='true' focusable='false' data-prefix='far' data-icon='arrow-alt-circle-down'
-                   class='svg-inline--fa fa-arrow-alt-circle-down fa-w-16' viewBox='0 0 512 512'>
-                <title>Down</title>
-                <path fill='currentColor'
-                      d='M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm0 448c-110.5 0-200-89.5-200-200S145.5 56 256 56s200 89.5 200 200-89.5 200-200 200zm-32-316v116h-67c-10.7 0-16 12.9-8.5 20.5l99 99c4.7 4.7 12.3 4.7 17 0l99-99c7.6-7.6 2.2-20.5-8.5-20.5h-67V140c0-6.6-5.4-12-12-12h-40c-6.6 0-12 5.4-12 12z'>
-                </path>
-              </svg>
-
-              <svg id='rleft' aria-hidden='true' focusable='false' data-prefix='far' data-icon='arrow-alt-circle-left'
-                   class='svg-inline--fa fa-arrow-alt-circle-left fa-w-16' viewBox='0 0 512 512'>
-                <title>Left</title>
-                <path fill='currentColor'
-                      d='M8 256c0 137 111 248 248 248s248-111 248-248S393 8 256 8 8 119 8 256zm448 0c0 110.5-89.5 200-200 200S56 366.5 56 256 145.5 56 256 56s200 89.5 200 200zm-72-20v40c0 6.6-5.4 12-12 12H256v67c0 10.7-12.9 16-20.5 8.5l-99-99c-4.7-4.7-4.7-12.3 0-17l99-99c7.6-7.6 20.5-2.2 20.5 8.5v67h116c6.6 0 12 5.4 12 12z'>
-                </path>
-              </svg>
-
-              <svg id='rright' aria-hidden='true' focusable='false' data-prefix='far' data-icon='arrow-alt-circle-right'
-                   class='svg-inline--fa fa-arrow-alt-circle-right fa-w-16' viewBox='0 0 512 512'>
-                <title>Right</title>
-                <path fill='currentColor'
-                      d='M504 256C504 119 393 8 256 8S8 119 8 256s111 248 248 248 248-111 248-248zm-448 0c0-110.5 89.5-200 200-200s200 89.5 200 200-89.5 200-200 200S56 366.5 56 256zm72 20v-40c0-6.6 5.4-12 12-12h116v-67c0-10.7 12.9-16 20.5-8.5l99 99c4.7 4.7 4.7 12.3 0 17l-99 99c-7.6 7.6-20.5 2.2-20.5-8.5v-67H140c-6.6 0-12-5.4-12-12z'>
-                </path>
-              </svg>
-              <div id='rtext'>Unknown</div>
-            </div>
             <div id='inferenceTime'></div>
-          </div>
-          <div class='row text-center' id='inferenceresult'>
-            <table class='table table-sm'>
-              <thead>
-                <tr>
-                  <th scope='col'>#</th>
-                  <th scope='col'>Label</th>
-                  <th scope='col'>Probability</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <th scope='row'>1</th>
-                  <td id='label0'></td>
-                  <td id='prob0'></td>
-                </tr>
-                <tr>
-                  <th scope='row'>2</th>
-                  <td id='label1'></td>
-                  <td id='prob1'></td>
-                </tr>
-                <tr>
-                  <th scope='row'>3</th>
-                  <td id='label2'></td>
-                  <td id='prob2'></td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <div id='cameraswitcher' class='custom-control custom-switch'>
-            <input type='checkbox' class='custom-control-input' id='cameraswitch'>
-            <label class='custom-control-label' for='cameraswitch'>Front-facing</label>
+            <div id='averageTime' style="text-transform: capitalize; width: 100%;"></div>
+            </div>
+            <div class='row text-center' id='inferenceresult'>
+              <table class='table table-sm'>
+                <thead>
+                  <tr>
+                    <th scope='col'>#</th>
+                    <th scope='col'>error</th>
+                    <th scope='col'>result</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <th scope='row'>1</th>
+                    <td id='type0'>max</td>
+                    <td id='result0'></td>
+                  </tr>
+                  <tr>
+                    <th scope='row'>2</th>
+                    <td id='type1'>avg</td>
+                    <td id='result1'></td>
+                  </tr>
+                  <tr>
+                    <th scope='row'>3</th>
+                    <td id='type2'>avg rms</td>
+                    <td id='result2'></td>
+                  </tr>
+                  <tr>
+                    <th scope='row'>4</th>
+                    <td id='type3'>stdDev</td>
+                    <td id='result3'></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
@@ -434,18 +334,13 @@
   <script src='../util/BaseExample.js'></script>
   <script src='../util/BaseMircophoneExample.js'></script>
 
-  <script src='../util/mfcc/mfcc.js'></script>
-  <script src='../util/tflite/flatbuffers/js/flatbuffers.js'></script>
-  <script src='../util/tflite/schema/schema_generated.js'></script>
-  <script src='../util/tflite/TfLiteModelUtils.js'></script>
-  <script src='../util/tflite/TFliteModelImporter.js'></script>
   <script src='../util/onnx/onnx.js'></script>
   <script src='../util/openvino/openvino.js'></script>
   <script src='../util/openvino/OpenVINOModelUtils.js'></script>
   <script src='../util/openvino/OpenVINOModelImporter.js'></script>
 
-  <script src='SpeechCommandsRunner.js'></script>
-  <script src='SpeechCommandsExample.js'></script>
+  <script src='SpeechRecognitionRunner.js'></script>
+  <script src='SpeechRecognitionExample.js'></script>
   <script src='main.js'></script>
 
   <script async src="https://www.googletagmanager.com/gtag/js?id=UA-147662084-1"></script>
