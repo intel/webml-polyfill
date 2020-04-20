@@ -142,7 +142,7 @@ class FaceRecognitionExample extends BaseCameraExample {
     }
 
     if (this._coRunner == null) {
-      this._coRunner = new BaseRunner();
+      this._coRunner = new WebNNRunner();
       this._coRunner.setProgressHandler(updateLoadingProgressComponent);
     }
   };
@@ -193,8 +193,12 @@ class FaceRecognitionExample extends BaseCameraExample {
   };
 
   _compileModel = async () => {
-    await this._runner.compileModel(this._currentBackend, this._currentPrefer);
-    await this._coRunner.compileModel(this._currentBackend, this._currentPrefer);
+    let options = {
+      backend: this._currentBackend,
+      prefer: this._currentPrefer,
+    };
+    await this._runner.compileModel(options);
+    await this._coRunner.compileModel(options);
   };
 
   _getRequiredOps = () => {

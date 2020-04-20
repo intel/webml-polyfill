@@ -649,3 +649,23 @@ const getFRClass = (targetEmbeddings, searchEmbeddings, options) => {
 
   return results;
 };
+
+// Load js script with async mode.
+const asyncLoadScript = (url, callback = null) => {
+  let script = document.createElement('script');
+  script.async = true;
+  script.type = 'text/javascript';
+  if (callback != null) {
+    script.onload = callback || function() {};
+  }
+  script.src = url;
+  document.getElementsByTagName('head')[0].appendChild(script);
+};
+
+const softmax = (arr) => {
+  const C = Math.max(...arr);
+  const d = arr.map((y) => Math.exp(y - C)).reduce((a, b) => a + b);
+  return arr.map((value, index) => {
+    return Math.exp(value - C) / d;
+  });
+};

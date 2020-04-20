@@ -1,4 +1,4 @@
-class FaceDetectorRunner extends BaseRunner {
+class FaceDetectorRunner extends WebNNRunner {
   constructor() {
     super();
     this._outputBoxTensor;

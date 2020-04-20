@@ -126,7 +126,7 @@ const trademarks = (allFormats) => {
 
 const singleModelTable = (modelList, category) => {
   const allFormats = new Set(modelList.map((m) => m.format));
-  const tbody = $('#query tbody');
+  const backendTr = $('.backend');
   const trows = [];
   for (const format of allFormats) {
     let trow = $(`<tr class='model' id='${category}'>`);
@@ -146,11 +146,12 @@ const singleModelTable = (modelList, category) => {
   trows[0].prepend($(`<th class='text-center' rowspan='${allFormats.size}'>
                         <a href='../model.html' title='View model details'>${category}</a>
                       </th>`));
-  tbody.prepend(trows);
+  backendTr.before(trows);
   return allFormats;
 };
 
-setModelComponents = (models, selectedModelIdStr) => {
+const setModelComponents = (models, selectedModelIdStr) => {
+  $('.model').remove();
   let formatTypes = [];
 
   for (let [category, modelList] of Object.entries(models)) {
@@ -161,6 +162,45 @@ setModelComponents = (models, selectedModelIdStr) => {
 
   trademarks(formatTypes);
   updateModelComponentsStyle(selectedModelIdStr);
+};
+
+const updateFrameworkComponentsStyle = (framework) => {
+  const _framework = framework.replace('.', '');
+  $('.framework input').attr('disabled', false);
+  $('.framework label').removeClass('cursordefault');
+  $('#framework' + _framework).attr('disabled', true);
+  $('#l-framework' + _framework).addClass('cursordefault');
+  $('.framework input').removeAttr('checked');
+  $('.framework label').removeClass('checked');
+  $('#framework' + _framework).attr('checked', 'checked');
+  $('#l-framework' + _framework).addClass('checked');
+};
+
+const setFrameworkComponents = (frameworkList, selectedFramework) => {
+  const tbody = $('#query tbody');
+  let trow = $(`<tr class='framework'>`);
+  trow.append(`<th class='text-center'>Framework</th>`);
+  let tdata = $('<td>');
+  trow.append(tdata);
+  for (const framework of frameworkList) {
+    const _framework = framework.replace('.', '');
+    tdata.append($(`<input type='radio' class='d-none' name='framework' id='framework${_framework}' value='${framework}'>`));
+    tdata.append($(`<label id='l-framework${_framework}' for='framework${_framework}'>${framework}</label>`));
+  }
+  tbody.prepend(trow);
+  updateFrameworkComponentsStyle(selectedFramework);
+};
+
+const updateOpenCVJSBackendComponentsStyle = (selectedBackend) => {
+  const _selectedBackend = selectedBackend.toLocaleLowerCase().replace(' ', '');
+  $('.opencvjsbackend input').attr('disabled', false);
+  $('.opencvjsbackend label').removeClass('cursordefault');
+  $('#opencvjs' + _selectedBackend).attr('disabled', true);
+  $('#l-opencvjs' + _selectedBackend).addClass('cursordefault');
+  $('.opencvjsbackend input').removeAttr('checked');
+  $('.opencvjsbackend label').removeClass('checked');
+  $('#opencvjs' + _selectedBackend).attr('checked', 'checked');
+  $('#l-opencvjs' + _selectedBackend).addClass('checked');
 };
 
 const setPreferenceTipComponents = () => {
@@ -310,20 +350,6 @@ const updateTitleComponent = (backend, prefer, modelIdStr = null, modelInfoDic =
 
   const sampleName = getExampleName();
   let modelShow = null;
-  let currentPreferText = {fast: 'FAST',
-                           sustained: 'SUSTAINED',
-                           low: 'LOW',
-                           none: 'None',}[prefer];
-  let backendText = backend;
-
-  if (backendText == 'WebML') {
-    backendText = 'WebNN';
-  }
-
-  if (backend !== 'WebML' && prefer !== 'none') {
-    backendText = backend + ' + WebNN';
-  }
-
   if (modelIdStr != null) {
     if (modelIdStr != 'none') {
       let modelIdArray;
@@ -348,21 +374,40 @@ const updateTitleComponent = (backend, prefer, modelIdStr = null, modelInfoDic =
     } else {
       modelShow = 'None';
     }
-    if (currentPreferText === 'None') {
-      $('#ictitle').html(`${sampleName} / ${backendText} / ${modelShow}`);
-    } else if(prefer === 'sustained' & currentOS === 'Mac OS') {
-      $('#ictitle').html(`${sampleName} / ${backendText} (${currentPreferText}/MPS) / ${modelShow}`);
+  }
+
+  if (prefer != null) {
+    let currentPreferText = {fast: 'FAST',
+    sustained: 'SUSTAINED',
+    low: 'LOW',
+    none: 'None',}[prefer];
+    let backendText = backend;
+    if (backendText == 'WebML') {
+      backendText = 'WebNN';
+    }
+    if (backend !== 'WebML' && prefer !== 'none') {
+      backendText = backend + ' + WebNN';
+    }
+    if (modelIdStr != null) {
+      if (currentPreferText === 'None') {
+        $('#ictitle').html(`${sampleName} / ${backendText} / ${modelShow}`);
+      } else if(prefer === 'sustained' & currentOS === 'Mac OS') {
+        $('#ictitle').html(`${sampleName} / ${backendText} (${currentPreferText}/MPS) / ${modelShow}`);
+      } else {
+        $('#ictitle').html(`${sampleName} / ${backendText} (${currentPreferText}) / ${modelShow}`);
+      }
     } else {
-      $('#ictitle').html(`${sampleName} / ${backendText} (${currentPreferText}) / ${modelShow}`);
+      if (currentPreferText === 'None') {
+        $('#ictitle').html(`${sampleName} / ${backendText}`);
+      } else if(prefer === 'sustained' & currentOS === 'Mac OS') {
+        $('#ictitle').html(`${sampleName} / ${backendText} (${currentPreferText}/MPS)`);
+      } else {
+        $('#ictitle').html(`${sampleName} / ${backendText} (${currentPreferText})`);
+      }
     }
   } else {
-    if (currentPreferText === 'None') {
-      $('#ictitle').html(`${sampleName} / ${backendText}`);
-    } else if(prefer === 'sustained' & currentOS === 'Mac OS') {
-      $('#ictitle').html(`${sampleName} / ${backendText} (${currentPreferText}/MPS)`);
-    } else {
-      $('#ictitle').html(`${sampleName} / ${backendText} (${currentPreferText})`);
-    }
+    let _backend = backend.replace(' ', '+');
+    $('#ictitle').html(`${sampleName} / ${_backend} / ${modelShow}`);
   }
 };
 
@@ -437,6 +482,23 @@ const showProgressComponent = async (pm, pb, pi) => {
   $('.shoulddisplay').hide();
   $('.icdisplay').hide();
   $('#resulterror').hide();
+  await new Promise(res => setTimeout(res, 100));
+};
+
+const showOpenCVRuntimeProgressComponent = async () => {
+  let modelicon = `<svg width='24' height='24' viewbox='0 0 24 24'>
+                  <path d='M12.2 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm0 1.377a9.377 9.377 0 1 1 0-18.754 9.377 9.377 0 0 1 0 18.754zm-4-8a1.377 1.377 0 1 1 0-2.754 1.377 1.377 0 0 1 0 2.754zm4 0a1.377 1.377 0 1 1 0-2.754 1.377 1.377 0 0 1 0 2.754zm4 0a1.377 1.377 0 1 1 0-2.754 1.377 1.377 0 0 1 0 2.754z' fill='#006DFF' fill-rule='evenodd'></path>
+                </svg>`;
+  let p = `
+      <nav class='prog'>
+        <ul class='prog_list'>
+          <li>
+            ${modelicon}<span class='prog_list_title'>Loading OpenCV Runtime</span>
+          </li>
+        </ul>
+      </nav>
+    `;
+  $('#progressruntime').show();
   await new Promise(res => setTimeout(res, 100));
 };
 

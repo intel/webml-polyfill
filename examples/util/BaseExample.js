@@ -12,6 +12,8 @@ class BaseExample extends BaseApp {
     this._currentModelInfo = {};
     // _hiddenControlsFlag ('0'/'1') is for UI shows/hides model & backend control
     this._hiddenControlsFlag = '0';
+    this._currentFramework;//'OpenCV.js' 'WebNN'
+    this._currentOpenCVJSBackend;
   }
 
   _getDefaultInputType = () => {
@@ -24,6 +26,10 @@ class BaseExample extends BaseApp {
 
   _setInputType = (t) => {
     this._currentInputType = t;
+  };
+
+  _setFramework = (f) => {
+    this._currentFramework = f;
   };
 
   _setTrack = (track) => {
@@ -47,7 +53,12 @@ class BaseExample extends BaseApp {
     }
   };
 
+  _setOpenCVJSBackend = (b) => {
+    this._currentOpenCVJSBackend = b;
+  };
+
   _updateHistoryEntryURL = (url) => {
+    let locSearch;
     if (typeof url !== 'undefined') {
       if (url === "") {
         this._setBackend('WASM');
@@ -57,12 +68,13 @@ class BaseExample extends BaseApp {
         this._setInputType(inputType);
         this._setInputElement(this._feedElement);
         this._setHiddenControlsFlag('0');
+        this._setFramework('WebNN');
+        $('.backend').show();
+        $('.opencvjsbackend').hide();
+        $('#cam').show();
+        locSearch = `?prefer=${this._currentPrefer}&b=${this._currentBackend}&m=${this._currentModelId}&s=${this._currentInputType}&d=${this._hiddenControlsFlag}&f=${this._currentFramework}`;
       } else {
         // Parse seach params, and prepare inference env
-        const prefer = parseSearchParams('prefer');
-        this._setPrefer(prefer);
-        const backend = parseSearchParams('b');
-        this._setBackend(backend);
         let modelId = parseSearchParams('m');
         this._setModelId(modelId);
         let feedEle = null;
@@ -84,39 +96,83 @@ class BaseExample extends BaseApp {
         this._setInputElement(feedEle);
         const flag = parseSearchParams('d');
         this._setHiddenControlsFlag(flag);
+        const framework = parseSearchParams('f');
+        this._setFramework(framework);
+        switch (framework) {
+          case 'WebNN':
+            $('#cam').show();
+            $('.backend').show();
+            $('.opencvjsbackend').hide();
+            const prefer = parseSearchParams('prefer');
+            this._setPrefer(prefer);
+            const backend = parseSearchParams('b');
+            this._setBackend(backend);
+            locSearch = `?prefer=${this._currentPrefer}&b=${this._currentBackend}&m=${this._currentModelId}&s=${this._currentInputType}&d=${this._hiddenControlsFlag}&f=${this._currentFramework}`;
+            break;
+          case 'OpenCV.js':
+            $('#cam').hide();
+            $('.backend').hide();
+            $('.opencvjsbackend').show();
+            const opencvBackend = parseSearchParams('b');
+            if (opencvBackend != this._currentOpenCVJSBackend) {
+              showOpenCVRuntimeProgressComponent();
+              asyncLoadScript(`../util/opencv.js/${opencvBackend.replace(' ', '+')}/opencv.js`, this.onOpenCvReady);
+              this._setOpenCVJSBackend(opencvBackend);
+            }
+            locSearch = `?b=${this._currentOpenCVJSBackend}&m=${this._currentModelId}&s=${this._currentInputType}&d=${this._hiddenControlsFlag}&f=${this._currentFramework}`;
+            break;
+        }
+      }
+    } else {
+      switch (this._currentFramework) {
+        case 'WebNN':
+          locSearch = `?prefer=${this._currentPrefer}&b=${this._currentBackend}&m=${this._currentModelId}&s=${this._currentInputType}&d=${this._hiddenControlsFlag}&f=${this._currentFramework}`;
+          break;
+        case 'OpenCV.js':
+          locSearch = `?b=${this._currentOpenCVJSBackend}&m=${this._currentModelId}&s=${this._currentInputType}&d=${this._hiddenControlsFlag}&f=${this._currentFramework}`;
+          break;
       }
     }
-
-    const locSearch = `?prefer=${this._currentPrefer}&b=${this._currentBackend}&m=${this._currentModelId}&s=${this._currentInputType}&d=${this._hiddenControlsFlag}`;
     window.history.pushState(null, null, locSearch);
   };
 
   _commonUIExtra = () => {
   };
 
-  _commonUI = () => {
-    // set model components
-    setModelComponents(this._inferenceModels, this._currentModelId);
-    // set preference tip components
-    setPreferenceTipComponents();
-
-    //set backend components
-    if (hasSearchParam('b')) {
-      $('.backend input').removeAttr('checked');
-      $('.backend label').removeClass('checked');
-      $('#' + parseSearchParams('b')).attr('checked', 'checked');
-      $('#l-' + parseSearchParams('b')).addClass('checked');
+  showDynamicComponents = () => {
+    // set model components according "Framework"
+    const showInferenceModels = selectModelFromGivenModels(this._inferenceModels, this._currentFramework);
+    setModelComponents(showInferenceModels, this._currentModelId);
+    switch (this._currentFramework) {
+      case 'WebNN':
+        $('.backend').show();
+        // set preference tip components
+        setPreferenceTipComponents();
+        //set backend components
+        if (hasSearchParam('b')) {
+          $('.backend input').removeAttr('checked');
+          $('.backend label').removeClass('checked');
+          $('#' + parseSearchParams('b')).attr('checked', 'checked');
+          $('#l-' + parseSearchParams('b')).addClass('checked');
+        }
+        if (hasSearchParam('prefer')) {
+          $('.prefer input').removeAttr('checked');
+          $('.prefer label').removeClass('checked');
+          $('#' + parseSearchParams('prefer')).attr('checked', 'checked');
+          $('#l-' + parseSearchParams('prefer')).addClass('checked');
+        }
+        updateBackendComponents(this._currentBackend, this._currentPrefer);
+        $('.opencvjsbackend').hide();
+        break;
+      case 'OpenCV.js':
+        $('.backend').hide();
+        $('.opencvjsbackend').show();
+        updateOpenCVJSBackendComponentsStyle(this._currentOpenCVJSBackend);
+        break;
     }
+  };
 
-    if (hasSearchParam('prefer')) {
-      $('.prefer input').removeAttr('checked');
-      $('.prefer label').removeClass('checked');
-      $('#' + parseSearchParams('prefer')).attr('checked', 'checked');
-      $('#l-' + parseSearchParams('prefer')).addClass('checked');
-    }
-
-    updateBackendComponents(this._currentBackend, this._currentPrefer);
-
+  _modelClickBinding = () => {
     // Click trigger of model <input> element
     $('input:radio[name=m]').click(() => {
       $('.alert').hide();
@@ -140,6 +196,64 @@ class BaseExample extends BaseApp {
       updateModelComponentsStyle(um);
       this.main();
     });
+  };
+
+  _commonUI = () => {
+    const frameworkList = getFrameworkList(this._inferenceModels);
+    if (frameworkList.length > 1) {
+      setFrameworkComponents(frameworkList, this._currentFramework);
+    }
+
+    this.showDynamicComponents();
+
+    // Click trigger of framework <input> element
+    $('input:radio[name=framework]').click(() => {
+      $('.alert').hide();
+      let framework = $('input:radio[name="framework"]:checked').attr('value');
+      updateFrameworkComponentsStyle(framework);
+      if (framework === 'OpenCV.js') {
+        $('.backend').hide();
+        $('.opencvjsbackend').show();
+        $('#cam').hide();
+        const opencvModel = selectModelFromGivenModels(this._inferenceModels, framework);
+        if (getModelFromGivenModels(opencvModel, this._currentModelId) === null) {
+          this._setModelId('none');
+        }
+        this._setFramework(framework);
+        this._runner = null;
+        this._resetOutput();
+        if (typeof cv !== 'undefined') {
+          this._updateHistoryEntryURL();
+          this.showDynamicComponents();
+          this._modelClickBinding();
+          this.main();
+          return;
+        }
+        if (typeof this._currentOpenCVJSBackend === 'undefined') {
+          this._setOpenCVJSBackend('WASM');
+          showOpenCVRuntimeProgressComponent();
+          asyncLoadScript(`../util/opencv.js/WASM/opencv.js`, this.onOpenCvReady);
+        }
+        this._updateHistoryEntryURL();
+        this.showDynamicComponents();
+        this._modelClickBinding();
+        updateTitleComponent(this._currentOpenCVJSBackend, null, this._currentModelId, this._inferenceModels);
+      } else if (framework === 'WebNN') {
+        $('.opencvjsbackend').hide();
+        $('.backend').show();
+        $('#progressruntime').hide();
+        this._setFramework(framework);
+        this._updateHistoryEntryURL();
+        $('#cam').show();
+        this.showDynamicComponents();
+        this._modelClickBinding();
+        this._runner = null;
+        this._resetOutput();
+        this.main();
+      }
+    });
+
+    this._modelClickBinding();
 
     if (this._currentInputType === 'image' || this._currentInputType === 'audio') {
       $('.nav-pills li').removeClass('active');
@@ -294,6 +408,18 @@ class BaseExample extends BaseApp {
       this.main();
     });
 
+    // Click trigger of opencvjsbackend <input> element
+    $('input:radio[name=opencvjsbackend]').click(() => {
+      $('.alert').hide();
+      let selectedBackend = $('input:radio[name="opencvjsbackend"]:checked').attr('value');
+      updateOpenCVJSBackendComponentsStyle(selectedBackend);
+      this._setOpenCVJSBackend(selectedBackend);
+      const locSearch = `?b=${this._currentOpenCVJSBackend}&m=${this._currentModelId}&s=${this._currentInputType}&d=${this._hiddenControlsFlag}&f=${this._currentFramework}`;
+      window.history.pushState(null, null, locSearch);
+      window.location.reload(true);
+      this._updateHistoryEntryURL();
+    });
+
     // Click trigger to do inference with <img> element
     $('#img').click(() => {
       $('.alert').hide();
@@ -365,7 +491,7 @@ class BaseExample extends BaseApp {
 
   _createRunner = () => {
     // Override by inherited if needed
-    const runner = new BaseRunner();
+    const runner = new WebNNRunner();
     runner.setProgressHandler(updateLoadingProgressComponent);
     return runner;
   };
@@ -391,7 +517,18 @@ class BaseExample extends BaseApp {
 
   _compileModel = async () => {
     // Override by inherited when example has co-work runners
-    await this._runner.compileModel(this._currentBackend, this._currentPrefer);
+    let options = {};
+    switch (this._currentFramework) {
+      case 'WebNN':
+        options.backend = this._currentBackend;
+        options.prefer = this._currentPrefer;
+        break;
+      case 'OpenCV.js':
+        break;
+      default:
+        console.error(`Not supported to run with ${this._currentFramework}.`);
+    }
+    await this._runner.compileModel(options);
   };
 
   _predict = async () => {
@@ -443,8 +580,18 @@ class BaseExample extends BaseApp {
     return this._runner.getSubgraphsSummary();
   };
 
+  _resetCustomOutput = () => {
+    // Override by inherited if needed
+  };
+
   _processCustomOutput = () => {
     // Override by inherited if needed
+  };
+
+  _resetOutput = () => {
+    let inferenceTimeElement = document.getElementById('inferenceTime');
+    inferenceTimeElement.innerHTML = '';
+    this._resetCustomOutput();
   };
 
   _processOutput = () => {
@@ -467,9 +614,20 @@ class BaseExample extends BaseApp {
     this._processCustomOutput();
   };
 
+  onOpenCvReady = () => {
+    cv.onRuntimeInitialized = () => {
+      $('#progressruntime').hide();
+      this.main();
+    }
+  }
+
   main = async () => {
     // Update UI title component info
-    updateTitleComponent(this._currentBackend, this._currentPrefer, this._currentModelId, this._inferenceModels);
+    if (this._currentFramework === 'WebNN') {
+      updateTitleComponent(this._currentBackend, this._currentPrefer, this._currentModelId, this._inferenceModels);
+    } else if (this._currentFramework === 'OpenCV.js') {
+      updateTitleComponent(this._currentOpenCVJSBackend, null, this._currentModelId, this._inferenceModels);
+    }
 
     if (this._currentModelId === 'none') {
       showErrorComponent('No model selected', 'Please select model to start prediction.');
@@ -497,8 +655,11 @@ class BaseExample extends BaseApp {
     try {
       // Get Runner for execute inference
       this._getRunner();
-      const supportedOps = getSupportedOps(this._currentBackend, this._currentPrefer);
-      this._setSupportedOps(supportedOps);
+      let supportedOps;
+      if (this._currentFramework === 'WebNN') {
+        supportedOps = getSupportedOps(this._currentBackend, this._currentPrefer);
+        this._setSupportedOps(supportedOps);
+      }
       // UI shows loading model progress
       await showProgressComponent('current', 'pending', 'pending');
       // Load model
@@ -507,12 +668,14 @@ class BaseExample extends BaseApp {
       await showProgressComponent('done', 'current', 'pending');
       // Compile model
       await this._compileModel();
-      const requiredOps = this._getRequiredOps();
-      // show offload ops info
-      showHybridComponent(supportedOps, requiredOps, this._currentBackend, this._currentPrefer);
-      // show sub graphs summary
-      const subgraphsSummary = this._getSubgraphsSummary();
-      showSubGraphsSummary(subgraphsSummary);
+      if (this._currentFramework === 'WebNN') {
+        const requiredOps = this._getRequiredOps();
+        // show offload ops info
+        showHybridComponent(supportedOps, requiredOps, this._currentBackend, this._currentPrefer);
+        // show sub graphs summary
+        const subgraphsSummary = this._getSubgraphsSummary();
+        showSubGraphsSummary(subgraphsSummary);
+      }
       // UI shows inferencing progress
       await showProgressComponent('done', 'done', 'current');
       // Inference with Web NN API

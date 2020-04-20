@@ -85,7 +85,7 @@
     <div class='filter mb-3 mt-2'>
       <table id='filter' class='t-filter table table-condensed'>
         <tbody>
-          <tr class='backend'>
+          <tr class='backend' style='display:none;'>
             <th class='text-center backendtitle'>Backend</th>
             <td>
               <div class="custom-control custom-switch">
@@ -115,6 +115,19 @@
             <td>
               <div id='offloadops'>Dual backends selected, following ops were offloaded to <span id='nnbackend'
                   class='ols'></span> from <span id='polyfillbackend' class='ols'></span>: </div>
+            </td>
+          </tr>
+          <tr class='opencvjsbackend' style='display:none;'>
+            <th class='text-center'>Backend</th>
+            <td>
+              <input type='radio' name='opencvjsbackend' class='d-none' id='opencvjswasm' value='WASM'>
+              <label id='l-opencvjswasm' for='opencvjswasm' class='checked'>WASM</label>
+              <input type='radio' name='opencvjsbackend' class='d-none' id='opencvjssimd' value='SIMD'>
+              <label id='l-opencvjssimd' for='opencvjssimd'>SIMD</label>
+              <input type='radio' name='opencvjsbackend' class='d-none' id='opencvjsthreads' value='Threads'>
+              <label id='l-opencvjsthreads' for='opencvjsthreads'>Threads</label>
+              <input type='radio' name='opencvjsbackend' class='d-none' id='opencvjsthreadssimd' value='Threads+SIMD'>
+              <label id='l-opencvjsthreadssimd' for='opencvjsthreadssimd'>Threads+SIMD</label>
             </td>
           </tr>
         </tbody>
@@ -182,6 +195,26 @@
           </div>
         </div>
       </div>
+
+      <div class='tab-content clearfix' style='display: none;' id='progressruntime'>
+        <div class='loading-page'>
+          <div class='counter'>
+            <div class='loading'>
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
+            </div>
+            <p id='progressruntimestep' class="prog prog-done">Loading OpenCV.js runtime ...</p>
+          </div>
+        </div>
+      </div>
+
       <div class='tab-content clearfix' style='display: none;' id='resulterror'>
         <div class='c'>
           <div class='errortitle'>Prediction Failed</div>
@@ -364,6 +397,8 @@
   <script src='../util/base.js'></script>
   <script src='../util/modelZoo.js'></script>
   <script src='../util/BaseRunner.js'></script>
+  <script src='../util/WebNNRunner.js'></script>
+  <script src='../util/OpenCVRunner.js'></script>
   <script src='../util/BaseApp.js'></script>
   <script src='../util/BaseExample.js'></script>
   <script src='../util/BaseCameraExample.js'></script>
@@ -378,8 +413,8 @@
   <script src='../util/openvino/openvino.js'></script>
   <script src='../util/openvino/OpenVINOModelUtils.js'></script>
   <script src='../util/openvino/OpenVINOModelImporter.js'></script>
-
-  <script src='ImageClassificationRunner.js'></script>
+  <script src='ImageClassificationWebNNRunner.js'></script>
+  <script src='ImageClassificationOpenCVRunner.js'></script>
   <script src='ImageClassificationExample.js'></script>
   <script src='main.js'></script>
 

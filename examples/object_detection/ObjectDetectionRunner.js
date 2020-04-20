@@ -1,4 +1,4 @@
-class ObjectDetectionRunner extends BaseRunner {
+class ObjectDetectionRunner extends WebNNRunner {
   constructor() {
     super();
     this._labels = null;
@@ -50,7 +50,7 @@ class ObjectDetectionRunner extends BaseRunner {
     await this._getLabels(this._currentModelInfo.labelsFile);
   };
 
-  _updateOutput = (output) => {
+  _updateSubOutput = (output) => {
     output.labels = this._labels;
     output.outputBoxTensor = this._outputBoxTensor;
     output.outputClassScoresTensor = this._outputClassScoresTensor;

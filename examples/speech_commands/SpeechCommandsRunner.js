@@ -1,4 +1,4 @@
-class SpeechCommandsRunner extends BaseRunner {
+class SpeechCommandsRunner extends WebNNRunner {
   constructor() {
     super();
     this._labels = null;
@@ -18,7 +18,7 @@ class SpeechCommandsRunner extends BaseRunner {
     await this._getLabels(this._currentModelInfo.labelsFile);
   };
 
-  _updateOutput = (output) => {
+  _updateSubOutput = (output) => {
     output.labels = this._labels;
   };
 }

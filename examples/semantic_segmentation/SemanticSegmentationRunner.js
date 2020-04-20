@@ -1,4 +1,4 @@
-class SemanticSegmentationRunner extends BaseRunner {
+class SemanticSegmentationRunner extends WebNNRunner {
   constructor() {
     super();
     this._labels = null;
@@ -22,7 +22,7 @@ class SemanticSegmentationRunner extends BaseRunner {
     return Int32Array;
   };
 
-  _updateOutput = (output) => {
+  _updateSubOutput = (output) => {
     output.labels = this._labels;
   };
 }
