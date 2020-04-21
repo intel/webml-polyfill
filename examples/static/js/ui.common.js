@@ -313,6 +313,7 @@ const updateTitleComponent = (backend, prefer, modelIdStr = null, modelInfoDic =
   let currentPreferText = {fast: 'FAST',
                            sustained: 'SUSTAINED',
                            low: 'LOW',
+                           ultra_low: 'ULTRA_LOW',
                            none: 'None',}[prefer];
   let backendText = backend;
 
