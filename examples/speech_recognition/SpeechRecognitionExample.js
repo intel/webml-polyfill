@@ -1,10 +1,14 @@
 class SpeechRecognitionExample extends BaseMircophoneExample {
   constructor(models) {
     super(models);
+    this._status = null;
+    this._totalTime = 0;
+    this._totalError = {};
+    this._frameError = {};
+    this._result = {};
   }
 
   _customUI = () => {
-    // let _this = this;
     let inputFileElement = document.getElementById('input');
     inputFileElement.addEventListener('change', (e) => {
       $('#controller div').removeClass('current');
@@ -20,8 +24,28 @@ class SpeechRecognitionExample extends BaseMircophoneExample {
 
   _predict = async () => {
     try {
-      const arkFile = this._currentModelInfo.arkFile;
-      await this._runner.run(arkFile);
+      let inputTensor = new Float32Array(this._currentModelInfo.inputSize.reduce((a, b) => a * b));
+      let scoreTensor = new Float32Array(this._currentModelInfo.outputSize.reduce((a, b) => a * b));
+      let arkInput = await this._getTensorArrayByArk(this._currentModelInfo.arkFile);
+      let arkScore = await this._getTensorArrayByArk(this._currentModelInfo.scoreFile)
+      this._initError(this._totalError);
+
+      for (let i = 0; i < arkInput.rows; i++) {
+        inputTensor.set(arkInput.data.subarray(i * arkInput.columns, (i + 1) * arkInput.columns));
+        scoreTensor.set(arkScore.data.subarray(i * arkScore.columns, (i + 1) * arkScore.columns));
+        this._status = await this._runner.run(input);
+        let output = this._runner.getOutput();
+        this._totalTime += output.inferenceTime;
+        this._compareScores(output.outputTensor, scoreTensor, 1, arkScore.columns, this._frameError);
+        this._updateScoreError(this._frameError, this._totalError);
+      }
+
+      this._result.errors = this._getReferenceCompareResults(this._totalError, arkScore.rows);
+      this._result.cycles = arkScore.rows;
+      this._result.time = this._totalTime.toFixed(2);
+
+      console.log(`Computed Status: [${this._status}]`);
+      console.log(`Compute Time: [${this._totalTime} ms]`);
       this._processOutput();
     } catch (e) {
       showAlertComponent(e);
@@ -29,9 +53,134 @@ class SpeechRecognitionExample extends BaseMircophoneExample {
     }
   }
 
-  _processCustomOutput = () => {
-    const result = this._runner.getOutput().result;
+  // The function refer with speech_sample https://github.com/opencv/dldt/blob/2020/inference-engine/samples/speech_sample/main.cpp#L166.
+  _scaleFactorForQuantization = (data, targetMax, numElements) => {
+    let max = 0.0;
+    let scaleFactor;
 
+    for (let i = 0; i < numElements; i++) {
+      let absData = Math.abs(data[i]);
+      if (absData > max) {
+        max = absData;
+      }
+    }
+    if (max == 0) {
+      scaleFactor = 1.0;
+    } else {
+      scaleFactor = targetMax / max;
+    }
+
+    return scaleFactor;
+  }
+
+  _getTensorArrayByArk = async (arkPath) => {
+    let request = new Request(arkPath);
+    let response = await fetch(request);
+    let arkArrayBuffer = await response.arrayBuffer();
+    let arkBytesArray = new Uint8Array(arkArrayBuffer);
+    let EOF = arkBytesArray.findIndex((value) => (value == 4));  // find control-D (EOF)
+    let rowsBuffer = new Uint8Array(arkBytesArray.subarray(EOF+1, EOF+5)).buffer;     // read buffer of rows
+    let columnsBuffer = new Uint8Array(arkBytesArray.subarray(EOF+6, EOF+10)).buffer; // read buffer of columns
+    let arkRows = new Int32Array(rowsBuffer)[0];        // read number of rows
+    let arkColumns = new Int32Array(columnsBuffer)[0];  // read number of columns
+    let dataLength = arkRows * arkColumns * 4;
+    let dataBuffer = new Uint8Array(arkBytesArray.subarray(EOF+10, EOF+10+dataLength)).buffer;  // read buffer of data
+    let arkData = new Float32Array(dataBuffer);  // read number of data
+    let inputScaleFactor = this._scaleFactorForQuantization(arkData, 16384, arkRows * arkColumns);
+
+    return {
+      rows: arkRows,
+      columns: arkColumns,
+      data: arkData,
+      inputScaleFactor: inputScaleFactor,
+    }
+  }
+
+  _initError = (error) => {
+    error.numScores = 0,
+    error.numErrors = 0,
+    error.threshold = 0.0001,
+    error.maxError = 0.0,
+    error.rmsError = 0.0,
+    error.sumError = 0.0,
+    error.sumRmsError = 0.0,
+    error.sumSquaredError = 0.0,
+    error.maxRelError = 0.0,
+    error.sumRelError = 0.0,
+    error.sumSquaredRelError = 0.0
+  }
+
+  _compareScores = (outputTensor, referenceTensor, numRows, numColumns, frameError) => {
+    let numErrors = 0;
+    this._initError(frameError);
+    for (let i = 0; i < numRows; i ++) {
+      for (let j = 0; j < numColumns; j ++) {
+        let score = outputTensor[i*numColumns+j];
+        let refScore = referenceTensor[i * numColumns + j];
+        let error = Math.abs(refScore - score);
+        let rel_error = error / ((Math.abs(refScore)) + 1e-20);
+        let squared_error = error * error;
+        let squared_rel_error = rel_error * rel_error;
+        frameError.numScores ++;
+        frameError.sumError += error;
+        frameError.sumSquaredError += squared_error;
+        if (error > frameError.maxError) {
+          frameError.maxError = error;
+        }
+        frameError.sumRelError += rel_error;
+        frameError.sumSquaredRelError += squared_rel_error;
+        if (rel_error > frameError.maxRelError) {
+          frameError.maxRelError = rel_error;
+        }
+        if (error > frameError.threshold) {
+          numErrors ++;
+        }
+      }
+    }
+    frameError.rmsError = Math.sqrt(frameError.sumSquaredError / (numRows * numColumns));
+    frameError.sumRmsError += frameError.rmsError;
+    frameError.numErrors = numErrors;
+    return numErrors;
+  }
+
+  _updateScoreError = (frameError, totalError) => {
+    totalError.numErrors += frameError.numErrors;
+    totalError.numScores += frameError.numScores;
+    totalError.sumRmsError += frameError.rmsError;
+    totalError.sumError += frameError.sumError;
+    totalError.sumSquaredError += frameError.sumSquaredError;
+    if (frameError.maxError > totalError.maxError) {
+      totalError.maxError = frameError.maxError;
+    }
+    totalError.sumRelError += frameError.sumRelError;
+    totalError.sumSquaredRelError += frameError.sumSquaredRelError;
+    if (frameError.maxRelError > totalError.maxRelError) {
+      totalError.maxRelError = frameError.maxRelError;
+    }
+  }
+
+  _getReferenceCompareResults = (totalError, framesNum) => {  //framesNum equals to number of frames in one utterance
+    let avgError = totalError.sumError / totalError.numScores;
+    let avgRmsError= totalError.sumRmsError / framesNum;
+    let stdDevError= this._stdDevError(totalError);
+
+    return {
+      maxError: totalError.maxError.toFixed(15),
+      avgError: avgError.toFixed(15),
+      avgRmsError: avgRmsError.toFixed(15),
+      stdDevError: stdDevError.toFixed(15),
+      num: totalError.numErrors
+    }
+  }
+
+  _stdDevError = (totalError) => {
+    let result = Math.sqrt(totalError.sumSquaredError / totalError.numScores
+                - (totalError.sumError / totalError.numScores) * (totalError.sumError / totalError.numScores));
+    return result;
+  }
+
+  _processCustomOutput = () => {
+    const result = this._result;
     try {
       let avgTime = (result.time / result.cycles).toFixed(2);
       console.log(`Inference time: ${result.time} ms`);

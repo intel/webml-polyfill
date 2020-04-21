@@ -848,8 +848,8 @@ const modelZoo = {
     inputSize: [1, 440],
     outputSize: [1, 3425],
     modelFile: '../speech_recognition/model/wsj_dnn5b.bin',
-    arkFile: '../speech_recognition/ark/dev93_10.ark',
-    scoreFile: '../speech_recognition/ark/dev93_scores_10.ark',
+    arkFile: '../speech_recognition/ark/dev93.ark',
+    scoreFile: '../speech_recognition/ark/dev93_scores.ark',
     intro: 'Inference based on Kaldi* neural networks and speech feature vectors.',
     paperUrl: 'https://docs.openvinotoolkit.org/latest/_inference_engine_samples_speech_sample_README.html'
   }]
