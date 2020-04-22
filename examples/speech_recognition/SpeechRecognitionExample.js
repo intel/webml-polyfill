@@ -1,10 +1,7 @@
 class SpeechRecognitionExample extends BaseMircophoneExample {
   constructor(models) {
     super(models);
-    this._status = null;
-    this._totalTime = 0;
-    this._totalError = {};
-    this._frameError = {};
+    this.targetMax = 16384;
     this._result = {};
   }
 
@@ -24,28 +21,31 @@ class SpeechRecognitionExample extends BaseMircophoneExample {
 
   _predict = async () => {
     try {
+      let status = 'ERROR';
+      let totalTime = 0;
+      let frameError = {};
+      let totalError = {};
       let inputTensor = new Float32Array(this._currentModelInfo.inputSize.reduce((a, b) => a * b));
       let scoreTensor = new Float32Array(this._currentModelInfo.outputSize.reduce((a, b) => a * b));
       let arkInput = await this._getTensorArrayByArk(this._currentModelInfo.arkFile);
       let arkScore = await this._getTensorArrayByArk(this._currentModelInfo.scoreFile)
-      this._initError(this._totalError);
 
+      this._initError(totalError);
       for (let i = 0; i < arkInput.rows; i++) {
         inputTensor.set(arkInput.data.subarray(i * arkInput.columns, (i + 1) * arkInput.columns));
         scoreTensor.set(arkScore.data.subarray(i * arkScore.columns, (i + 1) * arkScore.columns));
-        this._status = await this._runner.run(input);
+        status = await this._runner.run(inputTensor);
         let output = this._runner.getOutput();
-        this._totalTime += output.inferenceTime;
-        this._compareScores(output.outputTensor, scoreTensor, 1, arkScore.columns, this._frameError);
-        this._updateScoreError(this._frameError, this._totalError);
+        totalTime += output.inferenceTime;
+        this._compareScores(output.outputTensor, scoreTensor, 1, arkScore.columns, frameError);
+        this._updateScoreError(frameError, totalError);
       }
-
-      this._result.errors = this._getReferenceCompareResults(this._totalError, arkScore.rows);
+      this._result.errors = this._getReferenceCompareResults(totalError, arkScore.rows);
       this._result.cycles = arkScore.rows;
-      this._result.time = this._totalTime.toFixed(2);
+      this._result.time = totalTime.toFixed(2);
 
-      console.log(`Computed Status: [${this._status}]`);
-      console.log(`Compute Time: [${this._totalTime} ms]`);
+      console.log(`Computed Status: [${status}]`);
+      console.log(`Compute Time: [${totalTime} ms]`);
       this._processOutput();
     } catch (e) {
       showAlertComponent(e);
@@ -86,7 +86,7 @@ class SpeechRecognitionExample extends BaseMircophoneExample {
     let dataLength = arkRows * arkColumns * 4;
     let dataBuffer = new Uint8Array(arkBytesArray.subarray(EOF+10, EOF+10+dataLength)).buffer;  // read buffer of data
     let arkData = new Float32Array(dataBuffer);  // read number of data
-    let inputScaleFactor = this._scaleFactorForQuantization(arkData, 16384, arkRows * arkColumns);
+    let inputScaleFactor = this._scaleFactorForQuantization(arkData, this.targetMax, arkRows * arkColumns);
 
     return {
       rows: arkRows,
@@ -115,7 +115,7 @@ class SpeechRecognitionExample extends BaseMircophoneExample {
     this._initError(frameError);
     for (let i = 0; i < numRows; i ++) {
       for (let j = 0; j < numColumns; j ++) {
-        let score = outputTensor[i*numColumns+j];
+        let score = outputTensor[i * numColumns + j];
         let refScore = referenceTensor[i * numColumns + j];
         let error = Math.abs(refScore - score);
         let rel_error = error / ((Math.abs(refScore)) + 1e-20);
