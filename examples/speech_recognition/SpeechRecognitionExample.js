@@ -1,7 +1,7 @@
 class SpeechRecognitionExample extends BaseMircophoneExample {
   constructor(models) {
     super(models);
-    this.targetMax = 16384;
+    this.targetMax = 16384;  // Sacle the maxmium input of the first utterance to 16384(15 bits)
     this._result = {};
   }
 
@@ -53,7 +53,7 @@ class SpeechRecognitionExample extends BaseMircophoneExample {
     }
   }
 
-  // The function refer with speech_sample https://github.com/opencv/dldt/blob/2020/inference-engine/samples/speech_sample/main.cpp#L166.
+  // The function refer with speech_sample https://github.com/opencv/dldt/blob/2020/inference-engine/samples/speech_sample/main.cpp.
   _scaleFactorForQuantization = (data, targetMax, numElements) => {
     let max = 0.0;
     let scaleFactor;
@@ -99,7 +99,7 @@ class SpeechRecognitionExample extends BaseMircophoneExample {
   _initError = (error) => {
     error.numScores = 0,
     error.numErrors = 0,
-    error.threshold = 0.0001,
+    error.threshold = 0.0001,  // The limitation to compare with the max error value
     error.maxError = 0.0,
     error.rmsError = 0.0,
     error.sumError = 0.0,
