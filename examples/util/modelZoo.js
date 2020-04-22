@@ -850,7 +850,7 @@ const modelZoo = {
     modelFile: '../speech_recognition/model/wsj_dnn5b.bin',
     arkFile: '../speech_recognition/ark/dev93.ark',
     scoreFile: '../speech_recognition/ark/dev93_scores.ark',
-    intro: 'Inference based on Kaldi* neural networks and speech feature vectors.',
+    intro: 'This model was trained by the Kaldi s5 recipe and the Kaldi Nnet (nnet1) framework and using the Wall Street Journal corpus.',
     paperUrl: 'https://docs.openvinotoolkit.org/latest/_inference_engine_samples_speech_sample_README.html'
   }]
 };
