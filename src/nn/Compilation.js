@@ -2,7 +2,7 @@ import {PreferenceCode,ResultCode} from './Enums'
 import Device from './wasm/Device'
 import * as utils from './utils'
 import Execution from './Execution'
-import TfjsModel from './webgl/TfjsModel'
+import TfjsModel from './tfjs/TfjsModel'
 
 export default class Compilation {
   /**
@@ -55,7 +55,7 @@ export default class Compilation {
   async finish() {
     switch (this._backend) {
       case 'WASM': {
-        if (this._model.isQuant8()) {
+        if (this._model.isQuant8() || this._model.hasUnsupportedOp()) {
           this._preparedModel = await this._device.prepareModel(this._model);
         } else {
           this._preparedModel = new TfjsModel(this._model);

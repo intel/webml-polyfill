@@ -2,7 +2,7 @@ import {OperationCode, OperandCode, PaddingCode, PreferenceCode, FuseCode, Resul
 import Model from './Model'
 import Compilation from './Compilation'
 import Execution from './Execution'
-import TfjsModel from './webgl/TfjsModel'
+import TfjsModel from './tfjs/TfjsModel'
 
 export default class NeuralNetworkContext {
   constructor() {

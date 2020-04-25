@@ -73,13 +73,13 @@ export default class TfjsModel {
       // summary of the partiton. e.g. "CONV x 5, ADD x 2, MUL x 2"
       const ops = nodes.map((opId) => operations[opId]);
       const summary = utils.stringifySubgraphCompact(model, nodes);
-      const backendName = isSupportedByNN ? 'WebNN' : 'WebGL';
+      const backendName = isSupportedByNN ? 'WebNN' : 'Tfjs';
 
       if (!isSupportedByNN) {
 
-        // run in WebGL
+        // run with tfjs
 
-        // allocate WebGL runtime textures
+        // create tensor from typedArray
         for (const operation of ops) {
           for (const tensorId of [...operation.inputs, ...operation.outputs]) {
             if (!!this._operands[tensorId]) continue;
@@ -116,7 +116,7 @@ export default class TfjsModel {
         }
 
         // allocate JS buffers for model outputs
-        // outputs of the last WebGL partition are also model outputs
+        // outputs of the last Tfjs partition are also model outputs
         if (i === partitions.length - 1) {
           for (const tensorId of outTensors) {
             if (!this._nnOperands.hasOwnProperty(tensorId)) {
@@ -184,8 +184,8 @@ export default class TfjsModel {
       this._nnOperands[input.index] = input.buffer;
     });
 
-    if (this._subgraphs[0].backend === 'WebGL') {
-      // upload inputs to WebGL textures
+    if (this._subgraphs[0].backend === 'Tfjs') {
+      // upload inputs to Tfjs
       inputs.forEach(input => {
         const operand = this._operands[input.index];
         const inputTensor =
@@ -200,7 +200,7 @@ export default class TfjsModel {
       if (subgraph.backend === 'WebNN') {
         await this._executeNNSubgraph(subgraph);
       } else {
-        await this._executeGlSubgraph(subgraph);
+        await this._executeSubgraph(subgraph);
       }
       this._profiler.endEvent();
     }
@@ -295,7 +295,7 @@ export default class TfjsModel {
     await execution.startCompute();
 
     outputs.forEach(tensorId => {
-      // sync data to webgl if needed
+      // sync data to Tfjs if needed
       if (glOperands.hasOwnProperty(tensorId)) {
         const buffer = nnOperands[tensorId];
         const operand = glOperands[tensorId];
@@ -306,9 +306,9 @@ export default class TfjsModel {
     });
   }
 
-  async _executeGlSubgraph(subgraph) {    
+  async _executeSubgraph(subgraph) {    
     for (const operation of subgraph.operations) {
-      tf.tidy(() => this._executeGlOperation(operation));
+      tf.tidy(() => this._executeOperation(operation));
     }
 
     // fence
@@ -323,7 +323,7 @@ export default class TfjsModel {
     // await Promise.all(queue);
   }
 
-  _executeGlOperation(operation) {
+  _executeOperation(operation) {
     const op = operation.type;
     const inputs = operation.inputs;
     const outputs = operation.outputs;

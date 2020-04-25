@@ -8,7 +8,7 @@
   },
   "scripts": {
     "watch": "webpack --watch",
-    "start": "webpack-dev-server --open",
+    "start": "node tfjsWasmCopy.js && webpack-dev-server --open",
     "build": "webpack",
     "build-wasm": "node build.js --build-wasm",
     "test": "node test-ci.js"
