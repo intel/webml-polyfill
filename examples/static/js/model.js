@@ -32,6 +32,9 @@ function showModel(div, modelcategory) {
 
     let modelUrl = new URL(model.modelFile.replace('../', '../examples/'), location.href);
     let netronUrl = `https://intel.github.io/webml-polyfill/netron/?url=${modelUrl}`;
+    if(netronUrl.indexOf('.bin') >-1) {
+      netronUrl = netronUrl.replace('.bin', '.xml')
+    }
     row += `<td scope='col' class='netron'><a title='View visualized model by Netron' href='${netronUrl}'>netron</a></td>`;
 
     if (model.intro) {
@@ -56,6 +59,7 @@ $(document).ready(function () {
   showModel('#modelcv-odf tbody', faceDetectionModels)
   showModel('#modelcv-fld tbody', facialLandmarkDetectionModels)
   showModel('#modelcv-ea tbody', emotionAnalysisModels)
-  showModel('#modelnoncv-sc tbody', speechCommandModels)
   showModel('#modelcv-fr tbody', faceRecognitionModels)
+  showModel('#modelnoncv-sc tbody', speechCommandModels)
+  showModel('#modelnoncv-sr tbody', speechRecognitionModels)
 });
