@@ -1,7 +1,9 @@
 class SpeechRecognitionExample extends BaseMircophoneExample {
   constructor(models) {
     super(models);
-    this.targetMax = 16384;  // Sacle the maxmium input of the first utterance to 16384(15 bits)
+    this._arkInfo = null;
+    this._targetMax = 16384;  // Sacle the maxmium input of the first utterance to 16384(15 bits)
+                              // Refer with speech_sample https://github.com/openvinotoolkit/openvino/blob/2020/inference-engine/samples/speech_sample/main.cpp#L30 (MAX_VAL_2B_FEAT)
     this._result = {};
   }
 
@@ -27,7 +29,7 @@ class SpeechRecognitionExample extends BaseMircophoneExample {
       let totalError = {};
       let inputTensor = new Float32Array(this._currentModelInfo.inputSize.reduce((a, b) => a * b));
       let scoreTensor = new Float32Array(this._currentModelInfo.outputSize.reduce((a, b) => a * b));
-      let arkInput = await this._getTensorArrayByArk(this._currentModelInfo.arkFile);
+      let arkInput = this._arkInfo;
       let arkScore = await this._getTensorArrayByArk(this._currentModelInfo.scoreFile)
 
       this._initError(totalError);
@@ -52,6 +54,11 @@ class SpeechRecognitionExample extends BaseMircophoneExample {
       showErrorComponent();
     }
   }
+
+  _compileModel = async () => {
+    this._arkInfo = await this._getTensorArrayByArk(this._currentModelInfo.arkFile);
+    await this._runner.compileModel(this._currentBackend, this._currentPrefer, this._arkInfo);
+  };
 
   // The function refer with speech_sample https://github.com/opencv/dldt/blob/2020/inference-engine/samples/speech_sample/main.cpp.
   _scaleFactorForQuantization = (data, targetMax, numElements) => {
@@ -86,13 +93,13 @@ class SpeechRecognitionExample extends BaseMircophoneExample {
     let dataLength = arkRows * arkColumns * 4;
     let dataBuffer = new Uint8Array(arkBytesArray.subarray(EOF+10, EOF+10+dataLength)).buffer;  // read buffer of data
     let arkData = new Float32Array(dataBuffer);  // read number of data
-    let inputScaleFactor = this._scaleFactorForQuantization(arkData, this.targetMax, arkRows * arkColumns);
+    let scaleFactor = this._scaleFactorForQuantization(arkData, this._targetMax, arkRows * arkColumns);
 
     return {
       rows: arkRows,
       columns: arkColumns,
       data: arkData,
-      inputScaleFactor: inputScaleFactor,
+      scaleFactor: scaleFactor,
     }
   }
 
@@ -100,6 +107,7 @@ class SpeechRecognitionExample extends BaseMircophoneExample {
     error.numScores = 0,
     error.numErrors = 0,
     error.threshold = 0.0001,  // The limitation to compare with the max error value
+                               // Refer with speech_sample https://github.com/openvinotoolkit/openvino/blob/2020/inference-engine/samples/speech_sample/main.cpp#L29 (MAX_SCORE_DIFFERENCE)
     error.maxError = 0.0,
     error.rmsError = 0.0,
     error.sumError = 0.0,
@@ -213,8 +221,7 @@ class SpeechRecognitionExample extends BaseMircophoneExample {
     }
     try {
       let inferenceTextElement = document.getElementById('inferenceText');
-      let dev93Text = "Saatchi officials said the management re:structuring might accelerate \
-      its efforts to persuade clients to use the firm as a one stop shop for business services."
+      let dev93Text = "And what should the government do about the murders.";
       console.log("Inference result: ", dev93Text);
       inferenceTextElement.innerHTML = dev93Text;
     } catch (e) {
