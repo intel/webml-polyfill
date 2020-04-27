@@ -11,23 +11,10 @@
   <meta
     content='Emotion Analysis, WebML, Web Machine Learning, Machine Learning for Web, Neural Networks, WebNN, WebNN API, Web Neural Network API'
     name='description'>
-  <link rel='apple-touch-icon' sizes='57x57' href='../static/img/favicon/apple-icon-57x57.png'>
-  <link rel='apple-touch-icon' sizes='60x60' href='../static/img/favicon/apple-icon-60x60.png'>
-  <link rel='apple-touch-icon' sizes='72x72' href='../static/img/favicon/apple-icon-72x72.png'>
-  <link rel='apple-touch-icon' sizes='76x76' href='../static/img/favicon/apple-icon-76x76.png'>
-  <link rel='apple-touch-icon' sizes='114x114' href='../static/img/favicon/apple-icon-114x114.png'>
-  <link rel='apple-touch-icon' sizes='120x120' href='../static/img/favicon/apple-icon-120x120.png'>
-  <link rel='apple-touch-icon' sizes='144x144' href='../static/img/favicon/apple-icon-144x144.png'>
-  <link rel='apple-touch-icon' sizes='152x152' href='../static/img/favicon/apple-icon-152x152.png'>
-  <link rel='apple-touch-icon' sizes='180x180' href='../static/img/favicon/apple-icon-180x180.png'>
-  <link rel='icon' type='image/png' sizes='192x192' href='../static/img/favicon/android-icon-192x192.png'>
-  <link rel='icon' type='image/png' sizes='32x32' href='../static/img/favicon/favicon-32x32.png'>
-  <link rel='icon' type='image/png' sizes='96x96' href='../static/img/favicon/favicon-96x96.png'>
-  <link rel='icon' type='image/png' sizes='16x16' href='../static/img/favicon/favicon-16x16.png'>
-  <link rel='manifest' href='../static/img/favicon/manifest.json'>
-  <meta name='msapplication-TileColor' content='#ffffff'>
-  <meta name='msapplication-TileImage' content='../static/img/favicon/ms-icon-144x144.png'>
-  <meta name='theme-color' content='#ffffff'>
+  <link rel="apple-touch-icon" sizes="180x180" href="../static/img/favicon/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="../static/img/favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="../static/img/favicon/favicon-16x16.png">
+  <link rel="manifest" href="../static/img/favicon/site.webmanifest">
   <link href='../static/lib/bootstrap/css/bootstrap.min.css' rel='stylesheet'>
   <link href='../static/css/style.css' rel='stylesheet'>
 </head>
@@ -73,6 +60,7 @@
               <li><a href='../super_resolution/'>Super Resolution</a></li>
               <li><a href='../emotion_analysis/'>Emotion Analysis</a></li>
               <li><a href='../speech_commands/'>Speech Commands</a></li>
+              <li><a href='../speech_recognition/'>Speech Recognition</a></li>
             </ul>
           </li>
           <li><a href='../model.html'>Models</a></li>
@@ -206,7 +194,7 @@
                   <canvas id='targetCanvasShow'></canvas>
                 </div>
                 <div class='col bt-3 mb-3'>
-                  <img id='searchImage' hidden crossorigin='anonymous' class='img-fluid' alt='Responsive image'
+                  <img id='feedElement' hidden crossorigin='anonymous' class='img-fluid' alt='Responsive image'
                     src='./img/searchImage.jpg'>
                   <canvas id='searchCanvasShow'></canvas>
                 </div>
@@ -226,8 +214,8 @@
                 </div>
                 <div class='col'>
                   <div class='box'>
-                    <input type='file' name='f[]' id='searchInput' accept='image/*' class='inputfile inputf' />
-                    <label for='searchInput'><svg width='20' height='17' viewBox='0 0 20 17'>
+                    <input type='file' name='f[]' id='input' accept='image/*' class='inputfile inputf' />
+                    <label for='input'><svg width='20' height='17' viewBox='0 0 20 17'>
                         <path
                           d='M10 0l-5.2 4.9h3.3v5.1h3.8v-5.1h3.3l-5.2-4.9zm9.3 11.5l-3.2-2.1h-2l3.4 2.6h-3.5c-.1 0-.2.1-.2.1l-.8 2.3h-6l-.8-2.2c-.1-.1-.1-.2-.2-.2h-3.6l3.4-2.6h-2l-3.2 2.1c-.4.3-.7 1-.6 1.5l.6 3.1c.1.5.7.9 1.2.9h16.3c.6 0 1.1-.4 1.3-.9l.6-3.1c.1-.5-.2-1.2-.7-1.5z' />
                         </svg>
@@ -298,7 +286,7 @@
 
   <canvas id='detecorCanvas'></canvas>
   <canvas id='recognitionCanvas'></canvas>
-  <video id='video' autoplay playsinline></video>
+  <video id='feedMediaElement' autoplay playsinline></video>
 
   <footer>
     <div class='container'>
@@ -374,8 +362,19 @@
   <script src='../static/lib/greensock/tweenmax.js'></script>
   <script src='../static/lib/stats.customized.min.js'></script>
   <script src='../static/lib/protobuf.min.js'></script>
+
+  <script src='../static/js/ui.common.js'></script>
+
   <script src='../../dist/webml-polyfill.js'></script>
+
   <script src='../util/base.js'></script>
+  <script src='../util/modelZoo.js'></script>
+  <script src='../util/BaseRunner.js'></script>
+  <script src='../util/BaseApp.js'></script>
+  <script src='../util/BaseExample.js'></script>
+  <script src='../util/BaseCameraExample.js'></script>
+  <script src='../util/FaceDetectorRunner.js'></script>
+
   <script src='../util/tflite/flatbuffers/js/flatbuffers.js'></script>
   <script src='../util/tflite/schema/schema_generated.js'></script>
   <script src='../util/tflite/TfLiteModelUtils.js'></script>
@@ -386,12 +385,11 @@
   <script src='../util/decoders/SsdDecoder.js'></script>
   <script src='../util/decoders/Yolo2Decoder.js'></script>
   <script src='../util/faceDetector.js'></script>
-  <script src='DrawOutput.js'></script>
-  <script src='utils.js'></script>
-  <script src='../static/js/main.common.js'></script>
+
+  <script src='FaceRecognitionExample.js'></script>
   <script src='main.js'></script>
-  <script src='../static/js/ui.common.js'></script>
-  <script src='ui.js'></script>
+
+
   <script async src="https://www.googletagmanager.com/gtag/js?id=UA-147662084-1"></script>
   <script>
     window.dataLayer = window.dataLayer || [];

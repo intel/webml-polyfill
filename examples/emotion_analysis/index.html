@@ -11,23 +11,10 @@
   <meta
     content='Emotion Analysis, WebML, Web Machine Learning, Machine Learning for Web, Neural Networks, WebNN, WebNN API, Web Neural Network API'
     name='description'>
-  <link rel='apple-touch-icon' sizes='57x57' href='../static/img/favicon/apple-icon-57x57.png'>
-  <link rel='apple-touch-icon' sizes='60x60' href='../static/img/favicon/apple-icon-60x60.png'>
-  <link rel='apple-touch-icon' sizes='72x72' href='../static/img/favicon/apple-icon-72x72.png'>
-  <link rel='apple-touch-icon' sizes='76x76' href='../static/img/favicon/apple-icon-76x76.png'>
-  <link rel='apple-touch-icon' sizes='114x114' href='../static/img/favicon/apple-icon-114x114.png'>
-  <link rel='apple-touch-icon' sizes='120x120' href='../static/img/favicon/apple-icon-120x120.png'>
-  <link rel='apple-touch-icon' sizes='144x144' href='../static/img/favicon/apple-icon-144x144.png'>
-  <link rel='apple-touch-icon' sizes='152x152' href='../static/img/favicon/apple-icon-152x152.png'>
-  <link rel='apple-touch-icon' sizes='180x180' href='../static/img/favicon/apple-icon-180x180.png'>
-  <link rel='icon' type='image/png' sizes='192x192' href='../static/img/favicon/android-icon-192x192.png'>
-  <link rel='icon' type='image/png' sizes='32x32' href='../static/img/favicon/favicon-32x32.png'>
-  <link rel='icon' type='image/png' sizes='96x96' href='../static/img/favicon/favicon-96x96.png'>
-  <link rel='icon' type='image/png' sizes='16x16' href='../static/img/favicon/favicon-16x16.png'>
-  <link rel='manifest' href='../static/img/favicon/manifest.json'>
-  <meta name='msapplication-TileColor' content='#ffffff'>
-  <meta name='msapplication-TileImage' content='../static/img/favicon/ms-icon-144x144.png'>
-  <meta name='theme-color' content='#ffffff'>
+  <link rel="apple-touch-icon" sizes="180x180" href="../static/img/favicon/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="../static/img/favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="../static/img/favicon/favicon-16x16.png">
+  <link rel="manifest" href="../static/img/favicon/site.webmanifest">
   <link href='../static/lib/bootstrap/css/bootstrap.min.css' rel='stylesheet'>
   <link href='../static/css/style.css' rel='stylesheet'>
 </head>
@@ -73,6 +60,7 @@
               <li><a href='../super_resolution/'>Super Resolution</a></li>
               <li><a href='../emotion_analysis/'>Emotion Analysis</a></li>
               <li><a href='../speech_commands/'>Speech Commands</a></li>
+              <li><a href='../speech_recognition/'>Speech Recognition</a></li>
             </ul>
           </li>
           <li><a href='../model.html'>Models</a></li>
@@ -85,32 +73,6 @@
     <div class='filter mb-3 mt-2'>
       <table id='filter' class='t-filter table table-condensed'>
         <tbody>
-          <tr class='model'>
-            <th class='text-center'><a href='../model.html' title='View model details'>Model</a></th>
-            <td>
-              <img src='../static/img/l-tflite.png' alt='TensorFlow Lite Format' title='TensorFlow Lite Format'>
-              <input type='radio' class='d-none' name='m' id='ssd_mobilenetv1_face_tflite'
-                value='ssd_mobilenetv1_face_tflite' checked>
-              <label id='l-ssd_mobilenetv1_face_tflite' class='themodel' for='ssd_mobilenetv1_face_tflite'
-                title='SSD MobileNet v1'>SSD MobileNet v1</label>
-              <input type='radio' class='d-none' name='m' id='ssd_mobilenetv2_face_tflite'
-                value='ssd_mobilenetv2_face_tflite' checked>
-              <label id='l-ssd_mobilenetv2_face_tflite' class='themodel' for='ssd_mobilenetv2_face_tflite'
-                title='SSD MobileNet v2'>SSD MobileNet v2</label>
-              <input type='radio' class='d-none' name='m' id='ssdlite_mobilenetv2_face_tflite'
-                value='ssdlite_mobilenetv2_face_tflite' checked>
-              <label id='l-ssdlite_mobilenetv2_face_tflite' class='themodel' for='ssdlite_mobilenetv2_face_tflite'
-                title='SSDLite MobileNet v2'>SSDLite MobileNet v2</label>
-              <input type='radio' class='d-none' name='m' id='tiny_yolov2_face_tflite' value='tiny_yolov2_face_tflite'
-                checked>
-              <label id='l-tiny_yolov2_face_tflite' class='themodel' for='tiny_yolov2_face_tflite'
-                title='Tiny Yolo v2'>Tiny Yolo v2</label>
-              <input type='radio' class='d-none' name='l' id='face_landmark_tflite' value='face_landmark_tflite'
-                checked>
-              <label id='l-face_landmark_tflite' class='themodel' for='face_landmark_tflite'
-                title='Simple CNN'>SimpleCNN (TFlite)</label>
-            </td>
-          </tr>
           <tr class='backend'>
             <th class='text-center backendtitle'>Backend</th>
             <td>
@@ -279,10 +241,10 @@
     </div>
   </section>
 
-  <img id='image' crossorigin='anonymous' class='img-fluid' alt='Responsive image' src='./img/image1.jpg'>
+  <img id='feedElement' crossorigin='anonymous' class='img-fluid' alt='Responsive image' src='./img/image1.jpg'>
   <canvas id='canvas' width=300 height=300></canvas>
   <canvas id='canvas1' width=128 height=128></canvas>
-  <video id='video' autoplay playsinline></video>
+  <video id='feedMediaElement' autoplay playsinline></video>
 
   <footer>
     <div class='container'>
@@ -356,23 +318,32 @@
   <script src='../static/lib/easing/easing.js'></script>
   <script src='../static/lib/stickyjs/sticky.js'></script>
   <script src='../static/lib/greensock/tweenmax.js'></script>
-  <script src='../third_party/stats.customized.min.js'></script>
-  <script src='../third_party/protobuf.min.js'></script>
+  <script src='../static/lib/stats.customized.min.js'></script>
+  <script src='../static/lib/protobuf.min.js'></script>
+
+  <script src='../static/js/ui.common.js'></script>
+
   <script src='../../dist/webml-polyfill.js'></script>
+
   <script src='../util/base.js'></script>
+  <script src='../util/modelZoo.js'></script>
+  <script src='../util/BaseRunner.js'></script>
+  <script src='../util/BaseApp.js'></script>
+  <script src='../util/BaseExample.js'></script>
+  <script src='../util/BaseCameraExample.js'></script>
+
   <script src='../util/tflite/flatbuffers/js/flatbuffers.js'></script>
   <script src='../util/tflite/schema/schema_generated.js'></script>
   <script src='../util/tflite/TfLiteModelUtils.js'></script>
   <script src='../util/tflite/TFliteModelImporter.js'></script>
   <script src='../util/decoders/SsdDecoder.js'></script>
   <script src='../util/decoders/Yolo2Decoder.js'></script>
-  <script src='../util/faceDetector.js'></script>
-  <script src='DrawOutput.js'></script>
-  <script src='utils.js'></script>
-  <script src='../static/js/main.common.js'></script>
+
+  <script src='../util/FaceDetectorRunner.js'></script>
+
+  <script src='EmotionAnalysisExample.js'></script>
   <script src='main.js'></script>
-  <script src='../static/js/ui.common.js'></script>
-  <script src='ui.js'></script>
+
   <script async src="https://www.googletagmanager.com/gtag/js?id=UA-147662084-1"></script>
   <script>
     window.dataLayer = window.dataLayer || [];

@@ -16,6 +16,7 @@ class OpenVINOModelImporter {
     this._operandIndex = 0;
     this._backend = kwargs.backend;
     this._prefer = kwargs.prefer;
+    this._inputScaleFactor = kwargs.inputScaleFactor;
     if (this._backend === 'WebML') {
       if (nnNative === null) {
         throw Error('Fails to initialize neural network context');
@@ -24,13 +25,23 @@ class OpenVINOModelImporter {
     } else if (this._backend === 'WASM' || this._backend === 'WebGL') {
       this._nn = nnPolyfill;
     }
+    this._bEagerMode = false;
+    this._supportedOps = new Set();
   }
+
+  setEagerMode = (flag) => {
+    this._bEagerMode = flag;
+  };
+
+  setSupportedOps = (ops) => {
+    this._supportedOps = ops;
+  };
 
   async createCompiledModel() {
     let options = {
       backend: this._backend,
-      eager: eager || false,
-      supportedOps: supportedOps,
+      eager: this._bEagerMode,
+      supportedOps: this._supportedOps,
     };
     this._model = await this._nn.createModel(options);
 
@@ -245,8 +256,9 @@ class OpenVINOModelImporter {
 
     for (const input of graph.inputs) {
       const inputName = input.graphId();
+      const scale = this._inputScaleFactor == undefined ? 1.0 : this._inputScaleFactor;
       const inputType = {
-        type: this._getTypeCode(input.dataType()), dimensions: input.shape()
+        type: this._getTypeCode(input.dataType()), dimensions: input.shape(), scale
       };
       this._addNamedOperand(inputName, inputType);
     }
@@ -458,7 +470,8 @@ class OpenVINOModelImporter {
           const bias = node.inputs[2];
           const weightsTensor = weights.getInitializer();
           const biasTensor = bias.getInitializer();
-          const dims = [weightsTensor.length];
+          // put length into channel of NHWC
+          const dims = [1, 1, 1, weightsTensor.length];
 
           // add intputs for Mul
           inputs.push(this._getTensorId(input));
@@ -755,6 +768,22 @@ class OpenVINOModelImporter {
 
           opCode = this._nn.PRELU;
         } break;
+        case 'Sigmoid': {
+          opCode = this._nn.LOGISTIC;
+          // Add inputs
+          const input = node.inputs[0];
+          inputs.push(this._getTensorId(input));
+
+          // Add outputs
+          const output = node.outputs[0];
+          const outDims = output.shape();
+          const outputType = {
+            type: this._getTypeCode(output.dataType()), dimensions: outDims
+          };
+          const outputId = this._addNamedOperand(output.graphId(), outputType);
+          outputs.push(outputId);
+
+        } break;
         case 'Activation': {
           // Add inputs
           const in1 = node.inputs[0];
@@ -830,7 +859,7 @@ class OpenVINOModelImporter {
     return i - 1;
   }
 
-  async getRequiredOps() {
+  getRequiredOps() {
     return this._requiredOps;
   }
 }

@@ -11,23 +11,10 @@
   <meta
     content='Human Pose Estimation, Skeleton Detection, PoseNet, WebML, Web Machine Learning, Machine Learning for Web, Neural Networks, WebNN, WebNN API, Web Neural Network API'
     name='description'>
-  <link rel='apple-touch-icon' sizes='57x57' href='../static/img/favicon/apple-icon-57x57.png'>
-  <link rel='apple-touch-icon' sizes='60x60' href='../static/img/favicon/apple-icon-60x60.png'>
-  <link rel='apple-touch-icon' sizes='72x72' href='../static/img/favicon/apple-icon-72x72.png'>
-  <link rel='apple-touch-icon' sizes='76x76' href='../static/img/favicon/apple-icon-76x76.png'>
-  <link rel='apple-touch-icon' sizes='114x114' href='../static/img/favicon/apple-icon-114x114.png'>
-  <link rel='apple-touch-icon' sizes='120x120' href='../static/img/favicon/apple-icon-120x120.png'>
-  <link rel='apple-touch-icon' sizes='144x144' href='../static/img/favicon/apple-icon-144x144.png'>
-  <link rel='apple-touch-icon' sizes='152x152' href='../static/img/favicon/apple-icon-152x152.png'>
-  <link rel='apple-touch-icon' sizes='180x180' href='../static/img/favicon/apple-icon-180x180.png'>
-  <link rel='icon' type='image/png' sizes='192x192' href='../static/img/favicon/android-icon-192x192.png'>
-  <link rel='icon' type='image/png' sizes='32x32' href='../static/img/favicon/favicon-32x32.png'>
-  <link rel='icon' type='image/png' sizes='96x96' href='../static/img/favicon/favicon-96x96.png'>
-  <link rel='icon' type='image/png' sizes='16x16' href='../static/img/favicon/favicon-16x16.png'>
-  <link rel='manifest' href='../static/img/favicon/manifest.json'>
-  <meta name='msapplication-TileColor' content='#ffffff'>
-  <meta name='msapplication-TileImage' content='../static/img/favicon/ms-icon-144x144.png'>
-  <meta name='theme-color' content='#ffffff'>
+  <link rel="apple-touch-icon" sizes="180x180" href="../static/img/favicon/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="../static/img/favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="../static/img/favicon/favicon-16x16.png">
+  <link rel="manifest" href="../static/img/favicon/site.webmanifest">
   <link href='../static/lib/bootstrap/css/bootstrap.min.css' rel='stylesheet'>
   <link href='../static/css/style.css' rel='stylesheet'>
 </head>
@@ -73,6 +60,7 @@
               <li><a href='../super_resolution/'>Super Resolution</a></li>
               <li><a href='../emotion_analysis/'>Emotion Analysis</a></li>
               <li><a href='../speech_commands/'>Speech Commands</a></li>
+              <li><a href='../speech_recognition/'>Speech Recognition</a></li>
             </ul>
           </li>
           <li><a href='../model.html'>Models</a></li>
@@ -288,11 +276,14 @@
         </div>
       </div>
 
+
       <div id='inference' class='shoulddisplay mt-3' style='display: none;'>
-        <div class='row text-center tc' id='inferencetitle'>
+          <div class='row text-center tc' id='inferencetitle'>
           <div id='inferenceTime'></div>
         </div>
       </div>
+
+
 
       <div class='tab-content clearfix row'>
         <div class='tab-pane text-center active col-sm' id='imagetab'>
@@ -300,11 +291,12 @@
             <div class='col-lg-12 col-xs-12 text-center'>
               <div class='row'>
                 <div class='col bt-3 mb-3'>
+                  <img id='feedElement' hidden crossorigin='anonymous' class='img-fluid' alt='Responsive image' src='./img/download.png'>
                   <canvas id='canvas'></canvas>
                   <h4>Single Pose Estimation</h4>
                 </div>
                 <div class='multi col bt-3 mb-3'>
-                  <canvas id='canvasmulti'></canvas>
+                  <canvas id='canvasMulti'></canvas>
                   <h4>Multiple Pose Estimation</h4>
                 </div>
               </div>
@@ -343,11 +335,10 @@
                 </svg>
               </i>
             </div>
+            <video id='feedMediaElement' autoplay playsinline hidden></video>
             <div id='showcanvas' class='text-center'>
-              <canvas id='canvasvideo'></canvas>
+              <canvas id='canvasvideo' width=640 height=480 ></canvas>
             </div>
-            <video id='video' autoplay playsinline hidden></video>
-            <canvas hidden id='scalevideo' width='640' height='480'></canvas>
             <div id='cameraswitcher' class='custom-control custom-switch'>
               <input type='checkbox' class='custom-control-input' id='cameraswitch'>
               <label class='custom-control-label' for='cameraswitch'>Front-facing</label>
@@ -357,7 +348,6 @@
       </div>
     </div>
   </section>
-  <canvas hidden id='scaleimage'></canvas>
   <footer>
     <div class='container'>
       <div class='row'>
@@ -429,21 +419,26 @@
   <script src='../static/lib/easing/easing.js'></script>
   <script src='../static/lib/stickyjs/sticky.js'></script>
   <script src='../static/lib/greensock/tweenmax.js'></script>
-  <script src='../third_party/stats.customized.min.js'></script>
+  <script src='../static/lib/stats.customized.min.js'></script>
+
+  <script src='../static/js/ui.common.js'></script>
 
   <script src='../../dist/webml-polyfill.js'></script>
+
   <script src='../util/base.js'></script>
+  <script src='../util/modelZoo.js'></script>
+
   <script src='src/helperFunc.js'></script>
   <script src='src/PoseNet.js'></script>
   <script src='src/MaxHeap.js'></script>
   <script src='src/decodePose.js'></script>
   <script src='src/DrawOutputs.js'></script>
 
-  <script src='utils.js'></script>
-  <script src='../static/js/main.common.js'></script>
+  <script src='SkeletonDetectionRunner.js'></script>
+  <script src='SkeletonDetectionExample.js'></script>
   <script src='main.js'></script>
-  <script src='../static/js/ui.common.js'></script>
-  <script src='ui.js'></script>
+
+
   <script async src="https://www.googletagmanager.com/gtag/js?id=UA-147662084-1"></script>
   <script>
     window.dataLayer = window.dataLayer || [];

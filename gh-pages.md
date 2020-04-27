@@ -4,6 +4,10 @@ Due to some reasons like CDN, model locations, some source code need to be modif
 
 ## Steps
 
+### Build webml-polyfill.js
+
+Build `webml-polyfill.js` to latest and upload to `dist` folder
+
 ### Amazon S3
 Upgrade Web Machine Learning models to latest in Amason S3, accounts: @ibelem, @BruceDai, @huningxin
 
@@ -39,7 +43,7 @@ Add follwing code for registering service worker in page footer before `</body>`
   </script>
  ```
 
-### examples/util/base.js 
+### examples/util/modelZoo.js 
 
  Replace `: '../`
 
