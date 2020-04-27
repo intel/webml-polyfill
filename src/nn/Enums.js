@@ -207,6 +207,7 @@ export const OperationCode = {
    * Supported tensor types:
    * * {@link TENSOR_FLOAT32}
    * * {@link TENSOR_QUANT8_ASYMM}
+   * * {@link TENSOR_QUANT8_ASYMM_SIGNED}
    *
    * Supported tensor rank: 4, with "NHWC" (i.e., Num_samples, Height, Width, and Channels)
    * data layout.
@@ -242,7 +243,11 @@ export const OperationCode = {
    *      Specifies the activation to invoke on the result of each addition.
    *
    * Outputs:
-   * * 0: The output 4-D tensor, of shape [batches, out_height, out_width, depth].
+   * * 0: The output 4-D tensor, of shape
+   *      [batches, out_height, out_width, depth].
+   *      For a {@link TENSOR_QUANT8_ASYMM} and
+   *      {@link TENSOR_QUANT8_ASYMM_SIGNED} tensor,
+   *      the scale and zeroPoint must be the same as input0.
    */
   AVERAGE_POOL_2D: 1,
 
