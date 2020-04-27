@@ -1264,6 +1264,11 @@ export default class PreparedModel {
         OPS_CHECK(output.runtimeshape.DimensionsCount() <= 4);
         OPS_CHECK(output.runtimeshape.DimensionsCount() === perm.length);
 
+        // Extend perm to length 4 by appending 0
+        for (let i = perm.length; i < 4; ++i) {
+          perm.push(0);
+        }
+
         // init transposeParams
         let transposeParams = {
           perm: perm,
