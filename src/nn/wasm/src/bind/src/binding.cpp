@@ -12,6 +12,7 @@
 #include "external/tensorflow/tensorflow/lite/kernels/internal/reference/reference_ops.h"
 #include "external/tensorflow/tensorflow/lite/kernels/internal/reference/binary_function.h"
 #include "external/tensorflow/tensorflow/lite/kernels/internal/reference/integer_ops/conv.h"
+#include "external/tensorflow/tensorflow/lite/kernels/internal/reference/integer_ops/pooling.h"
 #include "fixedpoint/fixedpoint.h"
 #include "public/gemmlowp.h"
 
@@ -665,6 +666,18 @@ namespace binding_utils {
                                outputShape, (uint8_t*)outputData);
   }
 
+  void averagePoolInt8Wrapper(const PoolParams op_params,
+                              const RuntimeShape& inputShape,
+                              const intptr_t inputData,
+                              const RuntimeShape& outputShape,
+                              intptr_t outputData) {
+    tflite::reference_integer_ops::AveragePool(op_params,
+                                               inputShape,
+                                               (const int8_t*)inputData,
+                                               outputShape,
+                                               (int8_t*)outputData);
+  }
+
   void maxPoolFloat32Wrapper(const PoolParams op_params,
                              const RuntimeShape& inputShape, 
                              const intptr_t inputData, 
@@ -1079,6 +1092,7 @@ EMSCRIPTEN_BINDINGS(nn)
   function("convInt8PerChannel", &binding_utils::convInt8PerChannelWrapper, allow_raw_pointers());
   function("averagePoolFloat32", &binding_utils::averagePoolFloat32Wrapper, allow_raw_pointers());
   function("averagePoolUint8", &binding_utils::averagePoolUint8Wrapper, allow_raw_pointers());
+  function("averagePoolInt8", &binding_utils::averagePoolInt8Wrapper, allow_raw_pointers());
   function("softmaxFloat32", &binding_utils::softmaxFloat32Wrapper, allow_raw_pointers());
   function("softmaxUint8", &binding_utils::softmaxUint8Wrapper, allow_raw_pointers());
   function("reshapeFloat32", &binding_utils::reshapeFloat32Wrapper, allow_raw_pointers());
