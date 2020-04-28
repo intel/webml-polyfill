@@ -957,6 +957,12 @@ export default class PreparedModel {
             nn_ops.averagePoolUint8(poolParams,
                                     input.runtimeshape, input.value,
                                     output.runtimeshape, output.value);
+          } else if (output.type === OperandCode.TENSOR_QUANT8_ASYMM_SIGNED) {
+            nn_ops.averagePoolInt8(poolParams,
+                                   input.runtimeshape, input.value,
+                                   output.runtimeshape, output.value);
+          } else {
+            throw new Error(`output type ${output.type} is not supported by AVERAGE_POOL_2D.`);
           }
         } else if (op === OperationCode.MAX_POOL_2D) {
           if (output.type === OperandCode.TENSOR_FLOAT32) {
