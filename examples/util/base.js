@@ -244,18 +244,18 @@ const getTensorArray = (image, inputTensor, options, layout = 'NHWC') => {
   if (layout === 'NHWC') {
     if (channelScheme === 'RGB') {
       if (channels > 1) {
-        for (let h = 0; h < height; ++h) {
-          for (let w = 0; w < width; ++w) {
-            for (let c = 0; c < channels; ++c) {
+        for (let c = 0; c < channels; ++c) {
+          for (let h = 0; h < height; ++h) {
+            for (let w = 0; w < width; ++w) {
               let value = pixels[h * width * imageChannels + w * imageChannels + c];
               tensor[h * width * channels + w * channels + c] = (value - mean[c]) / std[c];
             }
           }
         }
       } else if (channels === 1) {
-        for (let h = 0; h < height; ++h) {
-          for (let w = 0; w < width; ++w) {
-            for (let c = 0; c < channels; ++c) {
+        for (let c = 0; c < channels; ++c) {
+          for (let h = 0; h < height; ++h) {
+            for (let w = 0; w < width; ++w) {
               let index = h * width * imageChannels + w * imageChannels + c;
               let value = (pixels[index] + pixels[index + 1] + pixels[index + 2]) / 3;
               tensor[h * width * channels + w * channels + c] = (value - mean[c]) / std[c];
@@ -264,9 +264,9 @@ const getTensorArray = (image, inputTensor, options, layout = 'NHWC') => {
         }
       }
     } else if (channelScheme === 'BGR') {
-      for (let h = 0; h < height; ++h) {
-        for (let w = 0; w < width; ++w) {
-          for (let c = 0; c < channels; ++c) {
+      for (let c = 0; c < channels; ++c) {
+        for (let h = 0; h < height; ++h) {
+          for (let w = 0; w < width; ++w) {
             let value = pixels[h * width * imageChannels + w * imageChannels + (channels - c - 1)];
             tensor[h * width * channels + w * channels + c] = (value - mean[c]) / std[c];
           }
@@ -475,7 +475,7 @@ const getTopClasses = (tensor, labels, k = 5, deQuantizeParams = []) => {
       return 0;
     }
     return a[0] < b[0] ? -1 : 1;
-  });
+  });+
   sorted.reverse();
   const classes = [];
 
