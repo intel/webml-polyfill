@@ -87,19 +87,27 @@ class OpenCVRunner extends BaseRunner {
   _getInputTensor = (src, options) => {
     const mean = options.preOptions.mean;
     const std = options.preOptions.std;
-    const [width, height, channel] = options.inputSize;
-    let mat = cv.imread(src.id);
-    let matC3 = new cv.Mat(mat.matSize[0], mat.matSize[1], cv.CV_8UC3);
-    cv.cvtColor(mat, matC3, cv.COLOR_RGBA2RGB);
-    let matdata = matC3.data;
+    const [sizeW, sizeH, channels] = options.inputSize;
+    const imageChannels = options.imageChannels;
+    const width = src.videoWidth || src.naturalWidth;
+    const height = src.videoHeight || src.naturalHeight;
+    const canvasElement = document.createElement('canvas');
+    canvasElement.width = width;
+    canvasElement.height = height;
+    const canvasContext = canvasElement.getContext('2d');
+    canvasContext.drawImage(src, 0, 0, width, height);
+    const pixels = canvasContext.getImageData(0, 0, width, height).data;
     let stddata = [];
-    for(let i = 0; i < mat.matSize[0] * mat.matSize[1]; ++i) {
-      for (let c = 0; c < channel; ++c) {
-        stddata.push((matdata[channel * i + c] / 255 - mean[c]) / std[c]);
+    for (let c = 0; c < channels; ++c) {
+      for (let h = 0; h < height; ++h) {
+        for (let w = 0; w < width; ++w) {
+          let value = pixels[h * width * imageChannels + w * imageChannels + c];
+          stddata[h * width * channels + w * channels + c] = (value / 255 - mean[c]) / std[c];
+        }
       }
-    };
-    let inputMat = cv.matFromArray(mat.matSize[0], mat.matSize[1], cv.CV_32FC3, stddata);
-    let input = cv.blobFromImage(inputMat, 1, new cv.Size(width, height), new cv.Scalar(0, 0, 0));
+    }
+    let inputMat = cv.matFromArray(height, width, cv.CV_32FC3, stddata);
+    let input = cv.blobFromImage(inputMat, 1, new cv.Size(sizeW, sizeH), new cv.Scalar(0, 0, 0));
     return input;
   };
 

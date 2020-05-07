@@ -71,7 +71,6 @@ class BaseExample extends BaseApp {
         this._setFramework('WebNN');
         $('.backend').show();
         $('.opencvjsbackend').hide();
-        $('#cam').show();
         locSearch = `?prefer=${this._currentPrefer}&b=${this._currentBackend}&m=${this._currentModelId}&s=${this._currentInputType}&d=${this._hiddenControlsFlag}&f=${this._currentFramework}`;
       } else {
         // Parse seach params, and prepare inference env
@@ -100,7 +99,6 @@ class BaseExample extends BaseApp {
         this._setFramework(framework);
         switch (framework) {
           case 'WebNN':
-            $('#cam').show();
             $('.backend').show();
             $('.opencvjsbackend').hide();
             const prefer = parseSearchParams('prefer');
@@ -110,7 +108,6 @@ class BaseExample extends BaseApp {
             locSearch = `?prefer=${this._currentPrefer}&b=${this._currentBackend}&m=${this._currentModelId}&s=${this._currentInputType}&d=${this._hiddenControlsFlag}&f=${this._currentFramework}`;
             break;
           case 'OpenCV.js':
-            $('#cam').hide();
             $('.backend').hide();
             $('.opencvjsbackend').show();
             const opencvBackend = parseSearchParams('b');
@@ -214,7 +211,6 @@ class BaseExample extends BaseApp {
       if (framework === 'OpenCV.js') {
         $('.backend').hide();
         $('.opencvjsbackend').show();
-        $('#cam').hide();
         const opencvModel = selectModelFromGivenModels(this._inferenceModels, framework);
         if (getModelFromGivenModels(opencvModel, this._currentModelId) === null) {
           this._setModelId('none');
