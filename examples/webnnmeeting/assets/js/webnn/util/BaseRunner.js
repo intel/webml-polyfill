@@ -17,6 +17,7 @@ class BaseRunner {
     this._bEagerMode = false;
     this._supportedOps = new Set();
     this._inferenceTime = 0.0; // ms
+    this._labels = null;
   }
 
   _setBackend = (backend) => {
@@ -81,7 +82,7 @@ class BaseRunner {
     this._inferenceTime = t;
   };
 
-  _loadURL = async (url, handle = null, isBinary = false) => {
+  _loadURL = async (url, handler = null, isBinary = false) => {
     let _this = this;
     return new Promise((resolve, reject) => {
       if (_this._currentRequest != null) {
@@ -103,14 +104,24 @@ class BaseRunner {
           }
         }
       };
-      if (handle != null) {
-        oReq.onprogress = handle;
+      if (handler != null) {
+        oReq.onprogress = handler;
       }
       oReq.send();
     });
   };
 
-  _getRawModel = async (url) => {
+  _setLabels = (labels) => {
+    this._labels = labels;
+  };
+
+  _loadLabelsFile = async (url) => {
+    const result = await this._loadURL(url);
+    this._setLabels(result.split('\n'));
+    console.log(`labels: ${this._labels}`);
+  };
+
+  _loadModelFile = async (url) => {
     let status = 'ERROR';
     let rawModel = null;
 
@@ -155,17 +166,6 @@ class BaseRunner {
     return status;
   };
 
-  _getOtherResources = async () => {
-    // Override by inherited if needed, likes load labels file
-  };
-
-  _getModelResources = async () => {
-    if(this._currentModelInfo) {
-      await this._getRawModel(this._currentModelInfo.modelFile);
-      await this._getOtherResources();
-    }
-  };
-
   loadModel = async (modelInfo) => {
     if (this._bLoaded && this._currentModelInfo.modelFile === modelInfo.modelFile) {
       return 'LOADED';
@@ -183,7 +183,8 @@ class BaseRunner {
     this._initInputTensor();
     this._initOutputTensor();
 
-    await this._getModelResources();
+    await this._loadModelFile(this._currentModelInfo.modelFile);
+    await this._loadLabelsFile(this._currentModelInfo.labelsFile);
   };
 
   _getInputTensorTypedArray = () => {
@@ -262,8 +263,7 @@ class BaseRunner {
     this._setModel(model);
     this._model.setSupportedOps(this._supportedOps);
     this._model.setEagerMode(this._bEagerMode);
-    const compileStatus = await this._model.createCompiledModel();
-    console.log(`Compilation Status: [${compileStatus}]`);
+    await this._model.createCompiledModel();
 
     this._setModelRequiredOps(this._model.getRequiredOps());
 
@@ -289,11 +289,7 @@ class BaseRunner {
   run = async (src, options) => {
     let status = 'ERROR';
 
-    // if (src.tagName === 'AUDIO') {
-    //   await getTensorArrayByAudio(src, this._inputTensor, options);
-    // } else {
-      getTensorArray(src, this._inputTensor, options);
-    // }
+    getTensorArray(src, this._inputTensor, options);
 
     const start = performance.now();
     status = await this._model.compute(this._inputTensor, this._outputTensor);
@@ -316,16 +312,13 @@ class BaseRunner {
     return this._deQuantizeParams;
   };
 
-  _updateOutput = (output) => {
-    // Override by inherited if needed
-  };
-
   getOutput = () => {
     let output = {
       outputTensor: this._outputTensor[0],
       inferenceTime: this._inferenceTime,
+      labels: this._labels,
     };
-    this._updateOutput(output); // add custom output info
+
     return output;
   };
 
@@ -397,29 +390,10 @@ class BaseRunner {
 class SemanticSegmentationRunner extends BaseRunner {
   constructor() {
     super();
-    this._labels = null;
   }
-
-  _setLabels = (labels) => {
-    this._labels = labels;
-  };
-
-  _getLabels = async (url) => {
-    const result = await this._loadURL(url);
-    this._setLabels(result.split('\n'));
-    console.log(`labels: ${this._labels}`);
-  };
-
-  _getOtherResources = async () => {
-    await this._getLabels(this._currentModelInfo.labelsFile);
-  };
 
   _getOutputTensorTypedArray = () => {
     return Int32Array;
-  };
-
-  _updateOutput = (output) => {
-    output.labels = this._labels;
   };
 }
 

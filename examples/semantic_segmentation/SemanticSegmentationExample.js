@@ -151,17 +151,16 @@ class SemanticSegmentationExample extends BaseCameraExample {
       scaledFlag: true,
     };
     await this._runner.run(this._currentInputElement, drawOptions);
-    this._processOutput();
+    this._postProcess();
   };
 
-  _processCustomOutput = () => {
+  _processExtra = (output) => {
     const width = this._currentModelInfo.inputSize[1];
     const imWidth = this._currentInputElement.naturalWidth | this._currentInputElement.videoWidth;
     const imHeight = this._currentInputElement.naturalHeight | this._currentInputElement.videoHeight;
     const resizeRatio = Math.max(Math.max(imWidth, imHeight) / width, 1);
     const scaledWidth = Math.floor(imWidth / resizeRatio);
     const scaledHeight = Math.floor(imHeight / resizeRatio);
-    const output = this._runner.getOutput();
     const segMap = {
       data: output.outputTensor,
       outputShape: this._currentModelInfo.outputSize,

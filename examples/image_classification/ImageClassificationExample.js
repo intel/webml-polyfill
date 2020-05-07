@@ -13,7 +13,7 @@ class ImageClassificationExample extends BaseCameraExample {
     let runner;
     switch (this._currentFramework) {
       case 'WebNN':
-        runner = new ImageClassificationWebNNRunner();
+        runner = new WebNNRunner();
         break;
       case 'OpenCV.js':
         runner = new ImageClassificationOpenCVRunner();
@@ -23,8 +23,7 @@ class ImageClassificationExample extends BaseCameraExample {
     return runner;
   };
 
-  _processCustomOutput = () => {
-    const output = this._runner.getOutput();
+  _processExtra = (output) => {
     let labelClasses;
     switch (this._currentFramework) {
       case 'WebNN':
@@ -45,7 +44,7 @@ class ImageClassificationExample extends BaseCameraExample {
     });
   };
 
-  _resetCustomOutput = () => {
+  _resetExtraOutput = () => {
     $('#inferenceresult').hide();
     for (let i = 0; i < 3; i++) {
       let labelElement = document.getElementById(`label${i}`);

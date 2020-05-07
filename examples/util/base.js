@@ -477,7 +477,7 @@ const getTopClasses = (tensor, labels, k = 5, deQuantizeParams = []) => {
       return 0;
     }
     return a[0] < b[0] ? -1 : 1;
-  });+
+  });
   sorted.reverse();
   const classes = [];
 

@@ -185,10 +185,10 @@ class FacialLandmarkDetectionExample extends BaseCameraExample {
       }
     }
 
-    this._processOutput();
+    this._postProcess();
   };
 
-  _processCustomOutput = () => {
+  _processExtra = (output) => {
     // show inference result
     const texts = this._strokedRects.map(r => r[4].toFixed(2));
     const canvasShowElement = document.getElementById('canvasshow');

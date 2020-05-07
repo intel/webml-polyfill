@@ -5,8 +5,6 @@ $(document).ready(() => {
 });
 
 $(window).load(() => {
-  if (example._currentFramework === 'WebNN') {
-    // Execute inference
-    example.main();
-  }
+  // Execute inference
+  example.main();
 });

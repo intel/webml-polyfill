@@ -15,8 +15,7 @@ class ObjectDetectionExample extends BaseCameraExample {
     return runner;
   };
 
-  _processCustomOutput = () => {
-    const output = this._runner.getOutput();
+  _processExtra = (output) => {
     const deQuantizeParams =  this._runner.getDeQuantizeParams();
     let canvasShowElement = document.getElementById('canvasshow');
     const modelInfo = this._currentModelInfo;

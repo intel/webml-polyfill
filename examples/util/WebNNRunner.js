@@ -12,39 +12,76 @@ class WebNNRunner extends BaseRunner {
     this._supportedOps = new Set();
   }
 
+  /**
+   * This method is to set '_currentBackend'.
+   * @param backend: A string for backend.
+   */
   _setBackend = (backend) => {
     this._currentBackend = backend;
   };
 
+  /**
+   * This method is to set '_currentPrefer'.
+   * @param prefer: A string for prefer.
+   */
   _setPrefer = (prefer) => {
     this._currentPrefer = prefer;
   };
 
+  /**
+   * This method is to set '_bEagerMode'.
+   * @param flag: A boolean whether eager mode.
+   */
   setEagerMode = (flag) => {
     this._bEagerMode = flag;
   };
 
+  /**
+   * This method is to set '_supportedOps'.
+   * @param ops: A string for supported ops.
+   */
   setSupportedOps = (ops) => {
     this._supportedOps = ops;
   };
 
-  _setRawModel = (rawModel) => {
-    this._rawModel = rawModel;
+  /**
+   * This method is to set '_rawModel'.
+   * @param model: A string for model.
+   */
+  _setRawModel = (model) => {
+    this._rawModel = model;
   };
 
+  /**
+   * This method is to set '_subgraphsSummary'.
+   * @param summary: A string for summary.
+   */
   _setSubgraphsSummary = (summary) => {
     this._subgraphsSummary = summary;
   };
 
+  /**
+   * This method is to set '_modelRequiredOps'.
+   * @param ops: A string for required ops of model.
+   */
   _setModelRequiredOps = (ops) => {
     this._modelRequiredOps = ops;
   };
 
+  /**
+   * This method is to set '_deQuantizeParams'.
+   * @param params: A string for deQuantize params.
+   */
   _setDeQuantizeParams = (params) => {
     this._deQuantizeParams = params;
   };
 
-  _getRawModel = async (url) => {
+  /**
+   * This method is to load model file with specified url.
+   * @param url: A string for model file url.
+   * @returns {string} This returns status of load model file, ['ERROR' | 'SUCCESS'].
+   */
+  _loadModelFile = async (url) => {
     let status = 'ERROR';
     let rawModel = null;
 
@@ -89,6 +126,11 @@ class WebNNRunner extends BaseRunner {
     return status;
   };
 
+  /**
+   * This method is to load model with given model info.
+   * @param modelInfo: A string for model info.
+   * @returns {string} This returns 'LOADED' status if model already loaded.
+   */
   loadModel = async (modelInfo) => {
     if (this._bLoaded && this._currentModelInfo.modelFile === modelInfo.modelFile) {
       return 'LOADED';
@@ -106,26 +148,44 @@ class WebNNRunner extends BaseRunner {
     this._initInputTensor();
     this._initOutputTensor();
 
-    await this._getModelResources();
+    await this._loadModelFile(this._currentModelInfo.modelFile);
+
+    if (this._currentModelInfo.labelsFile != null) {
+      await this._loadLabelsFile(this._currentModelInfo.labelsFile);
+    }
   };
 
+  /**
+   * This method is to get typedArray type for inputTensor.
+   * @returns {object} This returns Uint8Array or Float32Array object or other typedArray type if inherited.
+   */
   _getInputTensorTypedArray = () => {
     // Override by inherited if needed
     const typedArray = this._currentModelInfo.isQuantized || false ? Uint8Array : Float32Array;
     return typedArray;
   };
 
+  /**
+   * This method is to init set '_inputTensor'.
+   */
   _initInputTensor = () => {
     const typedArray = this._getInputTensorTypedArray();
     this._inputTensor = [new typedArray(this._currentModelInfo.inputSize.reduce((a, b) => a * b))];
   };
 
+  /**
+   * This method is to typedArray type for outputTensor.
+   * @returns {object} This returns Uint8Array or Float32Array object or other typedArray type if inherited.
+   */
   _getOutputTensorTypedArray = () => {
     // Override by inherited if needed
     const typedArray = this._currentModelInfo.isQuantized || false ? Uint8Array : Float32Array;
     return typedArray;
   };
 
+  /**
+   * This method is to init set '_outputTensor'.
+   */
   _initOutputTensor = () => {
     // Override by inherited if needed
     const typedArray = this._getOutputTensorTypedArray();
@@ -138,6 +198,11 @@ class WebNNRunner extends BaseRunner {
     }
   };
 
+  /**
+   * This method is to compile a machine learning model by backend and prefer.
+   * @param options: A string has backend and prefer info.
+   * @returns {string} This returns a string for status of compilation model.
+   */
   compileModel = async (options) => {
     const backend = options.backend;
     const prefer = options.prefer;
@@ -179,8 +244,7 @@ class WebNNRunner extends BaseRunner {
     this._setModel(model);
     this._model.setSupportedOps(this._supportedOps);
     this._model.setEagerMode(this._bEagerMode);
-    const compileStatus = await this._model.createCompiledModel();
-    console.log(`Compilation Status: [${compileStatus}]`);
+    await this._model.createCompiledModel();
 
     this._setModelRequiredOps(this._model.getRequiredOps());
 
@@ -203,6 +267,29 @@ class WebNNRunner extends BaseRunner {
     return 'SUCCESS';
   };
 
+  /**
+   * This method is to do inference with input src (HTML [<img> | <video> | <audio>] element).
+   * @param src: An object for HTML [<img> | <video> | <audio>] element.
+   * @param options: A string to get inputTensor. Details:
+   * options = {
+   *   // inputSize was configed in modelZoo.js, inputSize = [h, w, c] or [1, size] for audio example.
+   *   inputSize: inputSize,
+   *   // preOptions was also configed in modelZoo.js,
+   *   // preOptions= {} or {mean: [number, number, number, number],std: [number, number, number, number]}
+   *   preOptions: preOptions,
+   *   imageChannels: 4,
+   *   drawOptions: { // optional, drawOptions is used for CanvasRenderingContext2D.drawImage() method.
+   *     sx: sx, // the x-axis coordinate of the top left corner of sub-retangle of the source image
+   *     sy: sy, // the y-axis coordinate of the top left corner of sub-retangle of the source image
+   *     sWidth: sWidth, // the width of the sub-retangle of the source image
+   *     sHeight: sHeight, // the height of the sub-retangle of the source image
+   *     dWidth: dWidth, // the width to draw the image in the detination canvas
+   *     dHeight: dWidth, // the height to draw the image in the detination canvas
+   *   },
+   *   scaledFlag: true, // optional, need scaled the width and height of element to get need inputTensor
+   * };
+   * @returns {string} This returns a string for inference status.
+   */
   run = async (src, options) => {
     let status = 'ERROR';
 
@@ -221,28 +308,42 @@ class WebNNRunner extends BaseRunner {
     return status;
   };
 
+  /**
+   * This method is get required ops of model.
+   * @returns {object} This returns an array object for required ops of model.
+   */
   getRequiredOps = () => {
     return this._modelRequiredOps;
   };
 
+  /**
+   * This method is to get inference subgraphs summary info.
+   * @returns {object} This returns an array object for inference subgraphs summary info.
+   */
   getSubgraphsSummary = () => {
     return this._subgraphsSummary;
   };
 
+  /**
+   * This method is to get deQuantize params of deQuantized model.
+   * @returns {object} This returns an array object for deQuantize params of deQuantized model.
+   */
   getDeQuantizeParams = () => {
     return this._deQuantizeParams;
   };
 
-  _updateSubOutput = (output) => {
+  /**
+   * This method is to output inference tensor for post processing by example side.
+   * @param output: An object for output which will be updated with output tensor info by this method.
+   */
+  _passOutputTensor = (output) => {
     // Override by inherited if needed
-  };
-
-  _updateOutput = (output) => {
     output.outputTensor = this._outputTensor[0];
-    this._updateSubOutput(output); // add custom output info
-    return output;
   };
 
+  /**
+   * This method is to free allocated memory resources for model compilation process by polyfill backend.
+   */
   deleteAll = () => {
     if (this._currentBackend != 'WebML') {
       // free allocated memory on compilation process by polyfill WASM / WebGL backend.
@@ -252,7 +353,24 @@ class WebNNRunner extends BaseRunner {
     }
   };
 
-  // for debugging
+  /**
+   * This method is for debugging output of each layer after ran the example once on Console, usage likes:
+   *   example._runner.iterateLayers([{backend: 'WASM', prefer: 'fast'}], [1, 2]) // debugging the outputs of first and second layers using WASM backend
+   *   example._runner.iterateLayers([{backend: 'WASM', prefer: 'fast'}]) // debugging outputs of all layers using WASM backend
+   *   example._runner.iterateLayers([{backend: 'WASM', prefer: 'fast'}, {backend: 'WebML', prefer: 'fast'}], [1, 2]) // debugging outputs of all layers using WASM backend and WebML backend, user can compare each output of the same layer.
+   *   example._coRunner.iterateLayers([{backend: 'WASM', prefer: 'fast'}, {backend: 'WebML', prefer: 'fast'}]) if wanted debugging cowork model for those examples with cowork models.
+   * The debugging output info logs are printed on Console with enabling verbose level.
+   * @param configs: An object for config array, likes:
+   *   [{backend: 'WASM', prefer: 'fast'}]
+   *   [{backend: 'WebGL', prefer: 'sustained'}]
+   *   [{backend: 'WebML', prefer: 'fast'}]
+   *   [{backend: 'WebML', prefer: 'sustained'}]
+   *   or
+   *   [{backend: 'WASM', prefer: 'fast'}, {backend: 'WebGL', prefer: 'sustained'}]
+   *   [{backend: 'WASM', prefer: 'fast'}, {backend: 'WebML', prefer: 'fast'}]
+   *   etc.
+   * @param layerList: {object | undefined} An object for layer array, likes: [1, 2 ,3], if undefined, it means all layers.
+   */
   iterateLayers = async (configs, layerList) => {
     if (!this._bInitialized) return;
 

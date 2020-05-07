@@ -48,7 +48,7 @@ class SpeechRecognitionExample extends BaseMircophoneExample {
 
       console.log(`Computed Status: [${status}]`);
       console.log(`Compute Time: [${totalTime} ms]`);
-      this._processOutput();
+      this._postProcess();
     } catch (e) {
       showAlertComponent(e);
       showErrorComponent();
@@ -187,7 +187,7 @@ class SpeechRecognitionExample extends BaseMircophoneExample {
     return result;
   }
 
-  _processCustomOutput = () => {
+  _processExtra = () => {
     const result = this._result;
     try {
       let avgTime = (result.time / result.cycles).toFixed(2);

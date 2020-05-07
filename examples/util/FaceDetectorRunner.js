@@ -25,8 +25,13 @@ class FaceDetectorRunner extends WebNNRunner {
     }
   };
 
-  _updateOutput = (output) => {
-    output.outputBoxTensor = this._outputBoxTensor;
-    output.outputClassScoresTensor = this._outputClassScoresTensor;
+  _passOutputTensor = (output) => {
+    if (this._currentModelInfo.category === 'SSD') {
+      output.outputBoxTensor = this._outputBoxTensor;
+      output.outputClassScoresTensor = this._outputClassScoresTensor;
+    } else {
+      // YOLO models
+      output.outputTensor = this._outputTensor[0];
+    }
   };
 }

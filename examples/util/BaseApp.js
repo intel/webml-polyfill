@@ -45,7 +45,7 @@ class BaseApp {
     // Override by inherited
   };
 
-  _processOutput = () => {
+  _postProcess = () => {
     // Override by inherited
   };
 
@@ -57,6 +57,6 @@ class BaseApp {
 
   main = async () => {
     // Override by inherited
-    // _getRunner -> _loadModel -> _compileModel -> _predict -> _processOutput
+    // _getRunner -> _loadModel -> _compileModel -> _predict -> _postProcess
   };
 };

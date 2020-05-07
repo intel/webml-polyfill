@@ -412,22 +412,22 @@ class SkeletonDetectionExample {
 
     $('#sdscorethreshold').change(() => {
       this._showConfig.minScore = parseFloat($('#sdscorethreshold').val());
-      this._processOutput();
+      this._postProcess();
     });
 
     $('#sdnmsradius').change(() => {
       this._showConfig.nmsRadius = parseInt($('#sdnmsradius').val());
-      this._processOutput();
+      this._postProcess();
     });
 
     $('#sdmaxdetections').change(() => {
       this._showConfig.maxDetections = parseInt($('#sdmaxdetections').val());
-      this._processOutput();
+      this._postProcess();
     });
 
     $('#sdshowpose').change(() => {
       this._showConfig.showPose = $('#sdshowpose').prop('checked');
-      this._processOutput();
+      this._postProcess();
     });
 
     $('#sduseatrousconvops').change(() => {
@@ -437,7 +437,7 @@ class SkeletonDetectionExample {
 
     $('#sdshowboundingbox').change(() => {
       this._showConfig.showBoundingBox = $('#sdshowboundingbox').prop('checked');
-      this._processOutput();
+      this._postProcess();
     });
   };
 
@@ -459,7 +459,7 @@ class SkeletonDetectionExample {
       imageChannels: 4,
     };
     await this._runner.run(this._currentInputElement, drawOptions);
-    this._processOutput();
+    this._postProcess();
   };
 
   _predictFrame = async () => {
@@ -481,7 +481,7 @@ class SkeletonDetectionExample {
     readyShowResultComponents();
   };
 
-  _processOutput = () => {
+  _postProcess = () => {
     const drawPoses = (src, canvas, poses, options) => {
       const ctx = canvas.getContext('2d');
       const width = src.naturalWidth || src.videoWidth;

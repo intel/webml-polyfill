@@ -1,7 +1,6 @@
 class ObjectDetectionRunner extends WebNNRunner {
   constructor() {
     super();
-    this._labels = null;
     this._outputBoxTensor = [];
     this._outputClassScoresTensor = [];
     this._deQuantizedOutputBoxTensor = [];
@@ -36,28 +35,17 @@ class ObjectDetectionRunner extends WebNNRunner {
     }
   };
 
-  _setLabels = (labels) => {
-    this._labels = labels;
-  };
-
-  _getLabels = async (url) => {
-    const result = await this._loadURL(url);
-    this._setLabels(result.split('\n'));
-    console.log(`labels: ${this._labels}`);
-  };
-
-  _getOtherResources = async () => {
-    await this._getLabels(this._currentModelInfo.labelsFile);
-  };
-
-  _updateSubOutput = (output) => {
-    output.labels = this._labels;
-    output.outputBoxTensor = this._outputBoxTensor;
-    output.outputClassScoresTensor = this._outputClassScoresTensor;
-
-    if (this._currentModelInfo.isQuantized) {
-      output.deQuantizedOutputBoxTensor = this._deQuantizedOutputBoxTensor;
-      output.deQuantizedOutputClassScoresTensor = this._deQuantizedOutputClassScoresTensor;
+  _passOutputTensor = (output) => {
+    if (this._currentModelInfo.category === 'SSD') {
+      output.outputBoxTensor = this._outputBoxTensor;
+      output.outputClassScoresTensor = this._outputClassScoresTensor;
+      if (this._currentModelInfo.isQuantized) {
+        output.deQuantizedOutputBoxTensor = this._deQuantizedOutputBoxTensor;
+        output.deQuantizedOutputClassScoresTensor = this._deQuantizedOutputClassScoresTensor;
+      }
+    } else {
+      // YOLO models
+      output.outputTensor = this._outputTensor[0];
     }
   };
 }

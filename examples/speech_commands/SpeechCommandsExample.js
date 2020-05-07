@@ -31,7 +31,7 @@ class SpeechCommandsExample extends BaseMircophoneExample {
   };
 
   _createRunner = () => {
-    const runner = new SpeechCommandsRunner();
+    const runner = new WebNNRunner();
     runner.setProgressHandler(updateLoadingProgressComponent);
     return runner;
   };
@@ -45,7 +45,7 @@ class SpeechCommandsExample extends BaseMircophoneExample {
         mfccsOptions: this._currentModelInfo.mfccsOptions,
       };
       await this._runner.run(this._currentInputElement, audioOptions);
-      this._processOutput();
+      this._postProcess();
       this._stats.end();
     } catch (e) {
       showAlertComponent(e);
@@ -85,8 +85,7 @@ class SpeechCommandsExample extends BaseMircophoneExample {
     await new Promise(() => setTimeout(this._recordAndPredictMicrophone(stream), 500));
   };
 
-  _processCustomOutput = () => {
-    const output = this._runner.getOutput();
+  _processExtra = (output) => {
     const deQuantizeParams = this._runner.getDeQuantizeParams();
     const outputTensor = postOutputTensorAudio(output.outputTensor);
     const labelClasses = getTopClasses(outputTensor, output.labels, 3, deQuantizeParams);

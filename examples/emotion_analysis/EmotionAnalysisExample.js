@@ -185,10 +185,10 @@ class EmotionAnalysisExample extends BaseCameraExample {
       }
     }
 
-    this._processOutput();
+    this._postProcess();
   };
 
-  _processCustomOutput = () => {
+  _processExtra = (output) => {
     // show inference result
     let texts = [];
 

@@ -337,10 +337,10 @@ class FaceRecognitionExample extends BaseCameraExample {
       }
     }
 
-    this._processOutput();
+    this._postProcess();
   };
 
-  _processCustomOutput = () => {
+  _processExtra = (output) => {
     const supportedOps = getSupportedOps(this._currentBackend, this._currentPrefer);
 
     if (this._currentInputType === 'image') {
