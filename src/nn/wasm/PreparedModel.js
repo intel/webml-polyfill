@@ -957,6 +957,12 @@ export default class PreparedModel {
             nn_ops.averagePoolUint8(poolParams,
                                     input.runtimeshape, input.value,
                                     output.runtimeshape, output.value);
+          } else if (output.type === OperandCode.TENSOR_QUANT8_ASYMM_SIGNED) {
+            nn_ops.averagePoolInt8(poolParams,
+                                   input.runtimeshape, input.value,
+                                   output.runtimeshape, output.value);
+          } else {
+            throw new Error(`output type ${output.type} is not supported by AVERAGE_POOL_2D.`);
           }
         } else if (op === OperationCode.MAX_POOL_2D) {
           if (output.type === OperandCode.TENSOR_FLOAT32) {
@@ -1263,6 +1269,17 @@ export default class PreparedModel {
         OPS_CHECK(input.runtimeshape.DimensionsCount() <= 4);
         OPS_CHECK(output.runtimeshape.DimensionsCount() <= 4);
         OPS_CHECK(output.runtimeshape.DimensionsCount() === perm.length);
+
+        // Extend perm to length 4 by appending 0
+        if (perm instanceof Array) {        
+          for (let i = perm.length; i < 4; ++i) {
+            perm[i] = 0;
+          }
+        } else {
+          let extend_perm = new perm.constructor(4);
+          extend_perm.set(perm, 0);
+          perm = extend_perm;
+        }
 
         // init transposeParams
         let transposeParams = {

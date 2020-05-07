@@ -287,7 +287,7 @@ class FaceRecognitionExample extends BaseCameraExample {
             dHeight: this._currentCoModelInfo.inputSize[0],
           },
         };
-        await this._coRunner.run(this._currentInputElement, drawOptions);
+        await this._coRunner.run(element, drawOptions);
         let frOutput = this._coRunner.getOutput();
         inferenceTime += parseFloat(frOutput.inferenceTime);
         let [...normEmbedding] = Float32Array.from(frOutput.outputTensor);

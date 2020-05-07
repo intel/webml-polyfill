@@ -185,6 +185,8 @@ const getPreferCode = (backend, prefer) => {
     preferCode = nn.PREFER_FAST_SINGLE_ANSWER;
   } else if (prefer === 'low') {
     preferCode = nn.PREFER_LOW_POWER;
+  } else if (prefer === 'ultra_low') {
+    preferCode = nn.PREFER_ULTRA_LOW_POWER;
   } else {
     preferCode = nn.PREFER_FAST_SINGLE_ANSWER;
   }

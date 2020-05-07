@@ -21,8 +21,8 @@ body {
 
 .b .b_bg {
   content: "";
-  background: rgba(233, 99, 96, 1.0);
-  background: linear-gradient(90deg, rgba(233, 99, 96, 1.0) 7%, rgba(255, 111, 97, 1.0) 100%);
+  background: rgba(15, 76, 129, 1.0);
+  background: linear-gradient(90deg, rgba(15, 76, 129, 1.0) 7%, rgba(15, 76, 129, 1.0) 100%);
   position: absolute;
   top: 0;
   left: 0;
@@ -72,8 +72,8 @@ body {
 
 .b:hover:before,
 .b:hover span {
-  background: rgba(233, 99, 96, 0.8);
-  background: linear-gradient(90deg, rgba(233, 99, 96, 0.8) 7%, rgba(255, 111, 97, 0.8) 100%);
+  background: rgba(15, 76, 129, 0.8);
+  background: linear-gradient(90deg, rgba(15, 76, 129, 0.8) 7%, rgba(15, 76, 129, 0.8) 100%);
 }
 
 .svg-filters {
@@ -180,16 +180,16 @@ a {
   -webkit-transition: 0.5s;
   -o-transition: 0.5s;
   transition: 0.5s;
-  color: rgba(255, 111, 97, 1.0);
+  color: rgba(15, 76, 129, 1.0);
 }
 
 a:hover {
-  color: rgba(255, 111, 97, 0.8);
+  color: rgba(15, 76, 129, 0.8);
 }
 
 .btn {
-  background: rgba(255, 111, 97, 1.0);
-  background: linear-gradient(90deg, rgba(233, 99, 96, 1) 7%, rgba(255, 111, 97, 1.0) 100%);
+  background: rgba(15, 76, 129, 1.0);
+  background: linear-gradient(90deg, rgba(15, 76, 129, 1) 7%, rgba(15, 76, 129, 1.0) 100%);
   font-family: Helvetica, Arial, sans-serif;
   font-weight: 800;
   color: #fff;
@@ -198,7 +198,7 @@ a:hover {
 }
 
 .btn:hover {
-  background-color: rgba(233, 99, 96, 0.8);
+  background-color: rgba(15, 76, 129, 0.8);
   color: #fff;
 }
 
@@ -213,14 +213,14 @@ a:hover {
 
 .btn-ghost:hover {
   background-color: #fff;
-  color: rgba(255, 111, 97, 0.8);
+  color: rgba(15, 76, 129, 0.8);
 }
 
 section {
   padding: 85px 0;
 }
 
-#imageclassification section, #posenet section, #semanticsegmentation section, #objectdetection section, #superresolution section, #faciallandmarkdetection section, #emotionanalysis section, #speechcommands section, #facerecognition section {
+#imageclassification section, #posenet section, #semanticsegmentation section, #objectdetection section, #superresolution section, #faciallandmarkdetection section, #emotionanalysis section, #speechcommands section, #speechrecognition section, #facerecognition section {
   padding: 0px 0;
 }
 
@@ -249,7 +249,7 @@ a:hover {
   width: 42px;
   height: 42px;
   border-radius: 0%;
-  background: rgba(255, 111, 97, .2);
+  background: rgba(15, 76, 129, .2);
   color: #fff;
   text-align: center;
   font-size: 24px;
@@ -259,7 +259,7 @@ a:hover {
 .scrolltop:active,
 .scrolltop:focus {
   color: #fff !important;
-  background: rgba(255, 111, 97, 0.8);
+  background: rgba(15, 76, 129, 0.8);
 }
 
 .scrolltop svg {
@@ -270,17 +270,17 @@ a:hover {
 }
 
 .scrolltop svg:hover {
-  color: rgba(255, 111, 97, 0.8);
+  color: rgba(15, 76, 129, 0.8);
 }
 
 #extra span svg {
   width: 12px;
   height: 12px;
-  color: rgba(255, 111, 97, 0.8);
+  color: rgba(15, 76, 129, 0.8);
 }
 
 #extra span svg:hover {
-  color: rgba(255, 111, 97, 1.0);
+  color: rgba(15, 76, 129, 1.0);
 }
 
 .hero {
@@ -331,7 +331,7 @@ a:hover {
 }
 
 #header {
-  background: rgba(255, 111, 97, 1.0);
+  background: rgba(15, 76, 129, 1.0);
   height: 62px;
   box-shadow: 0px 0px 1px 1px rgba(0, 0, 0, 0.2);
 }
@@ -443,13 +443,13 @@ a:hover {
 
 #mobile-nav-toggle svg,
 .menu-has-children svg {
-  color: rgba(255, 111, 97, 0.8);
+  color: rgba(15, 76, 129, 0.8);
   display: inline-block;
 }
 
 #mobile-nav-toggle svg:hover,
 .menu-has-children svg:hover {
-  color: rgba(255, 111, 97, 1.0);
+  color: rgba(15, 76, 129, 1.0);
 }
 
 #mobile-nav-toggle svg {
@@ -502,7 +502,7 @@ a:hover {
 }
 
 .nav-menu ul li:hover {
-  background: rgba(255, 111, 97, 0.8);
+  background: rgba(15, 76, 129, 0.8);
   -webkit-transition: 0.3s;
   -o-transition: 0.3s;
   transition: 0.3s;
@@ -542,7 +542,7 @@ a:hover {
 }
 
 #mobile-nav-toggle i {
-  color: rgba(255, 111, 97, 0.8);
+  color: rgba(15, 76, 129, 0.8);
 }
 
 @media (max-width: 768px) {
@@ -612,11 +612,11 @@ a:hover {
 }
 
 #mobile-nav ul .menu-has-children i.fa-chevron-up {
-  color: rgba(255, 111, 97, 1.0);
+  color: rgba(15, 76, 129, 1.0);
 }
 
 #mobile-nav ul .menu-item-active {
-  color: rgba(255, 111, 97, 0.8);
+  color: rgba(15, 76, 129, 0.8);
 }
 
 #mobile-body-overly {
@@ -678,7 +678,7 @@ body.mobile-nav-active #mobile-nav-toggle {
   max-height: 45px;
   overflow: hidden;
   margin-bottom: 15px;
-  color: rgba(255, 111, 97, 1.0);
+  color: rgba(15, 76, 129, 1.0);
   font-size: 24px;
   text-align: center;
   line-height: 35px;
@@ -686,17 +686,17 @@ body.mobile-nav-active #mobile-nav-toggle {
 }
 
 .feature-icon:hover {
-  color: rgba(255, 111, 97, 0.8);
+  color: rgba(15, 76, 129, 0.8);
 }
 
 .examples-col h3 {
-  color: rgba(255, 111, 97, 1.0);
+  color: rgba(15, 76, 129, 1.0);
 }
 
 .wip {
   margin-left: 0;
   color: #fff;
-  background-color: rgba(255, 111, 97, 1.0);
+  background-color: rgba(15, 76, 129, 1.0);
   padding: 2px 5px 2px 6px;
   font-size: 0.7rem;
 }
@@ -851,14 +851,14 @@ footer {
 }
 
 .inputf+label {
-  color: rgba(255, 111, 97, 1.0);
+  color: rgba(15, 76, 129, 1.0);
   border: 1px solid currentColor;
 }
 
 .inputf:focus+label,
 .inputf.has-focus+label,
 .inputf+label:hover {
-  color: rgba(255, 111, 97, 0.8);
+  color: rgba(15, 76, 129, 0.8);
 }
 
 .ic h2 {
@@ -903,15 +903,15 @@ footer {
 }
 
 .nav-pills li a:hover {
-  color: rgba(255, 111, 97, 1.0);
+  color: rgba(15, 76, 129, 1.0);
 }
 
 .nav-pills li.active a {
-  color: rgba(255, 111, 97, 0.8);
+  color: rgba(15, 76, 129, 0.8);
 }
 
 .nav-pills li.active a:hover {
-  color: rgba(255, 111, 97, 1.0);
+  color: rgba(15, 76, 129, 1.0);
 }
 
 .tab-content {
@@ -1004,14 +1004,14 @@ footer {
 .checked {
   padding: 0px 6px;
   color: rgb(255, 255, 255);
-  background-color: rgba(255, 111, 97, 0.8);
-  border: 1px solid rgba(255, 111, 97, 0.9);
+  background-color: rgba(15, 76, 129, 0.8);
+  border: 1px solid rgba(15, 76, 129, 0.9);
   text-shadow: 0px 1px 0px rgba(0, 0, 0, 0.1);
 }
 
 .checked:hover {
-  background-color: rgba(255, 111, 97, 0.9);
-  border: 1px solid rgba(255, 111, 97, 1.0);
+  background-color: rgba(15, 76, 129, 0.9);
+  border: 1px solid rgba(15, 76, 129, 1.0);
 }
 
 .cursorpointer {
@@ -1044,7 +1044,7 @@ footer {
 }
 
 .g:hover {
-  border: 1px solid rgba(255, 111, 97, 0.2);
+  border: 1px solid rgba(15, 76, 129, 0.2);
   margin: -1px;
 }
 
@@ -1053,7 +1053,7 @@ footer {
   padding: 2px 8px 2px 8px;
   display: inline-block;
   background-color: rgba(213, 213, 213, 0.15);
-  color: rgba(255, 111, 97, 0.9);
+  color: rgba(15, 76, 129, 0.9);
 }
 
 .alert {
@@ -1061,9 +1061,9 @@ footer {
 }
 
 .alert-warning {
-  color: rgba(255, 111, 97, 0.9);
-  background-color: rgba(255, 111, 97, 0.05);
-  border: 1px solid rgba(255, 111, 97, 0.15);
+  color: rgba(15, 76, 129, 0.9);
+  background-color: rgba(15, 76, 129, 0.05);
+  border: 1px solid rgba(15, 76, 129, 0.15);
   font-weight: 200 !important;
 }
 
@@ -1131,15 +1131,15 @@ footer {
 
 .webml-title {
   display: inline-block;
-  border: 1px solid rgba(255, 111, 97, 0.9);
-  background: rgba(255, 111, 97, 0.9);
+  border: 1px solid rgba(15, 76, 129, 0.9);
+  background: rgba(15, 76, 129, 0.9);
   color: rgba(255, 255, 255, 1.0);
   padding: 0.2rem 0.4rem;
 }
 
 .webml-title:hover {
-  border: 1px solid rgba(255, 111, 97, 1.0);
-  background: rgba(255, 111, 97, 1.0);
+  border: 1px solid rgba(15, 76, 129, 1.0);
+  background: rgba(15, 76, 129, 1.0);
 }
 
 .webml-status {
@@ -1165,7 +1165,7 @@ footer {
   margin-left: -5px;
   background: transparent;
   color: rgba(0, 0, 0, 0.8);
-  border: 1px solid rgba(255, 111, 97, 0.9);
+  border: 1px solid rgba(15, 76, 129, 0.9);
   display: inline-block;
   padding: 0.2rem 0.5rem;
 }
@@ -1181,11 +1181,11 @@ footer {
 #extra {
   display: block;
   text-align: center;
-  color: rgba(255, 111, 97, 0.1);
+  color: rgba(15, 76, 129, 0.1);
 }
 
 #extra:hover {
-  color: rgba(255, 111, 97, 0.9);
+  color: rgba(15, 76, 129, 0.9);
 }
 
 #canvas {
@@ -1204,7 +1204,7 @@ footer {
   list-style-type: none;
   position: relative;
   display: inline-block;
-  background-color: rgba(255, 111, 97, 0);
+  background-color: rgba(15, 76, 129, 0);
   border: 1px solid rgba(0, 0, 0, 0.1);
   padding: 0.5rem;
   -moz-box-shadow: rgba(0, 0, 0, 0.1) 0 0.5rem 0.5rem 0;
@@ -1411,8 +1411,8 @@ video.fullscreen, #canvasvideo.fullscreen, #canvasshow.fullscreen {
 }
 
 #cameraswitcher.fullscreen .custom-control-input:checked~.custom-control-label::before {
-  border-color: rgba(255, 111, 97, 0.4);
-  background-color: rgba(255, 111, 97, 0.1);
+  border-color: rgba(15, 76, 129, 0.4);
+  background-color: rgba(15, 76, 129, 0.1);
 }
 
 #cameraswitcher.fullscreen .custom-control-input:checked~.custom-control-label::after {
@@ -1706,7 +1706,7 @@ button.xclose {
   display: inline-block;
   letter-spacing: 12px;
   text-transform: uppercase;
-  color: rgba(255, 111, 97, 1.0);
+  color: rgba(15, 76, 129, 1.0);
   text-shadow: 0px 1px 1px rgba(0, 0, 0, 0.1);
 }
 
@@ -1798,14 +1798,14 @@ button.xclose {
 
 #posenet #my-gui-container ul li input {
   width: 40px;
-  border: 1px solid rgba(255, 111, 97, 0.1);
+  border: 1px solid rgba(15, 76, 129, 0.1);
   padding: 2px 6px;
   background: transparent;
 }
 
 #posenet #my-gui-container ul li input:hover {
-  border: 1px solid rgba(255, 111, 97, 0.2);
-  background: rgba(255, 111, 97, 0.2);
+  border: 1px solid rgba(15, 76, 129, 0.2);
+  background: rgba(15, 76, 129, 0.2);
 }
 
 #sdnmsradius, #sdmaxdetections {
@@ -1944,13 +1944,13 @@ button.xclose {
   z-index: 1;
   width: 1.4rem;
   height: 1.4rem;
-  border: 1px solid rgba(255, 111, 97, 0.1);
+  border: 1px solid rgba(15, 76, 129, 0.1);
   cursor: pointer;
 }
 
 #posenet ul li .c input[type=checkbox]:hover::before {
-  border: 1px solid rgba(255, 111, 97, 0.2);
-  background: rgba(255, 111, 97, 0.2);
+  border: 1px solid rgba(15, 76, 129, 0.2);
+  background: rgba(15, 76, 129, 0.2);
 }
 
 #posenet ul li .c input[type=checkbox]:checked:before {
@@ -1960,7 +1960,7 @@ button.xclose {
   -o-transform: rotate(-45deg);
   transform: rotate(-45deg);
   height: .6rem;
-  border-color: rgba(255, 111, 97, 0.9);
+  border-color: rgba(15, 76, 129, 0.9);
   border-top-style: none;
   border-right-style: none;
 }
@@ -1991,7 +1991,7 @@ button.xclose {
   outline: 0;
   border: 0;
   border-radius: 0;
-  border: 1px solid rgba(255, 111, 97, 0.1);
+  border: 1px solid rgba(15, 76, 129, 0.1);
   background: transparent;
   color: #333;
   appearance: none;
@@ -2003,8 +2003,8 @@ button.xclose {
 }
 #posenet ul li select:hover,
 #posenet ul li select:focus {
-  border: 1px solid rgba(255, 111, 97, 0.2);
-  background: rgba(255, 111, 97, 0.1);
+  border: 1px solid rgba(15, 76, 129, 0.2);
+  background: rgba(15, 76, 129, 0.1);
 }
 #posenet ul li select:disabled {
   opacity: 0.5;
@@ -2019,14 +2019,14 @@ button.xclose {
   pointer-events: none;
   border-style: solid;
   border-width: 8px 5px 0 5px;
-  border-color: rgba(255, 111, 97, 0.1) transparent transparent transparent;
+  border-color: rgba(15, 76, 129, 0.1) transparent transparent transparent;
 }
 #posenet ul li select:hover ~ .select__arrow,
 #posenet ul li select:focus ~ .select__arrow {
-  border-top-color: rgba(255, 111, 97, 0.2);
+  border-top-color: rgba(15, 76, 129, 0.2);
 }
 #posenet ul li select:disabled ~ .select__arrow {
-  border-top-color: rgba(255, 111, 97, 0.1);
+  border-top-color: rgba(15, 76, 129, 0.1);
 }
 
 @media (max-width: 768px) {
@@ -2181,9 +2181,9 @@ button.xclose {
 }
 
 #semanticsegmentation .controls .btn:hover {
-  color: rgba(255, 111, 97, 1.0);
+  color: rgba(15, 76, 129, 1.0);
   background: rgba(213, 213, 213, 0.15) !important;
-  border: 1px rgba(255, 111, 97, 1.0) solid;
+  border: 1px rgba(15, 76, 129, 1.0) solid;
 }
 
 #semanticsegmentation .controls .btn-group .btn, #semanticsegmentation .btn {
@@ -2461,8 +2461,8 @@ button.xclose {
 }
 
 .modal-btn {
-  color: rgba(255, 111, 97, 0.9);
-  border: 1px solid rgba(255, 111, 97, 0.9);
+  color: rgba(15, 76, 129, 0.9);
+  border: 1px solid rgba(15, 76, 129, 0.9);
   background: transparent;
   padding: 6px 16px;
   box-shadow: 0 1px 6px rgba(0, 0, 0, 0.175);
@@ -2471,7 +2471,7 @@ button.xclose {
 
 .modal-btn:hover {
   color: rgba(255, 255, 255, 1.0);
-  background: rgba(255, 111, 97, 1.0);
+  background: rgba(15, 76, 129, 1.0);
 }
 
 .modal-title {
@@ -2501,17 +2501,17 @@ button.xclose {
 .subgraph-btn {
   cursor: pointer;
   display: inline-block;
-  color: rgba(255, 111, 97, 0.9);
-  background-color: rgba(255, 111, 97, 0.1);
-  border-bottom: 1px solid rgba(255, 111, 97, 0.9);
+  color: rgba(15, 76, 129, 0.9);
+  background-color: rgba(15, 76, 129, 0.1);
+  border-bottom: 1px solid rgba(15, 76, 129, 0.9);
   padding: 0px 6px;
   margin: 0 4px 2px 0px;
 }
 
 .subgraph-btn:hover {
   color: rgba(255, 255, 255, 1.0);
-  background-color: rgba(255, 111, 97, 0.8);
-  border: 1px solid rgba(255, 111, 97, 1.0);
+  background-color: rgba(15, 76, 129, 0.8);
+  border: 1px solid rgba(15, 76, 129, 1.0);
 }
 
 .timeline {
@@ -2582,8 +2582,8 @@ button.xclose {
 }
 
 .timeline-panel.tp-wasm {
-  background-color: rgba(255, 111, 97, 1.0);
-  border: 1px solid rgba(255, 111, 97, 0.2);
+  background-color: rgba(15, 76, 129, 1.0);
+  border: 1px solid rgba(15, 76, 129, 0.2);
 }
 
 .timeline-badge .glyphicon {
@@ -2619,7 +2619,7 @@ button.xclose {
 }
 
 .timeline > li > .timeline-panel.tp-wasm:before {
-  border-left: 7px solid rgba(255, 111, 97, 0.05);
+  border-left: 7px solid rgba(15, 76, 129, 0.05);
 }
 
 .timeline > li > .timeline-panel.tp-webgl:before {
@@ -2672,7 +2672,7 @@ button.xclose {
 }
 
 .timeline-badge.tb-wasm {
-  color: rgba(255, 111, 97, 1.0);
+  color: rgba(15, 76, 129, 1.0);
 }
 
 .tp-webnn .timeline-body > p {
@@ -2704,7 +2704,7 @@ button.xclose {
 
 /*
   color scheme:
-  rgba(255, 111, 97, 1.0);
+  rgba(15, 76, 129, 1.0);
   rgba(73, 193, 100, 1.0);
   rgba(25, 190, 225, 1.0)
   rgba(255, 174, 91, 1.0)
@@ -2732,8 +2732,8 @@ button.xclose {
 }
 
 .custom-control-input:checked~.custom-control-label::before {
-  border-color: rgba(255, 111, 97, 1.0);
-  background-color: rgba(255, 111, 97, 1.0);
+  border-color: rgba(15, 76, 129, 1.0);
+  background-color: rgba(15, 76, 129, 1.0);
 }
 
 #trademark {
@@ -2873,7 +2873,7 @@ button.xclose {
   padding: 0px 6px 0px 6px !important;
   box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.2);
   text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.5);
-  background: linear-gradient(to bottom right, rgba(255, 213, 188, 1.0), rgba(255, 110, 97, 1.0));
+  background: linear-gradient(to bottom right, rgba(15, 76, 129, 0.6), rgba(15, 76, 129, 1.0));
 }
 
 #controller {
@@ -2898,8 +2898,8 @@ button.xclose {
 }
 
 #controller div:current {
-  color: rgba(255, 110, 97, 1.0);
-  border: 1px solid rgba(255, 110, 97, 1.0);
+  color: rgba(15, 76, 129, 1.0);
+  border: 1px solid rgba(15, 76, 129, 1.0);
 }
 
 #speechcommands #controller svg {
@@ -2915,7 +2915,7 @@ button.xclose {
 }
 
 #speechcommands #controller svg.current {
-  color: rgba(255, 110, 97, 1.0);
+  color: rgba(15, 76, 129, 1.0);
 }
 
 #speechcommands #record {
@@ -2958,18 +2958,18 @@ button.xclose {
   display: block;
   margin: 0 auto;
   width: 50px;
-  color: rgba(255, 110, 97, 1.0);
+  color: rgba(15, 76, 129, 1.0);
 }
 
 #speechcommands #scresult #rtext {
-  background-color: rgba(255, 110, 97, 0.9);
+  background-color: rgba(15, 76, 129, 0.9);
   color: rgba(255, 255, 255, 0.9);
   margin: 0.5rem auto;
   width: 80px;
 }
 
 #speechcommands #scresult #rtext:hover {
-  background-color: rgba(255, 110, 97, 1.0);
+  background-color: rgba(15, 76, 129, 1.0);
   color: rgba(255, 255, 255, 1.0);
 }
 

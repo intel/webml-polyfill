@@ -842,6 +842,20 @@ const modelZoo = {
     },
     intro: 'This is a lightweight network for the face re-identification scenario that is\
       based on MobileNet V2. The model produces feature vectors which should be close in cosine distance for similar faces and far for different faces.'
+  }],
+
+  speechRecognitionModels: [{
+    modelName: 'wsj_dnn5b (OpenVINO)',
+    format: 'OpenVINO',
+    modelId: 'wsj_dnn5b_openvino',
+    modelSize: '115.6MB',
+    inputSize: [1, 440],
+    outputSize: [1, 3425],
+    modelFile: '../speech_recognition/model/wsj_dnn5b.bin',
+    arkFile: '../speech_recognition/ark/dev93.ark',
+    scoreFile: '../speech_recognition/ark/dev93_scores.ark',
+    intro: 'This model was trained by the Kaldi s5 recipe and the Kaldi Nnet (nnet1) framework and using the Wall Street Journal corpus.',
+    paperUrl: 'https://docs.openvinotoolkit.org/latest/_inference_engine_samples_speech_sample_README.html'
   }]
 };
 
