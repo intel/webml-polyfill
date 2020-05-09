@@ -35,7 +35,7 @@ class ObjectDetectionRunner extends WebNNRunner {
     }
   };
 
-  _passOutputTensor = (output) => {
+  _getOutputTensor = (output) => {
     if (this._currentModelInfo.category === 'SSD') {
       output.outputBoxTensor = this._outputBoxTensor;
       output.outputClassScoresTensor = this._outputClassScoresTensor;

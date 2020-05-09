@@ -57,7 +57,8 @@ class SkeletonDetectionRunner {
         && modelConfig.outputStride === this._modelConfig.outputStride
         && modelConfig.scaleFactor === this._modelConfig.scaleFactor
         && modelConfig.useAtrousConv === this._modelConfig.useAtrousConv) {
-      return 'INITIALIZED';
+      console.log('Model already loaded and was compiled.');
+      return;
     }
 
     this._setInitializedFlag(false);

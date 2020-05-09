@@ -38,7 +38,7 @@ class WebNNRunner extends BaseRunner {
 
   /**
    * This method is to set '_supportedOps'.
-   * @param ops: A string for supported ops.
+   * @param ops: An array object for supported ops.
    */
   setSupportedOps = (ops) => {
     this._supportedOps = ops;
@@ -46,7 +46,7 @@ class WebNNRunner extends BaseRunner {
 
   /**
    * This method is to set '_rawModel'.
-   * @param model: A string for model.
+   * @param model: An object for model.
    */
   _setRawModel = (model) => {
     this._rawModel = model;
@@ -54,7 +54,7 @@ class WebNNRunner extends BaseRunner {
 
   /**
    * This method is to set '_subgraphsSummary'.
-   * @param summary: A string for summary.
+   * @param summary: An array object for summary.
    */
   _setSubgraphsSummary = (summary) => {
     this._subgraphsSummary = summary;
@@ -62,7 +62,7 @@ class WebNNRunner extends BaseRunner {
 
   /**
    * This method is to set '_modelRequiredOps'.
-   * @param ops: A string for required ops of model.
+   * @param ops: An array object for required ops of model.
    */
   _setModelRequiredOps = (ops) => {
     this._modelRequiredOps = ops;
@@ -70,7 +70,7 @@ class WebNNRunner extends BaseRunner {
 
   /**
    * This method is to set '_deQuantizeParams'.
-   * @param params: A string for deQuantize params.
+   * @param params: An array object for deQuantize params.
    */
   _setDeQuantizeParams = (params) => {
     this._deQuantizeParams = params;
@@ -79,10 +79,8 @@ class WebNNRunner extends BaseRunner {
   /**
    * This method is to load model file with specified url.
    * @param url: A string for model file url.
-   * @returns {string} This returns status of load model file, ['ERROR' | 'SUCCESS'].
    */
   _loadModelFile = async (url) => {
-    let status = 'ERROR';
     let rawModel = null;
 
     if (url !== undefined) {
@@ -93,7 +91,6 @@ class WebNNRunner extends BaseRunner {
           const flatBuffer = new flatbuffers.ByteBuffer(bytes);
           rawModel = tflite.Model.getRootAsModel(flatBuffer);
           rawModel._rawFormat = 'TFLITE';
-          status = 'SUCCESS'
           printTfLiteModel(rawModel);
           break;
         case 'onnx':
@@ -103,7 +100,6 @@ class WebNNRunner extends BaseRunner {
           }
           rawModel = onnx.ModelProto.decode(bytes);
           rawModel._rawFormat = 'ONNX';
-          status = 'SUCCESS'
           printOnnxModel(rawModel);
           break;
         case 'bin':
@@ -112,7 +108,6 @@ class WebNNRunner extends BaseRunner {
           const weightsBuffer = bytes.buffer;
           rawModel = new OpenVINOModel(networkText, weightsBuffer);
           rawModel._rawFormat = 'OPENVINO';
-          status = 'SUCCESS';
           break;
         default:
           throw new Error(`Unrecognized model format, support TFLite | ONNX | OpenVINO model`);
@@ -123,17 +118,12 @@ class WebNNRunner extends BaseRunner {
 
     this._setRawModel(rawModel);
     this._setLoadedFlag(true);
-    return status;
   };
 
-  /**
-   * This method is to load model with given model info.
-   * @param modelInfo: A string for model info.
-   * @returns {string} This returns 'LOADED' status if model already loaded.
-   */
   loadModel = async (modelInfo) => {
     if (this._bLoaded && this._currentModelInfo.modelFile === modelInfo.modelFile) {
-      return 'LOADED';
+      console.log(`${this._currentModelInfo.modelFile} already loaded.`);
+      return;
     }
 
     // reset all states
@@ -157,7 +147,7 @@ class WebNNRunner extends BaseRunner {
 
   /**
    * This method is to get typedArray type for inputTensor.
-   * @returns {object} This returns Uint8Array or Float32Array object or other typedArray type if inherited.
+   * @returns {function} This returns Uint8Array or Float32Array function or other typedArray function if inherited.
    */
   _getInputTensorTypedArray = () => {
     // Override by inherited if needed
@@ -175,7 +165,7 @@ class WebNNRunner extends BaseRunner {
 
   /**
    * This method is to typedArray type for outputTensor.
-   * @returns {object} This returns Uint8Array or Float32Array object or other typedArray type if inherited.
+   * @returns {function} This returns Uint8Array or Float32Array function or other typedArray function if inherited.
    */
   _getOutputTensorTypedArray = () => {
     // Override by inherited if needed
@@ -198,20 +188,13 @@ class WebNNRunner extends BaseRunner {
     }
   };
 
-  /**
-   * This method is to compile a machine learning model by backend and prefer.
-   * @param options: A string has backend and prefer info.
-   * @returns {string} This returns a string for status of compilation model.
-   */
   compileModel = async (options) => {
     const backend = options.backend;
     const prefer = options.prefer;
-    if (!this._bLoaded) {
-      return 'NOT_LOADED';
-    }
 
     if (this._bInitialized && backend === this._currentBackend && prefer === this._currentPrefer) {
-      return 'INITIALIZED';
+      console.log('Model was already compiled.');
+      return;
     }
 
     this._setBackend(backend);
@@ -253,7 +236,7 @@ class WebNNRunner extends BaseRunner {
     }
 
     if (this._currentBackend !== 'WebML' && model._compilation && model._compilation._preparedModel) {
-       this._setSubgraphsSummary(model._compilation._preparedModel.getSubgraphsSummary());
+      this._setSubgraphsSummary(model._compilation._preparedModel.getSubgraphsSummary());
     }
 
     // Warm up model
@@ -264,35 +247,9 @@ class WebNNRunner extends BaseRunner {
     console.log(`Warm up Time: ${computeDelta.toFixed(2)} ms`);
 
     this._setInitializedFlag(true);
-    return 'SUCCESS';
   };
 
-  /**
-   * This method is to do inference with input src (HTML [<img> | <video> | <audio>] element).
-   * @param src: An object for HTML [<img> | <video> | <audio>] element.
-   * @param options: A string to get inputTensor. Details:
-   * options = {
-   *   // inputSize was configed in modelZoo.js, inputSize = [h, w, c] or [1, size] for audio example.
-   *   inputSize: inputSize,
-   *   // preOptions was also configed in modelZoo.js,
-   *   // preOptions= {} or {mean: [number, number, number, number],std: [number, number, number, number]}
-   *   preOptions: preOptions,
-   *   imageChannels: 4,
-   *   drawOptions: { // optional, drawOptions is used for CanvasRenderingContext2D.drawImage() method.
-   *     sx: sx, // the x-axis coordinate of the top left corner of sub-retangle of the source image
-   *     sy: sy, // the y-axis coordinate of the top left corner of sub-retangle of the source image
-   *     sWidth: sWidth, // the width of the sub-retangle of the source image
-   *     sHeight: sHeight, // the height of the sub-retangle of the source image
-   *     dWidth: dWidth, // the width to draw the image in the detination canvas
-   *     dHeight: dWidth, // the height to draw the image in the detination canvas
-   *   },
-   *   scaledFlag: true, // optional, need scaled the width and height of element to get need inputTensor
-   * };
-   * @returns {string} This returns a string for inference status.
-   */
   run = async (src, options) => {
-    let status = 'ERROR';
-
     if (src.tagName === 'AUDIO') {
       await getTensorArrayByAudio(src, this._inputTensor, options);
     } else {
@@ -300,12 +257,11 @@ class WebNNRunner extends BaseRunner {
     }
 
     const start = performance.now();
-    status = await this._model.compute(this._inputTensor, this._outputTensor);
+    let status = await this._model.compute(this._inputTensor, this._outputTensor);
     const delta = performance.now() - start;
     this._setInferenceTime(delta);
     console.log(`Computed Status: [${status}]`);
     console.log(`Compute Time: [${delta} ms]`);
-    return status;
   };
 
   /**
@@ -336,7 +292,7 @@ class WebNNRunner extends BaseRunner {
    * This method is to output inference tensor for post processing by example side.
    * @param output: An object for output which will be updated with output tensor info by this method.
    */
-  _passOutputTensor = (output) => {
+  _getOutputTensor = (output) => {
     // Override by inherited if needed
     output.outputTensor = this._outputTensor[0];
   };

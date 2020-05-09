@@ -122,7 +122,6 @@ class BaseRunner {
   };
 
   _loadModelFile = async (url) => {
-    let status = 'ERROR';
     let rawModel = null;
 
     if (url !== undefined) {
@@ -133,7 +132,6 @@ class BaseRunner {
           const flatBuffer = new flatbuffers.ByteBuffer(bytes);
           rawModel = tflite.Model.getRootAsModel(flatBuffer);
           rawModel._rawFormat = 'TFLITE';
-          status = 'SUCCESS'
           printTfLiteModel(rawModel);
           break;
         case 'onnx':
@@ -143,7 +141,6 @@ class BaseRunner {
           }
           rawModel = onnx.ModelProto.decode(bytes);
           rawModel._rawFormat = 'ONNX';
-          status = 'SUCCESS'
           printOnnxModel(rawModel);
           break;
         case 'bin':
@@ -152,7 +149,6 @@ class BaseRunner {
           const weightsBuffer = bytes.buffer;
           rawModel = new OpenVINOModel(networkText, weightsBuffer);
           rawModel._rawFormat = 'OPENVINO';
-          status = 'SUCCESS';
           break;
         default:
           throw new Error(`Unrecognized model format, support TFLite | ONNX | OpenVINO model`);
@@ -163,12 +159,12 @@ class BaseRunner {
 
     this._setRawModel(rawModel);
     this._setLoadedFlag(true);
-    return status;
   };
 
   loadModel = async (modelInfo) => {
     if (this._bLoaded && this._currentModelInfo.modelFile === modelInfo.modelFile) {
-      return 'LOADED';
+      console.log(`${this._currentModelInfo.modelFile} already loaded.`);
+      return;
     }
 
     // reset all states
@@ -225,12 +221,9 @@ class BaseRunner {
   };
 
   compileModel = async (backend, prefer) => {
-    if (!this._bLoaded) {
-      return 'NOT_LOADED';
-    }
-
     if (this._bInitialized && backend === this._currentBackend && prefer === this._currentPrefer) {
-      return 'INITIALIZED';
+      console.log('Model was already compiled.');
+      return;
     }
 
     this._setBackend(backend);
@@ -283,21 +276,17 @@ class BaseRunner {
     console.log(`Warm up Time: ${computeDelta.toFixed(2)} ms`);
 
     this._setInitializedFlag(true);
-    return 'SUCCESS';
   };
 
   run = async (src, options) => {
-    let status = 'ERROR';
-
     getTensorArray(src, this._inputTensor, options);
 
     const start = performance.now();
-    status = await this._model.compute(this._inputTensor, this._outputTensor);
+    await this._model.compute(this._inputTensor, this._outputTensor);
     const delta = performance.now() - start;
     this._setInferenceTime(delta);
     console.log(`Computed Status: [${status}]`);
     console.log(`Compute Time: [${delta} ms]`);
-    return status;
   };
 
   getRequiredOps = () => {

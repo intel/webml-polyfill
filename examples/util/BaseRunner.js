@@ -31,7 +31,24 @@ class BaseRunner {
 
   /**
    * This method is to set '_currentModelInfo'.
-   * @param modelInfo: An object for model info.
+   * @param modelInfo: An object for model info which was configed in modeZoo.js.
+   * An example for model info:
+   *   modelInfo = {
+   *     modelName: 'MobileNet v1 (TFLite)',
+   *     format: 'TFLite',
+   *     modelId: 'mobilenet_v1_tflite',
+   *     modelSize: '16.9MB',
+   *     inputSize: [224, 224, 3],
+   *     outputSize: 1001,
+   *     modelFile: '../image_classification/model/mobilenet_v1_1.0_224.tflite',
+   *     labelsFile: '../image_classification/model/labels1001.txt',
+   *     preOptions: {
+   *       mean: [127.5, 127.5, 127.5],
+   *       std: [127.5, 127.5, 127.5],
+   *     },
+   *     intro: 'An efficient Convolutional Neural Networks for Mobile Vision Applications.',
+   *     paperUrl: 'https://arxiv.org/pdf/1704.04861.pdf'
+   *   };
    */
   _setModelInfo = (modelInfo) => {
     this._currentModelInfo = modelInfo
@@ -91,7 +108,7 @@ class BaseRunner {
    * This method is to do loading resource with specified url.
    * @param url: A string for url, such as model file url, label file url, etc..
    * @param handler: A function for progress handler.
-   * @returns This returns a Promise object.
+   * @returns {object} This returns a Promise object.
    */
   _loadURL = async (url, handler = null, isBinary = false) => {
     let _this = this;
@@ -134,6 +151,18 @@ class BaseRunner {
    * This method is to compile model after calling 'loadModel' for doing inference with model.
    * @param options: {object | undefined}, detail explanations see inherited 'compileModel' method.
    */
+
+  /**
+   * This method is to compile a machine learning model.
+   *   Compliation model by WebNN framework needs options paratmeter.
+   *   Compilation model by OpenCV.js framework doesn't need options paratmeter.
+   * @param options: {object | undefined}
+   * An object for options has backend and prefer info.
+   * options = {
+   *   backend: backend, // 'WASM' | 'WebGL' | 'WebML'
+   *   prefer: prefer, // 'fast' | 'sustained' | 'low' | 'ultra_low'
+   * }
+   */
   compileModel = async (options) => {
     // Override by inherited
   };
@@ -143,7 +172,7 @@ class BaseRunner {
    * The id of <img> element is fixed as 'feedElement' in index.html.
    * The id of <video> element or <audio> element is fixed as 'feedMediaElement' in index.html.
    * @param src: An object for HTML [<img> | <video> | <audio>] element.
-   * @param options: An object to get inputTensor. Details:
+   * @param options: An object to get input tensor. Details:
    * options = {
    *   // inputSize was configed in modelZoo.js, inputSize = [h, w, c] or [1, size] for audio example.
    *   inputSize: inputSize,
@@ -161,7 +190,6 @@ class BaseRunner {
    *   },
    *   scaledFlag: true, // optional, need scaled the width and height of element to get need inputTensor
    * };
-   * @returns {string} This returns inference status.
    */
   run = async (src, options) => {
     // Override by inherited
@@ -171,7 +199,7 @@ class BaseRunner {
    * This method is to output inference tensor for post processing by example side.
    * @param output: An object for output which will be updated with output tensor info by this method.
    */
-  _passOutputTensor = (output) => {
+  _getOutputTensor = (output) => {
     // Override by inherited if needed
   };
 
@@ -179,7 +207,7 @@ class BaseRunner {
    * This method is to get inference result including inference time, computed output tensor
    * and relevant info, such as inference time, labels info, output Tensor
    * for post processing by example side after calling 'run' method.
-   * @returns This returns an object for inference result and relevant info.
+   * @returns {object} This returns an object for inference result and relevant info.
    */
   getOutput = () => {
     let output = {
@@ -190,7 +218,7 @@ class BaseRunner {
       output.labels = this._labels;
     }
 
-    this._passOutputTensor(output); // add custom output info
+    this._getOutputTensor(output);
     return output;
   };
 }

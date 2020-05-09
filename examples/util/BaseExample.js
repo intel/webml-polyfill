@@ -9,6 +9,7 @@ class BaseExample extends BaseApp {
     // track and stats serve for 'VIDEO' | 'AUDIO' input
     this._track = null;
     this._stats = new Stats();
+
     this._currentModelInfo = {};
     // _hiddenControlsFlag ('0'/'1') is for UI shows/hides model & backend control
     this._hiddenControlsFlag = '0';
@@ -39,7 +40,7 @@ class BaseExample extends BaseApp {
 
   /**
    * This method is to set '_currentInputType'.
-   * @param inputType: A string for input type.
+   * @param inputType: An object for input type.
    */
   _setInputType = (inputType) => {
     this._currentInputType = inputType;
@@ -55,7 +56,7 @@ class BaseExample extends BaseApp {
 
   /**
    * This method is to set '_track'.
-   * @param track: A string for track.
+   * @param track: An object for track.
    */
   _setTrack = (track) => {
     this._track = track;
@@ -63,7 +64,24 @@ class BaseExample extends BaseApp {
 
   /**
    * This method is to set '_currentModelInfo'.
-   * @param modelInfo: A string for model info.
+   * @param modelInfo: An object for model info which was configed in modeZoo.js.
+   * An example for model info:
+   *   modelInfo = {
+   *     modelName: 'MobileNet v1 (TFLite)',
+   *     format: 'TFLite',
+   *     modelId: 'mobilenet_v1_tflite',
+   *     modelSize: '16.9MB',
+   *     inputSize: [224, 224, 3],
+   *     outputSize: 1001,
+   *     modelFile: '../image_classification/model/mobilenet_v1_1.0_224.tflite',
+   *     labelsFile: '../image_classification/model/labels1001.txt',
+   *     preOptions: {
+   *       mean: [127.5, 127.5, 127.5],
+   *       std: [127.5, 127.5, 127.5],
+   *     },
+   *     intro: 'An efficient Convolutional Neural Networks for Mobile Vision Applications.',
+   *     paperUrl: 'https://arxiv.org/pdf/1704.04861.pdf'
+   *   };
    */
   _setModelInfo = (modelInfo) => {
     this._currentModelInfo = modelInfo;
@@ -104,7 +122,7 @@ class BaseExample extends BaseApp {
 
   /**
    * This method is to update History Entry URL.
-   * @param url: (string|undefined).
+   * @param url: (string | undefined).
    */
   _updateHistoryEntryURL = (url) => {
     let locSearch;
@@ -308,7 +326,6 @@ class BaseExample extends BaseApp {
         this._setFramework(framework);
         this._setRuntimeInitialized(true);
         this._updateHistoryEntryURL();
-        // $('#cam').show();
         this.showDynamicComponents();
         this._modelClickBinding();
         this._runner = null;

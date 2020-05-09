@@ -7,11 +7,8 @@ class OpenCVRunner extends BaseRunner {
   /**
    * This method is to load model file with specified url.
    * @param url: A string for model file url.
-   * @returns {string} This returns status of load model file, ['ERROR' | 'SUCCESS'].
    */
   _loadModelFile = async (url) => {
-    let status = 'ERROR';
-
     if (url !== undefined) {
       const arrayBuffer = await this._loadURL(url, this._progressHandler, true);
       const bytes = new Uint8Array(arrayBuffer);
@@ -26,7 +23,6 @@ class OpenCVRunner extends BaseRunner {
           } catch (e) {
             if (e.errno === 17) {
               console.log(`${this._currentModelInfo.modelId} already exited.`);
-              status = 'SUCCESS'
             } else {
               console.error(e);
             }
@@ -40,17 +36,12 @@ class OpenCVRunner extends BaseRunner {
     }
 
     this._setLoadedFlag(true);
-    return status;
   };
 
-  /**
-   * This method is to load model with given model info.
-   * @param modelInfo: A string for model info.
-   * @returns {string} This returns 'LOADED' status if model already loaded.
-   */
   loadModel = async (modelInfo) => {
     if (this._bLoaded && this._currentModelInfo.modelFile === modelInfo.modelFile) {
-      return 'LOADED';
+      console.log(`${this._currentModelInfo.modelFile} already loaded.`);
+      return;
     }
 
     // reset all states
@@ -64,18 +55,10 @@ class OpenCVRunner extends BaseRunner {
     }
   };
 
-  /**
-   * This method is to compile a machine learning model for OpenCV.js.
-   * @param options: A string, not used.
-   * @returns {string}. This returns status of compilation model.
-   */
   compileModel = (options) => {
-    if (!this._bLoaded) {
-      return 'NOT_LOADED';
-    }
-
     if (this._bInitialized) {
-      return 'INITIALIZED';
+      console.log('Model was already compiled.');
+      return;
     }
 
     this._setInitializedFlag(false);
@@ -91,7 +74,6 @@ class OpenCVRunner extends BaseRunner {
 
     this._setModel(model);
     this._setInitializedFlag(true);
-    return 'SUCCESS';
   };
 
   /**
@@ -102,7 +84,7 @@ class OpenCVRunner extends BaseRunner {
    *   // inputSize was configed in modelZoo.js, inputSize = [h, w, c].
    *   inputSize: inputSize,
    *   // preOptions was also configed in modelZoo.js,
-   *   // preOptions= {mean:[number,number,number,number],std:[number,number,number,number]}
+   *   // preOptions= {mean: [number, number, number, number],std: [number, number, number, number]}
    *   preOptions: preOptions,
    *   imageChannels: 4,
    * };
@@ -135,31 +117,14 @@ class OpenCVRunner extends BaseRunner {
     return input;
   };
 
-  /**
-   * This method is to do inference with input src (HTML [<img> | <video>] element).
-   * @param src: An object for HTML [<img> | <video>] element.
-   * @param options: A string to get inputTensor, will ba a parameter to the method '_getInputTensor'. Details:
-   * options = {
-   *   // inputSize was configed in modelZoo.js, inputSize = [h, w, c].
-   *   inputSize: inputSize,
-   *   // preOptions was also configed in modelZoo.js,
-   *   // preOptions= {mean:[number,number,number,number],std:[number,number,number,number]}
-   *   preOptions: preOptions,
-   *   imageChannels: 4,
-   * };
-   * @returns {string} This returns a string for inference status.
-   */
   run = (src, options) => {
-    let status = 'ERROR';
     let input = this._getInputTensor(src, options);
     this._model.setInput(input);
     const start = performance.now();
     this._output = this._model.forward();
     const delta = performance.now() - start;
     this._setInferenceTime(delta);
-    status = 'SUCCESS';
     console.log(`Computed Status: [${status}]`);
     console.log(`Compute Time: [${delta} ms]`);
-    return status;
   };
 }
