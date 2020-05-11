@@ -282,7 +282,7 @@ class BaseRunner {
     getTensorArray(src, this._inputTensor, options);
 
     const start = performance.now();
-    await this._model.compute(this._inputTensor, this._outputTensor);
+    let status = await this._model.compute(this._inputTensor, this._outputTensor);
     const delta = performance.now() - start;
     this._setInferenceTime(delta);
     console.log(`Computed Status: [${status}]`);
