@@ -114,12 +114,14 @@ class OpenCVRunner extends BaseRunner {
     }
     let inputMat = cv.matFromArray(height, width, cv.CV_32FC3, stddata);
     let input = cv.blobFromImage(inputMat, 1, new cv.Size(sizeW, sizeH), new cv.Scalar(0, 0, 0));
+    inputMat.delete();
     return input;
   };
 
   run = (src, options) => {
     let input = this._getInputTensor(src, options);
     this._model.setInput(input);
+    input.delete();
     const start = performance.now();
     this._output = this._model.forward();
     const delta = performance.now() - start;
