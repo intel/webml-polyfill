@@ -39,12 +39,15 @@ class SpeechCommandsExample extends BaseMircophoneExample {
   _predict = async () => {
     try {
       this._stats.begin();
-      const audioOptions = {
-        inputSize: this._currentModelInfo.inputSize,
-        sampleRate: this._currentModelInfo.sampleRate,
-        mfccsOptions: this._currentModelInfo.mfccsOptions,
+      const input = {
+        src: this._currentInputElement,
+        options: {
+          inputSize: this._currentModelInfo.inputSize,
+          sampleRate: this._currentModelInfo.sampleRate,
+          mfccsOptions: this._currentModelInfo.mfccsOptions,
+        },
       };
-      await this._runner.run(this._currentInputElement, audioOptions);
+      await this._runner.run(input);
       this._postProcess();
       this._stats.end();
     } catch (e) {
@@ -87,7 +90,7 @@ class SpeechCommandsExample extends BaseMircophoneExample {
 
   _processExtra = (output) => {
     const deQuantizeParams = this._runner.getDeQuantizeParams();
-    const outputTensor = postOutputTensorAudio(output.outputTensor);
+    const outputTensor = postOutputTensorAudio(output.tensor);
     const labelClasses = getTopClasses(outputTensor, output.labels, 3, deQuantizeParams);
     labelClasses.forEach((c, i) => {
       console.log(`\tlabel: ${c.label}, probability: ${c.prob}%`);

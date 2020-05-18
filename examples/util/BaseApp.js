@@ -29,32 +29,28 @@ class BaseApp {
     this._currentPrefer = prefer;
   };
 
-  _getRunner = () => {
-    // Override by inherited
-  };
+  /** @override */
+  _getRunner = () => {};
 
-  _loadModel = async () => {
-    // Override by inherited
-  };
+  /** @override */
+  _loadModel = async () => {};
 
-  _compileModel = async () => {
-    // Override by inherited
-  };
+  /** @override */
+  _compileModel = async () => {};
 
-  _predict = async () => {
-    // Override by inherited
-  };
+  /** @override */
+  _predict = async () => {};
 
-  _postProcess = () => {
-    // Override by inherited
-  };
+  /** @override */
+  _postProcess = () => {};
 
+  /** @override */
   UI = () => {
-    // Override by inherited
     // 1._setInputElement
     // 2.ready for runner: _setModelId -> _setBackend -> _setPrefer
   };
 
+  /** @override */
   main = async () => {
     // Override by inherited
     // _getRunner -> _loadModel -> _compileModel -> _predict -> _postProcess

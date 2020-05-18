@@ -193,10 +193,7 @@ class FaceRecognitionExample extends BaseCameraExample {
   };
 
   _compileModel = async () => {
-    let options = {
-      backend: this._currentBackend,
-      prefer: this._currentPrefer,
-    };
+    let options = this._getCompileOptions();
     await this._runner.compileModel(options);
     await this._coRunner.compileModel(options);
   };
@@ -218,22 +215,25 @@ class FaceRecognitionExample extends BaseCameraExample {
     let inferenceTime = 0.0;
     let strokedRects = [];
     let embeddings = [];
-    const fdDrawOptions = {
-      inputSize: this._currentModelInfo.inputSize,
-      preOptions: this._currentModelInfo.preOptions,
-      imageChannels: 4,
+    const fdInput = {
+      src: element,
+      options: {
+        inputSize: this._currentModelInfo.inputSize,
+        preOptions: this._currentModelInfo.preOptions,
+        imageChannels: 4,
+      },
     };
     let fdOutput = null;
     let frOutput = null;
-    await this._runner.run(element, fdDrawOptions);
+    await this._runner.run(fdInput);
     fdOutput = this._runner.getOutput();
     inferenceTime += parseFloat(fdOutput.inferenceTime);
     const height = element.height
     const width = element.width;
     if (this._currentModelInfo.category === 'SSD') {
       let anchors = generateAnchors({});
-      decodeOutputBoxTensor({}, fdOutput.outputBoxTensor, anchors);
-      let [totalDetections, boxesList, scoresList, classesList] = NMS({ num_classes: 2 }, fdOutput.outputBoxTensor, fdOutput.outputClassScoresTensor);
+      decodeOutputBoxTensor({}, fdOutput.tensor.outputBoxTensor, anchors);
+      let [totalDetections, boxesList, scoresList, classesList] = NMS({ num_classes: 2 }, fdOutput.tensor.outputBoxTensor, fdOutput.tensor.outputClassScoresTensor);
       boxesList = cropSSDBox(element, totalDetections, boxesList, this._currentModelInfo.margin);
       for (let i = 0; i < totalDetections; ++i) {
         let [ymin, xmin, ymax, xmax] = boxesList[i];
@@ -244,27 +244,30 @@ class FaceRecognitionExample extends BaseCameraExample {
         const prob = 1 / (1 + Math.exp(-scoresList[i]));
         const rect = [xmin, ymin, xmax - xmin, ymax - ymin, prob];
         strokedRects.push(rect);
-        const frDrawOptions = {
-          inputSize: this._currentCoModelInfo.inputSize,
-          preOptions: this._currentCoModelInfo.preOptions,
-          imageChannels: 4,
-          drawOptions: {
-            sx: xmin,
-            sy: ymin,
-            sWidth: rect[2],
-            sHeight: rect[3],
-            dWidth: this._currentCoModelInfo.inputSize[1],
-            dHeight: this._currentCoModelInfo.inputSize[0],
+        const frSSDInput = {
+          src: element,
+          options: {
+            inputSize: this._currentCoModelInfo.inputSize,
+            preOptions: this._currentCoModelInfo.preOptions,
+            imageChannels: 4,
+            drawOptions: {
+              sx: xmin,
+              sy: ymin,
+              sWidth: rect[2],
+              sHeight: rect[3],
+              dWidth: this._currentCoModelInfo.inputSize[1],
+              dHeight: this._currentCoModelInfo.inputSize[0],
+            },
           },
         };
-        await this._coRunner.run(element, frDrawOptions);
+        await this._coRunner.run(frSSDInput);
         frOutput = this._coRunner.getOutput();
         inferenceTime += parseFloat(frOutput.inferenceTime);
-        let [...normEmbedding] = Float32Array.from(frOutput.outputTensor);
+        let [...normEmbedding] = Float32Array.from(frOutput.tensor);
         embeddings.push(normEmbedding);
       }
     } else {
-      let decode_out = decodeYOLOv2({ nb_class: 1 }, fdOutput.outputTensor, this._currentModelInfo.anchors);
+      let decode_out = decodeYOLOv2({ nb_class: 1 }, fdOutput.tensor, this._currentModelInfo.anchors);
       let outputBoxes = getBoxes(decode_out, this._currentModelInfo.margin);
       for (let i = 0; i < outputBoxes.length; ++i) {
         let [xmin, xmax, ymin, ymax, prob] = outputBoxes[i].slice(1, 6);
@@ -274,23 +277,26 @@ class FaceRecognitionExample extends BaseCameraExample {
         ymax = Math.min(1, ymax) * height;
         let rect = [xmin, ymin, xmax - xmin, ymax - ymin, prob];
         strokedRects.push(rect);
-        const drawOptions = {
-          inputSize: this._currentCoModelInfo.inputSize,
-          preOptions: this._currentCoModelInfo.preOptions,
-          imageChannels: 4,
-          drawOptions: {
-            sx: xmin,
-            sy: ymin,
-            sWidth: rect[2],
-            sHeight: rect[3],
-            dWidth: this._currentCoModelInfo.inputSize[1],
-            dHeight: this._currentCoModelInfo.inputSize[0],
+        const frYOLOInput = {
+          src: element,
+          options: {
+            inputSize: this._currentCoModelInfo.inputSize,
+            preOptions: this._currentCoModelInfo.preOptions,
+            imageChannels: 4,
+            drawOptions: {
+              sx: xmin,
+              sy: ymin,
+              sWidth: rect[2],
+              sHeight: rect[3],
+              dWidth: this._currentCoModelInfo.inputSize[1],
+              dHeight: this._currentCoModelInfo.inputSize[0],
+            },
           },
         };
-        await this._coRunner.run(element, drawOptions);
+        await this._coRunner.run(frYOLOInput);
         let frOutput = this._coRunner.getOutput();
         inferenceTime += parseFloat(frOutput.inferenceTime);
-        let [...normEmbedding] = Float32Array.from(frOutput.outputTensor);
+        let [...normEmbedding] = Float32Array.from(frOutput.tensor);
         embeddings.push(normEmbedding);
       }
     }

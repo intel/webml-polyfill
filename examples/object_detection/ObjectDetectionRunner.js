@@ -35,17 +35,21 @@ class ObjectDetectionRunner extends WebNNRunner {
     }
   };
 
-  _getOutputTensor = (output) => {
+  _getOutputTensor = () => {
+    let outputTensor = {};
+
     if (this._currentModelInfo.category === 'SSD') {
-      output.outputBoxTensor = this._outputBoxTensor;
-      output.outputClassScoresTensor = this._outputClassScoresTensor;
+      outputTensor.outputBoxTensor = this._outputBoxTensor;
+      outputTensor.outputClassScoresTensor = this._outputClassScoresTensor;
       if (this._currentModelInfo.isQuantized) {
-        output.deQuantizedOutputBoxTensor = this._deQuantizedOutputBoxTensor;
-        output.deQuantizedOutputClassScoresTensor = this._deQuantizedOutputClassScoresTensor;
+        outputTensor.deQuantizedOutputBoxTensor = this._deQuantizedOutputBoxTensor;
+        outputTensor.deQuantizedOutputClassScoresTensor = this._deQuantizedOutputClassScoresTensor;
       }
     } else {
       // YOLO models
-      output.outputTensor = this._outputTensor[0];
+      outputTensor = this._outputTensor[0];
     }
+
+    return outputTensor;
   };
 }

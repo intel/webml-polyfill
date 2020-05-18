@@ -28,10 +28,10 @@ class ImageClassificationExample extends BaseCameraExample {
     switch (this._currentFramework) {
       case 'WebNN':
         const deQuantizeParams =  this._runner.getDeQuantizeParams();
-        labelClasses = getTopClasses(output.outputTensor, output.labels, 3, deQuantizeParams);
+        labelClasses = getTopClasses(output.tensor, output.labels, 3, deQuantizeParams);
         break;
       case 'OpenCV.js':
-        labelClasses = getTopClasses(output.outputTensor, output.labels, 3);
+        labelClasses = getTopClasses(output.tensor, output.labels, 3);
         break;
     }
     $('#inferenceresult').show();

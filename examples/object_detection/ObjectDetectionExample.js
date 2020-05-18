@@ -26,17 +26,18 @@ class ObjectDetectionExample extends BaseCameraExample {
     };
 
     if (modelInfo.category === 'SSD') {
+      const tensorDic = output.tensor;
       let outputBoxTensor;
       let outputClassScoresTensor;
       if (modelInfo.isQuantized) {
-        [outputBoxTensor, outputClassScoresTensor] = deQuantizeOutputTensor(output.outputBoxTensor,
-                                                       output.outputClassScoresTensor,
-                                                       output.deQuantizedOutputBoxTensor,
-                                                       output.deQuantizedOutputClassScoresTensor,
+        [outputBoxTensor, outputClassScoresTensor] = deQuantizeOutputTensor(tensorDic.outputBoxTensor,
+                                                       tensorDic.outputClassScoresTensor,
+                                                       tensorDic.deQuantizedOutputBoxTensor,
+                                                       tensorDic.deQuantizedOutputClassScoresTensor,
                                                        deQuantizeParams, options);
       } else {
-        outputBoxTensor = output.outputBoxTensor;
-        outputClassScoresTensor = output.outputClassScoresTensor;
+        outputBoxTensor = tensorDic.outputBoxTensor;
+        outputClassScoresTensor = tensorDic.outputClassScoresTensor;
       }
       let anchors = generateAnchors({});
       decodeOutputBoxTensor({}, outputBoxTensor, anchors);
@@ -47,7 +48,7 @@ class ObjectDetectionExample extends BaseCameraExample {
         boxesList, scoresList, classesList, output.labels);
     } else {
       let decode_out = decodeYOLOv2({ nb_class: modelInfo.numClasses },
-                         output.outputTensor, modelInfo.anchors);
+                         output.tensor, modelInfo.anchors);
       let boxes = getBoxes(decode_out, modelInfo.margin);
       drawBoxes(this._currentInputElement, canvasShowElement, boxes, output.labels);
     }

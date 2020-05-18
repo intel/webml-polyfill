@@ -3,6 +3,7 @@ class WebNNRunner extends BaseRunner {
     super();
     this._currentBackend = null;
     this._currentPrefer = null;
+    this._inputTensor = [];
     this._outputTensor = [];
     this._rawModel = null;
     this._subgraphsSummary = [];
@@ -120,31 +121,6 @@ class WebNNRunner extends BaseRunner {
     this._setLoadedFlag(true);
   };
 
-  loadModel = async (modelInfo) => {
-    if (this._bLoaded && this._currentModelInfo.modelFile === modelInfo.modelFile) {
-      console.log(`${this._currentModelInfo.modelFile} already loaded.`);
-      return;
-    }
-
-    // reset all states
-    this._setLoadedFlag(false);
-    this._setInitializedFlag(false);
-    this._setBackend(null);
-    this._setPrefer(null);
-    this._setModelInfo(modelInfo);
-    this._setModelRequiredOps(new Set());
-    this._setDeQuantizeParams([]);
-    this._setSubgraphsSummary([]);
-    this._initInputTensor();
-    this._initOutputTensor();
-
-    await this._loadModelFile(this._currentModelInfo.modelFile);
-
-    if (this._currentModelInfo.labelsFile != null) {
-      await this._loadLabelsFile(this._currentModelInfo.labelsFile);
-    }
-  };
-
   /**
    * This method is to get typedArray type for inputTensor.
    * @returns {function} This returns Uint8Array or Float32Array function or other typedArray function if inherited.
@@ -188,27 +164,39 @@ class WebNNRunner extends BaseRunner {
     }
   };
 
-  compileModel = async (options) => {
+  _doInitialization = (modelInfo) => {
+    this._setLoadedFlag(false);
+    this._setInitializedFlag(false);
+    this._setBackend(null);
+    this._setPrefer(null);
+    this._setModelRequiredOps(new Set());
+    this._setDeQuantizeParams([]);
+    this._setSubgraphsSummary([]);
+    this._setModelInfo(modelInfo);
+    this._initInputTensor();
+    this._initOutputTensor();
+  };
+
+  _checkInitializedCompilation = (options) => {
+    return this._bInitialized && this._currentBackend === options.backend && this._currentPrefer === options.prefer;
+  }
+
+  _doCompile = async (options) => {
+    let model = null;
     const backend = options.backend;
     const prefer = options.prefer;
 
-    if (this._bInitialized && backend === this._currentBackend && prefer === this._currentPrefer) {
-      console.log('Model was already compiled.');
-      return;
-    }
-
     this._setBackend(backend);
     this._setPrefer(prefer);
-    this._setInitializedFlag(false);
+
     const postOptions = this._currentModelInfo.postOptions || {};
     const configs = {
       rawModel: this._rawModel,
       backend: this._currentBackend,
       prefer: this._currentPrefer,
       softmax: postOptions.softmax || false,
+      inputScaleFactor: options.scaleFactor, // for GNA
     };
-
-    let model = null;
 
     switch (this._rawModel._rawFormat) {
       case 'TFLITE':
@@ -228,40 +216,217 @@ class WebNNRunner extends BaseRunner {
     this._model.setSupportedOps(this._supportedOps);
     this._model.setEagerMode(this._bEagerMode);
     await this._model.createCompiledModel();
+  };
 
+  _saveDetails = () => {
     this._setModelRequiredOps(this._model.getRequiredOps());
 
     if (this._currentModelInfo.isQuantized) {
-      this._setDeQuantizeParams(model._deQuantizeParams);
+      this._setDeQuantizeParams(this._model._deQuantizeParams);
     }
 
-    if (this._currentBackend !== 'WebML' && model._compilation && model._compilation._preparedModel) {
-      this._setSubgraphsSummary(model._compilation._preparedModel.getSubgraphsSummary());
+    if (this._currentBackend !== 'WebML' && this._model._compilation && this._model._compilation._preparedModel) {
+      this._setSubgraphsSummary(this._model._compilation._preparedModel.getSubgraphsSummary());
     }
+  };
 
+  _doWarmup = async () => {
     // Warm up model
     const computeStart = performance.now();
     const computeStatus = await this._model.compute(this._inputTensor, this._outputTensor);
     const computeDelta = performance.now() - computeStart;
     console.log(`Computed Status: [${computeStatus}]`);
     console.log(`Warm up Time: ${computeDelta.toFixed(2)} ms`);
-
-    this._setInitializedFlag(true);
   };
 
-  run = async (src, options) => {
-    if (src.tagName === 'AUDIO') {
-      await getTensorArrayByAudio(src, this._inputTensor, options);
+  _getTensor = (input) => {
+    const image = input.src;
+    const options = input.options;
+    let tensor = this._inputTensor[0];
+
+    image.width = image.videoWidth || image.naturalWidth;
+    image.height = image.videoHeight || image.naturalHeight;
+
+    const [height, width, channels] = options.inputSize;
+    const preOptions = options.preOptions || {};
+    const mean = preOptions.mean || [0, 0, 0, 0];
+    const std = preOptions.std || [1, 1, 1, 1];
+    const normlizationFlag = preOptions.norm || false;
+    const channelScheme = preOptions.channelScheme || 'RGB';
+    const imageChannels = options.imageChannels || 4; // RGBA
+    const drawOptions = options.drawOptions;
+
+    let canvasElement = document.createElement('canvas');
+    canvasElement.width = width;
+    canvasElement.height = height;
+    let canvasContext = canvasElement.getContext('2d');
+
+    if (drawOptions) {
+      canvasContext.drawImage(image, drawOptions.sx, drawOptions.sy, drawOptions.sWidth, drawOptions.sHeight,
+        0, 0, drawOptions.dWidth, drawOptions.dHeight);
     } else {
-      getTensorArray(src, this._inputTensor, options);
+      if (options.scaledFlag) {
+        const resizeRatio = Math.max(Math.max(image.width, image.height) / width, 1);
+        const scaledWidth = Math.floor(image.width / resizeRatio);
+        const scaledHeight = Math.floor(image.height / resizeRatio);
+        canvasContext.drawImage(image, 0, 0, scaledWidth, scaledHeight);
+      } else {
+        canvasContext.drawImage(image, 0, 0, width, height);
+      }
     }
 
-    const start = performance.now();
+    let pixels = canvasContext.getImageData(0, 0, width, height).data;
+
+    if (normlizationFlag) {
+      pixels = new Float32Array(pixels).map(p => p / 255);
+    }
+
+    if (channelScheme === 'RGB') {
+      if (channels > 1) {
+        for (let c = 0; c < channels; ++c) {
+          for (let h = 0; h < height; ++h) {
+            for (let w = 0; w < width; ++w) {
+              let value = pixels[h * width * imageChannels + w * imageChannels + c];
+              tensor[h * width * channels + w * channels + c] = (value - mean[c]) / std[c];
+            }
+          }
+        }
+      } else if (channels === 1) {
+        for (let c = 0; c < channels; ++c) {
+          for (let h = 0; h < height; ++h) {
+            for (let w = 0; w < width; ++w) {
+              let index = h * width * imageChannels + w * imageChannels + c;
+              let value = (pixels[index] + pixels[index + 1] + pixels[index + 2]) / 3;
+              tensor[h * width * channels + w * channels + c] = (value - mean[c]) / std[c];
+            }
+          }
+        }
+      }
+    } else if (channelScheme === 'BGR') {
+      for (let c = 0; c < channels; ++c) {
+        for (let h = 0; h < height; ++h) {
+          for (let w = 0; w < width; ++w) {
+            let value = pixels[h * width * imageChannels + w * imageChannels + (channels - c - 1)];
+            tensor[h * width * channels + w * channels + c] = (value - mean[c]) / std[c];
+          }
+        }
+      }
+    } else {
+      throw new Error(`Unsupport '${channelScheme}' Color Channel Scheme `);
+    }
+  };
+
+  _downsampleAudioBuffer = (buffer, rate, baseRate) => {
+    if (rate == baseRate) {
+      return buffer;
+    }
+
+    if (baseRate > rate) {
+      throw "downsampling rate show be smaller than original sample rate";
+    }
+
+    const sampleRateRatio = Math.round(rate / baseRate);
+    const newLength = Math.round(buffer.length / sampleRateRatio);
+    let abuffer = new Float32Array(newLength);
+    let offsetResult = 0;
+    let offsetBuffer = 0;
+
+    while (offsetResult < abuffer.length) {
+      let nextOffsetBuffer = Math.round((offsetResult + 1) * sampleRateRatio);
+      let accum = 0;
+      let count = 0;
+      for (let i = offsetBuffer; i < nextOffsetBuffer && i < buffer.length; i++) {
+        accum += buffer[i];
+        count++;
+      }
+      abuffer[offsetResult] = accum / count;
+      offsetResult++;
+      offsetBuffer = nextOffsetBuffer;
+    }
+    return abuffer;
+  };
+
+  _getAudioMfccs = (pcm, sampleRate, windowSize, windowStride,
+                    upperFrequencyLimit = 4000,
+                    lowerFrequencyLimit = 20,
+                    filterbankChannelCount = 40,
+                    dctCoefficientCount = 13) => {
+    let pcmPtr = Module._malloc(8 * pcm.length);
+    let lenPtr = Module._malloc(4);
+
+    for (let i = 0; i < pcm.length; i++) {
+      Module.HEAPF64[pcmPtr / 8 + i] = pcm[i];
+    };
+
+    Module.HEAP32[lenPtr / 4] = pcm.length;
+    let tfMfccs = Module.cwrap('tf_mfccs', 'number',
+          ['number', 'number', 'number', 'number',
+           'number', 'number', 'number', 'number', 'number']);
+    let mfccsPtr = tfMfccs(pcmPtr, lenPtr, sampleRate, windowSize,
+          windowStride, upperFrequencyLimit, lowerFrequencyLimit,
+          filterbankChannelCount, dctCoefficientCount);
+    let mfccsLen = Module.HEAP32[lenPtr >> 2];
+    let audioMfccs = [mfccsLen];
+
+    for (let i = 0; i < mfccsLen; i++) {
+      audioMfccs[i] = Module.HEAPF64[(mfccsPtr >> 3) + i];
+    }
+
+    Module._free(pcmPtr, lenPtr, mfccsPtr);
+    return audioMfccs;
+  };
+
+  _getTensorByAudio = async (input) => {
+    const audio = input.src;
+    const options = input.options;
+    const sampleRate = options.sampleRate;
+    const mfccsOptions = options.mfccsOptions;
+    const inputSize = options.inputSize.reduce((a, b) => a * b);
+    let tensor = this._inputTensor[0];
+    let audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    let rate = audioContext.sampleRate;
+
+    let request = new Request(audio.src);
+    let response = await fetch(request);
+    let audioFileData = await response.arrayBuffer();
+    let audioDecodeData = await audioContext.decodeAudioData(audioFileData);
+    let audioPCMData = audioDecodeData.getChannelData(0);
+    let abuffer = this._downsampleAudioBuffer(audioPCMData, rate, sampleRate);
+
+    if (typeof mfccsOptions !== 'undefined') {
+      abuffer = this._getAudioMfccs(abuffer,
+                                    sampleRate,
+                                    mfccsOptions.windowSize,
+                                    mfccsOptions.windowStride,
+                                    mfccsOptions.upperFrequencyLimit,
+                                    mfccsOptions.lowerFrequencyLimit,
+                                    mfccsOptions.filterbankChannelCount,
+                                    mfccsOptions.dctCoefficientCount);
+    }
+
+    if (abuffer.length >= inputSize) {
+      for (let i = 0; i < inputSize; i++) {
+        tensor[i] = abuffer[i];
+      }
+    } else {
+      for (let i = 0; i < abuffer.length; i++) {
+        tensor[i] = abuffer[i];
+      }
+    }
+  };
+
+  /** @override */
+  _getInputTensor = async (input) => {
+    if (input.src.tagName === 'AUDIO') {
+      await this._getTensorByAudio(input);
+    } else {
+      this._getTensor(input);
+    }
+  };
+
+  _doInference = async () => {
     let status = await this._model.compute(this._inputTensor, this._outputTensor);
-    const delta = performance.now() - start;
-    this._setInferenceTime(delta);
     console.log(`Computed Status: [${status}]`);
-    console.log(`Compute Time: [${delta} ms]`);
   };
 
   /**
@@ -289,12 +454,11 @@ class WebNNRunner extends BaseRunner {
   };
 
   /**
-   * This method is to output inference tensor for post processing by example side.
-   * @param output: An object for output which will be updated with output tensor info by this method.
+   * This method is to get output tensor for post processing by example side.
+   * @override
    */
-  _getOutputTensor = (output) => {
-    // Override by inherited if needed
-    output.outputTensor = this._outputTensor[0];
+  _getOutputTensor = () => {
+    return this._outputTensor[0];
   };
 
   /**
@@ -303,7 +467,7 @@ class WebNNRunner extends BaseRunner {
   deleteAll = () => {
     if (this._currentBackend != 'WebML') {
       // free allocated memory on compilation process by polyfill WASM / WebGL backend.
-      if (this._model._compilation && this._model._compilation._preparedModel) {
+      if (this._model && this._model._compilation && this._model._compilation._preparedModel) {
         this._model._compilation._preparedModel._deleteAll();
       }
     }

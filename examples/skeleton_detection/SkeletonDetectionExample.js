@@ -453,12 +453,15 @@ class SkeletonDetectionExample {
     const scaleFactor = this._modelConfig.scaleFactor;
     const scaleWidth = getValidResolution(scaleFactor, inputSize[1], outputStride);
     const scaleHeight = getValidResolution(scaleFactor, inputSize[0], outputStride);
-    const drawOptions = {
-      inputSize: [scaleHeight, scaleWidth, inputSize[2]],
-      preOptions: this._currentModelInfo.preOptions,
-      imageChannels: 4,
+    const input = {
+      src: this._currentInputElement,
+      options: {
+        inputSize: [scaleHeight, scaleWidth, inputSize[2]],
+        preOptions: this._currentModelInfo.preOptions,
+        imageChannels: 4,
+      },
     };
-    await this._runner.run(this._currentInputElement, drawOptions);
+    await this._runner.run(input);
     this._postProcess();
   };
 

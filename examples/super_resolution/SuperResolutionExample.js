@@ -45,7 +45,7 @@ class SuperResolutionExample extends BaseCameraExample {
     };
 
     drawInput(this._currentInputElement, this._currentModelInfo.inputSize[0]);
-    drawOutput(output.outputTensor, this._currentInputElement,
+    drawOutput(output.tensor, this._currentInputElement,
       this._currentModelInfo.outputSize[0], this._currentModelInfo.preOptions);
   };
 }

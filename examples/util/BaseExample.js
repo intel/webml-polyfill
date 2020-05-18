@@ -23,20 +23,18 @@ class BaseExample extends BaseApp {
    * for those examples relevants with camera video, the type is 'image',
    * and for those examples relevants with microphone audio, the type is 'audio'.
    * @returns {string} This returns a string for input type, ['image' | 'audio'].
+   * @override
    */
-  _getDefaultInputType = () => {
-    // Override by inherited
-  };
+  _getDefaultInputType = () => {};
 
   /**
    * This method is to get default input media type,
    * for those examples relevants with camera video, the type is 'camera',
    * and for those examples relevants with audio, the type is 'microphone'.
-   * @returns This returns a string for input meadia type, ['camera' | 'microphone'].
+   * @returns {string} This returns a string for input meadia type, ['camera' | 'microphone'].
+   * @override
    */
-  _getDefaultInputMediaType = () => {
-    // Override by inherited
-  };
+  _getDefaultInputMediaType = () => {};
 
   /**
    * This method is to set '_currentInputType'.
@@ -204,6 +202,7 @@ class BaseExample extends BaseApp {
 
   /**
    * This method is to show extra UI parts by example besides common UI parts.
+   * @override
    */
   _commonUIExtra = () => {
   };
@@ -213,7 +212,7 @@ class BaseExample extends BaseApp {
    * For 'WebNN' framework, it will show supported WebNN models, WebNN backends.
    * For 'OpenCV.js' framework, it will show supported OpenCV.js models, OpenCV.js backends.
    */
-  showDynamicComponents = () => {
+  _showDynamicComponents = () => {
     // set model components according "Framework"
     const showInferenceModels = selectModelFromGivenModels(this._inferenceModels, this._currentFramework);
     setModelComponents(showInferenceModels, this._currentModelId);
@@ -284,7 +283,7 @@ class BaseExample extends BaseApp {
       setFrameworkComponents(frameworkList, this._currentFramework);
     }
 
-    this.showDynamicComponents();
+    this._showDynamicComponents();
 
     // Click trigger of framework <input> element
     $('input:radio[name=framework]').click(() => {
@@ -293,6 +292,7 @@ class BaseExample extends BaseApp {
       updateFrameworkComponentsStyle(framework);
       if (framework === 'OpenCV.js') {
         $('.backend').hide();
+        $('.offload').hide();
         $('.opencvjsbackend').show();
         this._setRuntimeInitialized(false);
         const opencvModel = selectModelFromGivenModels(this._inferenceModels, framework);
@@ -304,7 +304,7 @@ class BaseExample extends BaseApp {
         this._resetOutput();
         if (typeof cv !== 'undefined') {
           this._updateHistoryEntryURL();
-          this.showDynamicComponents();
+          this._showDynamicComponents();
           this._modelClickBinding();
           this._setRuntimeInitialized(true);
           this.main();
@@ -316,7 +316,7 @@ class BaseExample extends BaseApp {
           asyncLoadScript(`../util/opencv.js/WASM/opencv.js`, this.onOpenCvReady);
         }
         this._updateHistoryEntryURL();
-        this.showDynamicComponents();
+        this._showDynamicComponents();
         this._modelClickBinding();
         updateTitleComponent(this._currentOpenCVJSBackend, null, this._currentModelId, this._inferenceModels);
       } else if (framework === 'WebNN') {
@@ -326,7 +326,7 @@ class BaseExample extends BaseApp {
         this._setFramework(framework);
         this._setRuntimeInitialized(true);
         this._updateHistoryEntryURL();
-        this.showDynamicComponents();
+        this._showDynamicComponents();
         this._modelClickBinding();
         this._runner = null;
         this._resetOutput();
@@ -380,6 +380,7 @@ class BaseExample extends BaseApp {
         }
       } else {
         $('.backendtitle').html('Backends');
+        this._freeMemoryResources();
         if (polyfillId && webnnId) {
           $('#' + polyfillId).attr('checked', 'checked');
           $('#l-' + polyfillId).addClass('checked');
@@ -412,7 +413,6 @@ class BaseExample extends BaseApp {
       }
       updateBackendComponents(this._currentBackend, this._currentPrefer);
       this._updateHistoryEntryURL();
-      this._freeMemoryResources();
       this.main();
     });
 
@@ -554,10 +554,9 @@ class BaseExample extends BaseApp {
 
   /**
    * This method is to show custom UI parts except common UI parts.
+   * @override
    */
-  _customUI = () => {
-    // Override by inherited if needed
-  };
+  _customUI = () => {};
 
   /**
    * This method is to prepare components on UI and set some click trigger bindings.
@@ -580,6 +579,7 @@ class BaseExample extends BaseApp {
 
   /**
    * This method is to free allocated memory for model complation by polyfill backend.
+   * @override
    */
   _freeMemoryResources = () => {
     // Override by inherited when example has co-work runners
@@ -591,6 +591,7 @@ class BaseExample extends BaseApp {
   /**
    * This method returns runner instance to load model/compile model/inference.
    * @returns {object} This returns a runner instance.
+   * @override
    */
   _createRunner = () => {
     // Override by inherited if needed
@@ -601,6 +602,7 @@ class BaseExample extends BaseApp {
 
   /**
    * This method is to get runner instance by calling '_createRunner' method.
+   * @override
    */
   _getRunner = () => {
     // Override by inherited when example has co-work runners
@@ -611,6 +613,7 @@ class BaseExample extends BaseApp {
 
   /**
    * This method is for loading model file [and label file if label information is required].
+   * @override
    */
   _loadModel = async () => {
     // Override by inherited when example has co-work runners
@@ -625,44 +628,59 @@ class BaseExample extends BaseApp {
   };
 
   /**
-   * This method is for compiling model.
+   * This method is to get options paramter for compiling model.
+   * @returns {object}
+   * @override
    */
-  _compileModel = async () => {
-    // Override by inherited when example has co-work runners
+  _getCompileOptions = () => {
     let options = {};
+
     if (this._currentFramework === 'WebNN') {
         options.backend = this._currentBackend;
         options.prefer = this._currentPrefer;
     }
+
+    return options;
+  };
+
+  /**
+   * This method is for compiling model.
+   * @override
+   */
+  _compileModel = async () => {
+    let options = await this._getCompileOptions();
     await this._runner.compileModel(options);
   };
 
   /**
    * This method is to run inference by model.
+   * @override
    */
   _predict = async () => {
-    // Override by inherited when example has co-work runners
-    const drawOptions = {
-      inputSize: this._currentModelInfo.inputSize,
-      preOptions: this._currentModelInfo.preOptions,
-      imageChannels: 4,
+    const input = {
+      src: this._currentInputElement,
+      options: {
+        inputSize: this._currentModelInfo.inputSize,
+        preOptions: this._currentModelInfo.preOptions,
+        imageChannels: 4,
+      },
     };
-    await this._runner.run(this._currentInputElement, drawOptions);
+    await this._runner.run(input);
     this._postProcess();
   };
 
   /**
    * This method returns media constraints for predicting stream.
    * @returns {object} This returns an object for constraints as the parameter of navigator.mediaDevices.getUserMedia method.
+   * @override
    */
   _getMediaConstraints = () => {
-    // Override by inherited
     return {};
   };
 
   /**
    * This method is doing predicting the frame of camera video.
-   * @param stream: An object for stream which is used by those examples relevants with audio.
+   * @param stream: An object for stream which is used by those examples relevants with video or audio.
    */
   _predictFrame = async (stream) => {
     if (this._currentInputType === 'camera')  {
@@ -675,9 +693,9 @@ class BaseExample extends BaseApp {
 
   /**
    * This method is doing predicting camera video or microphone audio.
+   * @override
    */
   _predictStream = async () => {
-    // Override by inherited for 'AUIDO'
     const constraints = this._getMediaConstraints();
     let stream = await navigator.mediaDevices.getUserMedia(constraints);
     this._currentInputElement.srcObject = stream;
@@ -691,6 +709,7 @@ class BaseExample extends BaseApp {
   /**
    * This method is to set supported ops for WebNN model compliation.
    * @param ops: An array objcet for supported ops.
+   * @override
    */
   _setSupportedOps = (ops) => {
     this._runner.setSupportedOps(ops);
@@ -699,6 +718,7 @@ class BaseExample extends BaseApp {
   /**
    * This method returns required ops of used model.
    * @returns {object} This returns an array object for required ops.
+   * @override
    */
   _getRequiredOps = () => {
     return this._runner.getRequiredOps();
@@ -707,6 +727,7 @@ class BaseExample extends BaseApp {
   /**
    * This method returns inference subgraphs summary info of used model with hybrid backend.
    * @returns {object} This returns an array object for subgraphs summary info.
+   * @override
    */
   _getSubgraphsSummary = () => {
     return this._runner.getSubgraphsSummary();
@@ -715,6 +736,7 @@ class BaseExample extends BaseApp {
   /**
    * This method is doing clearing extra output on UI by example:
    * details referring to '_postProcess' method
+   * @override
    */
   _resetExtraOutput = () => {
     // Override by inherited if needed
@@ -724,6 +746,7 @@ class BaseExample extends BaseApp {
    * This method is to doing extra post processing by examples,
    * details referring to '_postProcess' method
    * @param output: An object for inference result and relevant info.
+   * @override
    */
   _processExtra = (output) => {
     // Override by inherited if needed

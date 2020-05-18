@@ -86,10 +86,7 @@ class EmotionAnalysisExample extends BaseCameraExample {
   };
 
   _compileModel = async () => {
-    let options = {
-      backend: this._currentBackend,
-      prefer: this._currentPrefer,
-    };
+    let options = this._getCompileOptions();
     await this._runner.compileModel(options);
     await this._coRunner.compileModel(options);
   };
@@ -111,12 +108,15 @@ class EmotionAnalysisExample extends BaseCameraExample {
     this._strokedRects = [];
     this._keyPoints = [];
     this._totalInferenceTime = 0.0;
-    const fdDrawOptions = {
-      inputSize: this._currentModelInfo.inputSize,
-      preOptions: this._currentModelInfo.preOptions,
-      imageChannels: 4,
+    const fdInput = {
+      src: this._currentInputElement,
+      options: {
+        inputSize: this._currentModelInfo.inputSize,
+        preOptions: this._currentModelInfo.preOptions,
+        imageChannels: 4,
+      },
     };
-    await this._runner.run(this._currentInputElement, fdDrawOptions);
+    await this._runner.run(fdInput);
     const fdOutput = this._runner.getOutput();
     this._totalInferenceTime += parseFloat(fdOutput.inferenceTime);
     const height = this._currentInputElement.height
@@ -124,8 +124,8 @@ class EmotionAnalysisExample extends BaseCameraExample {
 
     if (this._currentModelInfo.category === 'SSD') {
       let anchors = generateAnchors({});
-      decodeOutputBoxTensor({}, fdOutput.outputBoxTensor, anchors);
-      let [totalDetections, boxesList, scoresList, classesList] = NMS({ num_classes: 2 }, fdOutput.outputBoxTensor, fdOutput.outputClassScoresTensor);
+      decodeOutputBoxTensor({}, fdOutput.tensor.outputBoxTensor, anchors);
+      let [totalDetections, boxesList, scoresList, classesList] = NMS({ num_classes: 2 }, fdOutput.tensor.outputBoxTensor, fdOutput.tensor.outputClassScoresTensor);
       boxesList = cropSSDBox(this._currentInputElement, totalDetections, boxesList, this._currentModelInfo.margin);
       for (let i = 0; i < totalDetections; ++i) {
         let [ymin, xmin, ymax, xmax] = boxesList[i];
@@ -136,26 +136,29 @@ class EmotionAnalysisExample extends BaseCameraExample {
         const prob = 1 / (1 + Math.exp(-scoresList[i]));
         const rect = [xmin, ymin, xmax - xmin, ymax - ymin, prob];
         this._strokedRects.push(rect);
-        const drawOptions = {
-          inputSize: this._currentCoModelInfo.inputSize,
-          preOptions: this._currentCoModelInfo.preOptions,
-          imageChannels: 4,
-          drawOptions: {
-            sx: xmin,
-            sy: ymin,
-            sWidth: rect[2],
-            sHeight: rect[3],
-            dWidth: this._currentCoModelInfo.inputSize[1],
-            dHeight: this._currentCoModelInfo.inputSize[0],
+        const eaSSDInput = {
+          src: this._currentInputElement,
+          options: {
+            inputSize: this._currentCoModelInfo.inputSize,
+            preOptions: this._currentCoModelInfo.preOptions,
+            imageChannels: 4,
+            drawOptions: {
+              sx: xmin,
+              sy: ymin,
+              sWidth: rect[2],
+              sHeight: rect[3],
+              dWidth: this._currentCoModelInfo.inputSize[1],
+              dHeight: this._currentCoModelInfo.inputSize[0],
+            },
           },
         };
-        await this._coRunner.run(this._currentInputElement, drawOptions);
+        await this._coRunner.run(eaSSDInput);
         let emOutput = this._coRunner.getOutput();
         this._totalInferenceTime += parseFloat(emOutput.inferenceTime);
-        this._keyPoints.push(emOutput.outputTensor.slice());
+        this._keyPoints.push(emOutput.tensor.slice());
       }
     } else {
-      let decode_out = decodeYOLOv2({ nb_class: 1 }, fdOutput.outputTensor, this._currentModelInfo.anchors);
+      let decode_out = decodeYOLOv2({ nb_class: 1 }, fdOutput.tensor, this._currentModelInfo.anchors);
       let outputBoxes = getBoxes(decode_out, this._currentModelInfo.margin);
       for (let i = 0; i < outputBoxes.length; ++i) {
         let [xmin, xmax, ymin, ymax, prob] = outputBoxes[i].slice(1, 6);
@@ -165,23 +168,26 @@ class EmotionAnalysisExample extends BaseCameraExample {
         ymax = Math.min(1, ymax) * height;
         let rect = [xmin, ymin, xmax - xmin, ymax - ymin, prob];
         this._strokedRects.push(rect);
-        const drawOptions = {
-          inputSize: this._currentCoModelInfo.inputSize,
-          preOptions: this._currentCoModelInfo.preOptions,
-          imageChannels: 4,
-          drawOptions: {
-            sx: xmin,
-            sy: ymin,
-            sWidth: rect[2],
-            sHeight: rect[3],
-            dWidth: this._currentCoModelInfo.inputSize[1],
-            dHeight: this._currentCoModelInfo.inputSize[0],
+        const eaYOLOInput = {
+          src: this._currentInputElement,
+          options: {
+            inputSize: this._currentCoModelInfo.inputSize,
+            preOptions: this._currentCoModelInfo.preOptions,
+            imageChannels: 4,
+            drawOptions: {
+              sx: xmin,
+              sy: ymin,
+              sWidth: rect[2],
+              sHeight: rect[3],
+              dWidth: this._currentCoModelInfo.inputSize[1],
+              dHeight: this._currentCoModelInfo.inputSize[0],
+            },
           },
         };
-        await this._coRunner.run(this._currentInputElement, drawOptions);
+        await this._coRunner.run(eaYOLOInput);
         let emOutput = this._coRunner.getOutput();
         this._totalInferenceTime += parseFloat(emOutput.inferenceTime);
-        this._keyPoints.push(emOutput.outputTensor.slice());
+        this._keyPoints.push(emOutput.tensor.slice());
       }
     }
 

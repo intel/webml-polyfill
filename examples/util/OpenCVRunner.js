@@ -38,42 +38,21 @@ class OpenCVRunner extends BaseRunner {
     this._setLoadedFlag(true);
   };
 
-  loadModel = async (modelInfo) => {
-    if (this._bLoaded && this._currentModelInfo.modelFile === modelInfo.modelFile) {
-      console.log(`${this._currentModelInfo.modelFile} already loaded.`);
-      return;
-    }
-
-    // reset all states
+  _doInitialization = (modelInfo) => {
     this._setLoadedFlag(false);
     this._setInitializedFlag(false);
     this._setModelInfo(modelInfo);
-    await this._loadModelFile(this._currentModelInfo.modelFile);
-
-    if (this._currentModelInfo.labelsFile != null) {
-      await this._loadLabelsFile(this._currentModelInfo.labelsFile);
-    }
   };
 
-  compileModel = (options) => {
-    if (this._bInitialized) {
-      console.log('Model was already compiled.');
-      return;
-    }
-
-    this._setInitializedFlag(false);
+  _doCompile = (options) => {
     let model = null;
 
-    switch (this._currentModelInfo.format) {
-      case 'ONNX':
-        model = cv.readNetFromONNX(this._currentModelInfo.modelId);
-        break;
-      default:
-        throw new Error(`Unsupported '${this._currentModelInfo.format}' input`);
+    if (this._currentModelInfo.format === 'ONNX') {
+      model = cv.readNetFromONNX(this._currentModelInfo.modelId);
+      this._setModel(model);
+    } else {
+      throw new Error(`Unsupported '${this._currentModelInfo.format}' input`);
     }
-
-    this._setModel(model);
-    this._setInitializedFlag(true);
   };
 
   /**
@@ -90,13 +69,15 @@ class OpenCVRunner extends BaseRunner {
    * };
    * @returns {object} This returns an object for input tensor.
    */
-  _getInputTensor = (src, options) => {
+  _getInputTensor = (input) => {
+    const src = input.src;
+    const options = input.options;
     const mean = options.preOptions.mean;
     const std = options.preOptions.std;
     const [sizeW, sizeH, channels] = options.inputSize;
     const imageChannels = options.imageChannels;
-    const width = src.videoWidth || src.naturalWidth;
-    const height = src.videoHeight || src.naturalHeight;
+    const width = src.videoWidth || src.naturalWidth || 1;
+    const height = src.videoHeight || src.naturalHeight || 1;
     const canvasElement = document.createElement('canvas');
     canvasElement.width = width;
     canvasElement.height = height;
@@ -113,20 +94,13 @@ class OpenCVRunner extends BaseRunner {
       }
     }
     let inputMat = cv.matFromArray(height, width, cv.CV_32FC3, stddata);
-    let input = cv.blobFromImage(inputMat, 1, new cv.Size(sizeW, sizeH), new cv.Scalar(0, 0, 0));
+    let tensor = cv.blobFromImage(inputMat, 1, new cv.Size(sizeW, sizeH), new cv.Scalar(0, 0, 0));
     inputMat.delete();
-    return input;
+    this._model.setInput(tensor);
+    tensor.delete();
   };
 
-  run = (src, options) => {
-    let input = this._getInputTensor(src, options);
-    this._model.setInput(input);
-    input.delete();
-    const start = performance.now();
+  _doInference = () => {
     this._output = this._model.forward();
-    const delta = performance.now() - start;
-    this._setInferenceTime(delta);
-    console.log(`Computed Status: [${status}]`);
-    console.log(`Compute Time: [${delta} ms]`);
   };
 }

@@ -144,13 +144,16 @@ class SemanticSegmentationExample extends BaseCameraExample {
   };
 
   _predict = async () => {
-    const drawOptions = {
-      inputSize: this._currentModelInfo.inputSize,
-      preOptions: this._currentModelInfo.preOptions,
-      imageChannels: 4,
-      scaledFlag: true,
+    const input = {
+      src: this._currentInputElement,
+      options: {
+        inputSize: this._currentModelInfo.inputSize,
+        preOptions: this._currentModelInfo.preOptions,
+        imageChannels: 4,
+        scaledFlag: true,
+      },
     };
-    await this._runner.run(this._currentInputElement, drawOptions);
+    await this._runner.run(input);
     this._postProcess();
   };
 
@@ -162,7 +165,7 @@ class SemanticSegmentationExample extends BaseCameraExample {
     const scaledWidth = Math.floor(imWidth / resizeRatio);
     const scaledHeight = Math.floor(imHeight / resizeRatio);
     const segMap = {
-      data: output.outputTensor,
+      data: output.tensor,
       outputShape: this._currentModelInfo.outputSize,
       labels: output.labels,
     };
