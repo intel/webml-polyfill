@@ -31,6 +31,7 @@ class SkeletonDetectionExample {
     };
     this._bFrontCamera = false;
     this._runner = null;
+    this._currentTimeoutId = 0;
   }
 
   _setInputType = (t) => {
@@ -59,6 +60,17 @@ class SkeletonDetectionExample {
 
   _setTrack = (track) => {
     this._track = track;
+  };
+
+  _setTimeoutId = (id) => {
+    this._currentTimeoutId = id;
+  };
+
+  _clearTimeout = () => {
+    if (this._currentTimeoutId !== 0) {
+      clearTimeout(this._currentTimeoutId);
+      this._setTimeoutId(0);
+    }
   };
 
   _setHiddenControlsFlag = (flag) => {
@@ -290,6 +302,7 @@ class SkeletonDetectionExample {
       $('ul.nav-pills #img').addClass('active');
       $('#imagetab').addClass('active');
       $('#cameratab').removeClass('active');
+      this._clearTimeout();
       this._setInputElement(this._feedElement);
       this._setInputType('image');
       this._updateHistoryEntryURL();
@@ -470,7 +483,8 @@ class SkeletonDetectionExample {
       this._stats.begin();
       await this._predict();
       this._stats.end();
-      setTimeout(this._predictFrame, 0);
+      let timeoutId = setTimeout(this._predictFrame, 0);
+      this._setTimeoutId(timeoutId);
     }
   };
 

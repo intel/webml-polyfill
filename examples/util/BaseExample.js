@@ -16,6 +16,7 @@ class BaseExample extends BaseApp {
     this._currentFramework; //'OpenCV.js' | 'WebNN'
     this._currentOpenCVJSBackend; // 'WASM' | 'SIMD' | 'Threads' | 'Threads+SIMD'
     this._runtimeInitialized = false; // for 'OpenCV.js', always true for other framework
+    this._currentTimeoutId = 0;
   }
 
   /**
@@ -83,6 +84,17 @@ class BaseExample extends BaseApp {
    */
   _setModelInfo = (modelInfo) => {
     this._currentModelInfo = modelInfo;
+  };
+
+  _setTimeoutId = (id) => {
+    this._currentTimeoutId = id;
+  };
+
+  _clearTimeout = () => {
+    if (this._currentTimeoutId !== 0) {
+      clearTimeout(this._currentTimeoutId);
+      this._setTimeoutId(0);
+    }
   };
 
   /**
@@ -288,6 +300,7 @@ class BaseExample extends BaseApp {
     // Click trigger of framework <input> element
     $('input:radio[name=framework]').click(() => {
       $('.alert').hide();
+      this._clearTimeout();
       let framework = $('input:radio[name="framework"]:checked').attr('value');
       updateFrameworkComponentsStyle(framework);
       if (framework === 'OpenCV.js') {
@@ -504,6 +517,7 @@ class BaseExample extends BaseApp {
 
     // Click trigger to do inference with <img> element
     $('#img').click(() => {
+      this._clearTimeout();
       $('.alert').hide();
       $('#fps').html('');
       $('#fps').hide();
@@ -687,7 +701,8 @@ class BaseExample extends BaseApp {
       this._stats.begin();
       await this._predict();
       this._stats.end();
-      setTimeout(this._predictFrame, 0);
+      let timeoutId = setTimeout(this._predictFrame, 0);
+      this._setTimeoutId(timeoutId);
     }
   };
 
