@@ -1396,6 +1396,7 @@ class Configuration:
         "LSTM",
         "MAX_POOL_2D",
         "MUL",
+        "QUANTIZE",
         "RELU",
         "RELU1",
         "RELU6",
@@ -1471,19 +1472,24 @@ class Configuration:
             "inputs": {
                 0: {
                     "layout": ["NHWC"],
-                    "types": ["TENSOR_FLOAT32", "TENSOR_QUANT8_ASYMM"],
+                    "types": ["TENSOR_FLOAT32", "TENSOR_QUANT8_ASYMM", "TENSOR_QUANT8_ASYMM_SIGNED"],
                     "dimensions": [2, 4]
                 },
                 1: {
                     "layout": ["NHWC"],
                     "types": ["FLOAT32"],
                     "dimensions": [0]
+                },
+                2: {
+                    "layout": ["NHWC"],
+                    "types": ["INT32"],
+                    "dimensions": [0]
                 }
             },
             "outputs": {
                 0: {
                     "layout": ["NHWC"],
-                    "types": ["TENSOR_FLOAT32", "TENSOR_QUANT8_ASYMM"],
+                    "types": ["TENSOR_FLOAT32", "TENSOR_QUANT8_ASYMM", "TENSOR_QUANT8_ASYMM_SIGNED"],
                     "dimensions": [2, 4]
                 }
             }
@@ -1671,7 +1677,7 @@ class Configuration:
             "inputs": {
                 0: {
                     "layout": ["NHWC"],
-                    "types": ["TENSOR_FLOAT32", "TENSOR_QUANT8_ASYMM"],
+                    "types": ["TENSOR_FLOAT32", "TENSOR_QUANT8_ASYMM", "TENSOR_QUANT8_ASYMM_SIGNED"],
                     "dimensions": [4]
                 },
                 1: {
@@ -1723,7 +1729,7 @@ class Configuration:
             "outputs": {
                 0: {
                     "layout": ["NHWC"],
-                    "types": ["TENSOR_FLOAT32", "TENSOR_QUANT8_ASYMM"],
+                    "types": ["TENSOR_FLOAT32", "TENSOR_QUANT8_ASYMM", "TENSOR_QUANT8_ASYMM_SIGNED"],
                     "dimensions": [4]
                 }
             }
