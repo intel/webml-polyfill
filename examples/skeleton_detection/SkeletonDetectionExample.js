@@ -31,7 +31,7 @@ class SkeletonDetectionExample {
     };
     this._bFrontCamera = false;
     this._runner = null;
-    this._currentTimeoutId = 0;
+    this._isStreaming = false; // for inference camera video
   }
 
   _setInputType = (t) => {
@@ -62,15 +62,8 @@ class SkeletonDetectionExample {
     this._track = track;
   };
 
-  _setTimeoutId = (id) => {
-    this._currentTimeoutId = id;
-  };
-
-  _clearTimeout = () => {
-    if (this._currentTimeoutId !== 0) {
-      clearTimeout(this._currentTimeoutId);
-      this._setTimeoutId(0);
-    }
+  _setStreaming = (flag) => {
+    this._isStreaming = flag;
   };
 
   _setHiddenControlsFlag = (flag) => {
@@ -302,7 +295,6 @@ class SkeletonDetectionExample {
       $('ul.nav-pills #img').addClass('active');
       $('#imagetab').addClass('active');
       $('#cameratab').removeClass('active');
-      this._clearTimeout();
       this._setInputElement(this._feedElement);
       this._setInputType('image');
       this._updateHistoryEntryURL();
@@ -479,12 +471,11 @@ class SkeletonDetectionExample {
   };
 
   _predictFrame = async () => {
-    if (this._currentInputType === 'camera')  {
+    if (this._isStreaming) {
       this._stats.begin();
       await this._predict();
       this._stats.end();
-      let timeoutId = setTimeout(this._predictFrame, 0);
-      this._setTimeoutId(timeoutId);
+      setTimeout(this._predictFrame, 0);
     }
   };
 
@@ -590,7 +581,7 @@ class SkeletonDetectionExample {
   main = async () => {
     // Update UI title component info
     updateTitleComponent(this._currentBackend, this._currentPrefer);
-
+    this._setStreaming(false);
     try {
       if (this._runner == null) {
         this._runner = new SkeletonDetectionRunner();
@@ -620,6 +611,7 @@ class SkeletonDetectionExample {
           readyShowResultComponents();
           break;
         case 'camera':
+          this._setStreaming(true);
           await this._predictStream();
           break;
         default:

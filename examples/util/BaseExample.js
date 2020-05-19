@@ -17,9 +17,10 @@ class BaseExample extends BaseApp {
     this._currentFramework; //'OpenCV.js' | 'WebNN'
     this._currentOpenCVJSBackend; // 'WASM' | 'SIMD' | 'Threads' | 'Threads+SIMD'
     this._runtimeInitialized = false; // for 'OpenCV.js', always true for other framework
+    this._currentTimeoutId = 0;
+    this._isStreaming = false; // for inference camera video
     // _hiddenControlsFlag ('0'/'1') is for UI shows/hides model & backend control
     this._hiddenControlsFlag = '0';
-    this._currentTimeoutId = 0;
   }
 
   /**
@@ -100,15 +101,30 @@ class BaseExample extends BaseApp {
     this._currentModelInfo = modelInfo;
   };
 
+  /**
+   * This method is to set '_currentTimeoutId'.
+   * @param {number} id
+   */
   _setTimeoutId = (id) => {
     this._currentTimeoutId = id;
   };
 
+  /**
+   * This method is to clear a timer set with the setTimeout(this._predictFrame, 0) method.
+   */
   _clearTimeout = () => {
     if (this._currentTimeoutId !== 0) {
       clearTimeout(this._currentTimeoutId);
       this._setTimeoutId(0);
     }
+  };
+
+  /**
+   * This method is to set '_isStreaming'.
+   * @param {boolean} flag A boolean that for inference camera video.
+   */
+  _setStreaming = (flag) => {
+    this._isStreaming = flag;
   };
 
   /**
@@ -530,7 +546,6 @@ class BaseExample extends BaseApp {
 
     // Click trigger to do inference with <img> element
     $('#img').click(() => {
-      this._clearTimeout();
       $('.alert').hide();
       $('#fps').html('');
       $('#fps').hide();
@@ -694,7 +709,7 @@ class BaseExample extends BaseApp {
    * @param {!MediaStream} stream: A MediaStream object that for stream which is used by those examples relevants with video or audio.
    */
   _predictFrame = async (stream) => {
-    if (this._currentInputType === 'camera')  {
+    if (this._isStreaming)  {
       this._stats.begin();
       await this._predict();
       this._stats.end();
@@ -826,6 +841,7 @@ class BaseExample extends BaseApp {
       console.log(`Runtime isn't initialized`);
       return;
     }
+    this._setStreaming(false);
     // Update UI title component info
     if (this._currentFramework === 'WebNN') {
       updateTitleComponent(this._currentBackend, this._currentPrefer, this._currentModelId, this._inferenceModels);
@@ -896,6 +912,7 @@ class BaseExample extends BaseApp {
           break;
         case 'camera':
         case 'microphone':
+          this._setStreaming(true);
           await this._predictStream();
           break;
         default:
