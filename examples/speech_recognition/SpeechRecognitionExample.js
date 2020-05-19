@@ -7,6 +7,7 @@ class SpeechRecognitionExample extends BaseMircophoneExample {
     this._result = {};
   }
 
+  /** @override */
   _customUI = () => {
     let inputFileElement = document.getElementById('input');
     inputFileElement.addEventListener('change', (e) => {
@@ -15,12 +16,14 @@ class SpeechRecognitionExample extends BaseMircophoneExample {
     }, false);
   };
 
+  /** @override */
   _createRunner = () => {
     const runner = new SpeechRecognitionRunner();
     runner.setProgressHandler(updateLoadingProgressComponent);
     return runner;
   };
 
+  /** @override */
   _predict = async () => {
     try {
       let totalTime = 0;
@@ -52,6 +55,7 @@ class SpeechRecognitionExample extends BaseMircophoneExample {
     }
   };
 
+  /** @override */
   _getCompileOptions = async () => {
     this._arkInfo = await this._getTensorArrayByArk(this._currentModelInfo.arkFile);
 
@@ -191,6 +195,7 @@ class SpeechRecognitionExample extends BaseMircophoneExample {
     return result;
   }
 
+  /** @override */
   _processExtra = () => {
     const result = this._result;
     try {

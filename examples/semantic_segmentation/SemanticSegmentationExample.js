@@ -9,6 +9,7 @@ class SemanticSegmentationExample extends BaseCameraExample {
     this._hoverPos = p;
   };
 
+  /** @override */
   _customUI = () => {
     $('#fullscreen i svg').click(() => {
       $('#canvasvideo').toggleClass('fullscreen');
@@ -22,6 +23,7 @@ class SemanticSegmentationExample extends BaseCameraExample {
     this._renderer.setup();
   };
 
+  /** @override */
   loadedUI = () => {
     let _this =  this;
     const blurSlider = document.getElementById('blurSlider');
@@ -137,12 +139,14 @@ class SemanticSegmentationExample extends BaseCameraExample {
     });
   };
 
+  /** @override */
   _createRunner = () => {
     const runner = new SemanticSegmentationRunner();
     runner.setProgressHandler(updateLoadingProgressComponent);
     return runner;
   };
 
+  /** @override */
   _predict = async () => {
     const input = {
       src: this._currentInputElement,
@@ -157,6 +161,7 @@ class SemanticSegmentationExample extends BaseCameraExample {
     this._postProcess();
   };
 
+  /** @override */
   _processExtra = (output) => {
     const width = this._currentModelInfo.inputSize[1];
     const imWidth = this._currentInputElement.naturalWidth | this._currentInputElement.videoWidth;

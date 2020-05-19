@@ -6,16 +6,19 @@ class BaseExample extends BaseApp {
     this._feedElement = document.getElementById('feedElement');
     // <video> or <audio> element when using live Camera or Microphone
     this._feedMediaElement = document.getElementById('feedMediaElement');
+    // Backend type: 'WASM' | 'WebGL' | 'WebML'
+    this._currentBackend = 'WASM';
+    // Prefer type: 'none' | 'fast' | 'sustained' | 'low' | 'ultra_low'
+    this._currentPrefer = 'none';
     // track and stats serve for 'VIDEO' | 'AUDIO' input
     this._track = null;
     this._stats = new Stats();
-
     this._currentModelInfo = {};
-    // _hiddenControlsFlag ('0'/'1') is for UI shows/hides model & backend control
-    this._hiddenControlsFlag = '0';
     this._currentFramework; //'OpenCV.js' | 'WebNN'
     this._currentOpenCVJSBackend; // 'WASM' | 'SIMD' | 'Threads' | 'Threads+SIMD'
     this._runtimeInitialized = false; // for 'OpenCV.js', always true for other framework
+    // _hiddenControlsFlag ('0'/'1') is for UI shows/hides model & backend control
+    this._hiddenControlsFlag = '0';
     this._currentTimeoutId = 0;
   }
 
@@ -24,7 +27,6 @@ class BaseExample extends BaseApp {
    * for those examples relevants with camera video, the type is 'image',
    * and for those examples relevants with microphone audio, the type is 'audio'.
    * @returns {string} This returns a string for input type, ['image' | 'audio'].
-   * @override
    */
   _getDefaultInputType = () => {};
 
@@ -33,21 +35,36 @@ class BaseExample extends BaseApp {
    * for those examples relevants with camera video, the type is 'camera',
    * and for those examples relevants with audio, the type is 'microphone'.
    * @returns {string} This returns a string for input meadia type, ['camera' | 'microphone'].
-   * @override
    */
   _getDefaultInputMediaType = () => {};
 
   /**
    * This method is to set '_currentInputType'.
-   * @param inputType: An object for input type.
+   * @param {string} inputType
    */
   _setInputType = (inputType) => {
     this._currentInputType = inputType;
   };
 
   /**
+   * This method is to set '_currentBackend'.
+   * @param {string} backend
+   */
+  _setBackend = (backend) => {
+    this._currentBackend = backend;
+  };
+
+  /**
+   * This method is to set '_currentPrefer'.
+   * @param {string} prefer
+   */
+  _setPrefer = (prefer) => {
+    this._currentPrefer = prefer;
+  };
+
+  /**
    * This method is to set '_currentFramework'.
-   * @param framework: A string for framework.
+   * @param {string} framework
    */
   _setFramework = (framework) => {
     this._currentFramework = framework;
@@ -55,7 +72,7 @@ class BaseExample extends BaseApp {
 
   /**
    * This method is to set '_track'.
-   * @param track: An object for track.
+   * @param {!MediaStreamTrack} track
    */
   _setTrack = (track) => {
     this._track = track;
@@ -63,24 +80,21 @@ class BaseExample extends BaseApp {
 
   /**
    * This method is to set '_currentModelInfo'.
-   * @param modelInfo: An object for model info which was configed in modeZoo.js.
-   * An example for model info:
-   *   modelInfo = {
-   *     modelName: 'MobileNet v1 (TFLite)',
-   *     format: 'TFLite',
-   *     modelId: 'mobilenet_v1_tflite',
-   *     modelSize: '16.9MB',
-   *     inputSize: [224, 224, 3],
-   *     outputSize: 1001,
-   *     modelFile: '../image_classification/model/mobilenet_v1_1.0_224.tflite',
-   *     labelsFile: '../image_classification/model/labels1001.txt',
-   *     preOptions: {
-   *       mean: [127.5, 127.5, 127.5],
-   *       std: [127.5, 127.5, 127.5],
-   *     },
-   *     intro: 'An efficient Convolutional Neural Networks for Mobile Vision Applications.',
-   *     paperUrl: 'https://arxiv.org/pdf/1704.04861.pdf'
-   *   };
+   * @param {!Object<string, *>} modelInfo An object that for model info which was configed in modeZoo.js.
+   *     An example for model info:
+   *       modelInfo = {
+   *         modelName: {string}, // 'MobileNet v1 (TFLite)'
+   *         format: {string}, // 'TFLite'
+   *         modelId: {string}, // 'mobilenet_v1_tflite'
+   *         modelSize: {string}, // '16.9MB'
+   *         inputSize: {!Array<number>}, // [224, 224, 3]
+   *         outputSize: {number} // 1001
+   *         modelFile: {string}, // '../image_classification/model/mobilenet_v1_1.0_224.tflite'
+   *         labelsFile: {string}, // '../image_classification/model/labels1001.txt'
+   *         preOptions: {!Obejct<string, *>}, // {mean: [127.5, 127.5, 127.5], std: [127.5, 127.5, 127.5],}
+   *         intro: {string}, // 'An efficient Convolutional Neural Networks for Mobile Vision Applications.',
+   *         paperUrl: {string}, // 'https://arxiv.org/pdf/1704.04861.pdf'
+   *       };
    */
   _setModelInfo = (modelInfo) => {
     this._currentModelInfo = modelInfo;
@@ -99,7 +113,7 @@ class BaseExample extends BaseApp {
 
   /**
    * This method is to set '_hiddenControlsFlag'.
-   * @param flag: (string|undefined).
+   * @param {string|undefined} flag
    */
   _setHiddenControlsFlag = (flag) => {
     // flag: '0' display, '1' hidden
@@ -116,7 +130,7 @@ class BaseExample extends BaseApp {
 
   /**
    * This method is to set '_currentOpenCVJSBackend'.
-   * @param backend: A string for OpenCV.js backend.
+   * @param {string} backend A string that for OpenCV.js backend.
    */
   _setOpenCVJSBackend = (backend) => {
     this._currentOpenCVJSBackend = backend;
@@ -124,7 +138,7 @@ class BaseExample extends BaseApp {
 
   /**
    * This method is to set '_runtimeInitialized'.
-   * @param flag: A boolean for whether OpenCV.js runtime initialized.
+   * @param {boolean} flag A boolean that for whether OpenCV.js runtime initialized.
    */
   _setRuntimeInitialized = (flag) => {
     this._runtimeInitialized = flag;
@@ -132,7 +146,7 @@ class BaseExample extends BaseApp {
 
   /**
    * This method is to update History Entry URL.
-   * @param url: (string | undefined).
+   * @param {string|undefined} url
    */
   _updateHistoryEntryURL = (url) => {
     let locSearch;
@@ -214,7 +228,6 @@ class BaseExample extends BaseApp {
 
   /**
    * This method is to show extra UI parts by example besides common UI parts.
-   * @override
    */
   _commonUIExtra = () => {
   };
@@ -568,7 +581,6 @@ class BaseExample extends BaseApp {
 
   /**
    * This method is to show custom UI parts except common UI parts.
-   * @override
    */
   _customUI = () => {};
 
@@ -605,7 +617,6 @@ class BaseExample extends BaseApp {
   /**
    * This method returns runner instance to load model/compile model/inference.
    * @returns {object} This returns a runner instance.
-   * @override
    */
   _createRunner = () => {
     // Override by inherited if needed
@@ -614,10 +625,7 @@ class BaseExample extends BaseApp {
     return runner;
   };
 
-  /**
-   * This method is to get runner instance by calling '_createRunner' method.
-   * @override
-   */
+  /** @override */
   _getRunner = () => {
     // Override by inherited when example has co-work runners
     if (this._runner == null) {
@@ -625,10 +633,7 @@ class BaseExample extends BaseApp {
     }
   };
 
-  /**
-   * This method is for loading model file [and label file if label information is required].
-   * @override
-   */
+  /** @override */
   _loadModel = async () => {
     // Override by inherited when example has co-work runners
     const modelInfo = getModelById(this._inferenceModels.model, this._currentModelId);
@@ -643,8 +648,7 @@ class BaseExample extends BaseApp {
 
   /**
    * This method is to get options paramter for compiling model.
-   * @returns {object}
-   * @override
+   * @returns {!Object<string, *>}
    */
   _getCompileOptions = () => {
     let options = {};
@@ -657,19 +661,13 @@ class BaseExample extends BaseApp {
     return options;
   };
 
-  /**
-   * This method is for compiling model.
-   * @override
-   */
+  /** @override */
   _compileModel = async () => {
     let options = await this._getCompileOptions();
     await this._runner.compileModel(options);
   };
 
-  /**
-   * This method is to run inference by model.
-   * @override
-   */
+  /** @override */
   _predict = async () => {
     const input = {
       src: this._currentInputElement,
@@ -685,16 +683,15 @@ class BaseExample extends BaseApp {
 
   /**
    * This method returns media constraints for predicting stream.
-   * @returns {object} This returns an object for constraints as the parameter of navigator.mediaDevices.getUserMedia method.
-   * @override
+   * @returns {!Object<string, *>} This returns an object for constraints as the parameter of navigator.mediaDevices.getUserMedia method.
+   *     likes {audio: false, video: {facingMode: (this._bFrontCamera ? 'user' : 'environment')}};
+   *     or {audio: true}
    */
-  _getMediaConstraints = () => {
-    return {};
-  };
+  _getMediaConstraints = () => {};
 
   /**
-   * This method is doing predicting the frame of camera video.
-   * @param stream: An object for stream which is used by those examples relevants with video or audio.
+   * This method is to predict the frame of camera video.
+   * @param {!MediaStream} stream: A MediaStream object that for stream which is used by those examples relevants with video or audio.
    */
   _predictFrame = async (stream) => {
     if (this._currentInputType === 'camera')  {
@@ -707,8 +704,7 @@ class BaseExample extends BaseApp {
   };
 
   /**
-   * This method is doing predicting camera video or microphone audio.
-   * @override
+   * This method is to predict camera video or microphone audio.
    */
   _predictStream = async () => {
     const constraints = this._getMediaConstraints();
@@ -723,8 +719,7 @@ class BaseExample extends BaseApp {
 
   /**
    * This method is to set supported ops for WebNN model compliation.
-   * @param ops: An array objcet for supported ops.
-   * @override
+   * @param {!Array<number>} ops
    */
   _setSupportedOps = (ops) => {
     this._runner.setSupportedOps(ops);
@@ -732,8 +727,7 @@ class BaseExample extends BaseApp {
 
   /**
    * This method returns required ops of used model.
-   * @returns {object} This returns an array object for required ops.
-   * @override
+   * @returns {!Array<number>} This returns an array object for required ops.
    */
   _getRequiredOps = () => {
     return this._runner.getRequiredOps();
@@ -742,7 +736,6 @@ class BaseExample extends BaseApp {
   /**
    * This method returns inference subgraphs summary info of used model with hybrid backend.
    * @returns {object} This returns an array object for subgraphs summary info.
-   * @override
    */
   _getSubgraphsSummary = () => {
     return this._runner.getSubgraphsSummary();
@@ -751,7 +744,6 @@ class BaseExample extends BaseApp {
   /**
    * This method is doing clearing extra output on UI by example:
    * details referring to '_postProcess' method
-   * @override
    */
   _resetExtraOutput = () => {
     // Override by inherited if needed
@@ -761,7 +753,6 @@ class BaseExample extends BaseApp {
    * This method is to doing extra post processing by examples,
    * details referring to '_postProcess' method
    * @param output: An object for inference result and relevant info.
-   * @override
    */
   _processExtra = (output) => {
     // Override by inherited if needed
@@ -793,6 +784,7 @@ class BaseExample extends BaseApp {
    *      super resolution result for super resolution example
    *      top3 command category labels & probabilities results for speech command example
    *      inference clycels, average time, reference translations and metrics results for speech examples
+   * @override
    */
   _postProcess = () => {
     const output = this._runner.getOutput();

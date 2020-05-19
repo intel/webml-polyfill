@@ -3,6 +3,7 @@ class SemanticSegmentationRunner extends WebNNRunner {
     super();
   }
 
+  /** @override */
   _getOutputTensorTypedArray = () => {
     return Int32Array;
   };

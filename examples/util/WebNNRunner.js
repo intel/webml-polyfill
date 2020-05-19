@@ -15,7 +15,7 @@ class WebNNRunner extends BaseRunner {
 
   /**
    * This method is to set '_currentBackend'.
-   * @param backend: A string for backend.
+   * @param {string} backend
    */
   _setBackend = (backend) => {
     this._currentBackend = backend;
@@ -23,7 +23,7 @@ class WebNNRunner extends BaseRunner {
 
   /**
    * This method is to set '_currentPrefer'.
-   * @param prefer: A string for prefer.
+   * @param {string} prefer
    */
   _setPrefer = (prefer) => {
     this._currentPrefer = prefer;
@@ -31,7 +31,7 @@ class WebNNRunner extends BaseRunner {
 
   /**
    * This method is to set '_bEagerMode'.
-   * @param flag: A boolean whether eager mode.
+   * @param {boolean} flag
    */
   setEagerMode = (flag) => {
     this._bEagerMode = flag;
@@ -39,7 +39,7 @@ class WebNNRunner extends BaseRunner {
 
   /**
    * This method is to set '_supportedOps'.
-   * @param ops: An array object for supported ops.
+   * @param {!Array<number>} ops
    */
   setSupportedOps = (ops) => {
     this._supportedOps = ops;
@@ -47,7 +47,7 @@ class WebNNRunner extends BaseRunner {
 
   /**
    * This method is to set '_rawModel'.
-   * @param model: An object for model.
+   * @param {object} model
    */
   _setRawModel = (model) => {
     this._rawModel = model;
@@ -55,7 +55,7 @@ class WebNNRunner extends BaseRunner {
 
   /**
    * This method is to set '_subgraphsSummary'.
-   * @param summary: An array object for summary.
+   * @param {object} summary An array object that for summary.
    */
   _setSubgraphsSummary = (summary) => {
     this._subgraphsSummary = summary;
@@ -63,7 +63,7 @@ class WebNNRunner extends BaseRunner {
 
   /**
    * This method is to set '_modelRequiredOps'.
-   * @param ops: An array object for required ops of model.
+   * @param {!Array<number>} ops
    */
   _setModelRequiredOps = (ops) => {
     this._modelRequiredOps = ops;
@@ -71,16 +71,13 @@ class WebNNRunner extends BaseRunner {
 
   /**
    * This method is to set '_deQuantizeParams'.
-   * @param params: An array object for deQuantize params.
+   * @param {object} params An array object that for deQuantize params.
    */
   _setDeQuantizeParams = (params) => {
     this._deQuantizeParams = params;
   };
 
-  /**
-   * This method is to load model file with specified url.
-   * @param url: A string for model file url.
-   */
+  /** @override */
   _loadModelFile = async (url) => {
     let rawModel = null;
 
@@ -126,7 +123,6 @@ class WebNNRunner extends BaseRunner {
    * @returns {function} This returns Uint8Array or Float32Array function or other typedArray function if inherited.
    */
   _getInputTensorTypedArray = () => {
-    // Override by inherited if needed
     const typedArray = this._currentModelInfo.isQuantized || false ? Uint8Array : Float32Array;
     return typedArray;
   };
@@ -164,6 +160,7 @@ class WebNNRunner extends BaseRunner {
     }
   };
 
+  /** @override */
   _doInitialization = (modelInfo) => {
     this._setLoadedFlag(false);
     this._setInitializedFlag(false);
@@ -177,10 +174,12 @@ class WebNNRunner extends BaseRunner {
     this._initOutputTensor();
   };
 
+  /** @override */
   _checkInitializedCompilation = (options) => {
     return this._bInitialized && this._currentBackend === options.backend && this._currentPrefer === options.prefer;
   }
 
+  /** @override */
   _doCompile = async (options) => {
     let model = null;
     const backend = options.backend;
@@ -216,8 +215,17 @@ class WebNNRunner extends BaseRunner {
     this._model.setSupportedOps(this._supportedOps);
     this._model.setEagerMode(this._bEagerMode);
     await this._model.createCompiledModel();
+
+    this._saveDetails();
+    this._doWarmup();
   };
 
+  /**
+   * This method is to save relevant details info of
+   * 1. model's required ops,
+   * 2. dequantize params if model was quantized,
+   * 3. subgraphs summary info.
+   */
   _saveDetails = () => {
     this._setModelRequiredOps(this._model.getRequiredOps());
 
@@ -230,6 +238,9 @@ class WebNNRunner extends BaseRunner {
     }
   };
 
+  /**
+   * This method is to do warm up with compiled model.
+   */
   _doWarmup = async () => {
     // Warm up model
     const computeStart = performance.now();
@@ -239,6 +250,30 @@ class WebNNRunner extends BaseRunner {
     console.log(`Warm up Time: ${computeDelta.toFixed(2)} ms`);
   };
 
+  /**
+   * This method is to set '_inputTensor' with input.
+   * @param {!Object<string, *>} input
+   *     input = {
+   *       src: !HTMLElement, //An object for HTML [<img> | <video> | <audio>] element.
+   *       options: { // An object to get input tensor.
+   *         // inputSize was configed in modelZoo.js, inputSize = [h, w, c] or [1, size] for audio example.
+   *         inputSize: {!Array<number>},
+   *         // preOptions was also configed in modelZoo.js,
+   *         // preOptions= {} or likes {mean: [127.5, 127.5, 127.5], std: [127.5, 127.5, 127.5],}
+   *         preOptions: {!Object<string, *>},
+   *         imageChannels: {number},
+   *         drawOptions: { // optional, drawOptions is used for CanvasRenderingContext2D.drawImage() method.
+   *           sx: {number}, // the x-axis coordinate of the top left corner of sub-retangle of the source image
+   *           sy: {number}, // the y-axis coordinate of the top left corner of sub-retangle of the source image
+   *           sWidth: {number}, // the width of the sub-retangle of the source image
+   *           sHeight: {number}, // the height of the sub-retangle of the source image
+   *           dWidth: {number}, // the width to draw the image in the detination canvas
+   *           dHeight: {number}, // the height to draw the image in the detination canvas
+   *         },
+   *         scaledFlag: {boolean}, // optional, need scaled the width and height of element to get need inputTensor
+   *       },
+   *     };
+   */
   _getTensor = (input) => {
     const image = input.src;
     const options = input.options;
@@ -316,6 +351,13 @@ class WebNNRunner extends BaseRunner {
     }
   };
 
+  /**
+   * This method is to get downsample audio buffer.
+   * @param {!Float32Array} buffer
+   * @param {number} rate
+   * @param {number} baseRate
+   * @returns {!Float32Array}
+   */
   _downsampleAudioBuffer = (buffer, rate, baseRate) => {
     if (rate == baseRate) {
       return buffer;
@@ -346,6 +388,18 @@ class WebNNRunner extends BaseRunner {
     return abuffer;
   };
 
+  /**
+   * This method is to get audio mfccs array.
+   * @param {!Float32Array} pcm
+   * @param {number} sampleRate
+   * @param {number} windowSize
+   * @param {number} windowStride
+   * @param {number=} upperFrequencyLimit
+   * @param {number=} lowerFrequencyLimit
+   * @param {number=} filterbankChannelCount
+   * @param {number=} dctCoefficientCount
+   * @returns {!Array<number>}
+   */
   _getAudioMfccs = (pcm, sampleRate, windowSize, windowStride,
                     upperFrequencyLimit = 4000,
                     lowerFrequencyLimit = 20,
@@ -376,6 +430,18 @@ class WebNNRunner extends BaseRunner {
     return audioMfccs;
   };
 
+  /**
+   * This method is to set '_inputTensor' with audio input.
+   * @param {!Object<string, *>}
+   *     input = { // for Speech Command example
+   *       src: {!HTMLElement}, // audio element
+   *       options: {
+   *         inputSize: {!Array<number>},
+   *         sampleRate: {number},
+   *         mfccsOptions: {!Object<string, *>}, // see details of mfccsOptions from speechCommandModels configurations of modelZoo.js
+   *       },
+   *     };
+   */
   _getTensorByAudio = async (input) => {
     const audio = input.src;
     const options = input.options;
@@ -424,6 +490,7 @@ class WebNNRunner extends BaseRunner {
     }
   };
 
+  /** @override */
   _doInference = async () => {
     let status = await this._model.compute(this._inputTensor, this._outputTensor);
     console.log(`Computed Status: [${status}]`);
@@ -455,6 +522,7 @@ class WebNNRunner extends BaseRunner {
 
   /**
    * This method is to get output tensor for post processing by example side.
+   * @returns {!TypedArray<number>}
    * @override
    */
   _getOutputTensor = () => {
@@ -480,16 +548,16 @@ class WebNNRunner extends BaseRunner {
    *   example._runner.iterateLayers([{backend: 'WASM', prefer: 'fast'}, {backend: 'WebML', prefer: 'fast'}], [1, 2]) // debugging outputs of all layers using WASM backend and WebML backend, user can compare each output of the same layer.
    *   example._coRunner.iterateLayers([{backend: 'WASM', prefer: 'fast'}, {backend: 'WebML', prefer: 'fast'}]) if wanted debugging cowork model for those examples with cowork models.
    * The debugging output info logs are printed on Console with enabling verbose level.
-   * @param configs: An object for config array, likes:
-   *   [{backend: 'WASM', prefer: 'fast'}]
-   *   [{backend: 'WebGL', prefer: 'sustained'}]
-   *   [{backend: 'WebML', prefer: 'fast'}]
-   *   [{backend: 'WebML', prefer: 'sustained'}]
-   *   or
-   *   [{backend: 'WASM', prefer: 'fast'}, {backend: 'WebGL', prefer: 'sustained'}]
-   *   [{backend: 'WASM', prefer: 'fast'}, {backend: 'WebML', prefer: 'fast'}]
-   *   etc.
-   * @param layerList: {object | undefined} An object for layer array, likes: [1, 2 ,3], if undefined, it means all layers.
+   * @param {object} configs An array object for config array, likes:
+   *     [{backend: 'WASM', prefer: 'fast'}]
+   *     [{backend: 'WebGL', prefer: 'sustained'}]
+   *     [{backend: 'WebML', prefer: 'fast'}]
+   *     [{backend: 'WebML', prefer: 'sustained'}]
+   *     or
+   *     [{backend: 'WASM', prefer: 'fast'}, {backend: 'WebGL', prefer: 'sustained'}]
+   *     [{backend: 'WASM', prefer: 'fast'}, {backend: 'WebML', prefer: 'fast'}]
+   *     etc.
+   * @param {!Array<number>|undefined} layerList An array object that for layer array, likes: [1, 2 ,3], or undefined that means an array with all layers indexes.
    */
   iterateLayers = async (configs, layerList) => {
     if (!this._bInitialized) return;

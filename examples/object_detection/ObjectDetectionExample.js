@@ -3,18 +3,21 @@ class ObjectDetectionExample extends BaseCameraExample {
     super(models);
   }
 
+  /** @override */
   _customUI = () => {
     $('#fullscreen i svg').click(() => {
       $('#canvasshow').toggleClass('fullscreen');
     });
   };
 
+  /** @override */
   _createRunner = () => {
     const runner = new ObjectDetectionRunner();
     runner.setProgressHandler(updateLoadingProgressComponent);
     return runner;
   };
 
+  /** @override */
   _processExtra = (output) => {
     const deQuantizeParams =  this._runner.getDeQuantizeParams();
     let canvasShowElement = document.getElementById('canvasshow');

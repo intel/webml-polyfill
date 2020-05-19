@@ -4,10 +4,7 @@ class OpenCVRunner extends BaseRunner {
     this._output = null;
   }
 
-  /**
-   * This method is to load model file with specified url.
-   * @param url: A string for model file url.
-   */
+  /** @override */
   _loadModelFile = async (url) => {
     if (url !== undefined) {
       const arrayBuffer = await this._loadURL(url, this._progressHandler, true);
@@ -38,12 +35,14 @@ class OpenCVRunner extends BaseRunner {
     this._setLoadedFlag(true);
   };
 
+  /** @override */
   _doInitialization = (modelInfo) => {
     this._setLoadedFlag(false);
     this._setInitializedFlag(false);
     this._setModelInfo(modelInfo);
   };
 
+  /** @override */
   _doCompile = (options) => {
     let model = null;
 
@@ -55,20 +54,7 @@ class OpenCVRunner extends BaseRunner {
     }
   };
 
-  /**
-   * This method is to get input tensor with input src (HTML [<img> | <video>] element).
-   * @param src: An object for HTML [<img> | <video>] element.
-   * @param options: A string to get inputTensor. Details:
-   * options = {
-   *   // inputSize was configed in modelZoo.js, inputSize = [h, w, c].
-   *   inputSize: inputSize,
-   *   // preOptions was also configed in modelZoo.js,
-   *   // preOptions= {mean: [number, number, number, number],std: [number, number, number, number]}
-   *   preOptions: preOptions,
-   *   imageChannels: 4,
-   * };
-   * @returns {object} This returns an object for input tensor.
-   */
+  /** @override */
   _getInputTensor = (input) => {
     const src = input.src;
     const options = input.options;
@@ -100,6 +86,7 @@ class OpenCVRunner extends BaseRunner {
     tensor.delete();
   };
 
+  /** @override */
   _doInference = () => {
     this._output = this._model.forward();
   };

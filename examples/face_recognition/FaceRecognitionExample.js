@@ -37,6 +37,7 @@ class FaceRecognitionExample extends BaseCameraExample {
     this._bDrew = flag;
   };
 
+  /** @override */
   _customUI = () => {
     const targetImageElement = document.getElementById('targetImage');
     const cameraImageElement = document.getElementById('cameraImage');
@@ -125,6 +126,7 @@ class FaceRecognitionExample extends BaseCameraExample {
     });
   };
 
+  /** @override */
   _freeMemoryResources = () => {
     if (this._runner) {
       this._runner.deleteAll();
@@ -135,6 +137,7 @@ class FaceRecognitionExample extends BaseCameraExample {
     }
   };
 
+  /** @override */
   _getRunner = () => {
     if (this._runner == null) {
       this._runner = new FaceDetectorRunner();
@@ -147,6 +150,7 @@ class FaceRecognitionExample extends BaseCameraExample {
     }
   };
 
+  /** @override */
   _loadModel = async () => {
     let currentFDModelId = null;
     let currentFRModelId = null;
@@ -187,17 +191,20 @@ class FaceRecognitionExample extends BaseCameraExample {
     await this._coRunner.loadModel(coModelInfo);
   };
 
+  /** @override */
   _setSupportedOps = (ops) => {
     this._runner.setSupportedOps(ops);
     this._coRunner.setSupportedOps(ops);
   };
 
+  /** @override */
   _compileModel = async () => {
     let options = this._getCompileOptions();
     await this._runner.compileModel(options);
     await this._coRunner.compileModel(options);
   };
 
+  /** @override */
   _getRequiredOps = () => {
     const fdRequiredOps = this._runner.getRequiredOps();
     const frRequiredOps = this._coRunner.getRequiredOps();
@@ -205,6 +212,7 @@ class FaceRecognitionExample extends BaseCameraExample {
     return requiredOps;
   };
 
+  /** @override */
   _getSubgraphsSummary = () => {
     const fdSummary = this._runner.getSubgraphsSummary();
     const frSummary = this._coRunner.getSubgraphsSummary();
@@ -307,6 +315,7 @@ class FaceRecognitionExample extends BaseCameraExample {
 
   };
 
+  /** @override */
   _predict = async () => {
     if (this._currentInputType === 'image') {
       let flag1 = false;
@@ -346,9 +355,8 @@ class FaceRecognitionExample extends BaseCameraExample {
     this._postProcess();
   };
 
+  /** @override */
   _processExtra = (output) => {
-    const supportedOps = getSupportedOps(this._currentBackend, this._currentPrefer);
-
     if (this._currentInputType === 'image') {
       let targetTextClasses = [];
       for (let i in this._targetEmbeddings.embeddings) {

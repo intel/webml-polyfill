@@ -3,6 +3,7 @@ class ImageClassificationOpenCVRunner extends OpenCVRunner {
     super();
   }
 
+  /** @override */
   _getOutputTensor = () => {
     let outputTensor = softmax(this._output.data32F);
     this._output.delete();

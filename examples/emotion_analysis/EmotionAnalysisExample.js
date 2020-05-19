@@ -12,12 +12,14 @@ class EmotionAnalysisExample extends BaseCameraExample {
     this._currentCoModelInfo = modelInfo;
   };
 
+  /** @override */
   _customUI = () => {
     $('#fullscreen i svg').click(() => {
       $('#canvasshow').toggleClass('fullscreen');
     });
   };
 
+  /** @override */
   _freeMemoryResources = () => {
     if (this._runner) {
       this._runner.deleteAll();
@@ -28,6 +30,7 @@ class EmotionAnalysisExample extends BaseCameraExample {
     }
   };
 
+  /** @override */
   _getRunner = () => {
     if (this._runner == null) {
       this._runner = new FaceDetectorRunner();
@@ -40,6 +43,7 @@ class EmotionAnalysisExample extends BaseCameraExample {
     }
   };
 
+  /** @override */
   _loadModel = async () => {
     let currentFDModelId = null;
     let currentEAModelId = null;
@@ -80,17 +84,20 @@ class EmotionAnalysisExample extends BaseCameraExample {
     await this._coRunner.loadModel(coModelInfo);
   };
 
+  /** @override */
   _setSupportedOps = (ops) => {
     this._runner.setSupportedOps(ops);
     this._coRunner.setSupportedOps(ops);
   };
 
+  /** @override */
   _compileModel = async () => {
     let options = this._getCompileOptions();
     await this._runner.compileModel(options);
     await this._coRunner.compileModel(options);
   };
 
+  /** @override */
   _getRequiredOps = () => {
     const fdRequiredOps = this._runner.getRequiredOps();
     const emRequiredOps = this._coRunner.getRequiredOps();
@@ -98,12 +105,14 @@ class EmotionAnalysisExample extends BaseCameraExample {
     return requiredOps;
   };
 
+  /** @override */
   _getSubgraphsSummary = () => {
     const fdSummary = this._runner.getSubgraphsSummary();
     const emSummary = this._coRunner.getSubgraphsSummary();
     return fdSummary.concat(emSummary);
   };
 
+  /** @override */
   _predict = async () => {
     this._strokedRects = [];
     this._keyPoints = [];
@@ -194,6 +203,7 @@ class EmotionAnalysisExample extends BaseCameraExample {
     this._postProcess();
   };
 
+  /** @override */
   _processExtra = (output) => {
     // show inference result
     let texts = [];

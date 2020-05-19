@@ -3,14 +3,17 @@ class BaseMircophoneExample extends BaseExample {
     super(models);
   }
 
+  /** @override */
   _getDefaultInputType = () => {
     return 'audio';
   };
 
+  /** @override */
   _getDefaultInputMediaType = () => {
     return 'microphone';
   };
 
+  /** @override */
   _getMediaConstraints = () => {
     const constraints = {audio: true};
     return constraints;

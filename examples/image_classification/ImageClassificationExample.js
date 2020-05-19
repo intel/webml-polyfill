@@ -3,12 +3,14 @@ class ImageClassificationExample extends BaseCameraExample {
     super(models);
   }
 
+  /** @override */
   _customUI = () => {
     $('#fullscreen i svg').click(() => {
       $('video').toggleClass('fullscreen');
     });
   };
 
+  /** @override */
   _createRunner = () => {
     let runner;
     switch (this._currentFramework) {
@@ -23,6 +25,7 @@ class ImageClassificationExample extends BaseCameraExample {
     return runner;
   };
 
+  /** @override */
   _processExtra = (output) => {
     let labelClasses;
     switch (this._currentFramework) {

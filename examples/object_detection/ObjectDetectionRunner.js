@@ -7,6 +7,7 @@ class ObjectDetectionRunner extends WebNNRunner {
     this._deQuantizedOutputClassScoresTensor = [];
   }
 
+  /** @override */
   _initOutputTensor = () => {
     if (this._currentModelInfo.category === 'SSD') {
       // SSD models
@@ -35,6 +36,7 @@ class ObjectDetectionRunner extends WebNNRunner {
     }
   };
 
+  /** @override */
   _getOutputTensor = () => {
     let outputTensor = {};
 

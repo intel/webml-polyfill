@@ -5,6 +5,7 @@ class FaceDetectorRunner extends WebNNRunner {
     this._outputClassScoresTensor;
   }
 
+  /** @override */
   _initOutputTensor = () => {
     if (this._currentModelInfo.category === 'SSD') {
       // SSD models
@@ -25,6 +26,7 @@ class FaceDetectorRunner extends WebNNRunner {
     }
   };
 
+  /** @override */
   _getOutputTensor = () => {
     let outputTensor = {};
 
