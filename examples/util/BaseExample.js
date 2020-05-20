@@ -620,7 +620,6 @@ class BaseExample extends BaseApp {
 
   /**
    * This method is to free allocated memory for model complation by polyfill backend.
-   * @override
    */
   _freeMemoryResources = () => {
     // Override by inherited when example has co-work runners

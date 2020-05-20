@@ -520,11 +520,7 @@ class WebNNRunner extends BaseRunner {
     return this._deQuantizeParams;
   };
 
-  /**
-   * This method is to get output tensor for post processing by example side.
-   * @returns {!TypedArray<number>}
-   * @override
-   */
+  /** @override */
   _getOutputTensor = () => {
     return this._outputTensor[0];
   };
