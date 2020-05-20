@@ -3,7 +3,7 @@ jobs:
   build:
     working_directory: ~
     docker:
-        - image: circleci/node:13.12.0-browsers
+        - image: circleci/node:14.2.0-browsers
     steps:
       - checkout
       - run: npm install
