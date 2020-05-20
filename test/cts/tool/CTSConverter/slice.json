@@ -149,5 +149,11 @@
         "softmax_v1_2.mod.py",
         "transpose_float16.mod.py",
         "transpose_v1_2.mod.py"
+    ],
+    "V1_3": [
+      "avg_pool_quant8_signed.mod.py",
+      "conv2d_quant8_signed.mod.py",
+      "depthwise_conv2d_quant8_signed.mod.py",
+      "softmax_quant8_signed.mod.py"
     ]
 }
