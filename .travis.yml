@@ -3,7 +3,7 @@ language: node_js
 matrix:
   include:
     - os: osx
-      node_js: '8'
+      node_js: '12'
       sudo: 'required'
 before_install:
   - node .filter-ci.js $TRAVIS_COMMIT
