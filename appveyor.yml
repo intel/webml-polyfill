@@ -1,9 +1,17 @@
+environment:
+  nodejs_version: "12"
+
 version: "{build}"
 clone_depth: 5
 
 install:
-    - npm install
-    - npm run build
+  - ps: Install-Product node $env:nodejs_version
+  - npm install
+  - npm run build
+
 test_script:
-    - npm test
+  - node --version
+  - npm --version
+  - npm test
+
 build: off
