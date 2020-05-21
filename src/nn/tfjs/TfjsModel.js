@@ -35,7 +35,18 @@ export default class TfjsModel {
   async prepareModel() {
     if(this._model._backend === 'WASM'){
       if(tf.getBackend() != 'wasm'){
-        setWasmPath(wasmPath);
+        function _fixWasmPath(wasmPath) {
+          // Assume the wasm file is located in the same folder as webml-polyfill.js
+          for (let s of document.getElementsByTagName('script')) {
+            if (s.src.indexOf('webml-polyfill.js') !== -1) {
+              let parts = s.src.split('/');
+              parts[parts.length - 1] = wasmPath;
+              return parts.join('/');
+            }
+          }
+          return '';
+        }
+        setWasmPath(_fixWasmPath(wasmPath));
         await tf.setBackend('wasm');
       };
     } else {
