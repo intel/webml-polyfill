@@ -27,6 +27,9 @@ export default class Model {
     this._backend = options.backend;
     this._eager = options.eager || false;
     this._supportedOps = options.supportedOps || new Set();
+    this._isQuantized = false;
+    this._unsupportedOp = new Set([OperationCode.BATCH_TO_SPACE_ND]);
+    this._hasUnsupportedOp = false;
   }
 
   /**
@@ -59,6 +62,20 @@ export default class Model {
   }
 
   /**
+   * Determine if the OperandCode of model is quant8.
+   */
+  isQuant8() {
+    return this._isQuantized;
+  }
+
+  /**
+   * Check if the model contains unsupported ops in tfjs wasm backend.
+   */
+  hasUnsupportedOp() {
+    return this._hasUnsupportedOp;
+  }
+
+  /**
    * Add an operand to a model.
    *
    * @param {number} options.type -  The data type, e.g OperandCode.FLOAT32.
@@ -85,6 +102,10 @@ export default class Model {
       value: null
     }
     this._operands.push(operand);
+
+    if (this._isOperandQuantized(operand)) {
+      this._isQuantized = true;
+    }
     // return ResultCode.NO_ERROR;
   }
 
@@ -155,6 +176,11 @@ export default class Model {
     if (!this._validateOperandList(outputs)) {
       throw new Error(`Invalid outputs ${outputs}`);
     }
+
+    if (this._unsupportedOp.has(type)) {
+      this._hasUnsupportedOp = true;
+    }
+
     let op = {
       type: type,
       inputs: inputs,
@@ -165,6 +191,15 @@ export default class Model {
     });
     this._operations.push(op);
     // return ResultCode.NO_ERROR;
+  }
+
+  /**
+   * Determine if the operand is quantized.
+   */
+  _isOperandQuantized(operand) {
+    return operand.type === OperandCode.TENSOR_QUANT8_ASYMM ||
+           operand.type === OperandCode.TENSOR_QUANT8_SYMM_PER_CHANNEL ||
+           operand.type === OperandCode.TENSOR_QUANT8_ASYMM_SIGNED
   }
 
   /**

@@ -1,0 +1,2 @@
+The TfjsModel.js imports [tfjs-core](https://github.com/tensorflow/tfjs-core) and [tfjs-backend-wasm](https://github.com/tensorflow/tfjs/tree/master/tfjs-backend-wasm)
+which is licensed under the Apache License, Version 2.0.
