@@ -8,4 +8,3 @@ examples/skeleton_detection/model/mobilenet*/*
 src/nn/wasm/src/build
 .DS_Store
 package-lock.json
-**/tfjs-backend-wasm.wasm
