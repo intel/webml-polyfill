@@ -4,10 +4,6 @@ class BaseApp {
     this._currentModelId = 'none';
     // currentInputElement: an element of HTMLImageElement | HTMLVideoElement | HTMLAudioElement
     this._currentInputElement = null;
-    // Backend type: 'WASM' | 'WebGL' | 'WebML'
-    this._currentBackend = 'WASM';
-    // Prefer type: 'none' | 'fast' | 'sustained' | 'low'
-    this._currentPrefer = 'none';
     // Runner instance to load raw model, convert raw model to Web NN model, then model does compilation, execution
     // One App could have multi different runner instances
     this._runner = null;
@@ -21,42 +17,36 @@ class BaseApp {
     this._currentInputElement = element;
   };
 
-  _setBackend = (backend) => {
-    this._currentBackend = backend;
-  };
+  /**
+   * This method is to get runner instance by calling '_createRunner' method.
+   */
+  _getRunner = () => {};
 
-  _setPrefer = (prefer) => {
-    this._currentPrefer = prefer;
-  };
+  /**
+   * This method is for loading model file [and label file if label information is required].
+   */
+  _loadModel = async () => {};
 
-  _getRunner = () => {
-    // Override by inherited
-  };
+  /**
+   * This method is to compile a machine learning model.
+   */
+  _compileModel = async () => {};
 
-  _loadModel = async () => {
-    // Override by inherited
-  };
+  /**
+   * This method is to run inference by model.
+   */
+  _predict = async () => {};
 
-  _compileModel = async () => {
-    // Override by inherited
-  };
+  /**
+   * This method is to do post processing with inference result.
+   */
+  _postProcess = () => {};
 
-  _predict = async () => {
-    // Override by inherited
-  };
-
-  _processOutput = () => {
-    // Override by inherited
-  };
-
-  UI = () => {
-    // Override by inherited
-    // 1._setInputElement
-    // 2.ready for runner: _setModelId -> _setBackend -> _setPrefer
-  };
-
+  /**
+   * This method is to run inference and do post processing.
+   */
   main = async () => {
     // Override by inherited
-    // _getRunner -> _loadModel -> _compileModel -> _predict -> _processOutput
+    // _getRunner -> _loadModel -> _compileModel -> _predict -> _postProcess
   };
 };

@@ -31,6 +31,7 @@ class SkeletonDetectionExample {
     };
     this._bFrontCamera = false;
     this._runner = null;
+    this._isStreaming = false; // for inference camera video
   }
 
   _setInputType = (t) => {
@@ -59,6 +60,10 @@ class SkeletonDetectionExample {
 
   _setTrack = (track) => {
     this._track = track;
+  };
+
+  _setStreaming = (flag) => {
+    this._isStreaming = flag;
   };
 
   _setHiddenControlsFlag = (flag) => {
@@ -412,22 +417,22 @@ class SkeletonDetectionExample {
 
     $('#sdscorethreshold').change(() => {
       this._showConfig.minScore = parseFloat($('#sdscorethreshold').val());
-      this._processOutput();
+      this._postProcess();
     });
 
     $('#sdnmsradius').change(() => {
       this._showConfig.nmsRadius = parseInt($('#sdnmsradius').val());
-      this._processOutput();
+      this._postProcess();
     });
 
     $('#sdmaxdetections').change(() => {
       this._showConfig.maxDetections = parseInt($('#sdmaxdetections').val());
-      this._processOutput();
+      this._postProcess();
     });
 
     $('#sdshowpose').change(() => {
       this._showConfig.showPose = $('#sdshowpose').prop('checked');
-      this._processOutput();
+      this._postProcess();
     });
 
     $('#sduseatrousconvops').change(() => {
@@ -437,7 +442,7 @@ class SkeletonDetectionExample {
 
     $('#sdshowboundingbox').change(() => {
       this._showConfig.showBoundingBox = $('#sdshowboundingbox').prop('checked');
-      this._processOutput();
+      this._postProcess();
     });
   };
 
@@ -453,17 +458,20 @@ class SkeletonDetectionExample {
     const scaleFactor = this._modelConfig.scaleFactor;
     const scaleWidth = getValidResolution(scaleFactor, inputSize[1], outputStride);
     const scaleHeight = getValidResolution(scaleFactor, inputSize[0], outputStride);
-    const drawOptions = {
-      inputSize: [scaleHeight, scaleWidth, inputSize[2]],
-      preOptions: this._currentModelInfo.preOptions,
-      imageChannels: 4,
+    const input = {
+      src: this._currentInputElement,
+      options: {
+        inputSize: [scaleHeight, scaleWidth, inputSize[2]],
+        preOptions: this._currentModelInfo.preOptions,
+        imageChannels: 4,
+      },
     };
-    await this._runner.run(this._currentInputElement, drawOptions);
-    this._processOutput();
+    await this._runner.run(input);
+    this._postProcess();
   };
 
   _predictFrame = async () => {
-    if (this._currentInputType === 'camera')  {
+    if (this._isStreaming) {
       this._stats.begin();
       await this._predict();
       this._stats.end();
@@ -481,7 +489,7 @@ class SkeletonDetectionExample {
     readyShowResultComponents();
   };
 
-  _processOutput = () => {
+  _postProcess = () => {
     const drawPoses = (src, canvas, poses, options) => {
       const ctx = canvas.getContext('2d');
       const width = src.naturalWidth || src.videoWidth;
@@ -573,7 +581,7 @@ class SkeletonDetectionExample {
   main = async () => {
     // Update UI title component info
     updateTitleComponent(this._currentBackend, this._currentPrefer);
-
+    this._setStreaming(false);
     try {
       if (this._runner == null) {
         this._runner = new SkeletonDetectionRunner();
@@ -603,6 +611,7 @@ class SkeletonDetectionExample {
           readyShowResultComponents();
           break;
         case 'camera':
+          this._setStreaming(true);
           await this._predictStream();
           break;
         default:

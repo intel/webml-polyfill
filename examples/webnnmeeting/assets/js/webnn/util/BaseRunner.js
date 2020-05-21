@@ -17,6 +17,7 @@ class BaseRunner {
     this._bEagerMode = false;
     this._supportedOps = new Set();
     this._inferenceTime = 0.0; // ms
+    this._labels = null;
   }
 
   _setBackend = (backend) => {
@@ -81,7 +82,7 @@ class BaseRunner {
     this._inferenceTime = t;
   };
 
-  _loadURL = async (url, handle = null, isBinary = false) => {
+  _loadURL = async (url, handler = null, isBinary = false) => {
     let _this = this;
     return new Promise((resolve, reject) => {
       if (_this._currentRequest != null) {
@@ -103,15 +104,24 @@ class BaseRunner {
           }
         }
       };
-      if (handle != null) {
-        oReq.onprogress = handle;
+      if (handler != null) {
+        oReq.onprogress = handler;
       }
       oReq.send();
     });
   };
 
-  _getRawModel = async (url) => {
-    let status = 'ERROR';
+  _setLabels = (labels) => {
+    this._labels = labels;
+  };
+
+  _loadLabelsFile = async (url) => {
+    const result = await this._loadURL(url);
+    this._setLabels(result.split('\n'));
+    console.log(`labels: ${this._labels}`);
+  };
+
+  _loadModelFile = async (url) => {
     let rawModel = null;
 
     if (url !== undefined) {
@@ -122,7 +132,6 @@ class BaseRunner {
           const flatBuffer = new flatbuffers.ByteBuffer(bytes);
           rawModel = tflite.Model.getRootAsModel(flatBuffer);
           rawModel._rawFormat = 'TFLITE';
-          status = 'SUCCESS'
           printTfLiteModel(rawModel);
           break;
         case 'onnx':
@@ -132,7 +141,6 @@ class BaseRunner {
           }
           rawModel = onnx.ModelProto.decode(bytes);
           rawModel._rawFormat = 'ONNX';
-          status = 'SUCCESS'
           printOnnxModel(rawModel);
           break;
         case 'bin':
@@ -141,7 +149,6 @@ class BaseRunner {
           const weightsBuffer = bytes.buffer;
           rawModel = new OpenVINOModel(networkText, weightsBuffer);
           rawModel._rawFormat = 'OPENVINO';
-          status = 'SUCCESS';
           break;
         default:
           throw new Error(`Unrecognized model format, support TFLite | ONNX | OpenVINO model`);
@@ -152,23 +159,12 @@ class BaseRunner {
 
     this._setRawModel(rawModel);
     this._setLoadedFlag(true);
-    return status;
-  };
-
-  _getOtherResources = async () => {
-    // Override by inherited if needed, likes load labels file
-  };
-
-  _getModelResources = async () => {
-    if(this._currentModelInfo) {
-      await this._getRawModel(this._currentModelInfo.modelFile);
-      await this._getOtherResources();
-    }
   };
 
   loadModel = async (modelInfo) => {
     if (this._bLoaded && this._currentModelInfo.modelFile === modelInfo.modelFile) {
-      return 'LOADED';
+      console.log(`${this._currentModelInfo.modelFile} already loaded.`);
+      return;
     }
 
     // reset all states
@@ -183,7 +179,8 @@ class BaseRunner {
     this._initInputTensor();
     this._initOutputTensor();
 
-    await this._getModelResources();
+    await this._loadModelFile(this._currentModelInfo.modelFile);
+    await this._loadLabelsFile(this._currentModelInfo.labelsFile);
   };
 
   _getInputTensorTypedArray = () => {
@@ -224,12 +221,9 @@ class BaseRunner {
   };
 
   compileModel = async (backend, prefer) => {
-    if (!this._bLoaded) {
-      return 'NOT_LOADED';
-    }
-
     if (this._bInitialized && backend === this._currentBackend && prefer === this._currentPrefer) {
-      return 'INITIALIZED';
+      console.log('Model was already compiled.');
+      return;
     }
 
     this._setBackend(backend);
@@ -262,8 +256,7 @@ class BaseRunner {
     this._setModel(model);
     this._model.setSupportedOps(this._supportedOps);
     this._model.setEagerMode(this._bEagerMode);
-    const compileStatus = await this._model.createCompiledModel();
-    console.log(`Compilation Status: [${compileStatus}]`);
+    await this._model.createCompiledModel();
 
     this._setModelRequiredOps(this._model.getRequiredOps());
 
@@ -283,25 +276,94 @@ class BaseRunner {
     console.log(`Warm up Time: ${computeDelta.toFixed(2)} ms`);
 
     this._setInitializedFlag(true);
-    return 'SUCCESS';
   };
 
-  run = async (src, options) => {
-    let status = 'ERROR';
+  _getTensor = (input) => {
+    const image = input.src;
+    const options = input.options;
+    let tensor = this._inputTensor[0];
 
-    // if (src.tagName === 'AUDIO') {
-    //   await getTensorArrayByAudio(src, this._inputTensor, options);
-    // } else {
-      getTensorArray(src, this._inputTensor, options);
-    // }
+    image.width = image.videoWidth || image.naturalWidth;
+    image.height = image.videoHeight || image.naturalHeight;
+
+    const [height, width, channels] = options.inputSize;
+    const preOptions = options.preOptions || {};
+    const mean = preOptions.mean || [0, 0, 0, 0];
+    const std = preOptions.std || [1, 1, 1, 1];
+    const normlizationFlag = preOptions.norm || false;
+    const channelScheme = preOptions.channelScheme || 'RGB';
+    const imageChannels = options.imageChannels || 4; // RGBA
+    const drawOptions = options.drawOptions;
+
+    let canvasElement = document.createElement('canvas');
+    canvasElement.width = width;
+    canvasElement.height = height;
+    let canvasContext = canvasElement.getContext('2d');
+
+    if (drawOptions) {
+      canvasContext.drawImage(image, drawOptions.sx, drawOptions.sy, drawOptions.sWidth, drawOptions.sHeight,
+        0, 0, drawOptions.dWidth, drawOptions.dHeight);
+    } else {
+      if (options.scaledFlag) {
+        const resizeRatio = Math.max(Math.max(image.width, image.height) / width, 1);
+        const scaledWidth = Math.floor(image.width / resizeRatio);
+        const scaledHeight = Math.floor(image.height / resizeRatio);
+        canvasContext.drawImage(image, 0, 0, scaledWidth, scaledHeight);
+      } else {
+        canvasContext.drawImage(image, 0, 0, width, height);
+      }
+    }
+
+    let pixels = canvasContext.getImageData(0, 0, width, height).data;
+
+    if (normlizationFlag) {
+      pixels = new Float32Array(pixels).map(p => p / 255);
+    }
+
+    if (channelScheme === 'RGB') {
+      if (channels > 1) {
+        for (let c = 0; c < channels; ++c) {
+          for (let h = 0; h < height; ++h) {
+            for (let w = 0; w < width; ++w) {
+              let value = pixels[h * width * imageChannels + w * imageChannels + c];
+              tensor[h * width * channels + w * channels + c] = (value - mean[c]) / std[c];
+            }
+          }
+        }
+      } else if (channels === 1) {
+        for (let c = 0; c < channels; ++c) {
+          for (let h = 0; h < height; ++h) {
+            for (let w = 0; w < width; ++w) {
+              let index = h * width * imageChannels + w * imageChannels + c;
+              let value = (pixels[index] + pixels[index + 1] + pixels[index + 2]) / 3;
+              tensor[h * width * channels + w * channels + c] = (value - mean[c]) / std[c];
+            }
+          }
+        }
+      }
+    } else if (channelScheme === 'BGR') {
+      for (let c = 0; c < channels; ++c) {
+        for (let h = 0; h < height; ++h) {
+          for (let w = 0; w < width; ++w) {
+            let value = pixels[h * width * imageChannels + w * imageChannels + (channels - c - 1)];
+            tensor[h * width * channels + w * channels + c] = (value - mean[c]) / std[c];
+          }
+        }
+      }
+    } else {
+      throw new Error(`Unsupport '${channelScheme}' Color Channel Scheme `);
+    }
+  };
+
+  run = async (input) => {
+    this._getTensor(input);
 
     const start = performance.now();
-    status = await this._model.compute(this._inputTensor, this._outputTensor);
+    let status = await this._model.compute(this._inputTensor, this._outputTensor);
     const delta = performance.now() - start;
     this._setInferenceTime(delta);
     console.log(`Computed Status: [${status}]`);
     console.log(`Compute Time: [${delta} ms]`);
-    return status;
   };
 
   getRequiredOps = () => {
@@ -316,16 +378,13 @@ class BaseRunner {
     return this._deQuantizeParams;
   };
 
-  _updateOutput = (output) => {
-    // Override by inherited if needed
-  };
-
   getOutput = () => {
     let output = {
-      outputTensor: this._outputTensor[0],
+      tensor: this._outputTensor[0],
       inferenceTime: this._inferenceTime,
+      labels: this._labels,
     };
-    this._updateOutput(output); // add custom output info
+
     return output;
   };
 
@@ -397,29 +456,10 @@ class BaseRunner {
 class SemanticSegmentationRunner extends BaseRunner {
   constructor() {
     super();
-    this._labels = null;
   }
-
-  _setLabels = (labels) => {
-    this._labels = labels;
-  };
-
-  _getLabels = async (url) => {
-    const result = await this._loadURL(url);
-    this._setLabels(result.split('\n'));
-    console.log(`labels: ${this._labels}`);
-  };
-
-  _getOtherResources = async () => {
-    await this._getLabels(this._currentModelInfo.labelsFile);
-  };
 
   _getOutputTensorTypedArray = () => {
     return Int32Array;
-  };
-
-  _updateOutput = (output) => {
-    output.labels = this._labels;
   };
 }
 

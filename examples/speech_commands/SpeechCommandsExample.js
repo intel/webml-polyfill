@@ -3,6 +3,7 @@ class SpeechCommandsExample extends BaseMircophoneExample {
     super(models);
   }
 
+  /** @override */
   _customUI = () => {
     let _this = this;
     let inputFileElement = document.getElementById('input');
@@ -30,22 +31,27 @@ class SpeechCommandsExample extends BaseMircophoneExample {
     };
   };
 
+  /** @override */
   _createRunner = () => {
-    const runner = new SpeechCommandsRunner();
+    const runner = new WebNNRunner();
     runner.setProgressHandler(updateLoadingProgressComponent);
     return runner;
   };
 
+  /** @override */
   _predict = async () => {
     try {
       this._stats.begin();
-      const audioOptions = {
-        inputSize: this._currentModelInfo.inputSize,
-        sampleRate: this._currentModelInfo.sampleRate,
-        mfccsOptions: this._currentModelInfo.mfccsOptions,
+      const input = {
+        src: this._currentInputElement,
+        options: {
+          inputSize: this._currentModelInfo.inputSize,
+          sampleRate: this._currentModelInfo.sampleRate,
+          mfccsOptions: this._currentModelInfo.mfccsOptions,
+        },
       };
-      await this._runner.run(this._currentInputElement, audioOptions);
-      this._processOutput();
+      await this._runner.run(input);
+      this._postProcess();
       this._stats.end();
     } catch (e) {
       showAlertComponent(e);
@@ -78,6 +84,7 @@ class SpeechCommandsExample extends BaseMircophoneExample {
     }, 1000));
   };
 
+  /** @override */
   _predictStream = async () => {
     const constraints = this._getMediaConstraints();
     let stream = await navigator.mediaDevices.getUserMedia(constraints);
@@ -85,10 +92,10 @@ class SpeechCommandsExample extends BaseMircophoneExample {
     await new Promise(() => setTimeout(this._recordAndPredictMicrophone(stream), 500));
   };
 
-  _processCustomOutput = () => {
-    const output = this._runner.getOutput();
+  /** @override */
+  _processExtra = (output) => {
     const deQuantizeParams = this._runner.getDeQuantizeParams();
-    const outputTensor = postOutputTensorAudio(output.outputTensor);
+    const outputTensor = postOutputTensorAudio(output.tensor);
     const labelClasses = getTopClasses(outputTensor, output.labels, 3, deQuantizeParams);
     labelClasses.forEach((c, i) => {
       console.log(`\tlabel: ${c.label}, probability: ${c.prob}%`);

@@ -1,87 +1,113 @@
 class BaseRunner {
   constructor() {
-    this._currentBackend = null;
-    this._currentPrefer = null;
     this._currentModelInfo = {};
-    this._inputTensor = [];
-    this._outputTensor = [];
     this._currentRequest = null;
     this._progressHandler = null;
-    this._rawModel = null;
     this._bLoaded = false; // loaded status of raw model for Web NN API
     this._model = null; // get Web NN model by converting raw model
-    this._subgraphsSummary = [];
-    this._modelRequiredOps = null;
-    this._deQuantizeParams = null;
     this._bInitialized = false; // initialized status for model
-    this._bEagerMode = false;
-    this._supportedOps = new Set();
-    this._inferenceTime = 0.0; // ms
+    this._inferenceTime = 0.0; // unit is 'ms'
+    this._labels = null; // optional for some examples
   }
 
-  _setBackend = (backend) => {
-    this._currentBackend = backend;
+  /**
+   * This method is to set '_labels'.
+   * @param {!Array<string>} labels An array oject that for label info.
+   */
+  _setLabels = (labels) => {
+    this._labels = labels;
   };
 
-  _setPrefer = (prefer) => {
-    this._currentPrefer = prefer;
+  /**
+   * This method is to load label file.
+   * @param {string} url A string that for label file url.
+   */
+  _loadLabelsFile = async (url) => {
+    const result = await this._loadURL(url);
+    this._setLabels(result.split('\n'));
+    console.log(`labels: ${this._labels}`);
   };
 
+  /**
+   * This method is to set '_currentModelInfo'.
+   * @param {!Object<string, *>} modelInfo An object that for model info which was configed in modeZoo.js.
+   *     An example for model info:
+   *       modelInfo = {
+   *         modelName: {string}, // 'MobileNet v1 (TFLite)'
+   *         format: {string}, // 'TFLite'
+   *         modelId: {string}, // 'mobilenet_v1_tflite'
+   *         modelSize: {string}, // '16.9MB'
+   *         inputSize: {!Array<number>}, // [224, 224, 3]
+   *         outputSize: {number} // 1001
+   *         modelFile: {string}, // '../image_classification/model/mobilenet_v1_1.0_224.tflite'
+   *         labelsFile: {string}, // '../image_classification/model/labels1001.txt'
+   *         preOptions: {!Obejct<string, *>}, // {mean: [127.5, 127.5, 127.5], std: [127.5, 127.5, 127.5],}
+   *         intro: {string}, // 'An efficient Convolutional Neural Networks for Mobile Vision Applications.',
+   *         paperUrl: {string}, // 'https://arxiv.org/pdf/1704.04861.pdf'
+   *       };
+   */
   _setModelInfo = (modelInfo) => {
-    this._currentModelInfo = modelInfo
+    this._currentModelInfo = modelInfo;
   };
 
+  /**
+   * This method is to set '_currentRequest'.
+   * @param {!XMLHttpRequest} req
+   */
   _setRequest = (req) => {
     // Record current request, aborts the request if it has already been sent
     this._currentRequest = req;
   };
 
+  /**
+   * This method is to set '_progressHandler'.
+   * @param {function(!ProcessEvent): undefined} handler
+   */
   setProgressHandler = (handler) => {
     // Use handler to prompt for model loading progress info
     this._progressHandler = handler;
   };
 
-  setEagerMode = (flag) => {
-    this._bEagerMode = flag;
-  };
-
-  setSupportedOps = (ops) => {
-    this._supportedOps = ops;
-  };
-
-  _setRawModel = (rawModel) => {
-    this._rawModel = rawModel;
-  };
-
+  /**
+   * This method is to set '_bLoaded'.
+   * @param {boolean} flag A boolean that for whether model loaded.
+   */
   _setLoadedFlag = (flag) => {
     this._bLoaded = flag;
   };
 
+  /**
+   * This method is to set '_model'.
+   * @param {!TFliteModelImporter|!OnnxModelImporter|!OpenVINOModelImporter} model
+   */
   _setModel = (model) => {
     this._model = model;
   };
 
-  _setSubgraphsSummary = (summary) => {
-    this._subgraphsSummary = summary;
-  };
-
-  _setModelRequiredOps = (ops) => {
-    this._modelRequiredOps = ops;
-  };
-
-  _setDeQuantizeParams = (params) => {
-    this._deQuantizeParams = params;
-  };
-
+  /**
+   * This method is to set '_bInitialized'.
+   * @param {boolean} flag A boolean that for whether model initialized.
+   */
   _setInitializedFlag = (flag) => {
     this._bInitialized = flag;
   };
 
-  _setInferenceTime = (t) => {
-    this._inferenceTime = t;
+  /**
+   * This method is to set '_inferenceTime'.
+   * @param {number} time
+   */
+  _setInferenceTime = (time) => {
+    this._inferenceTime = time;
   };
 
-  _loadURL = async (url, handle = null, isBinary = false) => {
+  /**
+   * This method is to do loading resource with specified url.
+   * @param {string} url A string for url, such as model file url, label file url, etc..
+   * @param {function(!ProcessEvent): undefined} handler
+   * @param {boolean=} isBinary A boolean that for setting response type
+   * @returns {!Promise}
+   */
+  _loadURL = async (url, handler = null, isBinary = false) => {
     let _this = this;
     return new Promise((resolve, reject) => {
       if (_this._currentRequest != null) {
@@ -103,283 +129,174 @@ class BaseRunner {
           }
         }
       };
-      if (handle != null) {
-        oReq.onprogress = handle;
+      if (handler != null) {
+        oReq.onprogress = handler;
       }
       oReq.send();
     });
   };
 
-  _getRawModel = async (url) => {
-    let status = 'ERROR';
-    let rawModel = null;
+  /**
+   * This method is to do initialization when single instance runner loading model.
+   * @param {!Object<string, *>} modelInfo An object for model info which was configed in modeZoo.js.
+   *     See modelInfo details from above '_setModelInfo' method.
+   */
+  _doInitialization = (modelInfo) => {};
 
-    if (url !== undefined) {
-      const arrayBuffer = await this._loadURL(url, this._progressHandler, true);
-      const bytes = new Uint8Array(arrayBuffer);
-      switch (url.split('.').pop()) {
-        case 'tflite':
-          const flatBuffer = new flatbuffers.ByteBuffer(bytes);
-          rawModel = tflite.Model.getRootAsModel(flatBuffer);
-          rawModel._rawFormat = 'TFLITE';
-          status = 'SUCCESS'
-          printTfLiteModel(rawModel);
-          break;
-        case 'onnx':
-          const err = onnx.ModelProto.verify(bytes);
-          if (err) {
-            throw new Error(`The model file ${url} is invalid, ${err}`);
-          }
-          rawModel = onnx.ModelProto.decode(bytes);
-          rawModel._rawFormat = 'ONNX';
-          status = 'SUCCESS'
-          printOnnxModel(rawModel);
-          break;
-        case 'bin':
-          const networkFile = url.replace(/bin$/, 'xml');
-          const networkText = await this._loadURL(networkFile);
-          const weightsBuffer = bytes.buffer;
-          rawModel = new OpenVINOModel(networkText, weightsBuffer);
-          rawModel._rawFormat = 'OPENVINO';
-          status = 'SUCCESS';
-          break;
-        default:
-          throw new Error(`Unrecognized model format, support TFLite | ONNX | OpenVINO model`);
-      }
-    } else {
-      throw new Error(`There's none model file info, please check config info of modelZoo.`);
-    }
-
-    this._setRawModel(rawModel);
-    this._setLoadedFlag(true);
-    return status;
-  };
-
-  _getOtherResources = async () => {
-    // Override by inherited if needed, likes load labels file
-  };
-
-  _getModelResources = async () => {
-    await this._getRawModel(this._currentModelInfo.modelFile);
-    await this._getOtherResources();
-  };
-
+  /**
+   * This method is to load model file and relevant resources, such as label file.
+   * @param {!Object<string, *>} modelInfo An object for model info which was configed in modeZoo.js.
+   *     See modelInfo details from above '_setModelInfo' method.
+   */
   loadModel = async (modelInfo) => {
     if (this._bLoaded && this._currentModelInfo.modelFile === modelInfo.modelFile) {
-      return 'LOADED';
+      console.log(`${this._currentModelInfo.modelFile} already loaded.`);
+      return;
     }
 
-    // reset all states
-    this._setLoadedFlag(false);
+    this._doInitialization(modelInfo);
+
+    await this._loadModelFile(this._currentModelInfo.modelFile);
+
+    if (this._currentModelInfo.labelsFile != null) {
+      await this._loadLabelsFile(this._currentModelInfo.labelsFile);
+    }
+  };
+
+  /**
+   * This method is to do compiling a machine learning model.
+   * Compilation model by WebNN framework needs options paratmeter.
+   * Compilation model by OpenCV.js framework doesn't need options paratmeter.
+   * @param {!Object<string, *>|undefined} options
+   *     options = { // for WebNN
+   *       backend: {string}, // 'WASM'|'WebGL'|'WebML'
+   *       prefer: {string}, // 'fast'|'sustained'|'low'|'ultra_low'
+   *     };
+   */
+  _doCompile = (options) => {};
+
+  /**
+   * This method is to check whether model compiled.
+   * @param {!Object<string, *>|undefined} options
+   *     options = { // for WebNN
+   *       backend: {string}, // 'WASM'|'WebGL'|'WebML'
+   *       prefer: {string}, // 'fast'|'sustained'|'low'|'ultra_low'
+   *     };
+   */
+  _checkInitializedCompilation = (options) => {
+    return this._bInitialized;
+  }
+
+  /**
+   * This method is to compile a machine learning model.
+   * Compilation model by WebNN framework needs options paratmeter.
+   * Compilation model by OpenCV.js framework doesn't need options paratmeter.
+   * @param {!Object<string, *>|undefined} options
+   *     options = { // for WebNN
+   *       backend: {string}, // 'WASM'|'WebGL'|'WebML'
+   *       prefer: {string}, // 'fast'|'sustained'|'low'|'ultra_low'
+   *     };
+   */
+  compileModel = async (options) => {
+    if (this._checkInitializedCompilation(options)) {
+      console.log('Model was already compiled.');
+      return;
+    }
+
     this._setInitializedFlag(false);
-    this._setBackend(null);
-    this._setPrefer(null);
-    this._setModelInfo(modelInfo);
-    this._setModelRequiredOps(new Set());
-    this._setDeQuantizeParams([]);
-    this._setSubgraphsSummary([]);
-    this._initInputTensor();
-    this._initOutputTensor();
-
-    await this._getModelResources();
-  };
-
-  _getInputTensorTypedArray = () => {
-    // Override by inherited if needed
-    const typedArray = this._currentModelInfo.isQuantized || false ? Uint8Array : Float32Array;
-    return typedArray;
-  };
-
-  _initInputTensor = () => {
-    const typedArray = this._getInputTensorTypedArray();
-    this._inputTensor = [new typedArray(this._currentModelInfo.inputSize.reduce((a, b) => a * b))];
-  };
-
-  _getOutputTensorTypedArray = () => {
-    // Override by inherited if needed
-    const typedArray = this._currentModelInfo.isQuantized || false ? Uint8Array : Float32Array;
-    return typedArray;
-  };
-
-  _initOutputTensor = () => {
-    // Override by inherited if needed
-    const typedArray = this._getOutputTensorTypedArray();
-    const outputSize = this._currentModelInfo.outputSize;
-
-    if (typeof outputSize === 'number') {
-      this._outputTensor = [new typedArray(outputSize)];
-    } else {
-      this._outputTensor = [new typedArray(outputSize.reduce((a, b) => a * b))];
-    }
-  };
-
-  compileModel = async (backend, prefer) => {
-    if (!this._bLoaded) {
-      return 'NOT_LOADED';
-    }
-
-    if (this._bInitialized && backend === this._currentBackend && prefer === this._currentPrefer) {
-      return 'INITIALIZED';
-    }
-
-    this._setBackend(backend);
-    this._setPrefer(prefer);
-    this._setInitializedFlag(false);
-    const postOptions = this._currentModelInfo.postOptions || {};
-    const configs = {
-      rawModel: this._rawModel,
-      backend: this._currentBackend,
-      prefer: this._currentPrefer,
-      softmax: postOptions.softmax || false,
-    };
-
-    let model = null;
-
-    switch (this._rawModel._rawFormat) {
-      case 'TFLITE':
-        model = new TFliteModelImporter(configs);
-        break;
-      case 'ONNX':
-        model = new OnnxModelImporter(configs);
-        break;
-      case 'OPENVINO':
-        model = new OpenVINOModelImporter(configs);
-        break;
-      default:
-        throw new Error(`Unsupported '${rawModel._rawFormat}' input.`);
-    }
-
-    this._setModel(model);
-    this._model.setSupportedOps(this._supportedOps);
-    this._model.setEagerMode(this._bEagerMode);
-    const compileStatus = await this._model.createCompiledModel();
-    console.log(`Compilation Status: [${compileStatus}]`);
-
-    this._setModelRequiredOps(this._model.getRequiredOps());
-
-    if (this._currentModelInfo.isQuantized) {
-      this._setDeQuantizeParams(model._deQuantizeParams);
-    }
-
-    if (this._currentBackend !== 'WebML' && model._compilation && model._compilation._preparedModel) {
-       this._setSubgraphsSummary(model._compilation._preparedModel.getSubgraphsSummary());
-    }
-
-    // Warm up model
-    const computeStart = performance.now();
-    const computeStatus = await this._model.compute(this._inputTensor, this._outputTensor);
-    const computeDelta = performance.now() - computeStart;
-    console.log(`Computed Status: [${computeStatus}]`);
-    console.log(`Warm up Time: ${computeDelta.toFixed(2)} ms`);
-
+    await this._doCompile(options);
     this._setInitializedFlag(true);
-    return 'SUCCESS';
   };
 
-  run = async (src, options) => {
-    let status = 'ERROR';
+  /**
+   * This method is to get input tensor for inference.
+   * @param {!Object<string, *>|!TypedArray<number>} input
+   *     input = {
+   *       src: !HTMLElement, //An object for HTML [<img> | <video> | <audio>] element.
+   *       options: { // An object to get input tensor.
+   *         // inputSize was configed in modelZoo.js, inputSize = [h, w, c] or [1, size] for audio example.
+   *         inputSize: {!Array<number>},
+   *         // preOptions was also configed in modelZoo.js,
+   *         // preOptions= {} or likes {mean: [127.5, 127.5, 127.5], std: [127.5, 127.5, 127.5],}
+   *         preOptions: {!Object<string, *>},
+   *         imageChannels: {number},
+   *         drawOptions: { // optional, drawOptions is used for CanvasRenderingContext2D.drawImage() method.
+   *           sx: {number}, // the x-axis coordinate of the top left corner of sub-retangle of the source image
+   *           sy: {number}, // the y-axis coordinate of the top left corner of sub-retangle of the source image
+   *           sWidth: {number}, // the width of the sub-retangle of the source image
+   *           sHeight: {number}, // the height of the sub-retangle of the source image
+   *           dWidth: {number}, // the width to draw the image in the detination canvas
+   *           dHeight: {number}, // the height to draw the image in the detination canvas
+   *         },
+   *         scaledFlag: {boolean}, // optional, need scaled the width and height of element to get need inputTensor
+   *       },
+   *     };
+   *     or input, likes:
+   *     input = { // for Speech Command example
+   *       src: {!HTMLElement}, // audio element
+   *       options: {
+   *         inputSize: {!Array<number>},
+   *         sampleRate: {number},
+   *         mfccsOptions: {!Object<string, *>}, // see details of mfccsOptions from speechCommandModels configurations of modelZoo.js
+   *       },
+   *     };
+   *     or input is a Typed Array object, likes in Speech Recognition example.
+   */
+  _getInputTensor = (input) => {};
 
-    if (src.tagName === 'AUDIO') {
-      await getTensorArrayByAudio(src, this._inputTensor, options);
-    } else {
-      getTensorArray(src, this._inputTensor, options);
-    }
+  /**
+   * This methode is to do inference with input tensor and output tensor will be updated after successfully inferenced.
+   */
+  _doInference = () => {};
 
+  /**
+   * This method is to do inference with an HTML [<img> | <video> | <audio>] element input.
+   * The id of <img> element is fixed as 'feedElement' in index.html.
+   * The id of <video> element or <audio> element is fixed as 'feedMediaElement' in index.html.
+   * @param {!Object<string, *>|!TypedArray<number>} input
+   *     See input details from above '_getInputTensor' method.
+   */
+  run = async (input) => {
+    await this._getInputTensor(input);
     const start = performance.now();
-    status = await this._model.compute(this._inputTensor, this._outputTensor);
+    await this._doInference();
     const delta = performance.now() - start;
     this._setInferenceTime(delta);
-    console.log(`Computed Status: [${status}]`);
     console.log(`Compute Time: [${delta} ms]`);
-    return status;
   };
 
-  getRequiredOps = () => {
-    return this._modelRequiredOps;
-  };
+  /**
+   * This method is to get output tensor for post processing.
+   * @returns {!TypedArray<number>|!Object<string, *>} This returns a {!TypedArray<number>} object
+   *     or an {!Object<string, *> object with multi tensors likes:
+   *     {
+   *       outputBoxTensor: {!TypedArray<number>},
+   *       outputClassScoresTensor: {!TypedArray<number>},
+   *     };
+   */
+  _getOutputTensor = () => {};
 
-  getSubgraphsSummary = () => {
-    return this._subgraphsSummary;
-  };
-
-  getDeQuantizeParams = () => {
-    return this._deQuantizeParams;
-  };
-
-  _updateOutput = (output) => {
-    // Override by inherited if needed
-  };
-
+  /**
+   * This method is to get inference result including inference time, computed output tensor
+   * and relevant info, such as inference time, labels info, output Tensor
+   * for post processing by example side after calling 'run' method.
+   * @returns {!Object<string, *>} This returns an object for inference result and relevant info, likes:
+   *     {
+   *       inferenceTime: {number},
+   *       tensor: {!TypedArray<number>|!Object<string, *>},
+   *       labels: {!Array<string>},  // optional, if example needs labels info
+   *     };
+   */
   getOutput = () => {
     let output = {
-      outputTensor: this._outputTensor[0],
       inferenceTime: this._inferenceTime,
+      tensor: this._getOutputTensor(),
     };
-    this._updateOutput(output); // add custom output info
+
+    if (this._labels != null) {
+      output.labels = this._labels;
+    }
+
     return output;
-  };
-
-  deleteAll = () => {
-    if (this._currentBackend != 'WebML') {
-      // free allocated memory on compilation process by polyfill WASM / WebGL backend.
-      if (this._model._compilation && this._model._compilation._preparedModel) {
-        this._model._compilation._preparedModel._deleteAll();
-      }
-    }
-  };
-
-  // for debugging
-  iterateLayers = async (configs, layerList) => {
-    if (!this._bInitialized) return;
-
-    const iterators = [];
-    const models = [];
-
-    for (const config of configs) {
-      const fileExtension = this._currentModelInfo.modelFile.split('.').pop();
-      const importer = {
-        tflite: TFliteModelImporter,
-        onnx: OnnxModelImporter,
-        bin: OpenVINOModelImporter,
-      }[fileExtension];
-      const model = await new importer({
-        isQuantized: this._currentModelInfo.isQuantized,
-        rawModel: this._rawModel,
-        backend: config.backend,
-        prefer: config.prefer || null,
-      });
-      iterators.push(model.layerIterator(this._inputTensor, layerList));
-      models.push(model);
-    }
-
-    while (true) {
-      let layerOutputs = [];
-      for (let it of iterators) {
-        layerOutputs.push(await it.next());
-      }
-      let refOutput = layerOutputs[0];
-      if (refOutput.done) {
-        break;
-      }
-      console.debug(`\n\n\nLayer(${refOutput.value.layerId}) ${refOutput.value.outputName}`);
-      for (let i = 0; i < configs.length; ++i) {
-        console.debug(`\n${configs[i].backend}:`);
-        console.debug(`\n${layerOutputs[i].value.tensor}`);
-        if (i > 0) {
-          let sum = 0;
-          for (let j = 0; j < refOutput.value.tensor.length; j++) {
-            sum += Math.pow(layerOutputs[i].value.tensor[j] - refOutput.value.tensor[j], 2);
-          }
-          let variance = sum / refOutput.value.tensor.length;
-          console.debug(`var with ${configs[0].backend}: ${variance}`);
-        }
-      }
-    }
-
-    for (let model of models) {
-      if (model._backend !== 'WebML') {
-        model._compilation._preparedModel._deleteAll();
-      }
-    }
   };
 }

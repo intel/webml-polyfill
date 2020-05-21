@@ -1,13 +1,13 @@
-class ObjectDetectionRunner extends BaseRunner {
+class ObjectDetectionRunner extends WebNNRunner {
   constructor() {
     super();
-    this._labels = null;
     this._outputBoxTensor = [];
     this._outputClassScoresTensor = [];
     this._deQuantizedOutputBoxTensor = [];
     this._deQuantizedOutputClassScoresTensor = [];
   }
 
+  /** @override */
   _initOutputTensor = () => {
     if (this._currentModelInfo.category === 'SSD') {
       // SSD models
@@ -36,28 +36,22 @@ class ObjectDetectionRunner extends BaseRunner {
     }
   };
 
-  _setLabels = (labels) => {
-    this._labels = labels;
-  };
+  /** @override */
+  _getOutputTensor = () => {
+    let outputTensor = {};
 
-  _getLabels = async (url) => {
-    const result = await this._loadURL(url);
-    this._setLabels(result.split('\n'));
-    console.log(`labels: ${this._labels}`);
-  };
-
-  _getOtherResources = async () => {
-    await this._getLabels(this._currentModelInfo.labelsFile);
-  };
-
-  _updateOutput = (output) => {
-    output.labels = this._labels;
-    output.outputBoxTensor = this._outputBoxTensor;
-    output.outputClassScoresTensor = this._outputClassScoresTensor;
-
-    if (this._currentModelInfo.isQuantized) {
-      output.deQuantizedOutputBoxTensor = this._deQuantizedOutputBoxTensor;
-      output.deQuantizedOutputClassScoresTensor = this._deQuantizedOutputClassScoresTensor;
+    if (this._currentModelInfo.category === 'SSD') {
+      outputTensor.outputBoxTensor = this._outputBoxTensor;
+      outputTensor.outputClassScoresTensor = this._outputClassScoresTensor;
+      if (this._currentModelInfo.isQuantized) {
+        outputTensor.deQuantizedOutputBoxTensor = this._deQuantizedOutputBoxTensor;
+        outputTensor.deQuantizedOutputClassScoresTensor = this._deQuantizedOutputClassScoresTensor;
+      }
+    } else {
+      // YOLO models
+      outputTensor = this._outputTensor[0];
     }
+
+    return outputTensor;
   };
 }
