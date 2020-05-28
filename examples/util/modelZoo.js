@@ -149,6 +149,7 @@ const modelZoo = {
   }, {
     modelName: 'SqueezeNet (ONNX)',
     format: 'ONNX',
+    framework: ['WebNN', 'OpenCV.js'],
     modelId: 'squeezenet_onnx',
     modelSize: '5.0MB',
     modelFile: 'https://webnnmodel.s3-us-west-2.amazonaws.com/image_classification/model/squeezenet1.1.onnx',
@@ -168,6 +169,7 @@ const modelZoo = {
     paperUrl: 'https://arxiv.org/abs/1602.07360'
   }, {
     modelName: 'MobileNet v2 (ONNX)',
+    framework: ['WebNN', 'OpenCV.js'],
     format: 'ONNX',
     modelId: 'mobilenet_v2_onnx',
     modelSize: '14.2MB',
@@ -188,6 +190,7 @@ const modelZoo = {
     paperUrl: 'https://arxiv.org/abs/1801.04381'
   }, {
     modelName: 'ResNet50 v1 (ONNX)',
+    framework: ['WebNN', 'OpenCV.js'],
     format: 'ONNX',
     modelId: 'resnet_v1_onnx',
     modelSize: '102.6MB',
@@ -208,6 +211,7 @@ const modelZoo = {
     paperUrl: 'https://arxiv.org/abs/1512.03385'
   }, {
     modelName: 'ResNet50 v2 (ONNX)',
+    framework: ['WebNN', 'OpenCV.js'],
     format: 'ONNX',
     modelId: 'resnet_v2_onnx',
     modelSize: '102.4MB',
@@ -946,4 +950,37 @@ const getModelFromGivenModels = (modelsDict, id) => {
     }
   }
   return null;
+};
+
+// current this function works for {model: xxxModels}
+const selectModelFromGivenModels = (modelsDict, framework) => {
+  if (framework === 'WebNN') {
+    return modelsDict;
+  } else {
+    let newModelList = [];
+    for (const modelsList of Object.values(modelsDict)) {
+      for (const model of modelsList) {
+        if (model.framework && model.framework.includes(framework)) {
+          newModelList.push(model);
+        }
+      }
+    }
+    return {model: newModelList};
+  }
+};
+
+const getFrameworkList = (modelsDict) => {
+  let frameworkList = ['WebNN'];
+  for (const modelsList of Object.values(modelsDict)) {
+    for (const model of modelsList) {
+      if (model.framework) {
+        for (const frameworkItem of model.framework) {
+          if (!frameworkList.includes(frameworkItem)) {
+            frameworkList.push(frameworkItem);
+          }
+        }
+      }
+    }
+  }
+  return frameworkList;
 };

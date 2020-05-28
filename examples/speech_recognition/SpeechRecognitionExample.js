@@ -7,6 +7,7 @@ class SpeechRecognitionExample extends BaseMircophoneExample {
     this._result = {};
   }
 
+  /** @override */
   _customUI = () => {
     let inputFileElement = document.getElementById('input');
     inputFileElement.addEventListener('change', (e) => {
@@ -15,15 +16,16 @@ class SpeechRecognitionExample extends BaseMircophoneExample {
     }, false);
   };
 
+  /** @override */
   _createRunner = () => {
     const runner = new SpeechRecognitionRunner();
     runner.setProgressHandler(updateLoadingProgressComponent);
     return runner;
   };
 
+  /** @override */
   _predict = async () => {
     try {
-      let status = 'ERROR';
       let totalTime = 0;
       let frameError = {};
       let totalError = {};
@@ -36,28 +38,34 @@ class SpeechRecognitionExample extends BaseMircophoneExample {
       for (let i = 0; i < arkInput.rows; i++) {
         inputTensor.set(arkInput.data.subarray(i * arkInput.columns, (i + 1) * arkInput.columns));
         scoreTensor.set(arkScore.data.subarray(i * arkScore.columns, (i + 1) * arkScore.columns));
-        status = await this._runner.run(inputTensor);
+        await this._runner.run(inputTensor);
         let output = this._runner.getOutput();
         totalTime += output.inferenceTime;
-        this._compareScores(output.outputTensor, scoreTensor, 1, arkScore.columns, frameError);
+        this._compareScores(output.tensor, scoreTensor, 1, arkScore.columns, frameError);
         this._updateScoreError(frameError, totalError);
       }
       this._result.errors = this._getReferenceCompareResults(totalError, arkScore.rows);
       this._result.cycles = arkScore.rows;
       this._result.time = totalTime.toFixed(2);
-
-      console.log(`Computed Status: [${status}]`);
       console.log(`Compute Time: [${totalTime} ms]`);
-      this._processOutput();
+      this._postProcess();
     } catch (e) {
       showAlertComponent(e);
       showErrorComponent();
     }
-  }
+  };
 
-  _compileModel = async () => {
+  /** @override */
+  _getCompileOptions = async () => {
     this._arkInfo = await this._getTensorArrayByArk(this._currentModelInfo.arkFile);
-    await this._runner.compileModel(this._currentBackend, this._currentPrefer, this._arkInfo);
+
+    let options = {
+      backend: this._currentBackend,
+      prefer: this._currentPrefer,
+      scaleFactor: this._arkInfo.scaleFactor,
+    };
+
+    return options;
   };
 
   // The function refer with speech_sample https://github.com/opencv/dldt/blob/2020/inference-engine/samples/speech_sample/main.cpp.
@@ -187,7 +195,8 @@ class SpeechRecognitionExample extends BaseMircophoneExample {
     return result;
   }
 
-  _processCustomOutput = () => {
+  /** @override */
+  _processExtra = () => {
     const result = this._result;
     try {
       let avgTime = (result.time / result.cycles).toFixed(2);

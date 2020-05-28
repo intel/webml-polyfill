@@ -37,6 +37,7 @@ class FaceRecognitionExample extends BaseCameraExample {
     this._bDrew = flag;
   };
 
+  /** @override */
   _customUI = () => {
     const targetImageElement = document.getElementById('targetImage');
     const cameraImageElement = document.getElementById('cameraImage');
@@ -125,6 +126,7 @@ class FaceRecognitionExample extends BaseCameraExample {
     });
   };
 
+  /** @override */
   _freeMemoryResources = () => {
     if (this._runner) {
       this._runner.deleteAll();
@@ -135,6 +137,7 @@ class FaceRecognitionExample extends BaseCameraExample {
     }
   };
 
+  /** @override */
   _getRunner = () => {
     if (this._runner == null) {
       this._runner = new FaceDetectorRunner();
@@ -142,11 +145,12 @@ class FaceRecognitionExample extends BaseCameraExample {
     }
 
     if (this._coRunner == null) {
-      this._coRunner = new BaseRunner();
+      this._coRunner = new WebNNRunner();
       this._coRunner.setProgressHandler(updateLoadingProgressComponent);
     }
   };
 
+  /** @override */
   _loadModel = async () => {
     let currentFDModelId = null;
     let currentFRModelId = null;
@@ -187,16 +191,20 @@ class FaceRecognitionExample extends BaseCameraExample {
     await this._coRunner.loadModel(coModelInfo);
   };
 
+  /** @override */
   _setSupportedOps = (ops) => {
     this._runner.setSupportedOps(ops);
     this._coRunner.setSupportedOps(ops);
   };
 
+  /** @override */
   _compileModel = async () => {
-    await this._runner.compileModel(this._currentBackend, this._currentPrefer);
-    await this._coRunner.compileModel(this._currentBackend, this._currentPrefer);
+    let options = this._getCompileOptions();
+    await this._runner.compileModel(options);
+    await this._coRunner.compileModel(options);
   };
 
+  /** @override */
   _getRequiredOps = () => {
     const fdRequiredOps = this._runner.getRequiredOps();
     const frRequiredOps = this._coRunner.getRequiredOps();
@@ -204,6 +212,7 @@ class FaceRecognitionExample extends BaseCameraExample {
     return requiredOps;
   };
 
+  /** @override */
   _getSubgraphsSummary = () => {
     const fdSummary = this._runner.getSubgraphsSummary();
     const frSummary = this._coRunner.getSubgraphsSummary();
@@ -214,22 +223,25 @@ class FaceRecognitionExample extends BaseCameraExample {
     let inferenceTime = 0.0;
     let strokedRects = [];
     let embeddings = [];
-    const fdDrawOptions = {
-      inputSize: this._currentModelInfo.inputSize,
-      preOptions: this._currentModelInfo.preOptions,
-      imageChannels: 4,
+    const fdInput = {
+      src: element,
+      options: {
+        inputSize: this._currentModelInfo.inputSize,
+        preOptions: this._currentModelInfo.preOptions,
+        imageChannels: 4,
+      },
     };
     let fdOutput = null;
     let frOutput = null;
-    await this._runner.run(element, fdDrawOptions);
+    await this._runner.run(fdInput);
     fdOutput = this._runner.getOutput();
     inferenceTime += parseFloat(fdOutput.inferenceTime);
     const height = element.height
     const width = element.width;
     if (this._currentModelInfo.category === 'SSD') {
       let anchors = generateAnchors({});
-      decodeOutputBoxTensor({}, fdOutput.outputBoxTensor, anchors);
-      let [totalDetections, boxesList, scoresList, classesList] = NMS({ num_classes: 2 }, fdOutput.outputBoxTensor, fdOutput.outputClassScoresTensor);
+      decodeOutputBoxTensor({}, fdOutput.tensor.outputBoxTensor, anchors);
+      let [totalDetections, boxesList, scoresList, classesList] = NMS({ num_classes: 2 }, fdOutput.tensor.outputBoxTensor, fdOutput.tensor.outputClassScoresTensor);
       boxesList = cropSSDBox(element, totalDetections, boxesList, this._currentModelInfo.margin);
       for (let i = 0; i < totalDetections; ++i) {
         let [ymin, xmin, ymax, xmax] = boxesList[i];
@@ -240,27 +252,30 @@ class FaceRecognitionExample extends BaseCameraExample {
         const prob = 1 / (1 + Math.exp(-scoresList[i]));
         const rect = [xmin, ymin, xmax - xmin, ymax - ymin, prob];
         strokedRects.push(rect);
-        const frDrawOptions = {
-          inputSize: this._currentCoModelInfo.inputSize,
-          preOptions: this._currentCoModelInfo.preOptions,
-          imageChannels: 4,
-          drawOptions: {
-            sx: xmin,
-            sy: ymin,
-            sWidth: rect[2],
-            sHeight: rect[3],
-            dWidth: this._currentCoModelInfo.inputSize[1],
-            dHeight: this._currentCoModelInfo.inputSize[0],
+        const frSSDInput = {
+          src: element,
+          options: {
+            inputSize: this._currentCoModelInfo.inputSize,
+            preOptions: this._currentCoModelInfo.preOptions,
+            imageChannels: 4,
+            drawOptions: {
+              sx: xmin,
+              sy: ymin,
+              sWidth: rect[2],
+              sHeight: rect[3],
+              dWidth: this._currentCoModelInfo.inputSize[1],
+              dHeight: this._currentCoModelInfo.inputSize[0],
+            },
           },
         };
-        await this._coRunner.run(element, frDrawOptions);
+        await this._coRunner.run(frSSDInput);
         frOutput = this._coRunner.getOutput();
         inferenceTime += parseFloat(frOutput.inferenceTime);
-        let [...normEmbedding] = Float32Array.from(frOutput.outputTensor);
+        let [...normEmbedding] = Float32Array.from(frOutput.tensor);
         embeddings.push(normEmbedding);
       }
     } else {
-      let decode_out = decodeYOLOv2({ nb_class: 1 }, fdOutput.outputTensor, this._currentModelInfo.anchors);
+      let decode_out = decodeYOLOv2({ nb_class: 1 }, fdOutput.tensor, this._currentModelInfo.anchors);
       let outputBoxes = getBoxes(decode_out, this._currentModelInfo.margin);
       for (let i = 0; i < outputBoxes.length; ++i) {
         let [xmin, xmax, ymin, ymax, prob] = outputBoxes[i].slice(1, 6);
@@ -270,23 +285,26 @@ class FaceRecognitionExample extends BaseCameraExample {
         ymax = Math.min(1, ymax) * height;
         let rect = [xmin, ymin, xmax - xmin, ymax - ymin, prob];
         strokedRects.push(rect);
-        const drawOptions = {
-          inputSize: this._currentCoModelInfo.inputSize,
-          preOptions: this._currentCoModelInfo.preOptions,
-          imageChannels: 4,
-          drawOptions: {
-            sx: xmin,
-            sy: ymin,
-            sWidth: rect[2],
-            sHeight: rect[3],
-            dWidth: this._currentCoModelInfo.inputSize[1],
-            dHeight: this._currentCoModelInfo.inputSize[0],
+        const frYOLOInput = {
+          src: element,
+          options: {
+            inputSize: this._currentCoModelInfo.inputSize,
+            preOptions: this._currentCoModelInfo.preOptions,
+            imageChannels: 4,
+            drawOptions: {
+              sx: xmin,
+              sy: ymin,
+              sWidth: rect[2],
+              sHeight: rect[3],
+              dWidth: this._currentCoModelInfo.inputSize[1],
+              dHeight: this._currentCoModelInfo.inputSize[0],
+            },
           },
         };
-        await this._coRunner.run(element, drawOptions);
+        await this._coRunner.run(frYOLOInput);
         let frOutput = this._coRunner.getOutput();
         inferenceTime += parseFloat(frOutput.inferenceTime);
-        let [...normEmbedding] = Float32Array.from(frOutput.outputTensor);
+        let [...normEmbedding] = Float32Array.from(frOutput.tensor);
         embeddings.push(normEmbedding);
       }
     }
@@ -297,6 +315,7 @@ class FaceRecognitionExample extends BaseCameraExample {
 
   };
 
+  /** @override */
   _predict = async () => {
     if (this._currentInputType === 'image') {
       let flag1 = false;
@@ -333,12 +352,11 @@ class FaceRecognitionExample extends BaseCameraExample {
       }
     }
 
-    this._processOutput();
+    this._postProcess();
   };
 
-  _processCustomOutput = () => {
-    const supportedOps = getSupportedOps(this._currentBackend, this._currentPrefer);
-
+  /** @override */
+  _processExtra = (output) => {
     if (this._currentInputType === 'image') {
       let targetTextClasses = [];
       for (let i in this._targetEmbeddings.embeddings) {

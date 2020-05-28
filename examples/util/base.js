@@ -203,207 +203,6 @@ const hasSearchParam = (key) => {
   return searchParams.has(key);
 };
 
-const getTensorArray = (image, inputTensor, options, layout = 'NHWC') => {
-  let tensor = inputTensor[0];
-
-  image.width = image.videoWidth || image.naturalWidth;
-  image.height = image.videoHeight || image.naturalHeight;
-
-  const [height, width, channels] = options.inputSize;
-  const preOptions = options.preOptions || {};
-  const mean = preOptions.mean || [0, 0, 0, 0];
-  const std = preOptions.std || [1, 1, 1, 1];
-  const normlizationFlag = preOptions.norm || false;
-  const channelScheme = preOptions.channelScheme || 'RGB';
-  const imageChannels = options.imageChannels || 4; // RGBA
-  const drawOptions = options.drawOptions;
-
-  let canvasElement = document.createElement('canvas');
-  canvasElement.width = width;
-  canvasElement.height = height;
-  let canvasContext = canvasElement.getContext('2d');
-
-  if (drawOptions) {
-    canvasContext.drawImage(image, drawOptions.sx, drawOptions.sy, drawOptions.sWidth, drawOptions.sHeight,
-      0, 0, drawOptions.dWidth, drawOptions.dHeight);
-  } else {
-    if (options.scaledFlag) {
-      const resizeRatio = Math.max(Math.max(image.width, image.height) / width, 1);
-      const scaledWidth = Math.floor(image.width / resizeRatio);
-      const scaledHeight = Math.floor(image.height / resizeRatio);
-      canvasContext.drawImage(image, 0, 0, scaledWidth, scaledHeight);
-    } else {
-      canvasContext.drawImage(image, 0, 0, width, height);
-    }
-  }
-
-  let pixels = canvasContext.getImageData(0, 0, width, height).data;
-
-  if (normlizationFlag) {
-    pixels = new Float32Array(pixels).map(p => p / 255);
-  }
-
-  if (layout === 'NHWC') {
-    if (channelScheme === 'RGB') {
-      if (channels > 1) {
-        for (let h = 0; h < height; ++h) {
-          for (let w = 0; w < width; ++w) {
-            for (let c = 0; c < channels; ++c) {
-              let value = pixels[h * width * imageChannels + w * imageChannels + c];
-              tensor[h * width * channels + w * channels + c] = (value - mean[c]) / std[c];
-            }
-          }
-        }
-      } else if (channels === 1) {
-        for (let h = 0; h < height; ++h) {
-          for (let w = 0; w < width; ++w) {
-            for (let c = 0; c < channels; ++c) {
-              let index = h * width * imageChannels + w * imageChannels + c;
-              let value = (pixels[index] + pixels[index + 1] + pixels[index + 2]) / 3;
-              tensor[h * width * channels + w * channels + c] = (value - mean[c]) / std[c];
-            }
-          }
-        }
-      }
-    } else if (channelScheme === 'BGR') {
-      for (let h = 0; h < height; ++h) {
-        for (let w = 0; w < width; ++w) {
-          for (let c = 0; c < channels; ++c) {
-            let value = pixels[h * width * imageChannels + w * imageChannels + (channels - c - 1)];
-            tensor[h * width * channels + w * channels + c] = (value - mean[c]) / std[c];
-          }
-        }
-      }
-    } else {
-      throw new Error(`Unsupport '${channelScheme}' Color Channel Scheme `);
-    }
-  } else if (layout === 'NCHW') {
-    if (channelScheme === 'RGB') {
-      for (let c = 0; c < channels; ++c) {
-        for (let h = 0; h < height; ++h) {
-          for (let w = 0; w < width; ++w) {
-            let value = pixels[h * width * imageChannels + w * imageChannels + c];
-            tensor[h * width * channels + w * channels + c] = (value - mean[c]) / std[c];
-          }
-        }
-      }
-    } else if (channelScheme === 'BGR') {
-      for (let c = 0; c < channels; ++c) {
-        for (let h = 0; h < height; ++h) {
-          for (let w = 0; w < width; ++w) {
-            let value = pixels[h * width * imageChannels + w * imageChannels + (channels - c - 1)];
-            tensor[h * width * channels + w * channels + c] = (value - mean[c]) / std[c];
-          }
-        }
-      }
-    } else {
-      throw new Error(`Unsupport '${channelScheme}' Color Channel Scheme `);
-    }
-  } else {
-    throw new Error(`Unsupport '${channelScheme}' Layout`);
-  }
-};
-
-const downsampleAudioBuffer = (buffer, rate, baseRate) => {
-  if (rate == baseRate) {
-    return buffer;
-  }
-
-  if (baseRate > rate) {
-    throw "downsampling rate show be smaller than original sample rate";
-  }
-
-  const sampleRateRatio = Math.round(rate / baseRate);
-  const newLength = Math.round(buffer.length / sampleRateRatio);
-  let abuffer = new Float32Array(newLength);
-  let offsetResult = 0;
-  let offsetBuffer = 0;
-
-  while (offsetResult < abuffer.length) {
-    let nextOffsetBuffer = Math.round((offsetResult + 1) * sampleRateRatio);
-    let accum = 0;
-    let count = 0;
-    for (let i = offsetBuffer; i < nextOffsetBuffer && i < buffer.length; i++) {
-      accum += buffer[i];
-      count++;
-    }
-    abuffer[offsetResult] = accum / count;
-    offsetResult++;
-    offsetBuffer = nextOffsetBuffer;
-  }
-  return abuffer;
-};
-
-const getAudioMfccs = (pcm,
-                       sampleRate,
-                       windowSize,
-                       windowStride,
-                       upperFrequencyLimit = 4000,
-                       lowerFrequencyLimit = 20,
-                       filterbankChannelCount = 40,
-                       dctCoefficientCount = 13) => {
-  let pcmPtr = Module._malloc(8 * pcm.length);
-  let lenPtr = Module._malloc(4);
-
-  for (let i = 0; i < pcm.length; i++) {
-    Module.HEAPF64[pcmPtr / 8 + i] = pcm[i];
-  };
-
-  Module.HEAP32[lenPtr / 4] = pcm.length;
-  let tfMfccs = Module.cwrap('tf_mfccs', 'number',
-        ['number', 'number', 'number', 'number',
-         'number', 'number', 'number', 'number', 'number']);
-  let mfccsPtr = tfMfccs(pcmPtr, lenPtr, sampleRate, windowSize,
-        windowStride, upperFrequencyLimit, lowerFrequencyLimit,
-        filterbankChannelCount, dctCoefficientCount);
-  let mfccsLen = Module.HEAP32[lenPtr >> 2];
-  let audioMfccs = [mfccsLen];
-
-  for (let i = 0; i < mfccsLen; i++) {
-    audioMfccs[i] = Module.HEAPF64[(mfccsPtr >> 3) + i];
-  }
-
-  Module._free(pcmPtr, lenPtr, mfccsPtr);
-  return audioMfccs;
-};
-
-const getTensorArrayByAudio = async (audio, inputTensor, options) => {
-  const sampleRate = options.sampleRate;
-  const mfccsOptions = options.mfccsOptions;
-  const inputSize = options.inputSize.reduce((a, b) => a * b);
-  let tensor = inputTensor[0];
-  let audioContext = new (window.AudioContext || window.webkitAudioContext)();
-  let rate = audioContext.sampleRate;
-
-  let request = new Request(audio.src);
-  let response = await fetch(request);
-  let audioFileData = await response.arrayBuffer();
-  let audioDecodeData = await audioContext.decodeAudioData(audioFileData);
-  let audioPCMData = audioDecodeData.getChannelData(0);
-  let abuffer = downsampleAudioBuffer(audioPCMData, rate, sampleRate);
-
-  if (typeof mfccsOptions !== 'undefined') {
-    abuffer = getAudioMfccs(abuffer,
-                           sampleRate,
-                           mfccsOptions.windowSize,
-                           mfccsOptions.windowStride,
-                           mfccsOptions.upperFrequencyLimit,
-                           mfccsOptions.lowerFrequencyLimit,
-                           mfccsOptions.filterbankChannelCount,
-                           mfccsOptions.dctCoefficientCount);
-  }
-
-  if (abuffer.length >= inputSize) {
-    for (let i = 0; i < inputSize; i++) {
-      tensor[i] = abuffer[i];
-    }
-  } else {
-    for (let i = 0; i < abuffer.length; i++) {
-      tensor[i] = abuffer[i];
-    }
-  }
-};
-
 const prepareOutputTensorSSD = (outputBoxTensor, outputClassScoresTensor, options) => {
   const numBoxes = options.numBoxes;
   const boxSize = options.boxSize;
@@ -650,4 +449,24 @@ const getFRClass = (targetEmbeddings, searchEmbeddings, options) => {
   }
 
   return results;
+};
+
+// Load js script with async mode.
+const asyncLoadScript = (url, callback = null) => {
+  let script = document.createElement('script');
+  script.async = true;
+  script.type = 'text/javascript';
+  if (callback != null) {
+    script.onload = callback || function() {};
+  }
+  script.src = url;
+  document.getElementsByTagName('head')[0].appendChild(script);
+};
+
+const softmax = (arr) => {
+  const C = Math.max(...arr);
+  const d = arr.map((y) => Math.exp(y - C)).reduce((a, b) => a + b);
+  return arr.map((value, index) => {
+    return Math.exp(value - C) / d;
+  });
 };

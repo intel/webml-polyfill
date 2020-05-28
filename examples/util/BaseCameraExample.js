@@ -4,6 +4,10 @@ class BaseCameraExample extends BaseExample {
     this._bFrontCamera = false;
   }
 
+  /**
+   * This method is to set '_bFrontCamera'.
+   * @param {boolean|undefined} flag
+   */
   useFrontFacingCamera = (flag) => {
     if (typeof flag == "undefined") {
       this._bFrontCamera = !this._bFrontCamera;
@@ -12,19 +16,23 @@ class BaseCameraExample extends BaseExample {
     }
   };
 
+  /** @override */
   _getDefaultInputType = () => {
     return 'image';
   };
 
+  /** @override */
   _getDefaultInputMediaType = () => {
     return 'camera';
   };
 
+  /** @override */
   _getMediaConstraints = () => {
     const constraints = {audio: false, video: {facingMode: (this._bFrontCamera ? 'user' : 'environment')}};
     return constraints;
   };
 
+  /** @override */
   _commonUIExtra = () => {
     if (/Mobi|Android|iPhone|iPad|iPod/.test(navigator.userAgent)) {
       // for mobile devices: smartphone, pad

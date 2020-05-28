@@ -3,20 +3,22 @@ class ObjectDetectionExample extends BaseCameraExample {
     super(models);
   }
 
+  /** @override */
   _customUI = () => {
     $('#fullscreen i svg').click(() => {
       $('#canvasshow').toggleClass('fullscreen');
     });
   };
 
+  /** @override */
   _createRunner = () => {
     const runner = new ObjectDetectionRunner();
     runner.setProgressHandler(updateLoadingProgressComponent);
     return runner;
   };
 
-  _processCustomOutput = () => {
-    const output = this._runner.getOutput();
+  /** @override */
+  _processExtra = (output) => {
     const deQuantizeParams =  this._runner.getDeQuantizeParams();
     let canvasShowElement = document.getElementById('canvasshow');
     const modelInfo = this._currentModelInfo;
@@ -27,17 +29,18 @@ class ObjectDetectionExample extends BaseCameraExample {
     };
 
     if (modelInfo.category === 'SSD') {
+      const tensorDic = output.tensor;
       let outputBoxTensor;
       let outputClassScoresTensor;
       if (modelInfo.isQuantized) {
-        [outputBoxTensor, outputClassScoresTensor] = deQuantizeOutputTensor(output.outputBoxTensor,
-                                                       output.outputClassScoresTensor,
-                                                       output.deQuantizedOutputBoxTensor,
-                                                       output.deQuantizedOutputClassScoresTensor,
+        [outputBoxTensor, outputClassScoresTensor] = deQuantizeOutputTensor(tensorDic.outputBoxTensor,
+                                                       tensorDic.outputClassScoresTensor,
+                                                       tensorDic.deQuantizedOutputBoxTensor,
+                                                       tensorDic.deQuantizedOutputClassScoresTensor,
                                                        deQuantizeParams, options);
       } else {
-        outputBoxTensor = output.outputBoxTensor;
-        outputClassScoresTensor = output.outputClassScoresTensor;
+        outputBoxTensor = tensorDic.outputBoxTensor;
+        outputClassScoresTensor = tensorDic.outputClassScoresTensor;
       }
       let anchors = generateAnchors({});
       decodeOutputBoxTensor({}, outputBoxTensor, anchors);
@@ -48,7 +51,7 @@ class ObjectDetectionExample extends BaseCameraExample {
         boxesList, scoresList, classesList, output.labels);
     } else {
       let decode_out = decodeYOLOv2({ nb_class: modelInfo.numClasses },
-                         output.outputTensor, modelInfo.anchors);
+                         output.tensor, modelInfo.anchors);
       let boxes = getBoxes(decode_out, modelInfo.margin);
       drawBoxes(this._currentInputElement, canvasShowElement, boxes, output.labels);
     }

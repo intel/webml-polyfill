@@ -57,7 +57,8 @@ class SkeletonDetectionRunner {
         && modelConfig.outputStride === this._modelConfig.outputStride
         && modelConfig.scaleFactor === this._modelConfig.scaleFactor
         && modelConfig.useAtrousConv === this._modelConfig.useAtrousConv) {
-      return 'INITIALIZED';
+      console.log('Model already loaded and was compiled.');
+      return;
     }
 
     this._setInitializedFlag(false);
@@ -117,10 +118,87 @@ class SkeletonDetectionRunner {
     }
   };
 
-  run = async (src, options) => {
+  _getTensor = (input) => {
+    const image = input.src;
+    const options = input.options;
+    let tensor = this._inputTensor[0];
+
+    image.width = image.videoWidth || image.naturalWidth;
+    image.height = image.videoHeight || image.naturalHeight;
+
+    const [height, width, channels] = options.inputSize;
+    const preOptions = options.preOptions || {};
+    const mean = preOptions.mean || [0, 0, 0, 0];
+    const std = preOptions.std || [1, 1, 1, 1];
+    const normlizationFlag = preOptions.norm || false;
+    const channelScheme = preOptions.channelScheme || 'RGB';
+    const imageChannels = options.imageChannels || 4; // RGBA
+    const drawOptions = options.drawOptions;
+
+    let canvasElement = document.createElement('canvas');
+    canvasElement.width = width;
+    canvasElement.height = height;
+    let canvasContext = canvasElement.getContext('2d');
+
+    if (drawOptions) {
+      canvasContext.drawImage(image, drawOptions.sx, drawOptions.sy, drawOptions.sWidth, drawOptions.sHeight,
+        0, 0, drawOptions.dWidth, drawOptions.dHeight);
+    } else {
+      if (options.scaledFlag) {
+        const resizeRatio = Math.max(Math.max(image.width, image.height) / width, 1);
+        const scaledWidth = Math.floor(image.width / resizeRatio);
+        const scaledHeight = Math.floor(image.height / resizeRatio);
+        canvasContext.drawImage(image, 0, 0, scaledWidth, scaledHeight);
+      } else {
+        canvasContext.drawImage(image, 0, 0, width, height);
+      }
+    }
+
+    let pixels = canvasContext.getImageData(0, 0, width, height).data;
+
+    if (normlizationFlag) {
+      pixels = new Float32Array(pixels).map(p => p / 255);
+    }
+
+    if (channelScheme === 'RGB') {
+      if (channels > 1) {
+        for (let c = 0; c < channels; ++c) {
+          for (let h = 0; h < height; ++h) {
+            for (let w = 0; w < width; ++w) {
+              let value = pixels[h * width * imageChannels + w * imageChannels + c];
+              tensor[h * width * channels + w * channels + c] = (value - mean[c]) / std[c];
+            }
+          }
+        }
+      } else if (channels === 1) {
+        for (let c = 0; c < channels; ++c) {
+          for (let h = 0; h < height; ++h) {
+            for (let w = 0; w < width; ++w) {
+              let index = h * width * imageChannels + w * imageChannels + c;
+              let value = (pixels[index] + pixels[index + 1] + pixels[index + 2]) / 3;
+              tensor[h * width * channels + w * channels + c] = (value - mean[c]) / std[c];
+            }
+          }
+        }
+      }
+    } else if (channelScheme === 'BGR') {
+      for (let c = 0; c < channels; ++c) {
+        for (let h = 0; h < height; ++h) {
+          for (let w = 0; w < width; ++w) {
+            let value = pixels[h * width * imageChannels + w * imageChannels + (channels - c - 1)];
+            tensor[h * width * channels + w * channels + c] = (value - mean[c]) / std[c];
+          }
+        }
+      }
+    } else {
+      throw new Error(`Unsupport '${channelScheme}' Color Channel Scheme `);
+    }
+  };
+
+  run = async (input) => {
     if (!this._bInitialized) return;
 
-    getTensorArray(src, this._inputTensor, options);
+    this._getTensor(input);
     const start = performance.now();
     await this._model.compute(this._inputTensor[0], this._heatmapTensor,
                               this._offsetTensor, this._displacementFwd,

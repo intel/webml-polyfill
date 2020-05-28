@@ -1,10 +1,11 @@
-class FaceDetectorRunner extends BaseRunner {
+class FaceDetectorRunner extends WebNNRunner {
   constructor() {
     super();
     this._outputBoxTensor;
     this._outputClassScoresTensor;
   }
 
+  /** @override */
   _initOutputTensor = () => {
     if (this._currentModelInfo.category === 'SSD') {
       // SSD models
@@ -25,8 +26,18 @@ class FaceDetectorRunner extends BaseRunner {
     }
   };
 
-  _updateOutput = (output) => {
-    output.outputBoxTensor = this._outputBoxTensor;
-    output.outputClassScoresTensor = this._outputClassScoresTensor;
+  /** @override */
+  _getOutputTensor = () => {
+    let outputTensor = {};
+
+    if (this._currentModelInfo.category === 'SSD') {
+      outputTensor.outputBoxTensor = this._outputBoxTensor;
+      outputTensor.outputClassScoresTensor = this._outputClassScoresTensor;
+    } else {
+      // YOLO models
+      outputTensor = this._outputTensor[0];
+    }
+
+    return outputTensor;
   };
 }

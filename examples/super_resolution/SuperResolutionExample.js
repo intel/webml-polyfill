@@ -3,7 +3,7 @@ class SuperResolutionExample extends BaseCameraExample {
     super(models);
   }
 
-  _processCustomOutput = () => {
+  _processExtra = (output) => {
     const drawInput = (srcElement, height) => {
       const inputCanvas = document.getElementById('inputCanvas');
       inputCanvas.height = height;
@@ -44,9 +44,8 @@ class SuperResolutionExample extends BaseCameraExample {
       ctx.drawImage(outCanvas, 0, 0, outputCanvas.width, height);
     };
 
-    const output = this._runner.getOutput();
     drawInput(this._currentInputElement, this._currentModelInfo.inputSize[0]);
-    drawOutput(output.outputTensor, this._currentInputElement,
+    drawOutput(output.tensor, this._currentInputElement,
       this._currentModelInfo.outputSize[0], this._currentModelInfo.preOptions);
   };
 }
