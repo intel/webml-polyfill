@@ -208,8 +208,8 @@ const setPreferenceTipComponents = () => {
     $('#backendpolyfilltitle').attr('data-html', 'true')
       .attr('data-placement', 'bottom')
       .attr('title',
-        `<div class="backendtooltip">WASM: Compiled Tensorflow Lite C++ kernels to WebAssembly format.<br>
-      WebGL: Tensorflow.js WebGL kernel.</div>`
+        `<div class="backendtooltip">WASM: TensorFlow.js WebAssembly backend builds on top of the XNNPACK library.<br>
+      WebGL: TensorFlow.js GPU accelerated WebGL backend</div>`
       );
     $('#backendpolyfilltitle').tooltip();
   }
