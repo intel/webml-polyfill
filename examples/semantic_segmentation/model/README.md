@@ -11,6 +11,14 @@ deeplab_mobilenetv2_257_dilated.tflite
 deeplab_mobilenetv2_257.tflite
 deeplab_mobilenetv2_224_dilated.tflite
 deeplab_mobilenetv2_224.tflite
+deeplab_mobilenetv2_513_dilated.xml
+deeplab_mobilenetv2_513_dilated.bin
+deeplab_mobilenetv2_321_dilated.xml
+deeplab_mobilenetv2_321_dilated.bin
+deeplab_mobilenetv2_257_dilated.xml
+deeplab_mobilenetv2_257_dilated.bin
+deeplab_mobilenetv2_224_dilated.xml
+deeplab_mobilenetv2_224_dilated.bin
 ```
 
 They are all converted from this [frozen graph](http://download.tensorflow.org/models/deeplabv3_mnv2_pascal_trainval_2018_01_29.tar.gz). You can also follow the steps below to convert your own model.
@@ -131,3 +139,16 @@ For example, export a model with 321x321 inputs and outputs.
 ```
 
 The frozen graph is exported in `datasets/pascal_voc_seg/exp/train_on_trainval_set_mobilenetv2/export/frozen_inference_graph.pb`. You can then convert it to a TFLite Model per instructions above.
+
+## Convert `.pb` to `.xml` & `.bin`
+1. Install Intel OpenVINO Toolkit
+2. Go to the <INSTALL_DIR>/deployment_tools/model_optimizer directory
+3. Use the mo_tf.py script to simply convert each custom model with the path to the input model .pb file:
+```sh
+python3 mo_tf.py \
+--input_model frozen_inference_graph_224.pb \
+--output_dir ./out \
+--input 'sub_2'
+--output 'ArgMax'
+
+```

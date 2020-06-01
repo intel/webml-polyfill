@@ -633,6 +633,66 @@ const modelZoo = {
     },
     intro: 'Equivalent to the model above (without dilated suffix) but only available on platforms that natively support atrous convolution.',
     paperUrl: 'https://arxiv.org/abs/1802.02611'
+  }, {
+    modelName: 'Deeplab 224 Atrous (OpenVINO)',
+    format: 'OpenVINO',
+    modelId: 'deeplab_mobilenet_v2_224_atrous_openvino',
+    modelSize: '8.4MB',
+    modelFile: '../semantic_segmentation/model/deeplab_mobilenetv2_224_dilated.bin',
+    labelsFile: '../semantic_segmentation/model/labels.txt',
+    inputSize: [224, 224, 3],
+    outputSize: [224, 224, 1],
+    preOptions: {
+      mean: [127.5, 127.5, 127.5],
+      std: [127.5, 127.5, 127.5],
+    },
+    intro: 'Equivalent to the model above (without dilated suffix) but only available on platforms that natively support atrous convolution.',
+    paperUrl: 'https://arxiv.org/abs/1802.02611'
+  }, {
+    modelName: 'Deeplab 257 Atrous (OpenVINO)',
+    format: 'OpenVINO',
+    modelId: 'deeplab_mobilenet_v2_257_atrous_openvino',
+    modelSize: '8.4MB',
+    modelFile: '../semantic_segmentation/model/deeplab_mobilenetv2_257_dilated.bin',
+    labelsFile: '../semantic_segmentation/model/labels.txt',
+    inputSize: [257, 257, 3],
+    outputSize: [257, 257, 1],
+    preOptions: {
+      mean: [127.5, 127.5, 127.5],
+      std: [127.5, 127.5, 127.5],
+    },
+    intro: 'Equivalent to the model above (without dilated suffix) but only available on platforms that natively support atrous convolution.',
+    paperUrl: 'https://arxiv.org/abs/1802.02611'
+  }, {
+    modelName: 'Deeplab 321 Atrous (OpenVINO)',
+    format: 'OpenVINO',
+    modelId: 'deeplab_mobilenet_v2_321_atrous_openvino',
+    modelSize: '8.4MB',
+    modelFile: '../semantic_segmentation/model/deeplab_mobilenetv2_321_dilated.bin',
+    labelsFile: '../semantic_segmentation/model/labels.txt',
+    inputSize: [321, 321, 3],
+    outputSize: [321, 321, 1],
+    preOptions: {
+      mean: [127.5, 127.5, 127.5],
+      std: [127.5, 127.5, 127.5],
+    },
+    intro: 'Equivalent to the model above (without dilated suffix) but only available on platforms that natively support atrous convolution.',
+    paperUrl: 'https://arxiv.org/abs/1802.02611'
+  }, {
+    modelName: 'Deeplab 513 Atrous (OpenVINO)',
+    format: 'OpenVINO',
+    modelId: 'deeplab_mobilenet_v2_513_atrous_openvino',
+    modelSize: '8.4MB',
+    modelFile: '../semantic_segmentation/model/deeplab_mobilenetv2_513_dilated.bin',
+    labelsFile: '../semantic_segmentation/model/labels.txt',
+    inputSize: [513, 513, 3],
+    outputSize: [513, 513, 1],
+    preOptions: {
+      mean: [127.5, 127.5, 127.5],
+      std: [127.5, 127.5, 127.5],
+    },
+    intro: 'Equivalent to the model above (without dilated suffix) but only available on platforms that natively support atrous convolution.',
+    paperUrl: 'https://arxiv.org/abs/1802.02611'
   }],
 
   superResolutionModels: [
