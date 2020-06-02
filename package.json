@@ -26,7 +26,7 @@
   "homepage": "https://github.com/intel/webml-polyfill#readme",
   "devDependencies": {
     "@tensorflow/tfjs-backend-wasm": "1.5.1-alpha5",
-    "@tensorflow/tfjs-core": "1.5.1",
+    "@tensorflow/tfjs-core": "1.7.2",
     "babel-core": "^6.26.0",
     "babel-loader": "^7.1.1",
     "babel-polyfill": "^6.26.0",
