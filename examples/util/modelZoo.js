@@ -369,6 +369,22 @@ const modelZoo = {
     },
     intro: 'Inception architecture that has been shown to achieve very good performance at relatively low computational cost.',
     paperUrl: 'https://arxiv.org/abs/1602.07261'
+  }, {
+    modelName: 'Squeezenet (Caffe2)',
+    format: 'Caffe2',
+    modelId: 'Squeezenet_Caffe2',
+    modelSize: '6.2MB',
+    inputSize: [227, 227, 3],
+    outputSize: 1000,
+    modelFile: '../image_classification/model/squeezenet_predict.pb',
+    labelsFile: '../image_classification/model/labels1000.txt',
+    preOptions: {
+      mean: [104, 117, 123],
+      std: [1, 1, 1],
+      channelScheme: 'BGR',
+    },
+    intro: 'A light-weight CNN providing Alexnet level accuracy with 50X fewer parameters.',
+    paperUrl: 'https://arxiv.org/abs/1602.07360'
   }],
 
   objectDetectionModels: [{

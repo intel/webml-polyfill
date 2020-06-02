@@ -107,6 +107,19 @@ class WebNNRunner extends BaseRunner {
           rawModel = new OpenVINOModel(networkText, weightsBuffer);
           rawModel._rawFormat = 'OPENVINO';
           break;
+        case 'pb':
+          const weightFile = url.replace(/predict/, 'init');
+          const weightBuffer = await this._loadURL(weightFile, this._progressHandler, true);
+          const weightBytes = new Uint8Array(weightBuffer);
+          const netBuffer = bytes;
+          const weightMessage = protobuf.roots["caffe2"].caffe2.NetDef.decode(weightBytes);
+          const netMessage = protobuf.roots["caffe2"].caffe2.NetDef.decode(netBuffer);
+          const caffe2Utils = new Caffe2ModelUtils(netMessage,
+                                                   weightMessage,
+                                                   this._currentModelInfo.isDNNL);
+          rawModel = [...caffe2Utils.getCaffe2Model()];
+          rawModel._rawFormat = 'CAFFE2';
+          break;
         default:
           throw new Error(`Unrecognized model format, support TFLite | ONNX | OpenVINO model`);
       }
@@ -195,6 +208,9 @@ class WebNNRunner extends BaseRunner {
       prefer: this._currentPrefer,
       softmax: postOptions.softmax || false,
       inputScaleFactor: options.scaleFactor, // for GNA
+      isQuantized: this._currentModelInfo.isQuantized || false,
+      isDNNL: this._currentModelInfo.isDNNL || false,
+      inputSize: this._currentModelInfo.inputSize // for caffe2 model
     };
 
     switch (this._rawModel._rawFormat) {
@@ -206,6 +222,9 @@ class WebNNRunner extends BaseRunner {
         break;
       case 'OPENVINO':
         model = new OpenVINOModelImporter(configs);
+        break;
+      case 'CAFFE2':
+        model = new Caffe2ModelImporter(configs);
         break;
       default:
         throw new Error(`Unsupported '${rawModel._rawFormat}' model.`);
