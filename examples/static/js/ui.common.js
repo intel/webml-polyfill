@@ -28,6 +28,21 @@ $('.scrolltop, #logo a').click(() => {
   return false;
 });
 
+const updateSIMDNotes = () => {
+  const searchParams = new URLSearchParams(location.search);
+  const f = searchParams.get('f');
+  if (f && f.toLowerCase() === 'opencv.js') {
+    $('#simdnotes').html(`Please enable following flags to experience the experimental features Threads and SIMD with Google Chrome browser.
+      <ol>
+        <li>Type <a href="chrome://flags">chrome://flags</a> in URL address bar and press "Enter" key</li>
+        <li>Search "WebAssembly threads support" and "WebAssembly SIMD support"</li>
+        <li>Select "Enabled", relaunch browser</li>
+      </ol>`).show();
+  } else {
+    $('#simdnotes').hide();
+  }
+}
+
 $(document).ready(() => {
   $('#header').sticky({ topSpacing: 0, zIndex: '50' });
 
@@ -124,6 +139,8 @@ const trademarks = (allFormats) => {
   }
 };
 
+updateSIMDNotes();
+
 const singleModelTable = (modelList, category) => {
   const allFormats = new Set(modelList.map((m) => m.format));
   const backendTr = $('.backend');
@@ -209,7 +226,7 @@ const setPreferenceTipComponents = () => {
       .attr('data-placement', 'bottom')
       .attr('title',
         `<div class="backendtooltip">WASM: TensorFlow.js WebAssembly backend builds on top of the XNNPACK library.<br>
-      WebGL: TensorFlow.js GPU accelerated WebGL backend</div>`
+      WebGL: TensorFlow.js GPU accelerated WebGL backend.</div>`
       );
     $('#backendpolyfilltitle').tooltip();
   }

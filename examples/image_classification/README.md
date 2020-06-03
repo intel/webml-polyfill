@@ -9,7 +9,7 @@ Before launch this example, you need to download the model. Please check out [RE
 
 ### URL Parameters for Image Classification Example
 E.g. 
-https://127.0.0.1/examples/image_classification/index.html?prefer=none&b=WASM&m=mobilenet_v1_tflite&s=image&d=0
+https://127.0.0.1/examples/image_classification/?prefer=none&b=WASM&m=mobilenet_v1_tflite&s=image&d=0&f=WebNN
 
 #### Description
 | Parameter | Value | Description | Note |
@@ -19,6 +19,7 @@ https://127.0.0.1/examples/image_classification/index.html?prefer=none&b=WASM&m=
 | m | mobilenet_v1_tflite, squeezenet_onnx, mobilenet_v2_openvino, etc.s | Unique ID for model | Align with `modelId` defined in `../util/base.js`|
 | s | image <br>camera | Show image or camera tab directly | |
 | d | 0, 1  | Display model<br>// full view <br>0<br>// compact view<br>1  | |
+| f | WebNN, OpenCV.js  | Framework selection | |
 
 
 ### Netron URLs
