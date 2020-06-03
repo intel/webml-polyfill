@@ -2736,8 +2736,17 @@ button.xclose {
   background-color: rgba(15, 76, 129, 1.0);
 }
 
-#trademark {
+#trademark, #simdnotes {
   font-size: 0.65rem;
+}
+
+#simdnotes {
+  text-align: left;
+  margin-top: -1rem;
+}
+
+#simdnotes ol {
+  margin-left: -1.5rem;
 }
 
 @media (min-width: 48em) {

@@ -284,6 +284,7 @@ class BaseExample extends BaseApp {
         updateOpenCVJSBackendComponentsStyle(this._currentOpenCVJSBackend);
         break;
     }
+    updateSIMDNotes();
   };
 
   /**
