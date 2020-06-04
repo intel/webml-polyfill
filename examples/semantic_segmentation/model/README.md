@@ -1,6 +1,6 @@
 # Prerequisites
 
-Download all [DeepLab models](https://drive.google.com/open?id=1hwsB3jxLbNpGuhUY5KHBW8xtxg1fZSq8) to this directory. It should contain the following files:
+Download all DeepLab [tflite models](https://drive.google.com/open?id=1hwsB3jxLbNpGuhUY5KHBW8xtxg1fZSq8) and [OpenVINO models](https://drive.google.com/drive/folders/1NhAg8JKsppEllN65BUfxp4jr6TYiNdP1?usp=sharing ) to this directory. It should contain the following files:
 
 ```txt
 deeplab_mobilenetv2_513_dilated.tflite
