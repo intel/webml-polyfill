@@ -311,6 +311,7 @@ class BaseExample extends BaseApp {
         }
       }
       this._updateHistoryEntryURL();
+      this._freeMemoryResources();
       updateModelComponentsStyle(um);
       this.main();
     });
