@@ -284,6 +284,7 @@ class BaseExample extends BaseApp {
         updateOpenCVJSBackendComponentsStyle(this._currentOpenCVJSBackend);
         break;
     }
+    updateSIMDNotes();
   };
 
   /**
@@ -310,6 +311,7 @@ class BaseExample extends BaseApp {
         }
       }
       this._updateHistoryEntryURL();
+      this._freeMemoryResources();
       updateModelComponentsStyle(um);
       this.main();
     });
