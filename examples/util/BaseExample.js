@@ -297,6 +297,7 @@ class BaseExample extends BaseApp {
       $('.offload').hide();
       let um = $('input:radio[name="m"]:checked').attr('id');
       this._setModelId(um);
+      this._freeMemoryResources(um);
       const modelClasss = getModelListByClass();
       const seatModelClass = $('#' + um).parent().parent().attr('id');
       if (modelClasss.length > 1) {
@@ -311,7 +312,6 @@ class BaseExample extends BaseApp {
         }
       }
       this._updateHistoryEntryURL();
-      this._freeMemoryResources();
       updateModelComponentsStyle(um);
       this.main();
     });
@@ -623,7 +623,7 @@ class BaseExample extends BaseApp {
   /**
    * This method is to free allocated memory for model complation by polyfill backend.
    */
-  _freeMemoryResources = () => {
+  _freeMemoryResources = (modelId) => {
     // Override by inherited when example has co-work runners
     if (this._runner) {
       this._runner.deleteAll();
