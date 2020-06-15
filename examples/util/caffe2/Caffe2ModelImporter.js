@@ -85,11 +85,12 @@ class Caffe2ModelImporter {
     let inputType;
     if (this._isQuantized) {
       inputType = {
-        type: this._isDNNL ? this._nn.TENSOR_QUANT8_ASYMM_SIGNED : this._nn.TENSOR_QUANT8_ASYMM,
+        type: null,
         dimensions: inputDims,
         scale: this._rawModel[0].arg["X_scale"]["value"],
         zeroPoint: this._isDNNL ? 0 : this._rawModel[0].arg["X_zero_point"]["value"]
       };
+      inputType.type = inputType.zeroPoint == 0 ? this._nn.TENSOR_QUANT8_ASYMM_SIGNED : this._nn.TENSOR_QUANT8_ASYMM;
     } else {
       inputType = {
         type: this._nn.TENSOR_FLOAT32,
@@ -716,8 +717,8 @@ class Caffe2ModelImporter {
           let inputDime = inputType.dimensions;
           let inputTypeCode = inputType.type;
 
-          // 4D -> 2D, axis = 0
-          if (inputDime.length == 4 ) {
+          // 4D -> 2D for dnnl, axis = 0
+          if (inputDime.length == 4 && this._backend == "WebML") {
             if (inputDime.reduce((a, b) => a * b) == inputDime[3]) {
               console.log("Add reshape op for input dimensions (4D -> 2D)");
               console.log(`layer${nodeIdx}: reshape ()`);
