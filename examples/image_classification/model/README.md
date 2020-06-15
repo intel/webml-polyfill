@@ -23,7 +23,7 @@ Download the following model packages, then uncompress them if necessary and mov
 22. [Inception (GoogLeNet) v2(OpenVINO)](https://drive.google.com/drive/folders/1TIdN3MepLthIyvYDNumAhY_hdoxtOW96) (`googlenet-v2.{bin,xml}` in the shared folder)
 23. [Inception (GoogLeNet) v4(OpenVINO)](https://drive.google.com/drive/folders/1TIdN3MepLthIyvYDNumAhY_hdoxtOW96) (`googlenet-v4.{bin,xml}` in the shared folder)
 24. [Squeezenet (Caffe2)](https://github.com/facebookarchive/models/tree/master/squeezenet) (rename `predict_net.pb` to `squeezenet_predict.pb` and rename `init_net.pb` to `squeezenet_init.pb`)
-24. [Mobilenet v1 (Caffe2)](https://drive.google.com/drive/folders/1beAhBa6BsdBmHoKlVCERB5-iyCCYDUAe?usp=sharing) (rename `predict_net.pb` to `mobilenet_v1_quant_predict.pb` and rename `init_net.pb` to `mobilenet_v1_quant_init.pb`)
+25. [Mobilenet v1 (Caffe2)](https://drive.google.com/drive/folders/1beAhBa6BsdBmHoKlVCERB5-iyCCYDUAe?usp=sharing) (rename `predict_net.pb` to `mobilenet_v1_quant_predict.pb` and rename `init_net.pb` to `mobilenet_v1_quant_init.pb`)
 
 The model files are:
 ```
