@@ -136,7 +136,7 @@ class WebNNRunner extends BaseRunner {
    * @returns {function} This returns Uint8Array or Float32Array function or other typedArray function if inherited.
    */
   _getInputTensorTypedArray = () => {
-    const typedArray = this._currentModelInfo.isQuantized || false ? Uint8Array : Float32Array;
+    const typedArray = this._currentModelInfo.isQuantized || false ? (this._currentModelInfo.isDNNL || false ? Int8Array : Uint8Array) : Float32Array;
     return typedArray;
   };
 
@@ -154,7 +154,7 @@ class WebNNRunner extends BaseRunner {
    */
   _getOutputTensorTypedArray = () => {
     // Override by inherited if needed
-    const typedArray = this._currentModelInfo.isQuantized || false ? Uint8Array : Float32Array;
+    const typedArray = this._currentModelInfo.isQuantized || false ? (this._currentModelInfo.isDNNL || false ? Float32Array : Uint8Array) : Float32Array;
     return typedArray;
   };
 

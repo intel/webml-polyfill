@@ -385,6 +385,24 @@ const modelZoo = {
     },
     intro: 'A light-weight CNN providing Alexnet level accuracy with 50X fewer parameters.',
     paperUrl: 'https://arxiv.org/abs/1602.07360'
+  }, {
+    modelName: 'MobileNet v1 Quant (Caffe2)',
+    format: 'Caffe2',
+    modelId: 'mobilenet_v1_quant_caffe2',
+    modelSize: '4.5MB',
+    isQuantized: true,
+    isDNNL: true,
+    inputSize: [224, 224, 3],
+    outputSize: 1001,
+    modelFile: '../image_classification/model/mobilenet_v1_quant_predict.pb',
+    labelsFile: '../image_classification/model/labels1001.txt',
+    preOptions: {
+      mean: [127.5, 127.5, 127.5],
+      std: [1, 1, 1],
+      rescaleSize: 256,
+    },
+    intro: 'An efficient Convolutional Neural Networks for Mobile Vision Applications.',
+    paperUrl: 'https://arxiv.org/pdf/1704.04861.pdf'
   }],
 
   objectDetectionModels: [{
