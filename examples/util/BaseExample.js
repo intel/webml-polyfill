@@ -854,9 +854,20 @@ class BaseExample extends BaseApp {
       showErrorComponent('No model selected', 'Please select model to start prediction.');
       return;
     } else {
-      if (this._currentModelId === 'mobilenet_v1_quant_caffe2' && this._currentBackend !== 'WebML') {
-        showErrorComponent('Incorrect backend', `This model just support 'FAST_SINGLE_ANSWER' backend.`);
-        return;
+      if (this._currentModelId === 'mobilenet_v1_quant_caffe2') {
+        let checkFlag = false;
+        if (this._currentBackend !== 'WebML') {
+          checkFlag = true;
+        } else {
+          if (this._currentPrefer !== 'fast') {
+            checkFlag = true;
+          }
+        }
+
+        if (checkFlag) {
+          showErrorComponent('Incorrect backend', `Current model just support 'FAST_SINGLE_ANSWER' backend.`);
+          return;
+        }
       }
 
       const modelCategoryLen = Object.keys(this._inferenceModels).length;
