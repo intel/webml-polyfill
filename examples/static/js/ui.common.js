@@ -111,6 +111,7 @@ const formatToLogo = {
   'tflite': '../static/img/l-tflite.png',
   'onnx': '../static/img/l-onnx.png',
   'openvino': '../static/img/l-openvino.png',
+  'caffe2': '../static/img/l-caffe2.png',
 };
 
 const trademarks = (allFormats) => {
@@ -120,13 +121,16 @@ const trademarks = (allFormats) => {
     let trademark = '';
     switch (format.toLowerCase()) {
       case 'tflite':
-        trademark = 'TensorFlow, the TensorFlow logo and any related marks are trademarks of Google Inc.';
+        trademark = 'TensorFlow, the TensorFlow logo and any related marks are trademarks of Google Inc. ';
         break;
       case 'onnx':
-        trademark += 'ONNX is a community project created by Facebook and Microsoft. ONNX is a trademark of Facebook, Inc.';
+        trademark += 'ONNX is a community project created by Facebook and Microsoft. ONNX is a trademark of Facebook, Inc. ';
         break;
       case 'openvino':
-        trademark += 'OpenVINO and the OpenVINO logo are trademarks of Intel Corporation or its subsidiaries in the U.S. and/or other countries.';
+        trademark += 'OpenVINO and the OpenVINO logo are trademarks of Intel Corporation or its subsidiaries in the U.S. and/or other countries. ';
+        break;
+      case 'caffe2':
+        trademark += 'Caffe2 is now a part of PyTorch. ';
         break;
       default:
         break;

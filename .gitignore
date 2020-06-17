@@ -4,6 +4,7 @@ examples/**/*.tflite
 examples/**/*.onnx
 examples/**/*.bin
 examples/**/*.xml
+examples/**/*.pb
 examples/**/*.ark
 examples/skeleton_detection/model/mobilenet*/*
 src/nn/wasm/src/build
