@@ -22,8 +22,12 @@ export class NeuralNetworkContext {
 
   constant(desc: OperandDescriptor, value: TypedArray): Constant;
   constant(value: number, type: OperandType): Constant;
-  constant(descOrValue: any, valueOrType: any = 'float32'): Constant {
-    return new Constant(descOrValue, valueOrType);
+  constant(descOrValue: OperandDescriptor|number, valueOrType: TypedArray|OperandType): Constant {
+    if (typeof descOrValue === 'number') {
+      return Constant.createScalar(descOrValue as number, valueOrType as OperandType);
+    } else {
+      return Constant.createTensor(descOrValue as OperandDescriptor, valueOrType as TypedArray);
+    }
   }
 
   add(a: Operand, b: Operand): Operand {
