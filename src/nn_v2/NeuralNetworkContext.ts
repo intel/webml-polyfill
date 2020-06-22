@@ -7,6 +7,7 @@ import { TypedArray } from './utils'
 import { Operand } from './Operand';
 import { Add } from './ops/Add';
 import { Mul } from './ops/Mul';
+import { OperandType } from './OperandType';
 
 export class NeuralNetworkContext {
   constructor() {}
@@ -19,8 +20,10 @@ export class NeuralNetworkContext {
     return new Input(desc);
   }
 
-  constant(desc: OperandDescriptor, value: TypedArray): Constant {
-    return new Constant(desc, value);
+  constant(desc: OperandDescriptor, value: TypedArray): Constant;
+  constant(value: number, type: OperandType): Constant;
+  constant(descOrValue: any, valueOrType: any = 'float32'): Constant {
+    return new Constant(descOrValue, valueOrType);
   }
 
   add(a: Operand, b: Operand): Operand {
