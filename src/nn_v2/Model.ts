@@ -6,17 +6,18 @@ import { Compilation } from './Compilation';
 import { assert } from './utils';
 
 export class Model {
-  inputs: Array<Input> = [];
-  outputs: Array<Output> = [];
+  inputs_: Array<Input> = [];
+  outputs_: Array<Output> = [];
 
   constructor(outputs: Array<Output>) {
     assert(outputs.length !== 0, 'The length of outputs parameter should not be 0.');
     assert(outputs.every(output => output instanceof Output), 'The outputs parameter is invalid.');
-    this.outputs = outputs;
+    this.outputs_ = outputs;
     this.identifyInputs();
   }
 
   async createCompilation(options: CompilationOptions): Promise<Compilation> {
+    // TODO: compile the model, e.g. run once.
     return new Compilation(options, this);
   }
 
@@ -25,13 +26,13 @@ export class Model {
     function handleOperation(operation: Operation): void {
       for (const operand of operation.inputs) {
         if (operand instanceof Input) {
-          self.inputs.push((operand as Input));
+          self.inputs_.push((operand as Input));
         } else if (operand instanceof Output) {
           handleOperation((operand as Output).operation);
         }
       }
     }
-    for (const output of this.outputs) {
+    for (const output of this.outputs_) {
       handleOperation(output.operation);
     }
   }
