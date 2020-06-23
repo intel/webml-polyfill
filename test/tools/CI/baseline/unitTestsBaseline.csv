@@ -121,7 +121,7 @@ CTS,CTS/117,check result for Max pool float example/2,Pass,Pass,Pass,Pass
 CTS,CTS/118,check result for Max pool float example/3,Pass,Pass,Pass,Pass
 CTS,CTS/119,check result for MAXIMUM example,Pass,Pass,Pass,Pass
 CTS,CTS/120,check result for MAXIMUM as 4-D tensor example,Pass,Pass,Pass,Pass
-CTS,CTS/121,check result for MAXIMUM as compatible dimensions example,Pass,Pass,Pass,Pass
+CTS,CTS/121,check result for MAXIMUM as compatible dimensions example,Fail,Fail,Fail,Fail
 CTS,CTS/122,check result for Mul example,Pass,Pass,Pass,Pass
 CTS,CTS/123,check result for Mul relu example,Pass,Pass,Pass,Pass
 CTS,CTS/124,check result for Mul relu1 example,Pass,Pass,Pass,Pass

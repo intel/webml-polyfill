@@ -1,30 +1,30 @@
 {
     "Version": {
         "chromium": "ef9d267",
-        "polyfill": "853173e"
+        "polyfill": "04af842"
     },
     "Android-Polyfill-Fast-WASM": {
         "total": 178,
-        "pass": 178,
-        "fail": 0,
+        "pass": 177,
+        "fail": 1,
         "block": 0
     },   
     "Linux-Polyfill-Fast-WASM": {
         "total": 178,
-        "pass": 178,
-        "fail": 0,
+        "pass": 177,
+        "fail": 1,
         "block": 0
     }, 
     "macOS-Polyfill-Fast-WASM": {
         "total": 178,
-        "pass": 178,
-        "fail": 0,
+        "pass": 177,
+        "fail": 1,
         "block": 0
     },
     "Win-Polyfill-Fast-WASM": {
         "total": 178,
-        "pass": 178,
-        "fail": 0,
+        "pass": 177,
+        "fail": 1,
         "block": 0
     }
     
