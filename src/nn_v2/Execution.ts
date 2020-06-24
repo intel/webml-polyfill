@@ -26,9 +26,15 @@ export class Execution {
 
   async startCompute(): Promise<void> {
     for (let i = 0; i < this.model_.outputs_.length; ++i) {
-      const tensor: tf.Tensor = this.model_.outputs_[i].operation.run(this);
+      const tensor: tf.Tensor = tf.tidy(() => {
+        return this.model_.outputs_[i].operation.run(this);
+      });
       const data = await tensor.data();
+      tf.dispose(tensor);
       this.outputBuffers_[i].set(data);
+    }
+    for (let tensor of this.inputTensors_.values()) {
+      tf.dispose(tensor);
     }
   }
 
