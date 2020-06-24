@@ -1,6 +1,6 @@
 import { OperandType } from './OperandType'
-import * as tf from '@tensorflow/tfjs-core'
 import { OperandDescriptor } from './OperandDescriptor';
+import * as tf from '@tensorflow/tfjs-core'
 
 export type TypedArray = Float32Array|Int32Array|Uint32Array|Int16Array|Uint16Array;
 

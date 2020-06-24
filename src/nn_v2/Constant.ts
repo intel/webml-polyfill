@@ -1,15 +1,24 @@
 import { Operand } from './Operand'
 import { OperandDescriptor } from './OperandDescriptor';
 import { assert, TypedArray, validateTypedArray, createTensor, validateOperandDescriptor, getDataType } from './utils';
-import * as tf from '@tensorflow/tfjs-core'
 import { OperandType } from './OperandType';
+
+import * as tf from '@tensorflow/tfjs-core'
 
 export class Constant extends Operand {
   private desc_: OperandDescriptor;
-  private tensor_: tf.Tensor;
+  private value_: number|TypedArray;
 
   get desc() { return this.desc_; }
-  get tensor() { return this.tensor_; }
+
+  createTensor(): tf.Tensor {
+    if (typeof this.value_ === 'number') {
+      const dtype: tf.DataType = getDataType(this.desc_.type);
+      return tf.scalar(this.value_, dtype);
+    } else {
+      return createTensor(this.desc_, this.value_);
+    }
+  }
 
   static createScalar(value: number, type: OperandType = OperandType.float32): Constant {
     let constant = new Constant();
@@ -18,8 +27,7 @@ export class Constant extends Operand {
     }
     assert(type in OperandType, 'The operand type is invalid.');
     constant.desc_ = {type: type} as OperandDescriptor;
-    const dtype: tf.DataType = getDataType(type);
-    constant.tensor_ = tf.scalar(value, dtype);
+    constant.value_ = value;
     return constant;
   }
 
@@ -28,7 +36,7 @@ export class Constant extends Operand {
     validateOperandDescriptor(desc);
     constant.desc_ = desc;
     validateTypedArray(value, desc.type);
-    constant.tensor_ = createTensor(desc, value);
+    constant.value_ = value;
     return constant;
   }
 

@@ -3,6 +3,7 @@ import { Execution } from './Execution'
 import { Operand } from "./Operand";
 import { Constant } from "./Constant";
 import { Input } from "./Input";
+
 import * as tf from '@tensorflow/tfjs-core'
 
 export abstract class Operation {
@@ -19,11 +20,11 @@ export abstract class Operation {
 
   protected getTensor(operand: Operand, execution: Execution): tf.Tensor {
     if (operand instanceof Constant) {
-      return (operand as Constant).tensor;
+      return execution.getConstantTensor(operand as Constant);
     } else if (operand instanceof Output) {
       return (operand as Output).operation.run(execution);
     } else if (operand instanceof Input) {
-      return execution.getInputTensor((operand as Input));
+      return execution.getInputTensor(operand as Input);
     } else {
       throw new Error('The operand is invalid.');
     }
