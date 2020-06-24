@@ -53,6 +53,24 @@ export function getDataType(type: OperandType): tf.DataType {
   }
 }
 
+export function createOperandDescriptorFromTensor(tensor: tf.Tensor): OperandDescriptor {
+  let type: OperandType;
+  if (tensor.dtype === 'float32') {
+    if (tensor.rankType === tf.Rank.R0) {
+      type = OperandType.float32;
+    } else {
+      type = OperandType["tensor-float32"];
+    }
+  } else if (tensor.dtype === 'int32') {
+    if (tensor.rankType === tf.Rank.R0) {
+      type = OperandType.int32;
+    } else {
+      type = OperandType["tensor-int32"];
+    }
+  }
+  return {type: type, dimensions: tensor.shape} as OperandDescriptor;
+}
+
 export function validateOperandDescriptor(desc: OperandDescriptor) {
   assert(desc.type in OperandType, 'The operand type is invalid.');
   if (isTensorType(desc.type)) {
@@ -62,11 +80,13 @@ export function validateOperandDescriptor(desc: OperandDescriptor) {
   }
 }
 
-export function validateTypedArray(value: TypedArray, type: OperandType) {
+export function validateTypedArray(value: TypedArray, desc: OperandDescriptor) {
   assert(isTypedArray(value), 'The value is not a typed array.');
-  assert(value instanceof getTypedArray(type), 'The type of value is invalid.');
-  if (!isTensorType(type)) {
+  assert(value instanceof getTypedArray(desc.type), 'The type of value is invalid.');
+  if (!isTensorType(desc.type)) {
     assert(value.length === 1, 'The value length is invalid.');
+  } else {
+    assert(value.length === sizeFromDimensions(desc.dimensions), 'the value length is invalid.');
   }
 }
 
@@ -76,5 +96,14 @@ export function createTensor(desc: OperandDescriptor, value: TypedArray): tf.Ten
     return tf.tensor(value, desc.dimensions, dtype);
   } else {
     return tf.scalar(value[0], dtype);
+  }
+}
+
+export function sizeFromDimensions(dim: number[]): number {
+  if (typeof dim === 'undefined') {
+    // scalar
+    return 1;
+  } else {
+    return dim.reduce((accumulator, currentValue) => accumulator * currentValue);
   }
 }

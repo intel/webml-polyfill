@@ -35,7 +35,7 @@ export class Constant extends Operand {
     let constant = new Constant();
     validateOperandDescriptor(desc);
     constant.desc_ = desc;
-    validateTypedArray(value, desc.type);
+    validateTypedArray(value, desc);
     constant.value_ = value;
     return constant;
   }
