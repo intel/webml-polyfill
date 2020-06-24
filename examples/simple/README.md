@@ -1,8 +1,8 @@
-WebML API Sample
+WebNN API Sample
 ======
 This sample is a mimic of [Android Neural Networks API Sample](https://github.com/googlesamples/android-ndk/tree/master/nn_sample).
 
-It demonstrates basic usages of WebML API with a simple model that consists of three operations: two additions and a multiplication.
+It demonstrates basic usages of WebNN API with a simple model that consists of three operations: two additions and a multiplication.
 
 The sums created by the additions are the inputs to the multiplication. In essence, we are creating a graph that computes: (tensor0 + tensor1) * (tensor2 + tensor3).
 ```js
