@@ -28,6 +28,21 @@ $('.scrolltop, #logo a').click(() => {
   return false;
 });
 
+const updateSIMDNotes = () => {
+  const searchParams = new URLSearchParams(location.search);
+  const f = searchParams.get('f');
+  if (f && f.toLowerCase() === 'opencv.js') {
+    $('#simdnotes').html(`Please enable following flags to experience the experimental features Threads and SIMD with Google Chrome browser.
+      <ol>
+        <li>Type <a href="chrome://flags">chrome://flags</a> in URL address bar and press "Enter" key</li>
+        <li>Search "WebAssembly threads support" and "WebAssembly SIMD support"</li>
+        <li>Select "Enabled", relaunch browser</li>
+      </ol>`).show();
+  } else {
+    $('#simdnotes').hide();
+  }
+}
+
 $(document).ready(() => {
   $('#header').sticky({ topSpacing: 0, zIndex: '50' });
 
@@ -96,6 +111,7 @@ const formatToLogo = {
   'tflite': '../static/img/l-tflite.png',
   'onnx': '../static/img/l-onnx.png',
   'openvino': '../static/img/l-openvino.png',
+  'caffe2': '../static/img/l-caffe2.png',
 };
 
 const trademarks = (allFormats) => {
@@ -105,13 +121,16 @@ const trademarks = (allFormats) => {
     let trademark = '';
     switch (format.toLowerCase()) {
       case 'tflite':
-        trademark = 'TensorFlow, the TensorFlow logo and any related marks are trademarks of Google Inc.';
+        trademark = 'TensorFlow, the TensorFlow logo and any related marks are trademarks of Google Inc. ';
         break;
       case 'onnx':
-        trademark += 'ONNX is a community project created by Facebook and Microsoft. ONNX is a trademark of Facebook, Inc.';
+        trademark += 'ONNX is a community project created by Facebook and Microsoft. ONNX is a trademark of Facebook, Inc. ';
         break;
       case 'openvino':
-        trademark += 'OpenVINO and the OpenVINO logo are trademarks of Intel Corporation or its subsidiaries in the U.S. and/or other countries.';
+        trademark += 'OpenVINO and the OpenVINO logo are trademarks of Intel Corporation or its subsidiaries in the U.S. and/or other countries. ';
+        break;
+      case 'caffe2':
+        trademark += 'Caffe2 is now a part of PyTorch. ';
         break;
       default:
         break;
@@ -123,6 +142,8 @@ const trademarks = (allFormats) => {
     $('#trademark').html(trademarknote);
   }
 };
+
+updateSIMDNotes();
 
 const singleModelTable = (modelList, category) => {
   const allFormats = new Set(modelList.map((m) => m.format));
@@ -209,7 +230,7 @@ const setPreferenceTipComponents = () => {
       .attr('data-placement', 'bottom')
       .attr('title',
         `<div class="backendtooltip">WASM: TensorFlow.js WebAssembly backend builds on top of the XNNPACK library.<br>
-      WebGL: TensorFlow.js GPU accelerated WebGL backend</div>`
+      WebGL: TensorFlow.js GPU accelerated WebGL backend.</div>`
       );
     $('#backendpolyfilltitle').tooltip();
   }

@@ -298,8 +298,15 @@ class OpenVINOModelImporter {
           const [paddingHeightEnd, paddingWidthEnd] = pads_end;
           console.log(`  pads begin: [${pads_begin}]`);
           console.log(`  pads end: [${pads_end}]`);
-
-          const strides = node.getInts('strides', [1, 1]);
+          const dilations = node.getInts('dilations');
+          let isAtrous = false;
+          let strides = null;
+          if (dilations[0] !== 1 && dilations[1] !== 1) {
+            strides = node.getInts('dilations');
+            isAtrous = true;
+          } else {
+            strides = node.getInts('strides');
+          }
           const [strideY, strideX] = strides;
           console.log(`  strides: [${strides}]`);
 
@@ -366,8 +373,12 @@ class OpenVINOModelImporter {
           const outputId = this._addNamedOperand(output.graphId(), outputType);
           outputs.push(outputId);
           console.log(`  output shape: [${outDims}]`);
-
-          opCode = isDepthWiseConv ? this._nn.DEPTHWISE_CONV_2D : this._nn.CONV_2D;
+          
+          if (isDepthWiseConv == true) {
+            opCode = isAtrous ? this._nn.ATROUS_DEPTHWISE_CONV_2D : this._nn.DEPTHWISE_CONV_2D;
+          } else {
+            opCode = isAtrous ? this._nn.ATROUS_CONV_2D : this._nn.CONV_2D;
+          }
         } break;
         case 'Eltwise': {
           // Add inputs
@@ -767,6 +778,75 @@ class OpenVINOModelImporter {
           console.log(`  output shape: [${outDims}]`);
 
           opCode = this._nn.PRELU;
+        } break;
+        case 'Interp': {
+          // Add inputs
+          const input = node.inputs[0];
+          const inputShape = input.shape();
+          console.log(`  input shape: [${inputShape}]`);
+          inputs.push(this._getTensorId(input));
+          const factor = node.getFloat("factor");
+          let height = null;
+          let width = null;
+          if (factor !== 0) {
+            // inputShape[N, H, W, C]
+            height = inputShape[1] * factor;
+            width = inputShape[2] * factor;
+          } else {
+            height = node.getFloat("height");
+            width = node.getFloat("width");
+          }
+          inputs.push(this._addScalarInt32(height));
+          inputs.push(this._addScalarInt32(width));
+          const align_corners = node.getInt("align_corners");
+          if (align_corners !== 'undefined') {
+            inputs.push(this._addScalarInt32(align_corners));
+          }
+
+          // Add outputs
+          const output = node.outputs[0];
+          const outDims = output.shape();
+          const outputType = {
+            type: this._getTypeCode(output.dataType()), dimensions: outDims
+          };
+          const outputId = this._addNamedOperand(output.graphId(), outputType);
+          outputs.push(outputId);
+          console.log(`  output shape: [${outDims}]`);
+
+          opCode = this._nn.RESIZE_BILINEAR;
+        } break;
+        case 'ArgMax': {
+          // Add inputs
+          const input = node.inputs[0];
+          const inputShape = input.shape();
+          console.log(`  input shape: [${inputShape}]`);
+          inputs.push(this._getTensorId(input));
+          const axis = node.getInt("axis");
+          let argMaxAxis = axis;
+          if (inputShape.length === 4) {
+            // NCHW -> NHWC
+            argMaxAxis = {
+              0: 0,
+              1: 3,
+              2: 1,
+              3: 2,
+            }[axis];
+          }
+          inputs.push(this._addScalarInt32(argMaxAxis));
+
+          // Add outputs
+          const output = node.outputs[0];
+          const outDims = output.shape();
+          // The result has the same shape as input with the dimension along axis removed.
+          outDims.splice(argMaxAxis, 1);
+          const outputType = {
+            type: this._getTypeCode('I32'), dimensions: outDims
+          };
+          const outputId = this._addNamedOperand(output.graphId(), outputType);
+          outputs.push(outputId);
+          console.log(`  output shape: [${outDims}]`);
+
+          opCode = this._nn.ARGMAX;
         } break;
         case 'Sigmoid': {
           opCode = this._nn.LOGISTIC;

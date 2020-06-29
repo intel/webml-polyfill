@@ -1,0 +1,22 @@
+{
+  "name": "Memory Consumption",
+  "description" : "Get System Memory Information",
+  "version": "1.0",
+  "permissions": ["system.memory"],
+  "browser_action": {
+    "default_icon": "monitor-icon.png"
+  },
+  "background":{
+    "scripts": ["background.js"]
+  },
+  "manifest_version": 2,
+  "commands": {
+    "save_and_download": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+Y",
+        "mac": "Command+Shift+Y"
+      },
+      "description": "Save and Download"
+    }
+  }
+}

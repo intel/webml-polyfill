@@ -127,13 +127,32 @@ class FaceRecognitionExample extends BaseCameraExample {
   };
 
   /** @override */
-  _freeMemoryResources = () => {
-    if (this._runner) {
-      this._runner.deleteAll();
-    }
-
-    if (this._coRunner) {
-      this._coRunner.deleteAll();
+  _freeMemoryResources = (modelId) => {
+    if (modelId !== 'undefined') {
+      let flag = false;
+      let fdModelList = this._inferenceModels.faceDetection;
+      for (let model of fdModelList) {
+        if (modelId === model.modelId) {
+          flag = true;
+          break;
+        }
+      }
+      if (flag) {
+        if (this._runner) {
+          this._runner.deleteAll();
+        }
+      } else {
+        if (this._coRunner) {
+          this._coRunner.deleteAll();
+        }
+      }
+    } else {
+      if (this._runner) {
+        this._runner.deleteAll();
+      }
+      if (this._coRunner) {
+        this._coRunner.deleteAll();
+      }
     }
   };
 

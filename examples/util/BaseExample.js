@@ -284,6 +284,7 @@ class BaseExample extends BaseApp {
         updateOpenCVJSBackendComponentsStyle(this._currentOpenCVJSBackend);
         break;
     }
+    updateSIMDNotes();
   };
 
   /**
@@ -296,6 +297,7 @@ class BaseExample extends BaseApp {
       $('.offload').hide();
       let um = $('input:radio[name="m"]:checked').attr('id');
       this._setModelId(um);
+      this._freeMemoryResources(um);
       const modelClasss = getModelListByClass();
       const seatModelClass = $('#' + um).parent().parent().attr('id');
       if (modelClasss.length > 1) {
@@ -621,7 +623,7 @@ class BaseExample extends BaseApp {
   /**
    * This method is to free allocated memory for model complation by polyfill backend.
    */
-  _freeMemoryResources = () => {
+  _freeMemoryResources = (modelId) => {
     // Override by inherited when example has co-work runners
     if (this._runner) {
       this._runner.deleteAll();
@@ -852,6 +854,22 @@ class BaseExample extends BaseApp {
       showErrorComponent('No model selected', 'Please select model to start prediction.');
       return;
     } else {
+      if (this._currentModelId === 'mobilenet_v1_quant_caffe2') {
+        let checkFlag = false;
+        if (this._currentBackend !== 'WebML') {
+          checkFlag = true;
+        } else {
+          if (this._currentPrefer !== 'fast') {
+            checkFlag = true;
+          }
+        }
+
+        if (checkFlag) {
+          showErrorComponent('Incorrect backend', `Current model just support 'FAST_SINGLE_ANSWER' backend.`);
+          return;
+        }
+      }
+
       const modelCategoryLen = Object.keys(this._inferenceModels).length;
       if (modelCategoryLen > 1) {
         if (this._currentModelId.includes('+') || this._currentModelId.includes(' ')) {

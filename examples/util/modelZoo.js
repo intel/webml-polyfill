@@ -369,6 +369,40 @@ const modelZoo = {
     },
     intro: 'Inception architecture that has been shown to achieve very good performance at relatively low computational cost.',
     paperUrl: 'https://arxiv.org/abs/1602.07261'
+  }, {
+    modelName: 'Squeezenet (Caffe2)',
+    format: 'Caffe2',
+    modelId: 'Squeezenet_Caffe2',
+    modelSize: '6.2MB',
+    inputSize: [227, 227, 3],
+    outputSize: 1000,
+    modelFile: '../image_classification/model/squeezenet_predict.pb',
+    labelsFile: '../image_classification/model/labels1000.txt',
+    preOptions: {
+      mean: [104, 117, 123],
+      std: [1, 1, 1],
+      channelScheme: 'BGR',
+    },
+    intro: 'A light-weight CNN providing Alexnet level accuracy with 50X fewer parameters.',
+    paperUrl: 'https://arxiv.org/abs/1602.07360'
+  }, {
+    modelName: 'MobileNet v1 Quant (Caffe2)',
+    format: 'Caffe2',
+    modelId: 'mobilenet_v1_quant_caffe2',
+    modelSize: '4.5MB',
+    isQuantized: true,
+    isDNNL: true,
+    inputSize: [224, 224, 3],
+    outputSize: 1001,
+    modelFile: '../image_classification/model/mobilenet_v1_quant_predict.pb',
+    labelsFile: '../image_classification/model/labels1001.txt',
+    preOptions: {
+      mean: [127.5, 127.5, 127.5],
+      std: [1, 1, 1],
+      rescaleSize: 256,
+    },
+    intro: 'An efficient Convolutional Neural Networks for Mobile Vision Applications.',
+    paperUrl: 'https://arxiv.org/pdf/1704.04861.pdf'
   }],
 
   objectDetectionModels: [{
@@ -624,6 +658,66 @@ const modelZoo = {
     modelId: 'deeplab_mobilenet_v2_513_atrous_tflite',
     modelSize: '8.4MB',
     modelFile: '../semantic_segmentation/model/deeplab_mobilenetv2_513_dilated.tflite',
+    labelsFile: '../semantic_segmentation/model/labels.txt',
+    inputSize: [513, 513, 3],
+    outputSize: [513, 513, 1],
+    preOptions: {
+      mean: [127.5, 127.5, 127.5],
+      std: [127.5, 127.5, 127.5],
+    },
+    intro: 'Equivalent to the model above (without dilated suffix) but only available on platforms that natively support atrous convolution.',
+    paperUrl: 'https://arxiv.org/abs/1802.02611'
+  }, {
+    modelName: 'Deeplab 224 Atrous (OpenVINO)',
+    format: 'OpenVINO',
+    modelId: 'deeplab_mobilenet_v2_224_atrous_openvino',
+    modelSize: '8.4MB',
+    modelFile: '../semantic_segmentation/model/deeplab_mobilenetv2_224_dilated.bin',
+    labelsFile: '../semantic_segmentation/model/labels.txt',
+    inputSize: [224, 224, 3],
+    outputSize: [224, 224, 1],
+    preOptions: {
+      mean: [127.5, 127.5, 127.5],
+      std: [127.5, 127.5, 127.5],
+    },
+    intro: 'Equivalent to the model above (without dilated suffix) but only available on platforms that natively support atrous convolution.',
+    paperUrl: 'https://arxiv.org/abs/1802.02611'
+  }, {
+    modelName: 'Deeplab 257 Atrous (OpenVINO)',
+    format: 'OpenVINO',
+    modelId: 'deeplab_mobilenet_v2_257_atrous_openvino',
+    modelSize: '8.4MB',
+    modelFile: '../semantic_segmentation/model/deeplab_mobilenetv2_257_dilated.bin',
+    labelsFile: '../semantic_segmentation/model/labels.txt',
+    inputSize: [257, 257, 3],
+    outputSize: [257, 257, 1],
+    preOptions: {
+      mean: [127.5, 127.5, 127.5],
+      std: [127.5, 127.5, 127.5],
+    },
+    intro: 'Equivalent to the model above (without dilated suffix) but only available on platforms that natively support atrous convolution.',
+    paperUrl: 'https://arxiv.org/abs/1802.02611'
+  }, {
+    modelName: 'Deeplab 321 Atrous (OpenVINO)',
+    format: 'OpenVINO',
+    modelId: 'deeplab_mobilenet_v2_321_atrous_openvino',
+    modelSize: '8.4MB',
+    modelFile: '../semantic_segmentation/model/deeplab_mobilenetv2_321_dilated.bin',
+    labelsFile: '../semantic_segmentation/model/labels.txt',
+    inputSize: [321, 321, 3],
+    outputSize: [321, 321, 1],
+    preOptions: {
+      mean: [127.5, 127.5, 127.5],
+      std: [127.5, 127.5, 127.5],
+    },
+    intro: 'Equivalent to the model above (without dilated suffix) but only available on platforms that natively support atrous convolution.',
+    paperUrl: 'https://arxiv.org/abs/1802.02611'
+  }, {
+    modelName: 'Deeplab 513 Atrous (OpenVINO)',
+    format: 'OpenVINO',
+    modelId: 'deeplab_mobilenet_v2_513_atrous_openvino',
+    modelSize: '8.4MB',
+    modelFile: '../semantic_segmentation/model/deeplab_mobilenetv2_513_dilated.bin',
     labelsFile: '../semantic_segmentation/model/labels.txt',
     inputSize: [513, 513, 3],
     outputSize: [513, 513, 1],
