@@ -654,6 +654,9 @@ class BaseExample extends BaseApp {
     if (this._currentFramework === 'WebNN') {
         options.backend = this._currentBackend;
         options.prefer = this._currentPrefer;
+        const supportedOps = getSupportedOps(this._currentBackend, this._currentPrefer);
+        options.supportedOps = supportedOps;
+        options.eagerMode = false;
     }
 
     return options;
@@ -874,11 +877,6 @@ class BaseExample extends BaseApp {
     try {
       // Get Runner for execute inference
       this._getRunner();
-      let supportedOps;
-      if (this._currentFramework === 'WebNN') {
-        supportedOps = getSupportedOps(this._currentBackend, this._currentPrefer);
-        this._setSupportedOps(supportedOps);
-      }
       // UI shows loading model progress
       await showProgressComponent('current', 'pending', 'pending');
       // Load model
@@ -890,6 +888,7 @@ class BaseExample extends BaseApp {
       if (this._currentFramework === 'WebNN') {
         const requiredOps = this._getRequiredOps();
         // show offload ops info
+        const supportedOps = getSupportedOps(this._currentBackend, this._currentPrefer);
         showHybridComponent(supportedOps, requiredOps, this._currentBackend, this._currentPrefer);
         // show sub graphs summary
         const subgraphsSummary = this._getSubgraphsSummary();

@@ -41,7 +41,9 @@ class WebNNExecutor extends BaseExecutor {
   _compileModel = async () => {
     await this._runner.compileModel({
       backend: this._currentBackend.replace('WebNN', 'WebML'),
-      prefer: this._currentPrefer
+      prefer: this._currentPrefer,
+      eagerMode: this._bEagerMode,
+      supportedOps: this._supportedOps
     });
   };
 

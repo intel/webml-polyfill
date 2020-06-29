@@ -29,6 +29,8 @@ class SkeletonDetectionWebNNExecutor extends WebNNExecutor {
                                            this._currentPrefer,
                                            this._currentModelInfo,
                                            this._modelConfig,
+                                           this._bEagerMode,
+                                           this._supportedOps,
                                            true);
   };
 
