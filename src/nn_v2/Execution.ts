@@ -16,14 +16,16 @@ export class Execution {
   }
 
   setInput(name: string, data: TypedArray): void {
-    assert(typeof name === 'string', 'The name parameter is invalid.');
+    assert(typeof name === 'string' &&
+        this.compilation_.model_.inputs_.has(name), 'The name parameter is invalid.');
     const input = this.compilation_.model_.inputs_.get(name);
     validateTypedArray(data, input.desc);
     this.inputTensors_.set(input, createTensor(input.desc, data));
   }
 
   setOutput(name: string, data: TypedArray): void {
-    assert(typeof name === 'string', 'The name parameter is invalid.');
+    assert(typeof name === 'string' &&
+        this.compilation_.model_.outputs_.has(name), 'The name parameter is invalid.');
     const output = this.compilation_.model_.outputs_.get(name);
     const desc = this.compilation_.outputDescriptors_.get(output);
     validateTypedArray(data, desc)
