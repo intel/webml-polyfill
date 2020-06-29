@@ -22,7 +22,7 @@ class OpenVINOModelImporter {
         throw Error('Fails to initialize neural network context');
       }
       this._nn = nnNative;
-    } else if (this._backend === 'WASM' || this._backend === 'WebGL') {
+    } else if (this._backend === 'WASM' || this._backend === 'WebGL' || this._backend === 'WebGPU') {
       this._nn = nnPolyfill;
     }
     this._bEagerMode = false;

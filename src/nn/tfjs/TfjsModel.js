@@ -25,11 +25,6 @@ export default class TfjsModel {
     this._preference = PreferenceCode.FAST_SINGLE_ANSWER;
     this._prepared = false;
     this._profiler = null;
-
-    if (tf.backend().floatPrecision() === 16) {
-      console.warn(
-          'The current floating point operation precision is only 16-bit');
-    }
   }
 
   /** Called in nn/Compilation.js */
@@ -50,11 +45,15 @@ export default class TfjsModel {
         setWasmPath(_fixWasmPath(wasmPath));
         await tf.setBackend('wasm');
       };
-    } else {
-      if(tf.getBackend() != "webgpu"){
+    } else { if(this._model._backend === "WebGPU"){
         await tf.setBackend('webgpu');
-      };
-    };
+        await tf.ready();
+    } else {
+        await tf.setBackend('webgl');
+        await tf.ready();
+    } }
+
+    console.log('Current Backend :', tf.getBackend());
 
     const model = this._model;
     const operations = model._operations;
@@ -680,7 +679,7 @@ export default class TfjsModel {
         const output = operands[outputs[0]];
         if (perm !== undefined) {
           if (perm.value === undefined) {
-            const operand = this._model._operands[input[1]];
+            const operand = this._model._operands[inputs[1]];
             perm.value = operand.value;
           }
           output.assign(input.transpose(perm.value));

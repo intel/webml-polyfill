@@ -11,7 +11,7 @@ export default class NeuralNetworkContext {
     this._initFusedActivationFunctionTypes();
     this._initImplicitPaddingTypes();
     this._initExecutionPreferenceTypes();
-    //this.supportWebGL = TfjsModel._supportWebGL();
+    this.supportWebGL = TfjsModel._supportWebGL();
     this.supportWeGPU = TfjsModel._supportWebGPU();
     this.supportWasm = !!window.WebAssembly;
   }
@@ -22,7 +22,9 @@ export default class NeuralNetworkContext {
    * @param {options} options.backend - model backend.
    */
   async createModel(options = {}) {
-    if (options.backend === 'WebGL' && !this.supportWebGPU ) {
+    if (options.backend === 'WebGL' && !this.supportWebGL) {
+      return "WebGL is not available";}
+    else if (options.backend === 'WebGPU' && !this.supportWebGPU ) {
       if(! (TfjsModel._getBackend() === "webgpu") )
       return "WebGPU is not available";  
     } else if (!this.supportWasm) {

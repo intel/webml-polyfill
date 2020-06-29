@@ -566,6 +566,7 @@ class WebNNRunner extends BaseRunner {
    * @param {object} configs An array object for config array, likes:
    *     [{backend: 'WASM', prefer: 'fast'}]
    *     [{backend: 'WebGL', prefer: 'sustained'}]
+   *     [{backend: 'WebGPU', prefer: 'sustained'}]
    *     [{backend: 'WebML', prefer: 'fast'}]
    *     [{backend: 'WebML', prefer: 'sustained'}]
    *     or

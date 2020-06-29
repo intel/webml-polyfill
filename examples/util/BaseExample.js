@@ -6,7 +6,7 @@ class BaseExample extends BaseApp {
     this._feedElement = document.getElementById('feedElement');
     // <video> or <audio> element when using live Camera or Microphone
     this._feedMediaElement = document.getElementById('feedMediaElement');
-    // Backend type: 'WASM' | 'WebGL' | 'WebML'
+    // Backend type: 'WASM' | 'WebGL' | 'WebML' | 'WebGPU'
     this._currentBackend = 'WASM';
     // Prefer type: 'none' | 'fast' | 'sustained' | 'low' | 'ultra_low'
     this._currentPrefer = 'none';
