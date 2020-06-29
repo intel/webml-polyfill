@@ -2,7 +2,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Hello WebNN</title>
+    <title>WebNN API Demo</title>
     <link rel="stylesheet" href="../static/lib/bootstrap/css/bootstrap.min.css">   
     <style>
 		.radioInit{
@@ -35,16 +35,48 @@
   </head>
   <body>
     <nav class="navbar navbar-expand-md navbar-dark bg-dark" style="width:100%">
-      <span class="navbar-brand mb-0 h1">Hello WebNN</span>
+      <span class="navbar-brand mb-0 h1">WebNN API Demo</span>
     </nav>
     <div class="container" id="container">
       <div class="row" style="margin-top:20px;">
         <div class="col">
         </div>
         <div class="col-8">
+          <p>This demo is based on the <a href="https://webmachinelearning.github.io/webnn/#examples">WebNN examples</a>. It demonstrates the basic usage of WebNN API by the following computational graph:</p>
+          <pre><code class="lang-js"><span class="hljs-comment">constant1</span> <span class="hljs-literal">-</span><span class="hljs-literal">-</span><span class="hljs-literal">-</span><span class="hljs-literal">+</span>
+             <span class="hljs-literal">+</span><span class="hljs-literal">-</span><span class="hljs-literal">-</span><span class="hljs-literal">-</span> <span class="hljs-comment">ADD</span> <span class="hljs-literal">-</span><span class="hljs-literal">-</span><span class="hljs-literal">-</span>&gt; <span class="hljs-comment">intermediateOutput0</span> <span class="hljs-literal">-</span><span class="hljs-literal">-</span><span class="hljs-literal">-</span><span class="hljs-literal">+</span>
+<span class="hljs-comment">input1</span>    <span class="hljs-literal">-</span><span class="hljs-literal">-</span><span class="hljs-literal">-</span><span class="hljs-literal">+</span>                                    <span class="hljs-comment">|</span>
+                                                  <span class="hljs-literal">+</span><span class="hljs-literal">-</span><span class="hljs-literal">-</span><span class="hljs-literal">-</span> <span class="hljs-comment">MUL</span><span class="hljs-literal">-</span><span class="hljs-literal">-</span><span class="hljs-literal">-</span>&gt; <span class="hljs-comment">output</span>
+<span class="hljs-comment">constant2</span> <span class="hljs-literal">-</span><span class="hljs-literal">-</span><span class="hljs-literal">-</span><span class="hljs-literal">+</span>                                    <span class="hljs-comment">|</span>
+             <span class="hljs-literal">+</span><span class="hljs-literal">-</span><span class="hljs-literal">-</span><span class="hljs-literal">-</span> <span class="hljs-comment">ADD</span> <span class="hljs-literal">-</span><span class="hljs-literal">-</span><span class="hljs-literal">-</span>&gt; <span class="hljs-comment">intermediateOutput1</span> <span class="hljs-literal">-</span><span class="hljs-literal">-</span><span class="hljs-literal">-</span><span class="hljs-literal">+</span>
+<span class="hljs-comment">input2</span>    <span class="hljs-literal">-</span><span class="hljs-literal">-</span><span class="hljs-literal">-</span><span class="hljs-literal">+</span>
+</code></pre>
+          <p>The values of <code>constant1</code> and <code>constant2</code> are loaded from <a href="model_data.bin">model_data.bin</a>. The values of <code>input1</code> and <code>input2</code> are read from user inputs.</p>
+        </div>
+        <div class="col">
+        </div>
+      </div>
+      <div class="row" style="margin-top:20px;">
+        <div class="col">
+        </div>
+        <div class="col-8">
           <div class="input-group input-group-lg">
             <div class="input-group-prepend">
-              <span class="input-group-text" style="width:5em;">Input 1</span>
+              <span class="input-group-text" style="width:7em;">constant1</span>
+            </div>
+            <span type="text" class="form-control" aria-label="Large" aria-describedby="inputGroup-sizing-sm" id="constant1">
+          </div>
+        </div>
+        <div class="col">
+        </div>
+      </div>
+      <div class="row" style="margin-top:20px;">
+        <div class="col">
+        </div>
+        <div class="col-8">
+          <div class="input-group input-group-lg">
+            <div class="input-group-prepend">
+              <span class="input-group-text" style="width:7em;">input1</span>
             </div>
             <input type="text" class="form-control" aria-label="Large" aria-describedby="inputGroup-sizing-sm" id="input1">
           </div>
@@ -58,7 +90,21 @@
         <div class="col-8">
           <div class="input-group input-group-lg">
             <div class="input-group-prepend">
-              <span class="input-group-text" style="width:5em;">Input 2</span>
+              <span class="input-group-text" style="width:7em;">constant2</span>
+            </div>
+            <span type="text" class="form-control" aria-label="Large" aria-describedby="inputGroup-sizing-sm" id="constant2">
+          </div>
+        </div>
+        <div class="col">
+        </div>
+      </div>
+      <div class="row" style="margin-top:20px;">
+        <div class="col">
+        </div>
+        <div class="col-8">
+          <div class="input-group input-group-lg">
+            <div class="input-group-prepend">
+              <span class="input-group-text" style="width:7em;">input2</span>
             </div>
             <input type="text" class="form-control" aria-label="Large" aria-describedby="inputGroup-sizing-sm" id="input2">
           </div>
@@ -72,7 +118,7 @@
         <div class="col-8">
           <div class="input-group input-group-lg">
             <div class="input-group-prepend">
-              <span class="input-group-text" style="width:5em;">Result</span>
+              <span class="input-group-text" style="width:7em;">output</span>
             </div>
             <span type="text" class="form-control" aria-label="Large" aria-describedby="inputGroup-sizing-sm" id="result">
           </div>
