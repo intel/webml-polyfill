@@ -1,6 +1,5 @@
 import { OperandDescriptor } from './OperandDescriptor';
 import { Input } from './Input';
-import { Output } from './Output';
 import { Model } from './Model';
 import { Constant } from './Constant';
 import { TypedArray } from './utils'
@@ -8,16 +7,17 @@ import { Operand } from './Operand';
 import { Add } from './ops/Add';
 import { Mul } from './ops/Mul';
 import { OperandType } from './OperandType';
+import { NamedOperand } from './NamedOperand';
 
 export class NeuralNetworkContext {
   constructor() {}
 
-  async createModel(outputs: Array<Output>): Promise<Model> {
+  async createModel(outputs: Array<NamedOperand>): Promise<Model> {
     return new Model(outputs);
   }
 
-  input(desc: OperandDescriptor): Input {
-    return new Input(desc);
+  input(name: string, desc: OperandDescriptor): Input {
+    return new Input(name, desc);
   }
 
   constant(desc: OperandDescriptor, value: TypedArray): Constant;

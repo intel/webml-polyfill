@@ -37,12 +37,12 @@ export class Compilation {
 
   async inferOutputShapes_() {
     const inputTensors:  Map<Input, tf.Tensor> = new Map();
-    for (const input of this.model_.inputs_) {
+    for (const input of this.model_.inputs_.values()) {
       const typedArrayConstructor = getTypedArray(input.desc.type);
       const inputBuffer = new typedArrayConstructor(sizeFromDimensions(input.desc.dimensions));
       inputTensors.set(input, createTensor(input.desc, inputBuffer));
     }
-    for (const output of this.model_.outputs_) {
+    for (const output of this.model_.outputs_.values()) {
       const tensor: tf.Tensor = tf.tidy(() => {
         return output.operation.run({
           inputTensors: inputTensors,
