@@ -198,6 +198,7 @@ class WebNNRunner extends BaseRunner {
     const backend = options.backend;
     const prefer = options.prefer;
 
+    this._freeAllocatedMemory();
     this._setBackend(backend);
     this._setPrefer(prefer);
 
@@ -547,7 +548,7 @@ class WebNNRunner extends BaseRunner {
   /**
    * This method is to free allocated memory resources for model compilation process by polyfill backend.
    */
-  deleteAll = () => {
+  _freeAllocatedMemory = () => {
     if (this._currentBackend != 'WebML') {
       // free allocated memory on compilation process by polyfill WASM / WebGL backend.
       if (this._model && this._model._compilation && this._model._compilation._preparedModel) {

@@ -61,6 +61,7 @@ class SkeletonDetectionRunner {
       return;
     }
 
+    this._freeAllocatedMemory();
     this._setInitializedFlag(false);
     this._setBackend(backend);
     this._setPrefer(prefer);
@@ -227,7 +228,10 @@ class SkeletonDetectionRunner {
     return output;
   };
 
-  deleteAll = () => {
+  /**
+   * This method is to free allocated memory resources for model compilation process by polyfill backend.
+   */
+  _freeAllocatedMemory = () => {
     if (this._currentBackend != 'WebML') {
       // free allocated memory on compilation process by polyfill WASM / WebGL backend.
       if (this._model

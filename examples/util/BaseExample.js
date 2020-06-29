@@ -297,7 +297,6 @@ class BaseExample extends BaseApp {
       $('.offload').hide();
       let um = $('input:radio[name="m"]:checked').attr('id');
       this._setModelId(um);
-      this._freeMemoryResources(um);
       const modelClasss = getModelListByClass();
       const seatModelClass = $('#' + um).parent().parent().attr('id');
       if (modelClasss.length > 1) {
@@ -424,7 +423,6 @@ class BaseExample extends BaseApp {
         }
       } else {
         $('.backendtitle').html('Backends');
-        this._freeMemoryResources();
         if (polyfillId && webnnId) {
           $('#' + polyfillId).attr('checked', 'checked');
           $('#l-' + polyfillId).addClass('checked');
@@ -466,7 +464,6 @@ class BaseExample extends BaseApp {
       let polyfillId = $('input:radio[name="bp"]:checked').attr('id') || $('input:radio[name="bp"][checked="checked"]').attr('id');
       if (isBackendSwitch()) {
         if (polyfillId !== this._currentBackend) {
-          this._freeMemoryResources();
           $('.b-polyfill input').removeAttr('checked');
           $('.b-polyfill label').removeClass('checked');
           $('#' + polyfillId).attr('checked', 'checked');
@@ -475,16 +472,12 @@ class BaseExample extends BaseApp {
           showAlertComponent('At least one backend required, please select other backends if needed.');
           return;
         } else {
-          this._freeMemoryResources();
           $('.b-polyfill input').removeAttr('checked');
           $('.b-polyfill label').removeClass('checked');
           polyfillId = 'WebML';
         }
         this._setBackend(polyfillId);
       } else {
-        if (polyfillId !== this._currentBackend) {
-          this._freeMemoryResources();
-        }
         $('.b-polyfill input').removeAttr('checked');
         $('.b-polyfill label').removeClass('checked');
         $('.b-webnn input').removeAttr('checked');
@@ -502,7 +495,6 @@ class BaseExample extends BaseApp {
     // Click trigger of Native Backend <input> element
     $('input:radio[name=bw]').click(() => {
       $('.alert').hide();
-      this._freeMemoryResources();
       let webnnId = $('input:radio[name="bw"]:checked').attr('id') || $('input:radio[name="bw"][checked="checked"]').attr('id');
       if (isBackendSwitch()) {
         if (webnnId !== this._currentPrefer) {
@@ -618,16 +610,6 @@ class BaseExample extends BaseApp {
     // Show components and triggers
     this._commonUI();
     this._customUI();
-  };
-
-  /**
-   * This method is to free allocated memory for model complation by polyfill backend.
-   */
-  _freeMemoryResources = (modelId) => {
-    // Override by inherited when example has co-work runners
-    if (this._runner) {
-      this._runner.deleteAll();
-    }
   };
 
   /**

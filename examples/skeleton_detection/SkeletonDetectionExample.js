@@ -213,7 +213,6 @@ class SkeletonDetectionExample {
       }
       updateBackendComponents(this._currentBackend, this._currentPrefer);
       this._updateHistoryEntryURL();
-      this._freeMemoryResources();
       this.main();
     });
 
@@ -248,7 +247,6 @@ class SkeletonDetectionExample {
       }
       updateBackendComponents(this._currentBackend, this._currentPrefer);
       this._updateHistoryEntryURL();
-      this._freeMemoryResources();
       this.main();
     });
 
@@ -282,7 +280,6 @@ class SkeletonDetectionExample {
       this._setPrefer(webnnId);
       updateBackendComponents(this._currentBackend, this._currentPrefer);
       this._updateHistoryEntryURL();
-      this._freeMemoryResources();
       this.main();
     });
 
@@ -444,12 +441,6 @@ class SkeletonDetectionExample {
       this._showConfig.showBoundingBox = $('#sdshowboundingbox').prop('checked');
       this._postProcess();
     });
-  };
-
-  _freeMemoryResources = () => {
-    if (this._runner) {
-      this._runner.deleteAll();
-    }
   };
 
   _predict = async () => {

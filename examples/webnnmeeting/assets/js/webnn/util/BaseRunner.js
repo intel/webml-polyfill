@@ -226,6 +226,7 @@ class BaseRunner {
       return;
     }
 
+    this._freeAllocatedMemory();
     this._setBackend(backend);
     this._setPrefer(prefer);
     this._setInitializedFlag(false);
@@ -388,7 +389,7 @@ class BaseRunner {
     return output;
   };
 
-  deleteAll = () => {
+  _freeAllocatedMemory = () => {
     if (this._currentBackend != 'WebML') {
       // free allocated memory on compilation process by polyfill WASM / WebGL backend.
       if (this._model._compilation && this._model._compilation._preparedModel) {
