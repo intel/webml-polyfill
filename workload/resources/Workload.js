@@ -101,6 +101,7 @@ class Workload {
     // for clearing labels of Semantic Segmentation example
     $('.labels-wrapper').empty();
     // reset input image
+    this._outCtx.clearRect(0, 0, this._showCanvasElement.width, this._showCanvasElement.height);
     this._outCtx.drawImage(this._imageElement, 0, 0);
   };
 
