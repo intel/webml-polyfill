@@ -80,9 +80,10 @@ class SkeletonDetectionRunner {
     const scaleWidth = getValidResolution(scaleFactor, inputSize[1], outputStride);
     const scaleHeight = getValidResolution(scaleFactor, inputSize[0], outputStride);
     const scaleSize = [1, scaleWidth, scaleHeight, 3];
-    if (typeof workload !== 'undefined') {
-      version = {'version': version, 'adjustPath': true,};
-    }
+    // only for local workload test
+    //if (typeof workload !== 'undefined') {
+    //  version = {'version': version, 'adjustPath': true,};
+    //}
     this._model = new PoseNet(modelArch, version, useAtrousConv, outputStride,
                               scaleSize, this._cacheMap, this._currentBackend, this._currentPrefer);
     this._model.setSupportedOps(new Set(this._supportedOps));

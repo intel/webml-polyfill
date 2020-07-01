@@ -30,15 +30,16 @@ function getInput(inputElement) {
 
 function getURL(version) {
   let address;
-  // const urlBase = 'https://storage.googleapis.com/tfjs-models/weights/posenet/';
-  let urlBase = '../skeleton_detection/model/';
+  const urlBase = 'https://storage.googleapis.com/tfjs-models/weights/posenet/';
+  // only for local workload test
+  //let urlBase = '../skeleton_detection/model/';
 
   // only for local workload test,
   // please comment this 'if' block for gh-pages branch since url will use above commented https link
-  if (version.adjustPath !== undefined) {
-    version = version.version;
-    urlBase = '../examples/skeleton_detection/model/';
-  }
+  //if (version.adjustPath !== undefined) {
+  //  version = version.version;
+  //  urlBase = '../examples/skeleton_detection/model/';
+  //}
 
   switch (version) {
     case 1.01:
