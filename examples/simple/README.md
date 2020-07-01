@@ -1,32 +1,18 @@
-WebML API Sample
+WebNN API Demo
 ======
-This sample is a mimic of [Android Neural Networks API Sample](https://github.com/googlesamples/android-ndk/tree/master/nn_sample).
+This demo is based on the [WebNN examples](https://webmachinelearning.github.io/webnn/#examples). It demonstrates the basic usage of WebNN API by the following computational graph:
 
-It demonstrates basic usages of WebML API with a simple model that consists of three operations: two additions and a multiplication.
-
-The sums created by the additions are the inputs to the multiplication. In essence, we are creating a graph that computes: (tensor0 + tensor1) * (tensor2 + tensor3).
 ```js
-tensor0 ---+
-           +--- ADD ---> intermediateOutput0 ---+
-tensor1 ---+                                    |
-                                                +--- MUL---> output
-tensor2 ---+                                    |
-           +--- ADD ---> intermediateOutput1 ---+
-tensor3 ---+
+constant1 ---+
+             +--- ADD ---> intermediateOutput0 ---+
+input1    ---+                                    |
+                                                  +--- MUL---> output
+constant2 ---+                                    |
+             +--- ADD ---> intermediateOutput1 ---+
+input2    ---+
 ```
 
-Two of the four tensors, tensor0 and tensor2 being added are constants, defined in the model. They represent the weights that would have been learned during a training process, loaded from model_data.bin.
-
-The other two tensors, tensor1 and tensor3 will be inputs to the model. Their values will be provided when we execute the model. These values can change from execution to execution.
-
-Besides the two input tensors, an optional fused activation function can also be defined for ADD and MUL. In this example, we'll simply set it to NONE.
-
-The model then has 8 operands:
-- 2 tensors that are inputs to the model. These are fed to the two ADD operations.
-- 2 constant tensors that are the other two inputs to the ADD operations.
-- 1 fuse activation operand reused for the ADD operations and the MUL operation.
-- 2 intermediate tensors, representing outputs of the ADD operations and inputs to the MUL operation.
-- 1 model output.
+The values of `constant1` and `constant2` are loaded from [model_data.bin](model_data.bin). The values of `input1` and `input2` are read from user inputs.
 
 Screenshots
 -----------

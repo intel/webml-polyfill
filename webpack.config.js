@@ -21,11 +21,16 @@ const config = {
         options: {
           name: '[name].[ext]'
         }
+      },
+      {
+        test: /\.tsx?$/,
+        use: 'ts-loader',
+        exclude: /node_modules/,
       }
     ]
   },
   resolve: {
-		extensions: ['.js']
+		extensions: ['.js', '.tsx', '.ts']
   },
   devServer: {
     // enable https
