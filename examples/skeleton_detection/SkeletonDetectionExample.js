@@ -213,7 +213,6 @@ class SkeletonDetectionExample {
       }
       updateBackendComponents(this._currentBackend, this._currentPrefer);
       this._updateHistoryEntryURL();
-      this._freeMemoryResources();
       this.main();
     });
 
@@ -248,7 +247,6 @@ class SkeletonDetectionExample {
       }
       updateBackendComponents(this._currentBackend, this._currentPrefer);
       this._updateHistoryEntryURL();
-      this._freeMemoryResources();
       this.main();
     });
 
@@ -282,7 +280,6 @@ class SkeletonDetectionExample {
       this._setPrefer(webnnId);
       updateBackendComponents(this._currentBackend, this._currentPrefer);
       this._updateHistoryEntryURL();
-      this._freeMemoryResources();
       this.main();
     });
 
@@ -446,12 +443,6 @@ class SkeletonDetectionExample {
     });
   };
 
-  _freeMemoryResources = () => {
-    if (this._runner) {
-      this._runner.deleteAll();
-    }
-  };
-
   _predict = async () => {
     const inputSize = this._currentModelInfo.inputSize;
     const outputStride = Number(this._modelConfig.outputStride);
@@ -586,11 +577,10 @@ class SkeletonDetectionExample {
       if (this._runner == null) {
         this._runner = new SkeletonDetectionRunner();
       }
-      const supportedOps = getSupportedOps(this._currentBackend, this._currentPrefer);
-      this._runner.setSupportedOps(supportedOps);
       // UI shows model-loading progress
       await showProgressComponent('current', 'pending', 'pending');
       await this._runner.loadAndCompileModel(this._currentBackend, this._currentPrefer, this._currentModelInfo, this._modelConfig);
+      const supportedOps = getSupportedOps(this._currentBackend, this._currentPrefer);
       const requiredOps = this._runner.getRequiredOps();
       // show offload ops info
       showHybridComponent(supportedOps, requiredOps, this._currentBackend, this._currentPrefer);

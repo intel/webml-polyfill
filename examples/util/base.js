@@ -61,7 +61,7 @@ const getNativeAPI = (preferString) => {
 const getSupportedOps = (backend, prefer) => {
   if (prefer === 'none' && backend !== 'WebML') {
     // if `prefer` is none, all ops should only run in polyfill
-    return new Set();
+    return [];
   }
 
   // backend enums are defined in the `getNativeAPI` above
@@ -84,12 +84,12 @@ const getSupportedOps = (backend, prefer) => {
   };
 
   const nn = navigator.ml.getNeuralNetworkContext();
-  const supportedOps = new Set();
+  const supportedOps = [];
   const backendId = backendEnums[getNativeAPI(prefer)];
 
   for (const opName in supportedTable) {
     if (supportedTable[opName][backendId]) {
-      supportedOps.add(nn[opName]);
+      supportedOps.push(nn[opName]);
     }
   }
 
