@@ -37,11 +37,11 @@ class SkeletonDetectionRunner {
     this._bInitialized = flag;
   };
 
-  setSupportedOps = (ops) => {
+  _setSupportedOps = (ops) => {
     this._supportedOps = ops;
   };
 
-  setEagerMode = (flag) => {
+  _setEagerMode = (flag) => {
     this._bEagerMode = flag;
   };
 
@@ -49,10 +49,12 @@ class SkeletonDetectionRunner {
     this._inferenceTime = t;
   } ;
 
-  loadAndCompileModel = async (backend, prefer, modelInfo, modelConfig) => {
+  loadAndCompileModel = async (backend, prefer, modelInfo, modelConfig, eagerMode = false, supportedOps = [], workload) => {
     if (this._bInitialized
         && backend === this._currentBackend
         && prefer === this._currentPrefer
+        && eagerMode === this._bEagerMode
+        && supportedOps.toString() === this._supportedOps.toString()
         && modelConfig.version === this._modelConfig.version
         && modelConfig.outputStride === this._modelConfig.outputStride
         && modelConfig.scaleFactor === this._modelConfig.scaleFactor
@@ -61,12 +63,15 @@ class SkeletonDetectionRunner {
       return;
     }
 
+    this._freeAllocatedMemory();
     this._setInitializedFlag(false);
     this._setBackend(backend);
     this._setPrefer(prefer);
+    this._setEagerMode(eagerMode);
+    this._setSupportedOps(supportedOps);
     this._setModelInfo(modelInfo);
     this._setModelConfig(modelConfig);
-    const version = Number(this._modelConfig.version);
+    let version = Number(this._modelConfig.version);
     const useAtrousConv = this._modelConfig.useAtrousConv;
     const outputStride = Number(this._modelConfig.outputStride);
     const scaleFactor = this._modelConfig.scaleFactor;
@@ -75,9 +80,12 @@ class SkeletonDetectionRunner {
     const scaleWidth = getValidResolution(scaleFactor, inputSize[1], outputStride);
     const scaleHeight = getValidResolution(scaleFactor, inputSize[0], outputStride);
     const scaleSize = [1, scaleWidth, scaleHeight, 3];
+    if (typeof workload !== 'undefined') {
+      version = {'version': version, 'adjustPath': true,};
+    }
     this._model = new PoseNet(modelArch, version, useAtrousConv, outputStride,
                               scaleSize, this._cacheMap, this._currentBackend, this._currentPrefer);
-    this._model.setSupportedOps(this._supportedOps);
+    this._model.setSupportedOps(new Set(this._supportedOps));
     this._model.setEagerMode(this._bEagerMode);
     const result = await this._model.createCompiledModel();
     console.log(`Created and compiled model status: [${result}]`);
@@ -118,7 +126,7 @@ class SkeletonDetectionRunner {
     }
   };
 
-  _getTensor = (input) => {
+  _getInputTensor = (input) => {
     const image = input.src;
     const options = input.options;
     let tensor = this._inputTensor[0];
@@ -195,14 +203,18 @@ class SkeletonDetectionRunner {
     }
   };
 
-  run = async (input) => {
-    if (!this._bInitialized) return;
-
-    this._getTensor(input);
-    const start = performance.now();
+  _doInference = async () => {
     await this._model.compute(this._inputTensor[0], this._heatmapTensor,
                               this._offsetTensor, this._displacementFwd,
                               this._displacementBwd);
+  };
+
+  run = async (input) => {
+    if (!this._bInitialized) return;
+
+    this._getInputTensor(input);
+    const start = performance.now();
+    await this._doInference();
     const delta = performance.now() - start;
     this._setInferenceTime(delta);
     console.log(`Compute Time: [${delta} ms]`);
@@ -220,7 +232,10 @@ class SkeletonDetectionRunner {
     return output;
   };
 
-  deleteAll = () => {
+  /**
+   * This method is to free allocated memory resources for model compilation process by polyfill backend.
+   */
+  _freeAllocatedMemory = () => {
     if (this._currentBackend != 'WebML') {
       // free allocated memory on compilation process by polyfill WASM / WebGL backend.
       if (this._model

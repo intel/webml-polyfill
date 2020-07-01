@@ -4,6 +4,7 @@ class SpeechRecognitionExample extends BaseMircophoneExample {
     this._arkInfo = null;
     this._targetMax = 16384;  // Sacle the maxmium input of the first utterance to 16384(15 bits)
                               // Refer with speech_sample https://github.com/openvinotoolkit/openvino/blob/2020/inference-engine/samples/speech_sample/main.cpp#L30 (MAX_VAL_2B_FEAT)
+    this._threshold = null;  // The limitation to compare with the max error value
     this._result = {};
   }
 
@@ -33,6 +34,12 @@ class SpeechRecognitionExample extends BaseMircophoneExample {
       let scoreTensor = new Float32Array(this._currentModelInfo.outputSize.reduce((a, b) => a * b));
       let arkInput = this._arkInfo;
       let arkScore = await this._getTensorArrayByArk(this._currentModelInfo.scoreFile)
+      
+      if (this._currentBackend == 'WebML' && this._currentPrefer == 'ultra_low') {
+        this._threshold = 1;  // Define for inferring with GNA in particular
+      } else {
+        this._threshold = 0.0001;  // Refer with speech_sample https://github.com/openvinotoolkit/openvino/blob/2020/inference-engine/samples/speech_sample/main.cpp#L29 (MAX_SCORE_DIFFERENCE)
+      }
 
       this._initError(totalError);
       for (let i = 0; i < arkInput.rows; i++) {
@@ -114,8 +121,6 @@ class SpeechRecognitionExample extends BaseMircophoneExample {
   _initError = (error) => {
     error.numScores = 0,
     error.numErrors = 0,
-    error.threshold = 0.0001,  // The limitation to compare with the max error value
-                               // Refer with speech_sample https://github.com/openvinotoolkit/openvino/blob/2020/inference-engine/samples/speech_sample/main.cpp#L29 (MAX_SCORE_DIFFERENCE)
     error.maxError = 0.0,
     error.rmsError = 0.0,
     error.sumError = 0.0,
@@ -148,7 +153,7 @@ class SpeechRecognitionExample extends BaseMircophoneExample {
         if (rel_error > frameError.maxRelError) {
           frameError.maxRelError = rel_error;
         }
-        if (error > frameError.threshold) {
+        if (error > this._threshold) {
           numErrors ++;
         }
       }

@@ -30,10 +30,11 @@ function getInput(inputElement) {
 
 function getURL(version) {
   let address;
-  const urlBase = 'https://webnnmodel.s3-us-west-2.amazonaws.com/skeleton_detection/model/';
-  // const urlBase = '../skeleton_detection/model/';
+  // const urlBase = 'https://storage.googleapis.com/tfjs-models/weights/posenet/';
+  let urlBase = '../skeleton_detection/model/';
 
-  // only for benchmark test
+  // only for local workload test,
+  // please comment this 'if' block for gh-pages branch since url will use above commented https link
   if (version.adjustPath !== undefined) {
     version = version.version;
     urlBase = '../examples/skeleton_detection/model/';
@@ -47,7 +48,7 @@ function getURL(version) {
       address = urlBase + 'mobilenet_v1_100/';
       break;
     case 0.75:
-      address = urlBase + 'mobilenet_v1_075/'; 
+      address = urlBase + 'mobilenet_v1_075/';
       break;
     case 0.5:
       address = urlBase + 'mobilenet_v1_050/';
@@ -140,7 +141,7 @@ async function loadCache(address, cacheMap) {
     results = await fetchDataByUrl(address, true);
     cacheMap.set(address, results);
   } else {
-    results = cacheMap.get(address); 
+    results = cacheMap.get(address);
   }
   return results;
 }
@@ -182,7 +183,7 @@ function transposeWeights(weights, dimension) {
     for (let w =0; w<W; w++) {
       for (let c = 0; c<C; c++) {
         for (let n =0; n<N; n++) {
-          newWeights[c + w*C + h*W*C + n*H*W*C] = 
+          newWeights[c + w*C + h*W*C + n*H*W*C] =
               weights[n + c*N + w*C*N + h*W*C*N];
         }
       }
@@ -216,7 +217,7 @@ function prepareInputTensor(tensor, canvas, outputStride, imgDimension) {
         tensor[y*width*channels + x*channels + c] = (value - mean)/std;
       }
     }
-  }   
+  }
 }
 
 function sigmoid(heatmap) {
@@ -279,7 +280,7 @@ function convertCoortoIndex(x, y, z, dimension) {
 function decodeSinglepose(heatmap, offset, dimension, outputStride) {
   let [index, confidenceScore] = getKeypointIndex(heatmap, dimension);
   let finalRes = [];
-  let totalScore = 0; 
+  let totalScore = 0;
   let poses = [];
   for (let i in index) {
     let heatmapY = convertPosition(Number(index[i]), dimension)[0];
@@ -288,7 +289,7 @@ function decodeSinglepose(heatmap, offset, dimension, outputStride) {
     let offsetX = offset[Number(i)+17+Number(heatmapX)*34+Number(heatmapY*34*dimension[1])];
     let finalPos = [heatmapY*outputStride+offsetY, heatmapX*outputStride+offsetX];
     totalScore += confidenceScore[i];
-    finalRes.push({position: {y: finalPos[0], x: finalPos[1]}, 
+    finalRes.push({position: {y: finalPos[0], x: finalPos[1]},
                    part: partNames[i], score: confidenceScore[i]});
   }
   poses.push({keypoints: finalRes, score: totalScore/17});
@@ -397,7 +398,7 @@ function getInstanceScore(existingPoses, squaredNmsRadius, instanceKeypoints) {
   return notOverlappedKeypointScores /= instanceKeypoints.length;
 }
 
-function decodeMultiPose(heatmap, offsets, displacementFwd, displacementBwd, outputStride, 
+function decodeMultiPose(heatmap, offsets, displacementFwd, displacementBwd, outputStride,
                          maxPoseDectection, scoreThreshold, nmsRadius, dimension) {
   let poses = [];
   let queue = buildPartWithScoreQueue(scoreThreshold, 1, heatmap, dimension);
@@ -415,7 +416,7 @@ function decodeMultiPose(heatmap, offsets, displacementFwd, displacementBwd, out
     poses.push({keypoints: keypoints, score: score});
   }
   return poses;
-}   
+}
 
 function convert4D(n, h, w, c, dimension) {
   let index = Number(c)+Number(w*dimension[3])+Number(h*dimension[3]*dimension[2])+
@@ -469,20 +470,20 @@ function bilinear(srcImg, destImg, scale) {
     for (j = 0; j < destImg.width; ++j) {
       ixv = j / scale;
       ix0 = Math.floor(ixv);
-    
+
       // Math.ceil can go over bounds
       ix1 = ( Math.ceil(ixv) > (srcImg.width-1) ? (srcImg.width-1) : Math.ceil(ixv) );
       idxD = ivect(j, i, destImg.width);
-    
+
       // matrix to vector indices
       idxS00 = ivect(ix0, iy0, srcImg.width);
       idxS10 = ivect(ix1, iy0, srcImg.width);
       idxS01 = ivect(ix0, iy1, srcImg.width);
       idxS11 = ivect(ix1, iy1, srcImg.width);
-    
+
       // overall coordinates to unit square
       dx = ixv - ix0; dy = iyv - iy0;
-    
+
       r = inner(srcImg.data[idxS00], srcImg.data[idxS10],
                 srcImg.data[idxS01], srcImg.data[idxS11], dx, dy);
       destImg.data[idxD] = r;
@@ -503,7 +504,7 @@ function bilinear(srcImg, destImg, scale) {
 }
 
 function getBoundingBox(keypoints) {
-  const NEGATIVE_INFINITY = Number.NEGATIVE_INFINITY; 
+  const NEGATIVE_INFINITY = Number.NEGATIVE_INFINITY;
   const POSITIVE_INFINITY = Number.POSITIVE_INFINITY;
   return keypoints.reduce(function (_a, _b) {
     var maxX = _a.maxX, maxY = _a.maxY, minX = _a.minX, minY = _a.minY;

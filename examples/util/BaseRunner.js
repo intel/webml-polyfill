@@ -148,7 +148,7 @@ class BaseRunner {
    * @param {!Object<string, *>} modelInfo An object for model info which was configed in modeZoo.js.
    *     See modelInfo details from above '_setModelInfo' method.
    */
-  loadModel = async (modelInfo) => {
+  loadModel = async (modelInfo, workload) => {
     if (this._bLoaded && this._currentModelInfo.modelFile === modelInfo.modelFile) {
       console.log(`${this._currentModelInfo.modelFile} already loaded.`);
       return;
@@ -156,10 +156,24 @@ class BaseRunner {
 
     this._doInitialization(modelInfo);
 
-    await this._loadModelFile(this._currentModelInfo.modelFile);
+    let modelPath = this._currentModelInfo.modelFile;
+    // for local workload test
+    if (!modelPath.toLowerCase().startsWith("https://") && !modelPath.toLowerCase().startsWith("http://")) {
+      if (typeof workload !== 'undefined') {
+        modelPath = "../examples/util/" + modelPath;
+      }
+    }
+    await this._loadModelFile(modelPath);
 
     if (this._currentModelInfo.labelsFile != null) {
-      await this._loadLabelsFile(this._currentModelInfo.labelsFile);
+      let labelPath = this._currentModelInfo.labelsFile;
+      // for local workload test
+      if (!labelPath.toLowerCase().startsWith("https://") && !labelPath.toLowerCase().startsWith("http://")) {
+        if (typeof workload !== 'undefined') {
+          labelPath = "../examples/util/" + labelPath;
+        }
+      }
+      await this._loadLabelsFile(labelPath);
     }
   };
 

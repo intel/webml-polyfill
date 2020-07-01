@@ -311,7 +311,6 @@ class BaseExample extends BaseApp {
         }
       }
       this._updateHistoryEntryURL();
-      this._freeMemoryResources();
       updateModelComponentsStyle(um);
       this.main();
     });
@@ -424,7 +423,6 @@ class BaseExample extends BaseApp {
         }
       } else {
         $('.backendtitle').html('Backends');
-        this._freeMemoryResources();
         if (polyfillId && webnnId) {
           $('#' + polyfillId).attr('checked', 'checked');
           $('#l-' + polyfillId).addClass('checked');
@@ -466,7 +464,6 @@ class BaseExample extends BaseApp {
       let polyfillId = $('input:radio[name="bp"]:checked').attr('id') || $('input:radio[name="bp"][checked="checked"]').attr('id');
       if (isBackendSwitch()) {
         if (polyfillId !== this._currentBackend) {
-          this._freeMemoryResources();
           $('.b-polyfill input').removeAttr('checked');
           $('.b-polyfill label').removeClass('checked');
           $('#' + polyfillId).attr('checked', 'checked');
@@ -475,16 +472,12 @@ class BaseExample extends BaseApp {
           showAlertComponent('At least one backend required, please select other backends if needed.');
           return;
         } else {
-          this._freeMemoryResources();
           $('.b-polyfill input').removeAttr('checked');
           $('.b-polyfill label').removeClass('checked');
           polyfillId = 'WebML';
         }
         this._setBackend(polyfillId);
       } else {
-        if (polyfillId !== this._currentBackend) {
-          this._freeMemoryResources();
-        }
         $('.b-polyfill input').removeAttr('checked');
         $('.b-polyfill label').removeClass('checked');
         $('.b-webnn input').removeAttr('checked');
@@ -502,7 +495,6 @@ class BaseExample extends BaseApp {
     // Click trigger of Native Backend <input> element
     $('input:radio[name=bw]').click(() => {
       $('.alert').hide();
-      this._freeMemoryResources();
       let webnnId = $('input:radio[name="bw"]:checked').attr('id') || $('input:radio[name="bw"][checked="checked"]').attr('id');
       if (isBackendSwitch()) {
         if (webnnId !== this._currentPrefer) {
@@ -621,16 +613,6 @@ class BaseExample extends BaseApp {
   };
 
   /**
-   * This method is to free allocated memory for model complation by polyfill backend.
-   */
-  _freeMemoryResources = () => {
-    // Override by inherited when example has co-work runners
-    if (this._runner) {
-      this._runner.deleteAll();
-    }
-  };
-
-  /**
    * This method returns runner instance to load model/compile model/inference.
    * @returns {object} This returns a runner instance.
    */
@@ -672,6 +654,9 @@ class BaseExample extends BaseApp {
     if (this._currentFramework === 'WebNN') {
         options.backend = this._currentBackend;
         options.prefer = this._currentPrefer;
+        const supportedOps = getSupportedOps(this._currentBackend, this._currentPrefer);
+        options.supportedOps = supportedOps;
+        options.eagerMode = false;
     }
 
     return options;
@@ -854,6 +839,22 @@ class BaseExample extends BaseApp {
       showErrorComponent('No model selected', 'Please select model to start prediction.');
       return;
     } else {
+      if (this._currentModelId === 'mobilenet_v1_quant_caffe2') {
+        let checkFlag = false;
+        if (this._currentBackend !== 'WebML') {
+          checkFlag = true;
+        } else {
+          if (this._currentPrefer !== 'fast') {
+            checkFlag = true;
+          }
+        }
+
+        if (checkFlag) {
+          showErrorComponent('Incorrect backend', `Current model just support 'FAST_SINGLE_ANSWER' backend.`);
+          return;
+        }
+      }
+
       const modelCategoryLen = Object.keys(this._inferenceModels).length;
       if (modelCategoryLen > 1) {
         if (this._currentModelId.includes('+') || this._currentModelId.includes(' ')) {
@@ -876,11 +877,6 @@ class BaseExample extends BaseApp {
     try {
       // Get Runner for execute inference
       this._getRunner();
-      let supportedOps;
-      if (this._currentFramework === 'WebNN') {
-        supportedOps = getSupportedOps(this._currentBackend, this._currentPrefer);
-        this._setSupportedOps(supportedOps);
-      }
       // UI shows loading model progress
       await showProgressComponent('current', 'pending', 'pending');
       // Load model
@@ -892,6 +888,7 @@ class BaseExample extends BaseApp {
       if (this._currentFramework === 'WebNN') {
         const requiredOps = this._getRequiredOps();
         // show offload ops info
+        const supportedOps = getSupportedOps(this._currentBackend, this._currentPrefer);
         showHybridComponent(supportedOps, requiredOps, this._currentBackend, this._currentPrefer);
         // show sub graphs summary
         const subgraphsSummary = this._getSubgraphsSummary();

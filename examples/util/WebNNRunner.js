@@ -10,7 +10,7 @@ class WebNNRunner extends BaseRunner {
     this._modelRequiredOps = null;
     this._deQuantizeParams = null;
     this._bEagerMode = false;
-    this._supportedOps = new Set();
+    this._supportedOps = [];
   }
 
   /**
@@ -33,7 +33,7 @@ class WebNNRunner extends BaseRunner {
    * This method is to set '_bEagerMode'.
    * @param {boolean} flag
    */
-  setEagerMode = (flag) => {
+  _setEagerMode = (flag) => {
     this._bEagerMode = flag;
   };
 
@@ -41,7 +41,7 @@ class WebNNRunner extends BaseRunner {
    * This method is to set '_supportedOps'.
    * @param {!Array<number>} ops
    */
-  setSupportedOps = (ops) => {
+  _setSupportedOps = (ops) => {
     this._supportedOps = ops;
   };
 
@@ -107,6 +107,19 @@ class WebNNRunner extends BaseRunner {
           rawModel = new OpenVINOModel(networkText, weightsBuffer);
           rawModel._rawFormat = 'OPENVINO';
           break;
+        case 'pb':
+          const weightFile = url.replace(/predict/, 'init');
+          const weightBuffer = await this._loadURL(weightFile, this._progressHandler, true);
+          const weightBytes = new Uint8Array(weightBuffer);
+          const netBuffer = bytes;
+          const weightMessage = protobuf.roots["caffe2"].caffe2.NetDef.decode(weightBytes);
+          const netMessage = protobuf.roots["caffe2"].caffe2.NetDef.decode(netBuffer);
+          const caffe2Utils = new Caffe2ModelUtils(netMessage,
+                                                   weightMessage,
+                                                   this._currentModelInfo.isDNNL);
+          rawModel = [...caffe2Utils.getCaffe2Model()];
+          rawModel._rawFormat = 'CAFFE2';
+          break;
         default:
           throw new Error(`Unrecognized model format, support TFLite | ONNX | OpenVINO model`);
       }
@@ -123,7 +136,7 @@ class WebNNRunner extends BaseRunner {
    * @returns {function} This returns Uint8Array or Float32Array function or other typedArray function if inherited.
    */
   _getInputTensorTypedArray = () => {
-    const typedArray = this._currentModelInfo.isQuantized || false ? Uint8Array : Float32Array;
+    const typedArray = this._currentModelInfo.isQuantized || false ? (this._currentModelInfo.isDNNL || false ? Int8Array : Uint8Array) : Float32Array;
     return typedArray;
   };
 
@@ -141,7 +154,7 @@ class WebNNRunner extends BaseRunner {
    */
   _getOutputTensorTypedArray = () => {
     // Override by inherited if needed
-    const typedArray = this._currentModelInfo.isQuantized || false ? Uint8Array : Float32Array;
+    const typedArray = this._currentModelInfo.isQuantized || false ? (this._currentModelInfo.isDNNL || false ? Float32Array : Uint8Array) : Float32Array;
     return typedArray;
   };
 
@@ -176,7 +189,11 @@ class WebNNRunner extends BaseRunner {
 
   /** @override */
   _checkInitializedCompilation = (options) => {
-    return this._bInitialized && this._currentBackend === options.backend && this._currentPrefer === options.prefer;
+    return this._bInitialized
+           && this._currentBackend === options.backend
+           && this._currentPrefer === options.prefer
+           && this._bEagerMode === options._bEagerMode
+           && this._supportedOps.toString() === options.supportedOps.toString();
   }
 
   /** @override */
@@ -184,9 +201,13 @@ class WebNNRunner extends BaseRunner {
     let model = null;
     const backend = options.backend;
     const prefer = options.prefer;
-
+    const eagerMode = options.eagerMode || false;
+    const supportedOps = options.supportedOps || [];
+    this._freeAllocatedMemory();
     this._setBackend(backend);
     this._setPrefer(prefer);
+    this._setEagerMode(eagerMode);
+    this._setSupportedOps(supportedOps);
 
     const postOptions = this._currentModelInfo.postOptions || {};
     const configs = {
@@ -195,6 +216,9 @@ class WebNNRunner extends BaseRunner {
       prefer: this._currentPrefer,
       softmax: postOptions.softmax || false,
       inputScaleFactor: options.scaleFactor, // for GNA
+      isQuantized: this._currentModelInfo.isQuantized || false,
+      isDNNL: this._currentModelInfo.isDNNL || false,
+      inputSize: this._currentModelInfo.inputSize // for caffe2 model
     };
 
     switch (this._rawModel._rawFormat) {
@@ -207,12 +231,15 @@ class WebNNRunner extends BaseRunner {
       case 'OPENVINO':
         model = new OpenVINOModelImporter(configs);
         break;
+      case 'CAFFE2':
+        model = new Caffe2ModelImporter(configs);
+        break;
       default:
         throw new Error(`Unsupported '${rawModel._rawFormat}' model.`);
     }
 
     this._setModel(model);
-    this._model.setSupportedOps(this._supportedOps);
+    this._model.setSupportedOps(new Set(this._supportedOps));
     this._model.setEagerMode(this._bEagerMode);
     await this._model.createCompiledModel();
 
@@ -528,7 +555,7 @@ class WebNNRunner extends BaseRunner {
   /**
    * This method is to free allocated memory resources for model compilation process by polyfill backend.
    */
-  deleteAll = () => {
+  _freeAllocatedMemory = () => {
     if (this._currentBackend != 'WebML') {
       // free allocated memory on compilation process by polyfill WASM / WebGL backend.
       if (this._model && this._model._compilation && this._model._compilation._preparedModel) {

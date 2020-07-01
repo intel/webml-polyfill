@@ -1,98 +1,56 @@
-const computeButton = document.getElementById('compute')
-const inputElement1 = document.getElementById('input1');
-const inputElement2 = document.getElementById('input2');
+const computeButton = document.getElementById('compute');
+const constant1Element = document.getElementById('constant1');
+const constant2Element = document.getElementById('constant2');
+const input1Element = document.getElementById('input1');
+const input2Element = document.getElementById('input2');
 const resultElement = document.getElementById('result');
 
-const isWebGL = document.getElementById('isWebGL');
-const isWASM = document.getElementById('isWASM');
-const isPREFER_SUSTAINED_SPEED = document.getElementById('isPREFER_SUSTAINED_SPEED');
-const isPREFER_FAST_SINGLE_ANSWER = document.getElementById('isPREFER_FAST_SINGLE_ANSWER');
-const isPREFER_LOW_POWER = document.getElementById('isPREFER_LOW_POWER');
+async function main() {
+  const simpleModel = new SimpleModel('model_data.bin');
+  try {
+    let start = performance.now();
+    const [constant1Value, constant2Value] = await simpleModel.load();
+    console.log(`loading elapsed time: ${(performance.now() - start).toFixed(2)} ms`);
+    constant1Element.innerHTML = constant1Value;
+    constant2Element.innerHTML = constant2Value;
 
-var selectedBackend= $("input[type='radio']:checked").val();
-const defaultPrefer = nn.PREFER_SUSTAINED_SPEED;
-var selectedPrefer = defaultPrefer;
-async function loadModelDataFile(url) {
-  let response = await fetch(url);
-  let bytes = await response.arrayBuffer();
-  return bytes;
-}
+    start = performance.now();
+    await simpleModel.compile({ powerPreference: 'low-power' });
+    console.log(`compilation elapsed time: ${(performance.now() - start).toFixed(2)} ms`);
 
-async function main() { 
-
-    let bytes = await loadModelDataFile('model_data.bin');
-    let simpleModel = new SimpleModel(bytes);
-    simpleModel.createCompiledModel().then(result => {
-    console.log(`compilation result: ${result}`);
     computeButton.removeAttribute('disabled');
-
-    isWASM.addEventListener('change', e => {
-        nn = navigator.ml_polyfill.getNeuralNetworkContext();
-        selectedBackend= $("input[type='radio']:checked").val();
-        selectedPrefer = defaultPrefer;
-      })
-
-    isWebGL.addEventListener('change', e => {
-        nn = navigator.ml_polyfill.getNeuralNetworkContext();
-        selectedBackend= $("input[type='radio']:checked").val();
-        selectedPrefer = defaultPrefer;
-      })
-
-    isPREFER_SUSTAINED_SPEED.addEventListener('change', e => {
-        nn = navigator.ml.getNeuralNetworkContext();
-        selectedPrefer=nn.PREFER_SUSTAINED_SPEED;
-        selectedBackend= $("input[type='radio']:checked").val();
-      })
-
-    isPREFER_FAST_SINGLE_ANSWER.addEventListener('change', e => {
-        nn = navigator.ml.getNeuralNetworkContext();
-        selectedPrefer=nn.PREFER_FAST_SINGLE_ANSWER;
-        selectedBackend= $("input[type='radio']:checked").val();
-      })
-
-    isPREFER_LOW_POWER.addEventListener('change', e => {
-        nn = navigator.ml.getNeuralNetworkContext();
-        selectedPrefer=nn.PREFER_LOW_POWER;
-        selectedBackend= $("input[type='radio']:checked").val();
-          })
-
-    computeButton.addEventListener('click', async function (e) {
-        simpleModel = new SimpleModel(bytes);
-        let result = await simpleModel.createCompiledModel();
-        console.log(`compilation result: ${result}`);
-        let input1 = parseFloat(inputElement1.value);
-        let input2 = parseFloat(inputElement2.value);
-        if (isNaN(input1) || isNaN(input2)) {
-          console.log('Invalid inputs');
-          resultElement.innerHTML = '';
-          addWarning();
-          return;
-        } else {
-          removeWarning();
-        }
-        let start = performance.now();
-        simpleModel.compute(input1, input2).then(result => {
-          let elapsed = performance.now() - start;
-          console.log(`execution elapsed time: ${elapsed.toFixed(2)} ms`);
-          console.log(`execution result: ${result}`);
-          resultElement.innerHTML = result;
-        }).catch(e => {
-          console.log(`compute error ${e}`);
-          console.log(`stack: ${e.stack}`);
-        })
-      });
-    }).catch(e => {
-      console.log(`compilation error ${e}`);
-      console.log(`stack: ${e.stack}`);
-    });
+  } catch (error) {
+    addWarning(error.message);
+  }
+  computeButton.addEventListener('click', async function (e) {
+    const input1 = parseFloat(input1Element.value);
+    const input2 = parseFloat(input2Element.value);
+    if (isNaN(input1) || isNaN(input2)) {
+      console.log('Invalid inputs');
+      resultElement.innerHTML = '';
+      addWarning('<strong>Invalid inputs!</strong> Please input valid float numbers in below fields.');
+      return;
+    } else {
+      removeWarning();
+    }
+    try {
+      let start = performance.now();
+      const result = await simpleModel.compute(input1, input2);
+      console.log(`execution elapsed time: ${(performance.now() - start).toFixed(2)} ms`);
+      console.log(`execution result: ${result}`);
+      resultElement.innerHTML = result;
+    } catch (error) {
+      addWarning(error.message);
+    }
+  });
 }
 
 
-function addWarning() {
+function addWarning(msg) {
   let div = document.createElement('div');
   div.setAttribute('class', 'alert alert-warning alert-dismissible fade show');
   div.setAttribute('role', 'alert');
-  div.innerHTML = '<strong>Invalid inputs!</strong> Please input valid float numbers in below fields.';
+  div.innerHTML = msg;
   let container = document.getElementById('container');
   container.insertBefore(div, container.childNodes[0]);
 }
