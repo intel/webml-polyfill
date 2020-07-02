@@ -5,12 +5,14 @@ import { Input } from "./Input";
 import { ExecutionContext } from "./ExecutionContext";
 
 import * as tf from '@tensorflow/tfjs-core'
+import { assert } from "@tensorflow/tfjs-core/dist/util";
 
 export abstract class Operation {
   inputs: Array<Operand> = [];
   outputs: Array<Output> = [];
 
   constructor(inputs: Array<Operand>) {
+    assert(inputs.every(input => input instanceof Operand, 'The inputs parameter is invalid.');
     this.inputs = inputs;
   }
 
