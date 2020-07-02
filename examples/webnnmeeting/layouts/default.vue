@@ -18,12 +18,14 @@ import Nav from '~/components/Nav.vue'
 import Footer from '~/components/Footer.vue'
 
 export default {
-  head: {
-    script: [
-      { src: '../js/three.js', defer: true },
-      { src: '../js/gsap.js', defer: true },
-      { src: '../js/sketch.js', defer: true }
-    ]
+  head() {
+    return {
+      script: [
+        { src: '../js/three.js', defer: true },
+        { src: '../js/gsap.js', defer: true },
+        { src: '../js/sketch.js', defer: true }
+      ]
+    }
   },
   components: {
     Nav,

@@ -534,12 +534,12 @@ body::scrollbar {
   background: radial-gradient(ellipse farthest-corner at center bottom, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.4));
   opacity: 1;
   /*  animation: grad 15s ease infinite; */
-  background-size: 150% 150%;
+  background-size: 100% 100%;
 }
 
 .scenery:before {
   background: radial-gradient(ellipse farthest-corner at center bottom, rgba(255, 255, 255, 0.1), rgba(0, 0, 0, 0.1)) !important;
-  backdrop-filter: blur(6px);
+  /* backdrop-filter: blur(0px); */
 }
 
 @keyframes grad {
