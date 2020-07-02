@@ -7,13 +7,13 @@
     "removeComments": false,
     "preserveConstEnums": true,
     "allowSyntheticDefaultImports": true,
-    "declaration": true,
+    "declaration": false,
+    "noEmit": true,
     "target": "es2017",
     "lib": [
       "es2017",
       "dom"
     ],
-    "outDir": "./dist",
     "noUnusedLocals": true,
     "noImplicitReturns": true,
     "noImplicitThis": true,
