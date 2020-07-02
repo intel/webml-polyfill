@@ -17,6 +17,11 @@ A Web-based Intelligent Collaboration (Video Conference) example with AI feature
 - Conversation / Text message
 - ...
 
+## Screenshot
+
+<img src="doc/screenshot1.png" alt="WebNN Meeting" width="60%">
+<img src="doc/screenshot2.png" alt="WebNN Meeting" width="60%">
+
 ## Supported Backends for Web Machine Learning Features
 
 - Slowest: WebAssembly (WASM)
@@ -119,6 +124,10 @@ If you are running the code locally, the browser will show "Your connection is n
 - Visit WebNN Meeting URL set in config.js, e.g: https://127.0.0.1:8888/
 - Click "Advanced" button -> Click "Proceed to 127.0.0.1 (unsafe)"
 
+### Models
+
+If you get the WebNNMeeting source code from https://github.com/intel/webml-polyfill, please download model files from [semantic_segmentation/model](https://github.com/intel/webml-polyfill/tree/master/examples/semantic_segmentation/model) and put them (e.g. deeplab_mobilenetv2_257_dilated.tflite) under `./static/js/webnn/ss/model/`
+
 ### macOS
 
 Once you are using macOS and it says "Your connection is not private", click somewhere on the page and then blindly type `thisisunsafe` which will instantly bypass the warning.
@@ -129,41 +138,12 @@ The License of WebNN Meeting will be Apache 2.0.
 
 ## Code Hacks
 
-### Intel Open WebRTC Toolkit (OWT)
+There are some code hacks in Intel Open WebRTC Toolkit (OWT) and Material Design Icons, please refer to [code hacks](doc/CodeHacks.md).
 
-Update `assets/js/owt/conference/channel.js` code
+## Error Handling
 
-```
-  if (options.audio === undefined) {
-    options.audio = !!stream.settings.audio;
-  }
-```
-to following for fixing a screen sharing mode issue caused by audio option:
+If you encounter the error `ENOSPC: System limit for number of file watchers reached, watch`  when build the project on Ubuntu, please try: 
 
 ```
-  if (options.audio === undefined) {
-    if(stream.settings.audio.length === 0) {
-      options.audio = false
-    } else {
-      options.audio = !!stream.settings.audio;
-    }
-  }
+echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf && sudo sysctl -p
 ```
-
-Added code below in `createMediaStream()` of `assets/js/owt/base/mediastream-factory.js` for supporting Echo Cancellation and Noise Suppression standard Web API.
-
-```
-  if (constraints.audio.echoCancellation) {
-    mediaConstraints.audio.echoCancellation = constraints.audio.echoCancellation;
-  }
-  if (constraints.audio.noiseSuppression) {
-    mediaConstraints.audio.noiseSuppression = constraints.audio.noiseSuppression;
-  }
-```
-
-### Material Design Icons
-
-Modified Material Design Icons style sheet url in npm package for faster loading due to network issue. No necessary to follow this step if you don't encounter the issue.
-
-Update `.node_modules/nuxt-buefy/modules.js` from `materialDesignIconsHRef: '//cdn.materialdesignicons.com/2.4.85/css/materialdesignicons.min.css'`
-to `materialDesignIconsHRef: '../../css/materialdesignicons/2.4.85/materialdesignicons.min.css'`
