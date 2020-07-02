@@ -40,11 +40,28 @@ export class Conv2d extends Operation {
 
   run(context: ExecutionContext): tf.Tensor {
     const input: tf.Tensor4D = this.getTensor(this.inputs[0], context) as tf.Tensor4D;
-    const filter: tf.Tensor4D = this.getTensor(this.inputs[1], context) as tf.Tensor4D;
-    // permute filter tensor according to layout
+    let filter: tf.Tensor4D = this.getTensor(this.inputs[1], context) as tf.Tensor4D;
     assert(this.padding_.every(v => v === this.padding_[0]), 'The tf.conv2d only supports the same padding value.');
     const padding = this.padding_[0];
-    const dataFormat = this.layout_ === OperandLayout.nchw ? 'NCHW' : 'NHWC';
-    return tf.conv2d(input, filter, this.strides_, padding, dataFormat, this.dilations_);
+    let dataFormat:'NCHW'|'NHWC';
+    let input_channels:number;
+    if (this.layout_ === OperandLayout.nchw) {
+      dataFormat = 'NCHW';
+      input_channels = input.shape[1];
+      // webnn layout: [output_channels, input_channels/groups, height, width] ->
+      // tf.js layout: [filterHeight, filterWidth, inDepth, outDepth]
+      filter = filter.transpose([2, 3, 1, 0]);
+    } else {
+      // 'NHWC'
+      dataFormat = 'NHWC';
+      input_channels = input.shape[3];
+    }
+    if (this.groups_ === 1) {
+      return tf.conv2d(input, filter, this.strides_, padding, dataFormat, this.dilations_);
+    } else if (this.groups_ === input_channels) {
+      return tf.depthwiseConv2d(input, filter, this.strides_, padding, dataFormat, this.dilations_);
+    } else {
+      throw new Error(`The tf.js convolution doesn't support groups parameter ${this.groups_}`);
+    }
   }
 }

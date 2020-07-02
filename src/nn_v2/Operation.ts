@@ -3,17 +3,18 @@ import { Operand } from "./Operand";
 import { Constant } from "./Constant";
 import { Input } from "./Input";
 import { ExecutionContext } from "./ExecutionContext";
+import { assert } from "./utils";
 
 import * as tf from '@tensorflow/tfjs-core'
-import { assert } from "@tensorflow/tfjs-core/dist/util";
 
 export abstract class Operation {
   inputs: Array<Operand> = [];
   outputs: Array<Output> = [];
 
   constructor(inputs: Array<Operand>) {
-    assert(inputs.every(input => input instanceof Operand, 'The inputs parameter is invalid.');
+    assert(inputs.every(input => input instanceof Operand), 'The inputs parameter is invalid.');
     this.inputs = inputs;
+    this.outputs.push(new Output(this));
   }
 
   get output(): Output {
