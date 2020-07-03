@@ -2,10 +2,11 @@ describe('CTS', function() {
   const assert = chai.assert;
   const nn = navigator.ml.getNeuralNetworkContext('v2');
 
-  it('Convolution with padding', async function() {
+  it('conv2d with padding', async function() {
     const input = nn.input('input', {type: 'tensor-float32', dimensions: [1, 1, 5, 5]});
     const filter = nn.constant({type: 'tensor-float32', dimensions: [1, 1, 3, 3]}, new Float32Array(9).fill(1));
-    const output = nn.conv2d(input, filter, /* padding = */ [1, 1, 1, 1]);
+    const padding = [1, 1, 1, 1];
+    const output = nn.conv2d(input, filter, padding);
     const model = await nn.createModel([{name: 'output', operand: output}]);
     const compilation = await model.createCompilation();
     const execution = await compilation.createExecution();
@@ -17,7 +18,7 @@ describe('CTS', function() {
     checkOutput(outputBuffer, expected);
   });
 
-  it('Convolution without padding', async function() {
+  it('conv2d without padding', async function() {
     const input = nn.input('input', {type: 'tensor-float32', dimensions: [1, 1, 5, 5]});
     const filter = nn.constant({type: 'tensor-float32', dimensions: [1, 1, 3, 3]}, new Float32Array(9).fill(1));
     const output = nn.conv2d(input, filter);
@@ -32,10 +33,12 @@ describe('CTS', function() {
     checkOutput(outputBuffer, expected);
   });
 
-  it('Convolution with strides=2 and padding', async function() {
+  it('conv2d with strides=2 and padding', async function() {
     const input = nn.input('input', {type: 'tensor-float32', dimensions: [1, 1, 7, 5]});
     const filter = nn.constant({type: 'tensor-float32', dimensions: [1, 1, 3, 3]}, new Float32Array(9).fill(1));
-    const output = nn.conv2d(input, filter, /* padding = */ [1, 1, 1, 1], /* strides = */ [2, 2]);
+    const padding = [1, 1, 1, 1];
+    const strides = [2, 2];
+    const output = nn.conv2d(input, filter, padding, strides);
     const model = await nn.createModel([{name: 'output', operand: output}]);
     const compilation = await model.createCompilation();
     const execution = await compilation.createExecution();
