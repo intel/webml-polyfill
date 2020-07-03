@@ -13,6 +13,7 @@ import { Conv2d } from './ops/Conv2d';
 import { AveragePool2d } from './ops/AveragePool2d';
 import { MaxPool2d } from './ops/MaxPool2d';
 import { Reshape } from './ops/Reshape';
+import { Relu } from './ops/Relu';
 
 export class NeuralNetworkContext {
   constructor() {}
@@ -68,6 +69,10 @@ export class NeuralNetworkContext {
             dilations: [number, number] = [1, 1],
             layout: OperandLayout = OperandLayout.nchw) {
     return (new MaxPool2d(input, windowDimensions, padding, strides, dilations, layout)).output;
+  }
+
+  relu(input: Operand) {
+    return (new Relu(input)).output;
   }
 
   reshape(input: Operand, newShape: number[]) {
