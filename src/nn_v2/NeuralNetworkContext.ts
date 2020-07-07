@@ -8,6 +8,12 @@ import { Add } from './ops/Add';
 import { Mul } from './ops/Mul';
 import { OperandType } from './OperandType';
 import { NamedOperand } from './NamedOperand';
+import { OperandLayout } from './OperandLayout';
+import { Conv2d } from './ops/Conv2d';
+import { AveragePool2d } from './ops/AveragePool2d';
+import { MaxPool2d } from './ops/MaxPool2d';
+import { Reshape } from './ops/Reshape';
+import { Relu } from './ops/Relu';
 
 export class NeuralNetworkContext {
   constructor() {}
@@ -34,7 +40,42 @@ export class NeuralNetworkContext {
     return (new Add(a, b)).output;
   }
 
+  averagePool2d(input: Operand,
+                windowDimensions: [number, number] = [-1, -1],
+                padding: [number, number, number, number] = [0, 0, 0, 0],
+                strides: [number, number] = [1, 1],
+                dilations: [number, number] = [1, 1],
+                layout: OperandLayout = OperandLayout.nchw) {
+    return (new AveragePool2d(input, windowDimensions, padding, strides, dilations, layout)).output;
+  }
+
+  conv2d(input: Operand, filter: Operand,
+         padding: [number, number, number, number] = [0, 0, 0, 0],
+         strides: [number, number] = [1, 1],
+         dilations: [number, number] = [1, 1],
+         groups: number = 1,
+         layout: OperandLayout = OperandLayout.nchw) {
+    return (new Conv2d(input, filter, padding, strides, dilations, groups, layout)).output;
+  }
+
   mul(a: Operand, b: Operand): Operand {
     return (new Mul(a, b)).output;
+  }
+
+  maxPool2d(input: Operand,
+            windowDimensions: [number, number] = [-1, -1],
+            padding: [number, number, number, number] = [0, 0, 0, 0],
+            strides: [number, number] = [1, 1],
+            dilations: [number, number] = [1, 1],
+            layout: OperandLayout = OperandLayout.nchw) {
+    return (new MaxPool2d(input, windowDimensions, padding, strides, dilations, layout)).output;
+  }
+
+  relu(input: Operand) {
+    return (new Relu(input)).output;
+  }
+
+  reshape(input: Operand, newShape: number[]) {
+    return (new Reshape(input, newShape)).output;
   }
 }

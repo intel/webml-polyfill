@@ -1,5 +1,4 @@
 import { Operation } from "../Operation";
-import { Output } from "../Output";
 import { Operand } from "../Operand";
 import { ExecutionContext } from "../ExecutionContext";
 
@@ -8,7 +7,6 @@ import * as tf from '@tensorflow/tfjs-core';
 export abstract class Binary extends Operation {
   constructor(a: Operand, b: Operand) {
     super([a, b]);
-    this.outputs.push(new Output(this));
   }
 
   run(context: ExecutionContext): tf.Tensor {

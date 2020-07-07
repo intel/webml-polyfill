@@ -231,3 +231,10 @@ async function assertDoesNotThrowAsync(fn, regExp) {
     assert.doesNotThrow(f, regExp);
   }
 }
+
+function checkOutput(output, expected) {
+  assert.isTrue(output.length === expected.length);
+  for (let i = 0; i < output.length; ++i) {
+    assert.isTrue(almostEqualCTS(output[i], expected[i]));
+  }
+}
