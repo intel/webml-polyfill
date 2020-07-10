@@ -15,6 +15,7 @@ import { MaxPool2d } from './ops/MaxPool2d';
 import { Reshape } from './ops/Reshape';
 import { Relu } from './ops/Relu';
 import { MatMul } from './ops/Matmul';
+import { Softmax } from './ops/Softmax';
 
 export class NeuralNetworkContext {
   constructor() {}
@@ -46,7 +47,7 @@ export class NeuralNetworkContext {
                 padding: [number, number, number, number] = [0, 0, 0, 0],
                 strides: [number, number] = [1, 1],
                 dilations: [number, number] = [1, 1],
-                layout: OperandLayout = OperandLayout.nchw) {
+                layout: OperandLayout = OperandLayout.nchw): Operand {
     return (new AveragePool2d(input, windowDimensions, padding, strides, dilations, layout)).output;
   }
 
@@ -55,7 +56,7 @@ export class NeuralNetworkContext {
          strides: [number, number] = [1, 1],
          dilations: [number, number] = [1, 1],
          groups: number = 1,
-         layout: OperandLayout = OperandLayout.nchw) {
+         layout: OperandLayout = OperandLayout.nchw): Operand {
     return (new Conv2d(input, filter, padding, strides, dilations, groups, layout)).output;
   }
 
@@ -72,15 +73,19 @@ export class NeuralNetworkContext {
             padding: [number, number, number, number] = [0, 0, 0, 0],
             strides: [number, number] = [1, 1],
             dilations: [number, number] = [1, 1],
-            layout: OperandLayout = OperandLayout.nchw) {
+            layout: OperandLayout = OperandLayout.nchw): Operand {
     return (new MaxPool2d(input, windowDimensions, padding, strides, dilations, layout)).output;
   }
 
-  relu(input: Operand) {
+  relu(input: Operand): Operand {
     return (new Relu(input)).output;
   }
 
-  reshape(input: Operand, newShape: number[]) {
+  reshape(input: Operand, newShape: number[]): Operand {
     return (new Reshape(input, newShape)).output;
+  }
+
+  softmax(x: Operand): Operand {
+    return (new Softmax(x)).output;
   }
 }
