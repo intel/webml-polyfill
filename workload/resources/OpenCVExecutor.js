@@ -25,8 +25,8 @@ class OpenCVExecutor extends BaseExecutor {
     try {
       let inferenceOutput;
       for (let i = 0;  i < iterations; i++) {
-        logger.log(`Iteration: ${i + 1} / ${iterations}`);
-        await new Promise(resolve => requestAnimationFrame(resolve));
+        // logger.log(`Iteration: ${i + 1} / ${iterations}`);
+        // await new Promise(resolve => requestAnimationFrame(resolve));
         await this._executeSingle();
         inferenceOutput = this._runner.getOutput();
         this._inferenceTimeList.push(inferenceOutput.inferenceTime);
