@@ -14,6 +14,7 @@ import { AveragePool2d } from './ops/AveragePool2d';
 import { MaxPool2d } from './ops/MaxPool2d';
 import { Reshape } from './ops/Reshape';
 import { Relu } from './ops/Relu';
+import { MatMul } from './ops/Matmul';
 
 export class NeuralNetworkContext {
   constructor() {}
@@ -56,6 +57,10 @@ export class NeuralNetworkContext {
          groups: number = 1,
          layout: OperandLayout = OperandLayout.nchw) {
     return (new Conv2d(input, filter, padding, strides, dilations, groups, layout)).output;
+  }
+
+  matmul(a: Operand, b: Operand): Operand {
+    return (new MatMul(a, b)).output;
   }
 
   mul(a: Operand, b: Operand): Operand {
