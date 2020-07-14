@@ -32,6 +32,21 @@ const getOS = () => {
 
 const currentOS = getOS();
 
+const backCameraWorkaround = () => {
+  // {facingMode: 'environment'} not working on some devices, likes Samsung Galaxy Note10+ (SM-N9760) phone
+  const blockDeviceModelList = ['SM-N9760'];
+  const userAgent = window.navigator.userAgent;
+  for (const model of blockDeviceModelList) {
+    if (userAgent.indexOf(model) !== -1) {
+      return true;
+    }
+  }
+
+  return false;
+};
+
+const useBackCameraWorkaround = backCameraWorkaround();
+
 const getNativeAPI = (preferString) => {
   // if you are going to modify the backend name, please change the
   // `backendEnums` in the `getDefaultSupportedOps` below

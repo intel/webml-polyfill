@@ -14,8 +14,8 @@ class BaseMircophoneExample extends BaseExample {
   };
 
   /** @override */
-  _getMediaConstraints = () => {
-    const constraints = {audio: true};
-    return constraints;
+  _getMediaStream = async () => {
+    let stream = await navigator.mediaDevices.getUserMedia({audio: true});
+    return stream;
   };
 };
