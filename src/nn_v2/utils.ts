@@ -100,7 +100,7 @@ export function createTensor(desc: OperandDescriptor, value: TypedArray): tf.Ten
 }
 
 export function sizeFromDimensions(dim: number[]): number {
-  if (typeof dim === 'undefined') {
+  if (typeof dim === 'undefined' || (isNumberArray(dim) && dim.length === 0)) {
     // scalar
     return 1;
   } else {
