@@ -27,9 +27,37 @@ class BaseCameraExample extends BaseExample {
   };
 
   /** @override */
-  _getMediaConstraints = () => {
-    const constraints = {audio: false, video: {facingMode: (this._bFrontCamera ? 'user' : 'environment')}};
-    return constraints;
+  _getMediaStream = async () => {
+    let stream;
+    // The video source is facing toward the user
+    let constraints = {audio: false, video: {facingMode: 'user'}};
+
+    if (!this._bFrontCamera) {
+      if (useBackCameraWorkaround) {
+        // workaround for {facingMode: 'environment'} not working
+        let deviceInfos = await navigator.mediaDevices.enumerateDevices();
+        for (let i = 0; i !== deviceInfos.length; ++i) {
+          const deviceInfo = deviceInfos[i];
+          if (deviceInfo.kind === 'videoinput' && deviceInfo.label.indexOf('facing back') !== -1) {
+            constraints = {audio: false, video: {deviceId: {exact: deviceInfo.deviceId}}}
+            try {
+              stream = await navigator.mediaDevices.getUserMedia(constraints);
+              return stream;
+            } catch (e) {
+              console.error(`Failed to start video source by the video input: '${deviceInfo.label}'.`);
+              // try next available video input
+              continue;
+            }
+          }
+        }
+      } else {
+        // The video source is facing away from the user, thereby viewing their environment
+        constraints = {audio: false, video: {facingMode: 'environment'}};
+      }
+    }
+
+    stream = await navigator.mediaDevices.getUserMedia(constraints);
+    return stream;
   };
 
   /** @override */
