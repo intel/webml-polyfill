@@ -683,12 +683,10 @@ class BaseExample extends BaseApp {
   };
 
   /**
-   * This method returns media constraints for predicting stream.
-   * @returns {!Object<string, *>} This returns an object for constraints as the parameter of navigator.mediaDevices.getUserMedia method.
-   *     likes {audio: false, video: {facingMode: (this._bFrontCamera ? 'user' : 'environment')}};
-   *     or {audio: true}
+   * This method returns media stream for predicting stream.
+   * @returns {!MediaStream} This returns a MediaStream.
    */
-  _getMediaConstraints = () => {};
+  _getMediaStream = () => {};
 
   /**
    * This method is to predict the frame of camera video.
@@ -708,8 +706,7 @@ class BaseExample extends BaseApp {
    * This method is to predict camera video or microphone audio.
    */
   _predictStream = async () => {
-    const constraints = this._getMediaConstraints();
-    let stream = await navigator.mediaDevices.getUserMedia(constraints);
+    let stream = await this._getMediaStream();
     this._currentInputElement.srcObject = stream;
     this._setTrack(stream.getTracks()[0]);
     await showProgressComponent('done', 'done', 'current'); // 'COMPLETED_COMPILATION'
