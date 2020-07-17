@@ -631,17 +631,21 @@ class BaseExample extends BaseApp {
     }
   };
 
-  /** @override */
-  _loadModel = async () => {
+  _doInitialRunner = () => {
     // Override by inherited when example has co-work runners
     const modelInfo = getModelById(this._inferenceModels.model, this._currentModelId);
 
     if (modelInfo != null) {
       this._setModelInfo(modelInfo);
-      await this._runner.loadModel(modelInfo);
+      this._runner.doInitialization(modelInfo);
     } else {
       throw new Error('Unrecorgnized model, please check your typed url.');
     }
+  };
+
+  /** @override */
+  _loadModel = async () => {
+      await this._runner.loadModel(this._currentModelInfo);
   };
 
   /**
@@ -874,6 +878,8 @@ class BaseExample extends BaseApp {
     try {
       // Get Runner for execute inference
       this._getRunner();
+      // intial runner
+      this._doInitialRunner();
       // UI shows loading model progress
       await showProgressComponent('current', 'pending', 'pending');
       // Load model

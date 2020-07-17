@@ -140,7 +140,7 @@ class FaceRecognitionExample extends BaseCameraExample {
   };
 
   /** @override */
-  _loadModel = async () => {
+  _doInitialRunner = () => {
     let currentFDModelId = null;
     let currentFRModelId = null;
     let fdModelList = this._inferenceModels.faceDetection;
@@ -172,12 +172,26 @@ class FaceRecognitionExample extends BaseCameraExample {
     }
 
     const modelInfo = getModelById(fdModelList, currentFDModelId);
-    this._setModelInfo(modelInfo);
-    await this._runner.loadModel(modelInfo);
+    if (modelInfo != null) {
+      this._setModelInfo(modelInfo);
+      this._runner.doInitialization(modelInfo);
+    } else {
+      throw new Error('Unrecorgnized model, please check your typed url.');
+    }
 
     const coModelInfo = getModelById(frModelList, currentFRModelId);
-    this._setCoModelInfo(coModelInfo);
-    await this._coRunner.loadModel(coModelInfo);
+    if (coModelInfo != null) {
+      this._setCoModelInfo(coModelInfo);
+      this._coRunner.doInitialization(coModelInfo);
+    } else {
+      throw new Error('Unrecorgnized model, please check your typed url.');
+    }
+  };
+
+  /** @override */
+  _loadModel = async () => {
+    await this._runner.loadModel(this._currentModelInfo);
+    await this._coRunner.loadModel(this._currentCoModelInfo);
   };
 
   /** @override */
