@@ -36,7 +36,7 @@ class OpenCVRunner extends BaseRunner {
   };
 
   /** @override */
-  _doInitialization = (modelInfo) => {
+  doInitialization = (modelInfo) => {
     this._setLoadedFlag(false);
     this._setInitializedFlag(false);
     this._setModelInfo(modelInfo);

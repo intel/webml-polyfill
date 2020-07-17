@@ -31,6 +31,60 @@ class FacialLandmarkDetectionExample extends BaseCameraExample {
       this._coRunner.setProgressHandler(updateLoadingProgressComponent);
     }
   };
+  /** @override */
+  _doInitialRunner = () => {
+    let currentFDModelId = null;
+    let currentFLDModelId = null;
+    let fdModelList = this._inferenceModels.faceDetection;
+    let fldModelList = this._inferenceModels.facialLandmarkDetection;
+
+    let currentModelArray = null;
+
+    if (this._currentModelId.includes('+')) {
+      currentModelArray = this._currentModelId.split('+');
+    } else if (this._currentModelId.includes(' ')) {
+      currentModelArray = this._currentModelId.split(' ');
+    }
+
+    const modelId = currentModelArray[0];
+
+    // Decide whether modleId is currentFDModelId, or is currentFRModelId
+    for (let model of fdModelList) {
+      if (modelId === model.modelId) {
+        currentFDModelId = modelId;
+        break;
+      }
+    }
+
+    if (currentFDModelId != null) {
+      currentFLDModelId = currentModelArray[1];
+    } else {
+      currentFLDModelId = modelId;
+      currentFDModelId = currentModelArray[1];
+    }
+
+    const modelInfo = getModelById(fdModelList, currentFDModelId);
+    if (modelInfo != null) {
+      this._setModelInfo(modelInfo);
+      this._runner.doInitialization(modelInfo);
+    } else {
+      throw new Error('Unrecorgnized model, please check your typed url.');
+    }
+
+    const coModelInfo = getModelById(fldModelList, currentFLDModelId);
+    if (coModelInfo != null) {
+      this._setCoModelInfo(coModelInfo);
+      this._coRunner.doInitialization(coModelInfo);
+    } else {
+      throw new Error('Unrecorgnized model, please check your typed url.');
+    }
+  };
+
+  /** @override */
+  _loadModel = async () => {
+    await this._runner.loadModel(this._currentModelInfo);
+    await this._coRunner.loadModel(this._currentCoModelInfo);
+  };
 
   /** @override */
   _loadModel = async () => {
