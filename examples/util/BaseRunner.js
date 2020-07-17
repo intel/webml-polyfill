@@ -141,7 +141,7 @@ class BaseRunner {
    * @param {!Object<string, *>} modelInfo An object for model info which was configed in modeZoo.js.
    *     See modelInfo details from above '_setModelInfo' method.
    */
-  _doInitialization = (modelInfo) => {};
+  doInitialization = (modelInfo) => {};
 
   /**
    * This method is to load model file and relevant resources, such as label file.
@@ -153,8 +153,6 @@ class BaseRunner {
       console.log(`${this._currentModelInfo.modelFile} already loaded.`);
       return;
     }
-
-    this._doInitialization(modelInfo);
 
     let modelPath = this._currentModelInfo.modelFile;
     // for local workload test
