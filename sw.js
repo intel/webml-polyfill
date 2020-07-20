@@ -1,4 +1,4 @@
-const CACHE_NAME = 'v24';
+const CACHE_NAME = 'v25';
 let urlsToCache = [];
 
 self.addEventListener('install', function(event) {
@@ -6,7 +6,7 @@ self.addEventListener('install', function(event) {
     caches.open(CACHE_NAME)
       .then(function(cache) {
         return cache.addAll(urlsToCache);
-      })  
+      })
   );
 });
 
