@@ -14,7 +14,7 @@ import { AveragePool2d } from './ops/AveragePool2d';
 import { MaxPool2d } from './ops/MaxPool2d';
 import { Reshape } from './ops/Reshape';
 import { Relu } from './ops/Relu';
-import { MatMul } from './ops/Matmul';
+import { MatMul } from './ops/MatMul';
 import { Softmax } from './ops/Softmax';
 
 export class NeuralNetworkContext {
