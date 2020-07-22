@@ -23,14 +23,31 @@ class EmotionAnalysisWebNNExecutor extends WebNNExecutor {
   };
 
   /** @override */
-  _loadModel = async (modelId, coModelId) => {
+  doInitialRunner = (modelId, coModelId) => {
+    // Override by inherited when example has co-work runners
     const modelInfo = getModelById(faceDetectionModels, modelId);
-    this._setModelInfo(modelInfo);
-    await this._runner.loadModel(modelInfo, 'workload');
+
+    if (modelInfo != null) {
+      this._setModelInfo(modelInfo);
+      this._runner.doInitialization(modelInfo);
+    } else {
+      throw new Error('Unrecorgnized model, please check your typed url.');
+    }
 
     const coModelInfo = getModelById(emotionAnalysisModels, coModelId);
-    this._setCoModelInfo(coModelInfo);
-    await this._coRunner.loadModel(coModelInfo, 'workload');
+
+    if (coModelInfo != null) {
+      this._setCoModelInfo(coModelInfo);
+      this._coRunner.doInitialization(coModelInfo);
+    } else {
+      throw new Error('Unrecorgnized model, please check your typed url.');
+    }
+  };
+
+  /** @override */
+  _loadModel = async () => {
+      await this._runner.loadModel(this._currentModelInfo, 'workload');
+      await this._coRunner.loadModel(this._currentCoModelInfo, 'workload');
   };
 
   /** @override */
