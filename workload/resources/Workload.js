@@ -510,6 +510,7 @@ class Workload {
     this._executor.setInputElement(this._imageElement);
     this._executor.getRunner();
     this._executor.setCategory(this._currentCategory);
+    await this._executor.doInitialRunner(this._currentModelId, this._currentCoModelId);
 
     if (this._currentFramework === 'WebNN') {
       this._executor.setBackend(this._currentBackend);
@@ -523,7 +524,7 @@ class Workload {
     } else if (this._currentFramework === 'OpenCV.js') {
       this._executor.setBackend(this._currentOpenCVjsBackend);
     }
-    await this._executor.loadAndCompileModel(this._currentModelId, this._currentCoModelId);
+    await this._executor.loadAndCompileModel();
   };
   /**
    * This method is for running OpenCV.js framework, execute main method when OpenCV.js runtime was initialized.

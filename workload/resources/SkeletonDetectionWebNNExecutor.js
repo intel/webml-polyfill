@@ -14,8 +14,7 @@ class SkeletonDetectionWebNNExecutor extends WebNNExecutor {
     return runner;
   };
 
-  /** @override */
-  loadAndCompileModel = async (modelId, coModelId) => {
+  doInitialRunner = async (modelId, coModelId) => {
     if (this._modelConfig === null) {
       let posenetConfigURL = './resources/posenetConfig.json';
       let request = new Request(posenetConfigURL);
@@ -24,7 +23,10 @@ class SkeletonDetectionWebNNExecutor extends WebNNExecutor {
       this._setModelConfig(configDic);
       this._setModelInfo(humanPoseEstimationModels[0]);
     }
+  };
 
+  /** @override */
+  loadAndCompileModel = async () => {
     await this._runner.loadAndCompileModel(this._currentBackend.replace('WebNN', 'WebML'),
                                            this._currentPrefer,
                                            this._currentModelInfo,
