@@ -63,20 +63,27 @@ class BaseExecutor {
   };
 
   /**
-   * This method is for loading model file [and label file if label information is required].
+   * This method is to initialize runner.
    * @param {String} modelId: A String that for inference model Id.
    * @param {String} coModelId: A String that for inference co-model Id.
    */
-  _loadModel = async (modelId, coModelId) => {
+  doInitialRunner = (modelId, coModelId) => {
     // Override by inherited when example has co-work runners
     const modelInfo = getModelById(SUPPORTED_WORKLOAD_CATG[this._currentCategory].model, modelId);
 
     if (modelInfo != null) {
       this._setModelInfo(modelInfo);
-      await this._runner.loadModel(modelInfo, 'workload');
+      this._runner.doInitialization(modelInfo);
     } else {
       throw new Error('Unrecorgnized model, please check your typed url.');
     }
+  };
+
+  /**
+   * This method is for loading model file [and label file if label information is required].
+   */
+  _loadModel = async () => {
+      await this._runner.loadModel(this._currentModelInfo, 'workload');
   };
 
   /**
@@ -90,8 +97,8 @@ class BaseExecutor {
    * @param {String} modelId: A String that for inference model Id.
    * @param {String} coModelId: A String that for inference co-model Id.
    */
-  loadAndCompileModel = async (modelId, coModelId) => {
-    await this._loadModel(modelId, coModelId);
+  loadAndCompileModel = async () => {
+    await this._loadModel();
     await this._compileModel();
   };
 
