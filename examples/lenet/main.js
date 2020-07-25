@@ -34,9 +34,8 @@ async function main() {
   }
   predictButton.addEventListener('click', async function (e) {
     try {
-      const inputBuffer = Float32Array.from(digit);
       let start = performance.now();
-      const result = await lenet.predict(inputBuffer);
+      const result = await lenet.predict(digit);
       console.log(`execution elapsed time: ${(performance.now() - start).toFixed(2)} ms`);
       console.log(`execution result: ${result}`);
     } catch (error) {
