@@ -84,9 +84,10 @@ export function validateTypedArray(value: TypedArray, desc: OperandDescriptor) {
   assert(isTypedArray(value), 'The value is not a typed array.');
   assert(value instanceof getTypedArray(desc.type), 'The type of value is invalid.');
   if (!isTensorType(desc.type)) {
-    assert(value.length === 1, 'The value length is invalid.');
+    assert(value.length === 1, `The value length ${value.length} is invalid, 1 is expected.`);
   } else {
-    assert(value.length === sizeFromDimensions(desc.dimensions), 'the value length is invalid.');
+    assert(value.length === sizeFromDimensions(desc.dimensions),
+           `the value length ${value.length} is invalid, size of [${desc.dimensions}] ${sizeFromDimensions(desc.dimensions)} is expected.`);
   }
 }
 

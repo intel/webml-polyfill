@@ -16,6 +16,7 @@ import { Reshape } from './ops/Reshape';
 import { Relu } from './ops/Relu';
 import { MatMul } from './ops/MatMul';
 import { Softmax } from './ops/Softmax';
+import { Transpose } from './ops/Transpose';
 
 export class NeuralNetworkContext {
   constructor() {}
@@ -87,5 +88,9 @@ export class NeuralNetworkContext {
 
   softmax(x: Operand): Operand {
     return (new Softmax(x)).output;
+  }
+
+  transpose(input: Operand, permutation?: number[]): Operand {
+    return (new Transpose(input, permutation)).output;
   }
 }
