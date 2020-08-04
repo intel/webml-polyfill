@@ -5,6 +5,7 @@ import * as utils from '../utils';
 import CyclicProfiler from '../instrument';
 import wasmPath from '../../../node_modules/@tensorflow/tfjs-backend-wasm/dist/tfjs-backend-wasm.wasm';
 import {setWasmPath} from '@tensorflow/tfjs-backend-wasm';
+import "@tensorflow/tfjs-backend-webgl";
 
 var warmUpRuns = 1;
 
@@ -50,11 +51,8 @@ export default class TfjsModel {
         await tf.setBackend('wasm');
       };
     } else {
-      if(tf.getBackend() != "WebGL"){
+      if(tf.getBackend() != "webgl"){
         await tf.setBackend('webgl');
-        tf.webgl.forceHalfFloat();
-        console.info('WEBGL_FORCE_F16_TEXTURES : ',tf.ENV.getBool('WEBGL_FORCE_F16_TEXTURES'));
-        console.info('floatPercision : ',tf.backend().floatPrecision());
       };
     };
 
