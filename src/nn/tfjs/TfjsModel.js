@@ -45,16 +45,12 @@ export default class TfjsModel {
         setWasmPath(_fixWasmPath(wasmPath));
         await tf.setBackend('wasm');
       };
-    } else { if(this._model._backend === "WebGPU"){
-        await tf.setBackend('webgpu');
-        await tf.ready();
     } else {
+      if(tf.getBackend() != "webgl"){
         await tf.setBackend('webgl');
-        await tf.ready();
-    } }
-
-    console.log('Current Backend :', tf.getBackend());
-
+      };
+    };
+    
     const model = this._model;
     const operations = model._operations;
 
