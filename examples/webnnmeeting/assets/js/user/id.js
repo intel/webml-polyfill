@@ -8,7 +8,7 @@ import {
   getStreams
 } from '~/assets/js/rest'
 import getTime from '~/assets/js/user/time'
-import { SemanticSegmentationRunner } from '~/assets/js/webnn/util/BaseRunner'
+import { SemanticSegmentationRunner } from '~/assets/js/webnn/util/SemanticSegmentationRunner'
 import Renderer from '~/assets/js/webnn/webgl/DrawOutputs'
 import Control from '~/components/Control.vue'
 import Clock from '~/components/Clock.vue'
@@ -451,7 +451,11 @@ export default {
         if (this.backend === 'webml') {
           this.backend = 'WebML'
         }
-        await this.runner.compileModel(this.backend, this.prefer)
+        const options = {
+          backend: this.backend,
+          prefer: this.prefer
+        }
+        await this.runner.compileModel(options)
       }
       this.initss = true
     },

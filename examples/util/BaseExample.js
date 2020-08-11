@@ -297,7 +297,6 @@ class BaseExample extends BaseApp {
       $('.offload').hide();
       let um = $('input:radio[name="m"]:checked').attr('id');
       this._setModelId(um);
-      this._freeMemoryResources(um);
       const modelClasss = getModelListByClass();
       const seatModelClass = $('#' + um).parent().parent().attr('id');
       if (modelClasss.length > 1) {
@@ -424,7 +423,6 @@ class BaseExample extends BaseApp {
         }
       } else {
         $('.backendtitle').html('Backends');
-        this._freeMemoryResources();
         if (polyfillId && webnnId) {
           $('#' + polyfillId).attr('checked', 'checked');
           $('#l-' + polyfillId).addClass('checked');
@@ -466,7 +464,6 @@ class BaseExample extends BaseApp {
       let polyfillId = $('input:radio[name="bp"]:checked').attr('id') || $('input:radio[name="bp"][checked="checked"]').attr('id');
       if (isBackendSwitch()) {
         if (polyfillId !== this._currentBackend) {
-          this._freeMemoryResources();
           $('.b-polyfill input').removeAttr('checked');
           $('.b-polyfill label').removeClass('checked');
           $('#' + polyfillId).attr('checked', 'checked');
@@ -475,16 +472,12 @@ class BaseExample extends BaseApp {
           showAlertComponent('At least one backend required, please select other backends if needed.');
           return;
         } else {
-          this._freeMemoryResources();
           $('.b-polyfill input').removeAttr('checked');
           $('.b-polyfill label').removeClass('checked');
           polyfillId = 'WebML';
         }
         this._setBackend(polyfillId);
       } else {
-        if (polyfillId !== this._currentBackend) {
-          this._freeMemoryResources();
-        }
         $('.b-polyfill input').removeAttr('checked');
         $('.b-polyfill label').removeClass('checked');
         $('.b-webnn input').removeAttr('checked');
@@ -502,7 +495,6 @@ class BaseExample extends BaseApp {
     // Click trigger of Native Backend <input> element
     $('input:radio[name=bw]').click(() => {
       $('.alert').hide();
-      this._freeMemoryResources();
       let webnnId = $('input:radio[name="bw"]:checked').attr('id') || $('input:radio[name="bw"][checked="checked"]').attr('id');
       if (isBackendSwitch()) {
         if (webnnId !== this._currentPrefer) {
@@ -621,16 +613,6 @@ class BaseExample extends BaseApp {
   };
 
   /**
-   * This method is to free allocated memory for model complation by polyfill backend.
-   */
-  _freeMemoryResources = (modelId) => {
-    // Override by inherited when example has co-work runners
-    if (this._runner) {
-      this._runner.deleteAll();
-    }
-  };
-
-  /**
    * This method returns runner instance to load model/compile model/inference.
    * @returns {object} This returns a runner instance.
    */
@@ -649,17 +631,21 @@ class BaseExample extends BaseApp {
     }
   };
 
-  /** @override */
-  _loadModel = async () => {
+  _doInitialRunner = () => {
     // Override by inherited when example has co-work runners
     const modelInfo = getModelById(this._inferenceModels.model, this._currentModelId);
 
     if (modelInfo != null) {
       this._setModelInfo(modelInfo);
-      await this._runner.loadModel(modelInfo);
+      this._runner.doInitialization(modelInfo);
     } else {
       throw new Error('Unrecorgnized model, please check your typed url.');
     }
+  };
+
+  /** @override */
+  _loadModel = async () => {
+      await this._runner.loadModel(this._currentModelInfo);
   };
 
   /**
@@ -672,6 +658,9 @@ class BaseExample extends BaseApp {
     if (this._currentFramework === 'WebNN') {
         options.backend = this._currentBackend;
         options.prefer = this._currentPrefer;
+        const supportedOps = getSupportedOps(this._currentBackend, this._currentPrefer);
+        options.supportedOps = supportedOps;
+        options.eagerMode = false;
     }
 
     return options;
@@ -698,12 +687,10 @@ class BaseExample extends BaseApp {
   };
 
   /**
-   * This method returns media constraints for predicting stream.
-   * @returns {!Object<string, *>} This returns an object for constraints as the parameter of navigator.mediaDevices.getUserMedia method.
-   *     likes {audio: false, video: {facingMode: (this._bFrontCamera ? 'user' : 'environment')}};
-   *     or {audio: true}
+   * This method returns media stream for predicting stream.
+   * @returns {!MediaStream} This returns a MediaStream.
    */
-  _getMediaConstraints = () => {};
+  _getMediaStream = () => {};
 
   /**
    * This method is to predict the frame of camera video.
@@ -723,8 +710,7 @@ class BaseExample extends BaseApp {
    * This method is to predict camera video or microphone audio.
    */
   _predictStream = async () => {
-    const constraints = this._getMediaConstraints();
-    let stream = await navigator.mediaDevices.getUserMedia(constraints);
+    let stream = await this._getMediaStream();
     this._currentInputElement.srcObject = stream;
     this._setTrack(stream.getTracks()[0]);
     await showProgressComponent('done', 'done', 'current'); // 'COMPLETED_COMPILATION'
@@ -892,11 +878,8 @@ class BaseExample extends BaseApp {
     try {
       // Get Runner for execute inference
       this._getRunner();
-      let supportedOps;
-      if (this._currentFramework === 'WebNN') {
-        supportedOps = getSupportedOps(this._currentBackend, this._currentPrefer);
-        this._setSupportedOps(supportedOps);
-      }
+      // intial runner
+      this._doInitialRunner();
       // UI shows loading model progress
       await showProgressComponent('current', 'pending', 'pending');
       // Load model
@@ -908,6 +891,7 @@ class BaseExample extends BaseApp {
       if (this._currentFramework === 'WebNN') {
         const requiredOps = this._getRequiredOps();
         // show offload ops info
+        const supportedOps = getSupportedOps(this._currentBackend, this._currentPrefer);
         showHybridComponent(supportedOps, requiredOps, this._currentBackend, this._currentPrefer);
         // show sub graphs summary
         const subgraphsSummary = this._getSubgraphsSummary();

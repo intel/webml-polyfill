@@ -1,120 +1,84 @@
 
-var nn = navigator.ml_polyfill.getNeuralNetworkContext();
-const TENSOR_SIZE = 200;
-const FLOAT_EPISILON = 1e-6;
-
+var nn = navigator.ml.getNeuralNetworkContext('v2');
 
 class SimpleModel {
-  constructor(arrayBuffer) {
-    this.arrayBuffer_ = arrayBuffer;
-    this.tensorSize_ = TENSOR_SIZE;
+  constructor(url) {
+    this.url_ = url;
+    this.tensorSize_ = 200;
     this.model_ = null;
     this.compilation_ = null;
   }
 
-  async createCompiledModel() {
-    let operandIndex = 0;
-    this.model_ = await nn.createModel({backend:selectedBackend});
-    let float32TensorType = {type: nn.TENSOR_FLOAT32, dimensions: [TENSOR_SIZE]};
-    let scalarInt32Type = {type: nn.INT32};
+  async load() {
+    const response = await fetch(this.url_);
+    const arrayBuffer = await response.arrayBuffer();
 
-    // We first add the operand for the NONE activation function, and set its
-    // value to FUSED_NONE.
-    // This constant scalar operand will be used for all 3 operations.
-    let fusedActivationFuncNone = operandIndex++;
-    this.model_.addOperand(scalarInt32Type);
-    this.model_.setOperandValue(fusedActivationFuncNone, new Int32Array([nn.FUSED_NONE]));
+    // Create OperandDescriptor object.
+    const float32TensorType = {type: 'tensor-float32', dimensions: [this.tensorSize_]};
 
-    // tensor0 is a constant tensor that was established during training.
-    // We read these values from the corresponding memory object.
-    let tensor0 = operandIndex++;
-    this.model_.addOperand(float32TensorType);
-    this.model_.setOperandValue(tensor0, new Float32Array(this.arrayBuffer_, 0, TENSOR_SIZE));
+    // constant1 is a constant tensor. Set its value from an ArrayBuffer object.
+    // The ArrayBuffer object may contain the training data loaded before hand.
+    const constant1Value = new Float32Array(arrayBuffer, 0, this.tensorSize_);
+    const constant1 = nn.constant(float32TensorType,
+                                  constant1Value);
 
-    // tensor1 is one of the user provided input tensors to the trained this.model_.
-    // Its value is determined pre-execution.
-    let tensor1 = operandIndex++;
-    this.model_.addOperand(float32TensorType);
+    // input1 is one of the input tensors. Its value will be set before execution.
+    const input1 = nn.input('input1', float32TensorType);
 
-    // tensor2 is a constant tensor that was established during training.
-    // We read these values from the corresponding memory object.
-    let tensor2 = operandIndex++;
-    this.model_.addOperand(float32TensorType);
-    this.model_.setOperandValue(tensor2, new Float32Array(this.arrayBuffer_, TENSOR_SIZE * Float32Array.BYTES_PER_ELEMENT, TENSOR_SIZE));
+    // constant2 is another constant tensor. Set its value from same ArrayBuffer
+    // object with offset.
+    const constant2Value = new Float32Array(arrayBuffer,
+                                            this.tensorSize_ * Float32Array.BYTES_PER_ELEMENT,
+                                            this.tensorSize_)
+    const constant2 = nn.constant(float32TensorType,
+                                  constant2Value);
 
-    // tensor3 is one of the user provided input tensors to the trained this.model_.
-    // Its value is determined pre-execution.
-    let tensor3 = operandIndex++;
-    this.model_.addOperand(float32TensorType);
+    // input2 is another input tensor. Its value will be set before execution.
+    const input2 = nn.input('input2', float32TensorType);
 
-    // intermediateOutput0 is the output of the first ADD operation.
-    // Its value is computed during execution.
-    let intermediateOutput0 = operandIndex++;
-    this.model_.addOperand(float32TensorType);
+    // intermediateOutput0 is the output of the first Add operation.
+    const intermediateOutput0 = nn.add(constant1, input1);
 
-    // intermediateOutput1 is the output of the second ADD operation.
-    // Its value is computed during execution.
-    let intermediateOutput1 = operandIndex++;
-    this.model_.addOperand(float32TensorType);
+    // intermediateOutput1 is the output of the second Add operation.
+    const intermediateOutput1 = nn.add(constant2, input2);
 
-    // multiplierOutput is the output of the MUL operation.
-    // Its value will be computed during execution.
-    let multiplierOutput = operandIndex++;
-    this.model_.addOperand(float32TensorType);
+    // output is the output tensor of the Mul operation.
+    const output = nn.mul(intermediateOutput0, intermediateOutput1);
 
-    // Add the MUL operation. (Test operations reorder)
-    // Note that intermediateOutput0 and intermediateOutput1 are specified
-    // as inputs to the operation.
-    this.model_.addOperation(nn.MUL, [intermediateOutput0, intermediateOutput1, fusedActivationFuncNone], [multiplierOutput]);
+    this.model_ = await nn.createModel([{name: 'output', operand: output}]);
 
-    // Add the first ADD operation.
-    this.model_.addOperation(nn.ADD, [tensor0, tensor1, fusedActivationFuncNone], [intermediateOutput0]);
+    return [constant1Value[0], constant2Value[0]];
+  }
 
-    // Add the second ADD operation.
-    // Note the fusedActivationFuncNone is used again.
-    this.model_.addOperation(nn.ADD, [tensor2, tensor3, fusedActivationFuncNone], [intermediateOutput1]);
-
-    // Identify the input and output tensors to the this.model_.
-    // Inputs: {tensor1, tensor3}
-    // Outputs: {multiplierOutput}
-    this.model_.identifyInputsAndOutputs([tensor1, tensor3], [multiplierOutput]);
-
-    // Finish constructing the this.model_.
-    // The values of constant and intermediate operands cannot be altered after
-    // the finish function is called.
-    await this.model_.finish();
-    // Create a Compilation object for the constructed this.model_.
-    this.compilation_ = await this.model_.createCompilation();
-
-    // Set the preference for the compilation, so that the runtime and drivers
-    // can make better decisions.
-    // Here we prefer to get the answer quickly, so we choose
-    // PREFER_FAST_SINGLE_ANSWER.
-    this.compilation_.setPreference(selectedPrefer);
-    // Finish the compilation.
-    return await this.compilation_.finish();
+  async compile(options) {
+    this.compilation_ = await this.model_.createCompilation(options);
   }
 
   async compute(inputValue1, inputValue2) {
-    let execution = await this.compilation_.createExecution();
-    let inputTensor1 = new Float32Array(this.tensorSize_);
-    inputTensor1.fill(inputValue1);
-    let inputTensor2 = new Float32Array(this.tensorSize_);
-    inputTensor2.fill(inputValue2);
+    // Create an Execution object for the compiled model.
+    const execution = await this.compilation_.createExecution();
 
-    // Tell the execution to associate inputTensor1 to the first of the two model inputs.
-    // Note that the index of the modelInput list {tensor1, tensor3}
-    execution.setInput(0, inputTensor1);
-    execution.setInput(1, inputTensor2);
+    const inputBuffer1 = new Float32Array(this.tensorSize_);
+    inputBuffer1.fill(inputValue1);
+    const inputBuffer2 = new Float32Array(this.tensorSize_);
+    inputBuffer2.fill(inputValue2);
 
-    let outputTensor = new Float32Array(this.tensorSize_);
-    execution.setOutput(0, outputTensor);
+    // Associate the input buffers to model's inputs.
+    execution.setInput('input1', inputBuffer1);
+    execution.setInput('input2', inputBuffer2);
 
-    let error = await execution.startCompute();
-    if (error) {
-      return error;
-    }
+    // Associate the output buffer to model's output.
+    const outputTensor = new Float32Array(this.tensorSize_);
+    execution.setOutput('output', outputTensor);
 
+    await execution.startCompute();
+
+    this.validate(inputValue1, inputValue2, outputTensor);
+    return outputTensor[0];
+  }
+
+  validate(inputValue1, inputValue2, outputTensor) {
+    const FLOAT_EPISILON = 1e-6;
     const goldenRef = (inputValue1 + 0.5) * (inputValue2 + 0.5);
     for (let i = 0; i < outputTensor.length; ++i) {
       let delta = Math.abs(outputTensor[i] - goldenRef);
@@ -122,7 +86,5 @@ class SimpleModel {
         console.error(`Output computation error: output(${outputTensor[i]}), delta(${delta}) @ idx(${i})`)
       }
     }
-
-    return outputTensor[0];
   }
 }

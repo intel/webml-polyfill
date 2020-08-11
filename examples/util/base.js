@@ -32,6 +32,21 @@ const getOS = () => {
 
 const currentOS = getOS();
 
+const backCameraWorkaround = () => {
+  // {facingMode: 'environment'} not working on some devices, likes Samsung Galaxy Note10+ (SM-N9760) phone
+  const blockDeviceModelList = ['SM-N9760'];
+  const userAgent = window.navigator.userAgent;
+  for (const model of blockDeviceModelList) {
+    if (userAgent.indexOf(model) !== -1) {
+      return true;
+    }
+  }
+
+  return false;
+};
+
+const useBackCameraWorkaround = backCameraWorkaround();
+
 const getNativeAPI = (preferString) => {
   // if you are going to modify the backend name, please change the
   // `backendEnums` in the `getDefaultSupportedOps` below
@@ -61,7 +76,7 @@ const getNativeAPI = (preferString) => {
 const getSupportedOps = (backend, prefer) => {
   if (prefer === 'none' && backend !== 'WebML') {
     // if `prefer` is none, all ops should only run in polyfill
-    return new Set();
+    return [];
   }
 
   // backend enums are defined in the `getNativeAPI` above
@@ -84,12 +99,12 @@ const getSupportedOps = (backend, prefer) => {
   };
 
   const nn = navigator.ml.getNeuralNetworkContext();
-  const supportedOps = new Set();
+  const supportedOps = [];
   const backendId = backendEnums[getNativeAPI(prefer)];
 
   for (const opName in supportedTable) {
     if (supportedTable[opName][backendId]) {
-      supportedOps.add(nn[opName]);
+      supportedOps.push(nn[opName]);
     }
   }
 

@@ -127,36 +127,6 @@ class FaceRecognitionExample extends BaseCameraExample {
   };
 
   /** @override */
-  _freeMemoryResources = (modelId) => {
-    if (modelId !== 'undefined') {
-      let flag = false;
-      let fdModelList = this._inferenceModels.faceDetection;
-      for (let model of fdModelList) {
-        if (modelId === model.modelId) {
-          flag = true;
-          break;
-        }
-      }
-      if (flag) {
-        if (this._runner) {
-          this._runner.deleteAll();
-        }
-      } else {
-        if (this._coRunner) {
-          this._coRunner.deleteAll();
-        }
-      }
-    } else {
-      if (this._runner) {
-        this._runner.deleteAll();
-      }
-      if (this._coRunner) {
-        this._coRunner.deleteAll();
-      }
-    }
-  };
-
-  /** @override */
   _getRunner = () => {
     if (this._runner == null) {
       this._runner = new FaceDetectorRunner();
@@ -170,7 +140,7 @@ class FaceRecognitionExample extends BaseCameraExample {
   };
 
   /** @override */
-  _loadModel = async () => {
+  _doInitialRunner = () => {
     let currentFDModelId = null;
     let currentFRModelId = null;
     let fdModelList = this._inferenceModels.faceDetection;
@@ -202,12 +172,26 @@ class FaceRecognitionExample extends BaseCameraExample {
     }
 
     const modelInfo = getModelById(fdModelList, currentFDModelId);
-    this._setModelInfo(modelInfo);
-    await this._runner.loadModel(modelInfo);
+    if (modelInfo != null) {
+      this._setModelInfo(modelInfo);
+      this._runner.doInitialization(modelInfo);
+    } else {
+      throw new Error('Unrecorgnized model, please check your typed url.');
+    }
 
     const coModelInfo = getModelById(frModelList, currentFRModelId);
-    this._setCoModelInfo(coModelInfo);
-    await this._coRunner.loadModel(coModelInfo);
+    if (coModelInfo != null) {
+      this._setCoModelInfo(coModelInfo);
+      this._coRunner.doInitialization(coModelInfo);
+    } else {
+      throw new Error('Unrecorgnized model, please check your typed url.');
+    }
+  };
+
+  /** @override */
+  _loadModel = async () => {
+    await this._runner.loadModel(this._currentModelInfo);
+    await this._coRunner.loadModel(this._currentCoModelInfo);
   };
 
   /** @override */

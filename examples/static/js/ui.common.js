@@ -562,8 +562,8 @@ const showHybridComponent = (supportedOps, requiredOps, backend, prefer, multi =
     }
   };
 
-  let intersection = new Set([...supportedOps].filter(x => requiredOps.has(x)));
-  console.log('NN supported: ' + [...supportedOps]);
+  let intersection = new Set(supportedOps.filter(x => requiredOps.has(x)));
+  console.log('NN supported: ' + supportedOps);
   console.log('Model required: ' + [...requiredOps]);
   console.log('Ops offload: ' + [...intersection]);
   hybridRow(intersection, backend, prefer);

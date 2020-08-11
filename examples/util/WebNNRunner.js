@@ -10,7 +10,7 @@ class WebNNRunner extends BaseRunner {
     this._modelRequiredOps = null;
     this._deQuantizeParams = null;
     this._bEagerMode = false;
-    this._supportedOps = new Set();
+    this._supportedOps = [];
   }
 
   /**
@@ -33,7 +33,7 @@ class WebNNRunner extends BaseRunner {
    * This method is to set '_bEagerMode'.
    * @param {boolean} flag
    */
-  setEagerMode = (flag) => {
+  _setEagerMode = (flag) => {
     this._bEagerMode = flag;
   };
 
@@ -41,7 +41,7 @@ class WebNNRunner extends BaseRunner {
    * This method is to set '_supportedOps'.
    * @param {!Array<number>} ops
    */
-  setSupportedOps = (ops) => {
+  _setSupportedOps = (ops) => {
     this._supportedOps = ops;
   };
 
@@ -174,7 +174,7 @@ class WebNNRunner extends BaseRunner {
   };
 
   /** @override */
-  _doInitialization = (modelInfo) => {
+  doInitialization = (modelInfo) => {
     this._setLoadedFlag(false);
     this._setInitializedFlag(false);
     this._setBackend(null);
@@ -189,7 +189,11 @@ class WebNNRunner extends BaseRunner {
 
   /** @override */
   _checkInitializedCompilation = (options) => {
-    return this._bInitialized && this._currentBackend === options.backend && this._currentPrefer === options.prefer;
+    return this._bInitialized
+           && this._currentBackend === options.backend
+           && this._currentPrefer === options.prefer
+           && this._bEagerMode === options._bEagerMode
+           && this._supportedOps.toString() === options.supportedOps.toString();
   }
 
   /** @override */
@@ -197,9 +201,13 @@ class WebNNRunner extends BaseRunner {
     let model = null;
     const backend = options.backend;
     const prefer = options.prefer;
-
+    const eagerMode = options.eagerMode || false;
+    const supportedOps = options.supportedOps || [];
+    this._freeAllocatedMemory();
     this._setBackend(backend);
     this._setPrefer(prefer);
+    this._setEagerMode(eagerMode);
+    this._setSupportedOps(supportedOps);
 
     const postOptions = this._currentModelInfo.postOptions || {};
     const configs = {
@@ -231,7 +239,7 @@ class WebNNRunner extends BaseRunner {
     }
 
     this._setModel(model);
-    this._model.setSupportedOps(this._supportedOps);
+    this._model.setSupportedOps(new Set(this._supportedOps));
     this._model.setEagerMode(this._bEagerMode);
     await this._model.createCompiledModel();
 
@@ -547,7 +555,7 @@ class WebNNRunner extends BaseRunner {
   /**
    * This method is to free allocated memory resources for model compilation process by polyfill backend.
    */
-  deleteAll = () => {
+  _freeAllocatedMemory = () => {
     if (this._currentBackend != 'WebML') {
       // free allocated memory on compilation process by polyfill WASM / WebGL backend.
       if (this._model && this._model._compilation && this._model._compilation._preparedModel) {

@@ -8,7 +8,7 @@
       body {
         font-size: 13px;
       }
-      #showCanvas {
+      #showcanvas {
         width: 60%;
       }
       .top-margin {
@@ -31,46 +31,50 @@
       input[type=checkbox] {
         vertical-align: middle;
       }
-      .prefer-show {
-        display: block;
-      }
-      .prefer-hidden {
-        display: none;
-      }
     </style>
   </head>
   <body>
     <div class="container" id="container">
       <div class="row">
         <div class="col-12">
-          <h1>WebNN Workload</h1>
+          <h1>Web AI Workload</h1>
+          <div>
+            <h4>Framework</h4>
+            <select id="frameworkselect"></select>
+          </div>
           <div>
             <h4>Category</h4>
-            <select id="categoryName">
-              <option class="imageClassificationModels" id="image_classification" selected>Image Classification</option>
-              <option class="objectDetectionModels" id="object_detection">Object Detection</option>
-              <option class="humanPoseEstimationModels" id="skeleton_detection">Skeleton Detection</option>
-              <option class="semanticSegmentationModels" id="semantic_segmentation"> Semantic Segmentation</option>
-              <option class="superResolutionModels" id="super_resolution">Super Resolution</option>
-              <option class="faceDetectionModels" id="facial_landmark_detection">Facial Landmark Detection</option>
-              <option class="faceDetectionModels" id="emotion_analysis">Emotion Analysis</option>
-            </select>
+            <select id="categoryselect"></select>
           </div>
           <div>
             <h4>Model</h4>
-            <select id="modelName"></select>
+            <label id='modellabel1'></label>
+            <select id="modelselect1"></select><br>
+            <label id='modellabel2'></label>
+            <select id="modelselect2"></select>
           </div>
           <div>
             <h4>Backend</h4>
-            <select id="configurations"></select>
+            <select id="webnnbackend">
+              <option value="WASM" selected>WASM</option>
+              <option value="WebGL">WebGL</option>
+              <option value="WebNN">WebNN</option>
+            </select>
+            <select id="opencvjsbackend">
+              <option value="WASM" selected>WASM</option>
+              <option value="SIMD">SIMD</option>
+              <option value="Threads">Threads</option>
+              <option value="Threads+SIMD">Threads+SIMD</option>
+            </select>
           </div>
-          <div id="preferDiv" class="prefer-show">
+          <div  id="webnnprefer">
             <h4>Preference</h4>
-            <select id="preferSelect">
+            <select id="preferselect">
               <option value="sustained">SUSTAINED_SPEED</option>
               <option value="fast">FAST_SINGLE_ANSWER</option>
               <option value="low">LOW_POWER</option>
-              <option value="none" selected>None</option>
+              <option value="ultralow">UTRAL_LOW_POWER</option>
+              <option value="none">NONE</option>
             </select>
           </div>
           <div>
@@ -78,63 +82,70 @@
             1(warming up) + <input type="number" id="iterations" min="1" size="4" value="200"/>
           </div>
           <div class="row top-margin">
-            <div class="col-4" id="supported-ops-select" style="visibility: hidden">
-              <label><input id="eagerMode" type="checkbox"> Eager Mode</label>
+            <div class="col-4" id="supportedopsselect">
+              <label><input id="eagermode" type="checkbox"> Eager Mode</label>
               <br><br>
-              <button id="selectAllOps">Select All</button>
-              <button id="uncheckAllOps">Uncheck All</button>
+              <button id="selectallops">Select All</button>
+              <button id="uncheckallops">Uncheck All</button>
               <br><br>
-              <label><input type="checkbox" name="supportedOp" value="0"> ADD</label>
+              <label><input type="checkbox" name="supportedop" value="0"> ADD</label>
               <br>
-              <label><input type="checkbox" name="supportedOp" value="10003"> ATROUS_CONV_2D</label>
+              <label><input type="checkbox" name="supportedop" value="10003"> ATROUS_CONV_2D</label>
               <br>
-              <label><input type="checkbox" name="supportedOp" value="10004"> ATROUS_DEPTHWISE_CONV_2D</label>
+              <label><input type="checkbox" name="supportedop" value="10004"> ATROUS_DEPTHWISE_CONV_2D</label>
               <br>
-              <label><input type="checkbox" name="supportedOp" value="1"> AVERAGE_POOL_2D</label>
+              <label><input type="checkbox" name="supportedop" value="1"> AVERAGE_POOL_2D</label>
               <br>
-              <label><input type="checkbox" name="supportedOp" value="2"> CONCATENATION</label>
+              <label><input type="checkbox" name="supportedop" value="2"> CONCATENATION</label>
               <br>
-              <label><input type="checkbox" name="supportedOp" value="3"> CONV_2D</label>
+              <label><input type="checkbox" name="supportedop" value="3"> CONV_2D</label>
               <br>
-              <label><input type="checkbox" name="supportedOp" value="4"> DEPTHWISE_CONV_2D</label>
+              <label><input type="checkbox" name="supportedop" value="4"> DEPTHWISE_CONV_2D</label>
               <br>
-              <label><input type="checkbox" name="supportedOp" value="9"> FULLY_CONNECTED</label>
+              <label><input type="checkbox" name="supportedop" value="9"> FULLY_CONNECTED</label>
               <br>
-              <label><input type="checkbox" name="supportedOp" value="17"> MAX_POOL_2D</label>
+              <label><input type="checkbox" name="supportedop" value="17"> MAX_POOL_2D</label>
               <br>
-              <label><input type="checkbox" name="supportedOp" value="18"> MUL</label>
+              <label><input type="checkbox" name="supportedop" value="18"> MUL</label>
               <br>
-              <label><input type="checkbox" name="supportedOp" value="22"> RESHAPE</label>
+              <label><input type="checkbox" name="supportedop" value="22"> RESHAPE</label>
               <br>
-              <label><input type="checkbox" name="supportedOp" value="23"> RESIZE_BILINEAR</label>
+              <label><input type="checkbox" name="supportedop" value="23"> RESIZE_BILINEAR</label>
               <br>
-              <label><input type="checkbox" name="supportedOp" value="25"> SOFTMAX</label>
+              <label><input type="checkbox" name="supportedop" value="25"> SOFTMAX</label>
               <br>
-              <label><input type="checkbox" name="supportedOp" value="39"> ARGMAX</label>
+              <label><input type="checkbox" name="supportedop" value="39"> ARGMAX</label>
             </div>
             <div class="col-8" align="center">
-              <canvas id="showCanvas"></canvas>
+              <canvas id="showcanvas"></canvas>
               <img id="image" crossorigin="anonymous" class="img-fluid" alt="Responsive image" src="../examples/image_classification/img/test.jpg" hidden>
               <div class='row labels-wrapper' id='labelitem' align="left" style="position: relative; left: 20%"></div>
               <div class="col" style="padding-top: 10px">
-                <label id="pickButton" class="btn btn-primary">Pick Image
+                <label id="pickbutton" class="btn btn-primary">Pick Image
                   <input type="file" id="input" accept="image/*" hidden>
                 </label>
               </div>
             </div>
           </div>
-          <button type="button" id="runButton" class="btn btn-primary">Run</button>
+          <button type="button" id="runbutton" class="btn btn-primary">Run</button>
             (It will take several minutes)
           <div>
             <pre id="log"></pre>
           </div>
+
         </div>
       </div>
     </div>
     <script src="../dist/webml-polyfill.js"></script>
     <script src='../examples/util/modelZoo.js'></script>
     <script src="../examples/util/base.js"></script>
-    <script src="../examples/util/faceDetector.js"></script>
+    <script src="../examples/util/modelZoo.js"></script>
+    <script src="../examples/util/BaseRunner.js"></script>
+    <script src="../examples/util/WebNNRunner.js"></script>
+    <script src="../examples/util/OpenCVRunner.js"></script>
+
+    <script src="../examples/util/FaceDetectorRunner.js"></script>
+
     <script src="../examples/static/lib/protobuf.min.js"></script>
     <script src="../examples/util/tflite/flatbuffers/js/flatbuffers.js"></script>
     <script src="../examples/util/tflite/schema/schema_generated.js"></script>
@@ -146,9 +157,12 @@
     <script src='../examples/util/openvino/openvino.js'></script>
     <script src='../examples/util/openvino/OpenVINOModelUtils.js'></script>
     <script src='../examples/util/openvino/OpenVINOModelImporter.js'></script>
+    <script src="../examples/util/caffe2/Caffe2.js"></script>
+    <script src="../examples/util/caffe2/Caffe2ModelImporter.js"></script>
+    <script src="../examples/util/caffe2/Caffe2ModelUtils.js"></script>
     <script src="../examples/skeleton_detection/src/decodePose.js"></script>
     <script src="../examples/skeleton_detection/src/helperFunc.js"></script>
-    <script src="../examples/skeleton_detection/utils.js"></script>
+    <script src="../examples/skeleton_detection/SkeletonDetectionRunner.js"></script>
     <script src="../examples/skeleton_detection/src/PoseNet.js"></script>
     <script src="../examples/skeleton_detection/src/DrawOutputs.js"></script>
     <script src="../examples/util/decoders/SsdDecoder.js"></script>
@@ -158,22 +172,31 @@
     <script src='../examples/semantic_segmentation/src/GuidedFilter.js'></script>
     <script src="../examples/semantic_segmentation/src/DrawOutputs.js"></script>
     <script src='../examples/static/lib/jquery/jquery.min.js'></script>
-    <script src="./resources/ui.js"></script>
-    <script src="./resources/utils.js"></script>
-    <script src="./resources/utils_ic.js"></script>
-    <script src="./resources/utils_od.js"></script>
-    <script src="./resources/utils_sd.js"></script>
-    <script src="./resources/utils_ss.js"></script>
-    <script src="./resources/utils_fld.js"></script>
-    <script src="./resources/utils_sr.js"></script>
-    <script src="./resources/utils_ea.js"></script>
+
+    <script src="../examples/image_classification/ImageClassificationOpenCVRunner.js"></script>
+    <script src="../examples/object_detection/ObjectDetectionRunner.js"></script>
+    <script src="../examples/semantic_segmentation/SemanticSegmentationRunner.js"></script>
+
+    <script src="./resources/Logger.js"></script>
+    <script src="./resources/BaseExecutor.js"></script>
+    <script src="./resources/WebNNExecutor.js"></script>
+    <script src="./resources/OpenCVExecutor.js"></script>
+    <script src="./resources/ImageClassificationWebNNExecutor.js"></script>
+    <script src="./resources/ImageClassificationOpenCVExecutor.js"></script>
+    <script src="./resources/ObjectDetectionWebNNExecutor.js"></script>
+    <script src="./resources/SemanticSegmentationWebNNExecutor.js"></script>
+    <script src="./resources/SkeletonDetectionWebNNExecutor.js"></script>
+    <script src="./resources/SuperResolutionWebNNExecutor.js"></script>
+    <script src="./resources/EmotionAnalysisWebNNExecutor.js"></script>
+    <script src="./resources/FacialLandmarkDetectionWebNNExecutor.js"></script>
+    <script src="./resources/Workload.js"></script>
     <script src="./resources/main.js"></script>
     <script async src="https://www.googletagmanager.com/gtag/js?id=UA-147662084-1"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
-  
+
       gtag('config', 'UA-147662084-1');
     </script>
   </body>
