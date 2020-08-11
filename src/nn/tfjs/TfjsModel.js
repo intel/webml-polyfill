@@ -1,5 +1,5 @@
 import * as tf from '@tensorflow/tfjs-core';
-import * as tfjs_webgpu from '@tensorflow/tfjs-backend-webgpu';
+import '@tensorflow/tfjs-backend-webgpu';
 import { FuseCode, OperandCode, OperationCode, PaddingCode, PreferenceCode } from '../Enums';
 import Graph from '../GraphUtils';
 import * as utils from '../utils';
@@ -30,7 +30,8 @@ export default class TfjsModel {
 
   /** Called in nn/Compilation.js */
   async prepareModel() {
-    if(this._model._backend === 'WASM'){
+    switch(this._model._backend) {
+    case('WASM'): {
       if(tf.getBackend() != 'wasm'){
         function _fixWasmPath(wasmPath) {
           // Assume the wasm file is located in the same folder as webml-polyfill.js
@@ -45,12 +46,23 @@ export default class TfjsModel {
         }
         setWasmPath(_fixWasmPath(wasmPath));
         await tf.setBackend('wasm');
-      };
-    } else {
-      if(tf.getBackend() != "webgl"){
+      }; } break;
+    case ('WebGPU'): {
+      while(tf.getBackend() != 'webgpu') {
+        await tf.setBackend('webgpu');
+        await tf.ready();
+      }
+    } break;
+    case('WebGL'): {
+      while(tf.getBackend() != 'webgl') {
         await tf.setBackend('webgl');
-      };
-    };
+        await tf.ready();
+      }
+    } break;
+    default: {
+      throw new Error(`Backend ${this._model._backend} is not supported`);
+    }
+  }
     
     const model = this._model;
     const operations = model._operations;
