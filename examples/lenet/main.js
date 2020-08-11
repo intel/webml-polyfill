@@ -1,5 +1,6 @@
 const predictButton = document.getElementById('predict');
 const nextButton = document.getElementById('next');
+const resultDiv = document.getElementById('result');
 const visualContext = document.getElementById('visual_canvas').getContext('2d');
 const digitCanvas = document.createElement('canvas');
 const height = 28;
@@ -38,13 +39,41 @@ async function main() {
       const result = await lenet.predict(digit);
       console.log(`execution elapsed time: ${(performance.now() - start).toFixed(2)} ms`);
       console.log(`execution result: ${result}`);
+      let resultContent = '';
+      const classes = topK(result);
+      for (c of classes) {
+        resultContent += `${c.label}: ${c.prob}\%<br>`
+      }
+      resultDiv.innerHTML = resultContent;
     } catch (error) {
       addWarning(error.message);
     }
   });
   nextButton.addEventListener('click', () => {
     generateRandomDigit();
+    resultDiv.innerHTML = '';
   });
+}
+
+function topK(probs, k = 3) {
+  const sorted = probs.map((prob, index) => [prob, index]).sort((a, b) => {
+    if (a[0] === b[0]) {
+      return 0;
+    }
+    return a[0] < b[0] ? -1 : 1;
+  });
+  sorted.reverse();
+
+  const classes = [];
+  for (let i = 0; i < k; ++i) {
+    let c = {
+      label: sorted[i][1],
+      prob: (sorted[i][0] * 100).toFixed(2)
+    }
+    classes.push(c);
+  }
+
+  return classes;
 }
 
 function addWarning(msg) {
