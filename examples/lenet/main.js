@@ -1,6 +1,5 @@
 const predictButton = document.getElementById('predict');
 const nextButton = document.getElementById('next');
-const resultDiv = document.getElementById('result');
 const visualContext = document.getElementById('visual_canvas').getContext('2d');
 const digitCanvas = document.createElement('canvas');
 const height = 28;
@@ -41,17 +40,25 @@ async function main() {
       console.log(`execution result: ${result}`);
       let resultContent = '';
       const classes = topK(result);
-      for (c of classes) {
-        resultContent += `${c.label}: ${c.prob}\%<br>`
-      }
-      resultDiv.innerHTML = resultContent;
+      classes.forEach((c, i) => {
+        console.log(`\tlabel: ${c.label}, probability: ${c.prob}%`);
+        let labelElement = document.getElementById(`label${i}`);
+        let probElement = document.getElementById(`prob${i}`);
+        labelElement.innerHTML = `${c.label}`;
+        probElement.innerHTML = `${c.prob}%`;
+      });
     } catch (error) {
       addWarning(error.message);
     }
   });
   nextButton.addEventListener('click', () => {
     generateRandomDigit();
-    resultDiv.innerHTML = '';
+    for (let i = 0; i < 3; ++i) {
+      let labelElement = document.getElementById(`label${i}`);
+      let probElement = document.getElementById(`prob${i}`);
+      labelElement.innerHTML = '';
+      probElement.innerHTML = '';
+    }
   });
 }
 
