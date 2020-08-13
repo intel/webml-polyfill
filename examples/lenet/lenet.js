@@ -102,9 +102,7 @@ class Lenet {
     this.compilation_ = await this.model_.createCompilation(options);
   }
 
-  async predict(digit) {
-    const size = height * width;
-    const inputBuffer = Float32Array.from(digit.map(x => Math.floor(x * 255)));
+  async predict(inputBuffer) {
     const outputBuffer = new Float32Array(10);
     const execution = await this.compilation_.createExecution();
     execution.setInput('input', inputBuffer);

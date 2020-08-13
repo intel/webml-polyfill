@@ -1,23 +1,44 @@
 const predictButton = document.getElementById('predict');
 const nextButton = document.getElementById('next');
-const visualContext = document.getElementById('visual_canvas').getContext('2d');
+const clearButton = document.getElementById('clear');
+const visualCanvas = document.getElementById('visual_canvas');
+const visualContext = visualCanvas.getContext('2d');
 const digitCanvas = document.createElement('canvas');
-const height = 28;
-const width = 28;
-digitCanvas.setAttribute('height', height);
-digitCanvas.setAttribute('width', width);
+digitCanvas.setAttribute('height', 28);
+digitCanvas.setAttribute('width', 28);
+digitCanvas.style.backgroundColor = "black";
 const digitContext = digitCanvas.getContext('2d');
-let digit;
 
-function generateRandomDigit() {
+function drawNextDigitFromMnist() {
   const n = Math.floor(Math.random() * 10);
-  digit = mnist[n].get();
+  const digit = mnist[n].get();
   mnist.draw(digit, digitContext);
-  visualContext.drawImage(digitCanvas, 0, 0, 280, 280);
+  visualContext.drawImage(digitCanvas, 0, 0, visualCanvas.width, visualCanvas.height);
+}
+
+function getInputFromCanvas() {
+  digitContext.clearRect(0, 0, digitCanvas.width, digitCanvas.height);
+  digitContext.drawImage(visualCanvas, 0, 0, digitCanvas.width, digitCanvas.height);
+  const imageData = digitContext.getImageData(0, 0, digitCanvas.width, digitCanvas.height);
+  const input = new Float32Array(digitCanvas.width * digitCanvas.height);
+  for (var i = 0; i < input.length; i++) {
+    input[i] = imageData.data[i * 4];
+  }
+  return input;
+}
+
+function clearResult() {
+  for (let i = 0; i < 3; ++i) {
+    let labelElement = document.getElementById(`label${i}`);
+    let probElement = document.getElementById(`prob${i}`);
+    labelElement.innerHTML = '';
+    probElement.innerHTML = '';
+  }
 }
 
 async function main() {
-  generateRandomDigit();
+  drawNextDigitFromMnist();
+  let pen = new Pen(visualCanvas);
   const lenet = new Lenet('lenet.bin');
   try {
     let start = performance.now();
@@ -30,15 +51,16 @@ async function main() {
 
     predictButton.removeAttribute('disabled');
   } catch (error) {
+    console.log(error);
     addWarning(error.message);
   }
   predictButton.addEventListener('click', async function (e) {
     try {
+      const input = getInputFromCanvas();
       let start = performance.now();
-      const result = await lenet.predict(digit);
+      const result = await lenet.predict(input);
       console.log(`execution elapsed time: ${(performance.now() - start).toFixed(2)} ms`);
       console.log(`execution result: ${result}`);
-      let resultContent = '';
       const classes = topK(result);
       classes.forEach((c, i) => {
         console.log(`\tlabel: ${c.label}, probability: ${c.prob}%`);
@@ -48,18 +70,19 @@ async function main() {
         probElement.innerHTML = `${c.prob}%`;
       });
     } catch (error) {
+      console.log(error);
       addWarning(error.message);
     }
   });
   nextButton.addEventListener('click', () => {
-    generateRandomDigit();
-    for (let i = 0; i < 3; ++i) {
-      let labelElement = document.getElementById(`label${i}`);
-      let probElement = document.getElementById(`prob${i}`);
-      labelElement.innerHTML = '';
-      probElement.innerHTML = '';
-    }
+    drawNextDigitFromMnist();
+    clearResult();
   });
+
+  clearButton.addEventListener('click', () => {
+    pen.clear();
+    clearResult();
+  })
 }
 
 function topK(probs, k = 3) {
@@ -95,3 +118,4 @@ function addWarning(msg) {
 function removeWarning() {
   $('.alert').alert('close')
 }
+
