@@ -98,9 +98,9 @@ class Workload {
   };
 
   _reset = () => {
-    // for clearing labels of Semantic Segmentation example
-    $('.labels-wrapper').empty();
-    // reset input image
+    // for clearing inference labels of Image Classification example or Semantic Segmentation example
+    $('.labels-wrapper').hide();
+
     this._outCtx.clearRect(0, 0, this._showCanvasElement.width, this._showCanvasElement.height);
     this._outCtx.drawImage(this._imageElement, 0, 0);
   };
@@ -216,7 +216,7 @@ class Workload {
 
   _inputChangeBinding = () => {
     this._inputElement.addEventListener('change', (e) => {
-      $('.labels-wrapper').empty();
+      this._reset();
       let files = e.target.files;
       if (files.length > 0) {
         this._imageElement.src = URL.createObjectURL(files[0]);
@@ -393,7 +393,7 @@ class Workload {
       this._setFramework(framework);
       this._setCustomComponents();
       this._setImageSrc(this._currentCategory);
-
+      this._reset();
       this._getExecutor();
     }, false);
 
@@ -406,7 +406,7 @@ class Workload {
       this._setCoModelId(null);
       this._setModelComponent();
       this._setImageSrc(category);
-
+      this._reset();
       this._getExecutor();
     }, false);
 
@@ -465,6 +465,8 @@ class Workload {
         x.checked = false;
       });
     }, false);
+
+    $('.labels-wrapper').hide();
 
     this._runButton.addEventListener('click', () => {
       this._reset();
