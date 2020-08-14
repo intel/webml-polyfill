@@ -1,7 +1,8 @@
 class Pen {
   constructor(cavans) {
     this.canvas = cavans;
-    this.canvas.style.backgroundColor = "black";
+    this.canvas.style.backgroundColor = 'black';
+    this.canvas.style.cursor = 'crosshair';
     this.context = cavans.getContext('2d');
     this.down = false;
     this.start = {};
@@ -30,8 +31,8 @@ class Pen {
   }
 
   draw(start, end) {
-    this.context.strokeStyle = "white";
-	  this.context.lineJoin = "round";
+    this.context.strokeStyle = 'white';
+	  this.context.lineJoin = 'round';
 	  this.context.lineWidth = 20;
 
 		this.context.beginPath();

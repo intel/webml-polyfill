@@ -6,7 +6,7 @@ const visualContext = visualCanvas.getContext('2d');
 const digitCanvas = document.createElement('canvas');
 digitCanvas.setAttribute('height', 28);
 digitCanvas.setAttribute('width', 28);
-digitCanvas.style.backgroundColor = "black";
+digitCanvas.style.backgroundColor = 'black';
 const digitContext = digitCanvas.getContext('2d');
 
 function drawNextDigitFromMnist() {
