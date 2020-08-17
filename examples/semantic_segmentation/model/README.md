@@ -1,6 +1,6 @@
 # Prerequisites
 
-Download all DeepLab [tflite models](https://drive.google.com/open?id=1hwsB3jxLbNpGuhUY5KHBW8xtxg1fZSq8) and [OpenVINO models](https://drive.google.com/drive/folders/1NhAg8JKsppEllN65BUfxp4jr6TYiNdP1?usp=sharing ) to this directory. It should contain the following files:
+Download all DeepLab [tflite models](https://drive.google.com/open?id=1hwsB3jxLbNpGuhUY5KHBW8xtxg1fZSq8), [OpenVINO models](https://drive.google.com/drive/folders/1NhAg8JKsppEllN65BUfxp4jr6TYiNdP1?usp=sharing ) and [tensorflow models](https://drive.google.com/drive/folders/14YoOLQs7-xArjWD6TSi6i2X62N3OiXQd)to this directory. It should contain the following files:
 
 ```txt
 deeplab_mobilenetv2_513_dilated.tflite
@@ -19,6 +19,10 @@ deeplab_mobilenetv2_257_dilated.xml
 deeplab_mobilenetv2_257_dilated.bin
 deeplab_mobilenetv2_224_dilated.xml
 deeplab_mobilenetv2_224_dilated.bin
+opt_deeplabv3_mnv2_513.pb
+opt_deeplabv3_mnv2_321.pb
+opt_deeplabv3_mnv2_257.pb
+opt_deeplabv3_mnv2_224.pb
 ```
 
 They are all converted from this [frozen graph](http://download.tensorflow.org/models/deeplabv3_mnv2_pascal_trainval_2018_01_29.tar.gz). You can also follow the steps below to convert your own model.

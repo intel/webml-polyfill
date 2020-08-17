@@ -108,6 +108,7 @@ $(document).ready(() => {
 
 // Below Common code for concret example's xxx/index.hml, likes image_classification/index.html etc.
 const formatToLogo = {
+  'tensorflow': '../static/img/l-tflite.png',
   'tflite': '../static/img/l-tflite.png',
   'onnx': '../static/img/l-onnx.png',
   'openvino': '../static/img/l-openvino.png',
@@ -120,6 +121,7 @@ const trademarks = (allFormats) => {
   for (let format of allFormats) {
     let trademark = '';
     switch (format.toLowerCase()) {
+      case 'tensorflow':
       case 'tflite':
         trademark = 'TensorFlow, the TensorFlow logo and any related marks are trademarks of Google Inc. ';
         break;
