@@ -13,7 +13,13 @@ class SuperResolutionExample extends BaseCameraExample {
     };
 
     const drawOutput = (outputTensor,srcElement, height, preOptions) => {
-      const width = height;
+      let width;
+      if(height == 1080) {
+        width = 1920;
+      }
+      else {
+        width = height;
+      }
       const mean = preOptions.mean;
       const offset = preOptions.std;
       const bytes = new Uint8ClampedArray(width * height * 4);
@@ -21,9 +27,18 @@ class SuperResolutionExample extends BaseCameraExample {
 
       for (let i = 0; i < height * width; ++i) {
         let j = i * 4;
-        let r = outputTensor[i * 3] * mean[0] + offset[0];
-        let g = outputTensor[i * 3 + 1] * mean[1] + offset[1];
-        let b = outputTensor[i * 3 + 2] * mean[2] + offset[2];
+        let r, g, b;
+        if(height == 1080) {
+          r = outputTensor[i * 3] * 255;
+          g = outputTensor[i * 3 + 1]  * 255;
+          b = outputTensor[i * 3 + 2]  * 255;
+        }
+        else {
+          r = outputTensor[i * 3] * mean[0] + offset[0];
+          g = outputTensor[i * 3 + 1] * mean[1] + offset[1];
+          b = outputTensor[i * 3 + 2] * mean[2] + offset[2];
+        }
+
         bytes[j + 0] = Math.round(r);
         bytes[j + 1] = Math.round(g);
         bytes[j + 2] = Math.round(b);

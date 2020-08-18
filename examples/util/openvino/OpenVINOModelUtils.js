@@ -200,6 +200,26 @@ class OpenVINOModel {
     const ctor = this._getConstructorFromType(tensor.type.dataType);
     const length = size / ctor.BYTES_PER_ELEMENT;
     const data = new ctor(this._weights, offset, length);
+    if (dimHints === 6) {
+      if (OpenVINOUtils.product(dimHints) !== length) {
+        throw new Error(`Product of ${dimHints} doesn't match the length ${length}`);
+      }
+      // 6d tensor permute
+      // NC[3]HW => NHWC[3]
+      const nhwc3Data = new ctor(data.length);
+      const [N, H, W, C1, C2, C3] = dimHints;
+      const C = C1 * C2 * C3;
+      for (let n = 0; n < N; ++n) {
+        for (let c = 0; c < C; ++c) {
+          for (let h = 0; h < H; ++h) {
+            for (let w = 0; w < W; ++w) {
+              nhwc3Data[n*H*W*C + h*W*C + w*C + c] = data[n*C*H*W + c*H*W + h*W + w];
+            }
+          }
+        }
+      }
+      return nhwc3Data;
+    }
     if (typeof dimHints === 'undefined' || dimHints.length !== 4) {
       return data;
     }
@@ -233,11 +253,21 @@ class OpenVINOModel {
 
   getTensorShape(arg) {
     const dims = this._getTensorType(arg).shape.dimensions;
-    if (dims.length !== 4) {
+    if (dims.length !== 4 && dims.length !== 6) {
       return dims;
     } else {
-      const [N, C, H, W] = dims;
-      return [N, H, W, C];
+      if(dims.length === 4) {
+        const [N, C, H, W] = dims;
+        return [N, H, W, C];
+      }
+      else { if(dims[5] === 2 || dims[5] === 3) { //used in permute ops 
+        const [N, C1, C2, C3, H, W] = dims;
+        return [N, C2, C3, H, W, C1];
+      } else {    //used in reshape ops
+        const [N, C1, C2, C3, H, W] = dims;
+        return [N, H, W, C1, C2, C3];
+      }
+      }
     }
   }
 

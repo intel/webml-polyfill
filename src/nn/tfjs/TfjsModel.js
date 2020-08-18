@@ -709,6 +709,11 @@ export default class TfjsModel {
         const output = operands[outputs[0]];
         output.assign(tf.sigmoid(input1));
       } break;
+      case OperationCode.RELU: {
+        const input1 = operands[inputs[0]];
+        const output = operands[outputs[0]];
+        output.assign(tf.relu(input1));
+      } break;
       default: {
         throw new Error(`Operation ${op} is not supported`);
       }
