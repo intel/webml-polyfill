@@ -119,7 +119,34 @@
             <div class="col-8" align="center">
               <canvas id="showcanvas"></canvas>
               <img id="image" crossorigin="anonymous" class="img-fluid" alt="Responsive image" src="../examples/image_classification/img/test.jpg" hidden>
-              <div class='row labels-wrapper' id='labelitem' align="left" style="position: relative; left: 20%"></div>
+              <div class='row labels-wrapper' id='labelitem' align="left" style="position: relative; left: 20%">
+                <table id="imageclassificationlabels" class="table-sm">
+                  <thead>
+                    <tr>
+                      <th scope="col">#</th>
+                      <th scope="col">Label</th>
+                      <th scope="col">Probability</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <th scope='row'>1</th>
+                      <td id='label0'></td>
+                      <td id='prob0'></td>
+                    </tr>
+                    <tr>
+                      <th scope='row'>2</th>
+                      <td id='label1'></td>
+                      <td id='prob1'></td>
+                    </tr>
+                    <tr>
+                      <th scope='row'>3</th>
+                      <td id='label2'></td>
+                      <td id='prob2'></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
               <div class="col" style="padding-top: 10px">
                 <label id="pickbutton" class="btn btn-primary">Pick Image
                   <input type="file" id="input" accept="image/*" hidden>

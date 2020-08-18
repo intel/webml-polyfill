@@ -11,6 +11,8 @@ class SemanticSegmentationWebNNExecutor extends WebNNExecutor {
 
   /** @override */
   _postProcess = (data) => {
+    $('.labels-wrapper').show();
+    $('#imageclassificationlabels').hide();
     const output =  this._runner.getOutput();
     const width = this._currentModelInfo.inputSize[1];
     const imWidth = this._currentInputElement.naturalWidth | this._currentInputElement.videoWidth;
