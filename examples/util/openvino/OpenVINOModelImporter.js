@@ -891,6 +891,63 @@ class OpenVINOModelImporter {
           outputs.push(outputId);
           console.log(`  output shape: [${outDims}]`);
         } break;
+        case 'FakeQuantize': {
+          const input = node.inputs[0];
+          const inputLow = node.inputs[1];
+          const inputHigh = node.inputs[2];
+          const outputLow = node.inputs[3];
+          const outputHigh = node.inputs[4];
+
+          const inputLowDims = inputLow.shape();
+          const inputHighDims = inputHigh.shape();
+          const outputLowDims = outputLow.shape();
+          const outputHighDims = outputHigh.shape();
+
+          const output = node.outputs[0];
+          const outDims = output.shape();
+          
+          const inputLowDimsTensor = inputLow.getInitializer(inputLowDims);
+          const inputHighDimsTensor = inputLow.getInitializer(inputHighDims);
+          const outputLowDimsTensor = outputLow.getInitializer(outputLowDims);
+          const outputHighDimsTensor = outputLow.getInitializer(outputHighDims);
+          
+          console.log(`  input shape: [${input.shape()}]`);
+          inputs.push(this._getTensorId(input));
+
+          inputs.push(this._addTensorFloat32(inputLowDimsTensor, inputLowDims));
+          inputs.push(this._addTensorFloat32(inputHighDimsTensor, inputHighDims));
+          inputs.push(this._addTensorFloat32(outputLowDimsTensor, outputLowDims));
+          inputs.push(this._addTensorFloat32(outputHighDimsTensor, outputHighDims));
+          
+          const levels = node.getInts('levels');
+          inputs.push(this._addScalarInt32(levels));
+
+          const outputType = {
+            type: this._getTypeCode(output.dataType()), dimensions: outDims
+          };
+          const outputId = this._addNamedOperand(output.graphId(), outputType);
+          outputs.push(outputId);
+          console.log(`  output shape: [${outDims}]`);
+
+          opCode = this._nn.FAKE_QUANTIZE;
+        } break;
+        case 'Convert': {
+          const input = node.inputs[0];
+          console.log(`  input shape: [${input.shape()}]`);
+
+          inputs.push(this._getTensorId(input));
+
+          const output = node.outputs[0];
+          const outDims = output.shape();
+          const outputType = {
+            type: this._getTypeCode(output.dataType()), dimensions: outDims
+          };
+          const outputId = this._addNamedOperand(output.graphId(), outputType);
+          outputs.push(outputId);
+          console.log(`  output shape: [${outDims}]`);
+
+          opCode = this._nn.CONVERT;
+        } break;
         default: {
           throw new Error(`${node.operator} is not supported.`);
         }

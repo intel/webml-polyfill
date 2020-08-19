@@ -753,6 +753,22 @@ const modelZoo = {
     intro: 'Equivalent to the model above (without dilated suffix) but only available on platforms that natively support atrous convolution.',
     paperUrl: 'https://arxiv.org/abs/1802.02611'
   }, {
+    modelName: 'Deeplabv3 513 quant (OpenVINO)',
+    framework: ['WebNN'],
+    format: 'OpenVINO',
+    modelId: 'deeplab_513_quant_openvino',
+    modelSize: '2.3MB',
+    modelFile: '../semantic_segmentation/model/deeplabv3_513_quant.bin',
+    labelsFile: '../semantic_segmentation/model/labels.txt',
+    inputSize: [1,513, 513, 3],
+    outputSize: [1,513, 513, 1],
+    preOptions: {
+      mean: [127.5, 127.5, 127.5],
+      std: [127.5, 127.5, 127.5],
+    },
+    intro: 'Equivalent to the model above (without dilated suffix) but only available on platforms that natively support atrous convolution.',
+    paperUrl: 'https://arxiv.org/abs/1802.02611'
+  }, {
     modelName: 'Deeplab 513 Atrous (OpenVINO)',
     framework: ['WebNN'],
     format: 'OpenVINO',
