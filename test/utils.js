@@ -111,7 +111,10 @@ function setOptions() {
   // visit URL(http://domain-name/test/index.html?prefer=fast/sustained/low)
   var parameterStr = window.location.search.substr(1);
   var reg = new RegExp("(^|&)prefer=([^&]*)(&|$)", "i");
+  // use webgpu=true parameter for WebGPU backend
+  var webgpu_reg = new RegExp("(^|&)webgpu=([^&]*)(&|$)", "i");
   var r = parameterStr.match(reg);
+  var webgpu_r = parameterStr.match(webgpu_reg);
   var macosPlatforms = ['Macintosh', 'MacIntel', 'MacPPC', 'Mac68K'];
   var windowsPlatforms = ['Win32', 'Win64', 'Windows', 'WinCE'];
   if (r != null) {
@@ -124,11 +127,19 @@ function setOptions() {
           'iterations': "1"
         };
       } else if (prefer === "sustained") {
-        options = {
-          "backend": 'WebGL',
-          "prefer": 'sustained',
-          'iterations': "1"
-        };
+        if (webgpu_r != null && Boolean(unescape(webgpu_r[2]).toLowerCase())) {
+          options = {
+            "backend": 'WebGPU',
+            "prefer": 'sustained',
+            'iterations': "1"
+          };
+        } else {
+          options = {
+            "backend": 'WebGL',
+            "prefer": 'sustained',
+            'iterations': "1"
+          };
+        }
       }
     } else {
       if (prefer === "sustained") {
