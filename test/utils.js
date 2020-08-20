@@ -109,64 +109,71 @@ function setOptionsPerLayer() {
 
 function setOptions() {
   // visit URL(http://domain-name/test/index.html?prefer=fast/sustained/low)
-  var parameterStr = window.location.search.substr(1);
-  var reg = new RegExp("(^|&)prefer=([^&]*)(&|$)", "i");
-  var r = parameterStr.match(reg);
-  var macosPlatforms = ['Macintosh', 'MacIntel', 'MacPPC', 'Mac68K'];
-  var windowsPlatforms = ['Win32', 'Win64', 'Windows', 'WinCE'];
-  if (r != null) {
-    var prefer = unescape(r[2]).toLowerCase();
-    if (navigator.ml.isPolyfill) {
-      if (prefer === "fast") {
+  const parameterStr = new URLSearchParams(location.search);
+  const prefer = parameterStr.get('prefer');
+
+  const macosPlatforms = ['Macintosh', 'MacIntel', 'MacPPC', 'Mac68K'];
+  const windowsPlatforms = ['Win32', 'Win64', 'Windows', 'WinCE'];
+
+  if (navigator.ml.isPolyfill) {
+    if (prefer === "fast") {
+      options = {
+        "backend": 'WASM',
+        "prefer": 'fast',
+        'iterations': "1"
+      };
+    } else if (prefer === "sustained") {
+      const webgpu = parameterStr.get('webgpu');
+      if (webgpu !== null && webgpu === 'true') {
         options = {
-          "backend": 'WASM',
-          "prefer": 'fast',
+          "backend": 'WebGPU',
+          "prefer": 'sustained',
           'iterations': "1"
         };
-      } else if (prefer === "sustained") {
+      } else {
         options = {
           "backend": 'WebGL',
           "prefer": 'sustained',
           'iterations': "1"
         };
       }
-    } else {
-      if (prefer === "sustained") {
-        // use PREFER_SUSTAINED_SPEED for Linux/Windows clDNN backend
-        prefer = nn.PREFER_SUSTAINED_SPEED;
-        options = {
-          "backend": 'WebML',
-          "prefer": 'sustained',
-          'iterations': "1"
-        };
-        // As MPS computes on FP16, use 5ULP of FP16 range
-        if (macosPlatforms.indexOf(navigator.platform) !== -1 || windowsPlatforms.indexOf(navigator.platform) !== -1) {
-          episilonCTS = EPISILON5ULP;
-          rtol = EPISILON5ULP;
-        }
-      } else if (prefer === "fast") {
-        // use PREFER_FAST_SINGLE_ANSWER for Linux/Windows mkldnn backend
-        prefer = nn.PREFER_FAST_SINGLE_ANSWER;
-        options = {
-          "backend": 'WebML',
-          "prefer": 'fast',
-          'iterations': "1"
-        };
-      } else if (prefer === "low") {
-        prefer = nn.PREFER_LOW_POWER;
-        options = {
-          "backend": 'WebML',
-          "prefer": 'low',
-          'iterations': "1"
-        };
-      } else if (prefer === "ultra-low") {
-        prefer = nn.PREFER_ULTRA_LOW_POWER;
-        options = {
-          "backend": 'WebML',
-          "prefer": 'ultra-low',
-          'iterations': "1"
-        };
+    }
+  } else {
+    if (prefer === "sustained") {
+      // use PREFER_SUSTAINED_SPEED for Linux/Windows clDNN backend
+      prefer = nn.PREFER_SUSTAINED_SPEED;
+      options = {
+        "backend": 'WebML',
+        "prefer": 'sustained',
+        'iterations': "1"
+      };
+      // As MPS computes on FP16, use 5ULP of FP16 range
+      if (macosPlatforms.indexOf(navigator.platform) !== -1 || windowsPlatforms.indexOf(navigator.platform) !== -1) {
+        episilonCTS = EPISILON5ULP;
+        rtol = EPISILON5ULP;
       }
+    } else if (prefer === "fast") {
+      // use PREFER_FAST_SINGLE_ANSWER for Linux/Windows mkldnn backend
+      prefer = nn.PREFER_FAST_SINGLE_ANSWER;
+      options = {
+        "backend": 'WebML',
+        "prefer": 'fast',
+        'iterations': "1"
+      };
+    } else if (prefer === "low") {
+      prefer = nn.PREFER_LOW_POWER;
+      options = {
+        "backend": 'WebML',
+        "prefer": 'low',
+        'iterations': "1"
+      };
+    } else if (prefer === "ultra-low") {
+      prefer = nn.PREFER_ULTRA_LOW_POWER;
+      options = {
+        "backend": 'WebML',
+        "prefer": 'ultra-low',
+        'iterations': "1"
+      };
     }
   }
 }
