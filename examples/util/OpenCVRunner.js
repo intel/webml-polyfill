@@ -74,25 +74,36 @@ class OpenCVRunner extends BaseRunner {
     const mean = options.preOptions.mean;
     const std = options.preOptions.std;
     const [sizeW, sizeH, channels] = options.inputSize;
+
     const imageChannels = options.imageChannels;
-    const width = src.videoWidth || src.naturalWidth || 1;
-    const height = src.videoHeight || src.naturalHeight || 1;
+    src.width = src.videoWidth || src.naturalWidth || 1;
+    src.height = src.videoHeight || src.naturalHeight || 1;
+
     const canvasElement = document.createElement('canvas');
-    canvasElement.width = width;
-    canvasElement.height = height;
+    canvasElement.width = sizeW;
+    canvasElement.height = sizeH;
     const canvasContext = canvasElement.getContext('2d');
-    canvasContext.drawImage(src, 0, 0, width, height);
-    const pixels = canvasContext.getImageData(0, 0, width, height).data;
+
+    if (options.scaledFlag) {
+      const resizeRatio = Math.max(Math.max(src.width, src.height) / sizeW, 1);
+      const scaledWidth = Math.floor(src.width / resizeRatio);
+      const scaledHeight = Math.floor(src.height / resizeRatio);
+      canvasContext.drawImage(src, 0, 0, scaledWidth, scaledHeight);
+    } else {
+      canvasContext.drawImage(src, 0, 0, sizeW, sizeH);
+    }
+
+    const pixels = canvasContext.getImageData(0, 0, sizeW, sizeH).data;
     let stddata = [];
     for (let c = 0; c < channels; ++c) {
-      for (let h = 0; h < height; ++h) {
-        for (let w = 0; w < width; ++w) {
-          let value = pixels[h * width * imageChannels + w * imageChannels + c];
-          stddata[h * width * channels + w * channels + c] = (value / 255 - mean[c]) / std[c];
+      for (let h = 0; h < sizeH; ++h) {
+        for (let w = 0; w < sizeW; ++w) {
+          let value = pixels[h * sizeW * imageChannels + w * imageChannels + c];
+          stddata[h * sizeW * channels + w * channels + c] = (value / 255 - mean[c]) / std[c];
         }
       }
     }
-    let inputMat = cv.matFromArray(height, width, cv.CV_32FC3, stddata);
+    let inputMat = cv.matFromArray(sizeH, sizeW, cv.CV_32FC3, stddata);
     let tensor = cv.blobFromImage(inputMat, 1, new cv.Size(sizeW, sizeH), new cv.Scalar(0, 0, 0));
     inputMat.delete();
     this._model.setInput(tensor);
