@@ -9,6 +9,7 @@ class OpenCVRunner extends BaseRunner {
     if (url !== undefined) {
       const arrayBuffer = await this._loadURL(url, this._progressHandler, true);
       const bytes = new Uint8Array(arrayBuffer);
+      const modelName = this._currentModelInfo.modelFile.split('/').pop();
       switch (url.split('.').pop()) {
         case 'onnx':
           const err = onnx.ModelProto.verify(bytes);
@@ -16,10 +17,21 @@ class OpenCVRunner extends BaseRunner {
             throw new Error(`The model file ${url} is invalid, ${err}`);
           }
           try {
-            cv.FS_createDataFile('/', this._currentModelInfo.modelId, bytes, true, false, false);
+            cv.FS_createDataFile('/', modelName, bytes, true, false, false);
           } catch (e) {
             if (e.errno === 17) {
-              console.log(`${this._currentModelInfo.modelId} already exited.`);
+              console.log(`${modelName} already exited.`);
+            } else {
+              console.error(e);
+            }
+          }
+          break;
+        case 'pb':
+          try {
+            cv.FS_createDataFile('/', modelName, bytes, true, false, false);
+          } catch (e) {
+            if (e.errno === 17) {
+              console.log(`${modelName} already exited.`);
             } else {
               console.error(e);
             }
@@ -46,8 +58,9 @@ class OpenCVRunner extends BaseRunner {
   _doCompile = (options) => {
     let model = null;
 
-    if (this._currentModelInfo.format === 'ONNX') {
-      model = cv.readNetFromONNX(this._currentModelInfo.modelId);
+    const modelFormat = this._currentModelInfo.format;
+    if (modelFormat === 'ONNX' || modelFormat === 'Tensorflow') {
+      model = cv.readNet(this._currentModelInfo.modelFile.split('/').pop());
       this._setModel(model);
     } else {
       throw new Error(`Unsupported '${this._currentModelInfo.format}' input`);

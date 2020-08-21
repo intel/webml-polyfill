@@ -1,51 +1,51 @@
-const CACHE_NAME = 'v29';
+const CACHE_NAME = 'v31';
 let urlsToCache = [];
 
-self.addEventListener('install', function(event) {
+self.addEventListener('install', function (event) {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then(function(cache) {
+      .then(function (cache) {
         return cache.addAll(urlsToCache);
       })
   );
 });
 
-self.addEventListener('fetch', function(event) {
+self.addEventListener('fetch', function (event) {
   event.respondWith(
     caches.match(event.request)
-    .then(function(response) {
-      if (response) {
-        return response;
-      }
-
-      let fetchRequest = event.request.clone();
-
-      return fetch(fetchRequest).then(
-        function(response) {
-          if(!response || response.status !== 200 ||
-             (response.type !== 'basic' && response.type !== 'cors')) {
-            return response;
-          }
-
-          let responseToCache = response.clone();
-
-          caches.open(CACHE_NAME).then(function(cache) {
-            cache.put(event.request, responseToCache);
-          });
-
+      .then(function (response) {
+        if (response) {
           return response;
         }
-      );
-    })
+
+        let fetchRequest = event.request.clone();
+
+        return fetch(fetchRequest).then(
+          function (response) {
+            if (!response || response.status !== 200 ||
+              (response.type !== 'basic' && response.type !== 'cors')) {
+              return response;
+            }
+
+            let responseToCache = response.clone();
+
+            caches.open(CACHE_NAME).then(function (cache) {
+              cache.put(event.request, responseToCache);
+            });
+
+            return response;
+          }
+        );
+      })
   );
 });
 
-self.addEventListener('activate', function(event) {
+self.addEventListener('activate', function (event) {
   let cacheWhitelist = [CACHE_NAME];
 
   event.waitUntil(
-    caches.keys().then(function(keyList) {
-      return Promise.all(keyList.map(function(key) {
+    caches.keys().then(function (keyList) {
+      return Promise.all(keyList.map(function (key) {
         if (cacheWhitelist.indexOf(key) === -1) {
           return caches.delete(key);
         }

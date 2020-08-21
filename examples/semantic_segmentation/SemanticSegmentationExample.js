@@ -141,7 +141,15 @@ class SemanticSegmentationExample extends BaseCameraExample {
 
   /** @override */
   _createRunner = () => {
-    const runner = new SemanticSegmentationRunner();
+    let runner;
+    switch (this._currentFramework) {
+      case 'WebNN':
+        runner = new SemanticSegmentationRunner();
+        break;
+      case 'OpenCV.js':
+        runner = new SemanticSegmentationOpenCVRunner();
+        break;
+    }
     runner.setProgressHandler(updateLoadingProgressComponent);
     return runner;
   };

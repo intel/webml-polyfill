@@ -1,6 +1,7 @@
 const modelZoo = {
   imageClassificationModels: [{
     modelName: 'MobileNet v1 (TFLite)',
+    framework: ['WebNN'],
     format: 'TFLite',
     modelId: 'mobilenet_v1_tflite',
     modelSize: '16.9MB',
@@ -16,6 +17,7 @@ const modelZoo = {
     paperUrl: 'https://arxiv.org/pdf/1704.04861.pdf'
   }, {
     modelName: 'MobileNet v1 Quant (TFLite)',
+    framework: ['WebNN'],
     format: 'TFLite',
     modelId: 'mobilenet_v1_quant_tflite',
     isQuantized: true,
@@ -28,6 +30,7 @@ const modelZoo = {
     paperUrl: 'https://arxiv.org/pdf/1712.05877.pdf'
   }, {
     modelName: 'MobileNet v2 (TFLite)',
+    framework: ['WebNN'],
     format: 'TFLite',
     modelId: 'mobilenet_v2_tflite',
     modelSize: '14.0MB',
@@ -43,6 +46,7 @@ const modelZoo = {
     paperUrl: 'https://arxiv.org/abs/1801.04381'
   }, {
     modelName: 'MobileNet v2 Quant (TFLite)',
+    framework: ['WebNN'],
     format: 'TFLite',
     modelId: 'mobilenet_v2_quant_tflite',
     isQuantized: true,
@@ -58,6 +62,7 @@ const modelZoo = {
     paperUrl: 'https://arxiv.org/abs/1806.08342'
   }, {
     modelName: 'SqueezeNet (TFLite)',
+    framework: ['WebNN'],
     format: 'TFLite',
     modelId: 'squeezenet_tflite',
     modelSize: '5.0MB',
@@ -73,6 +78,7 @@ const modelZoo = {
     paperUrl: 'https://arxiv.org/abs/1602.07360'
   }, {
     modelName: 'Inception v3 (TFLite)',
+    framework: ['WebNN'],
     format: 'TFLite',
     modelId: 'inception_v3_tflite',
     modelSize: '95.3MB',
@@ -88,6 +94,7 @@ const modelZoo = {
     paperUrl: 'http://arxiv.org/abs/1512.00567'
   }, {
     modelName: 'Inception v3 Quant (TFLite)',
+    framework: ['WebNN'],
     format: 'TFLite',
     modelId: 'inception_v3_quant_tflite',
     isQuantized: true,
@@ -103,6 +110,7 @@ const modelZoo = {
     paperUrl: 'https://arxiv.org/abs/1806.08342'
   }, {
     modelName: 'Inception v4 (TFLite)',
+    framework: ['WebNN'],
     format: 'TFLite',
     modelId: 'inception_v4_tflite',
     modelSize: '170.7MB',
@@ -118,6 +126,7 @@ const modelZoo = {
     paperUrl: 'https://arxiv.org/abs/1602.07261'
   }, {
     modelName: 'Inception v4 Quant (TFLite)',
+    framework: ['WebNN'],
     format: 'TFLite',
     modelId: 'inception_v4_quant_tflite',
     isQuantized: true,
@@ -130,6 +139,7 @@ const modelZoo = {
     paperUrl: 'https://arxiv.org/abs/1602.07261'
   }, {
     modelName: 'Inception ResNet v2 (TFLite)',
+    framework: ['WebNN'],
     format: 'TFLite',
     modelId: 'inception_resnet_v2_tflite',
     modelSize: '121.0MB',
@@ -148,8 +158,8 @@ const modelZoo = {
     paperUrl: 'https://arxiv.org/abs/1602.07261'
   }, {
     modelName: 'SqueezeNet (ONNX)',
-    format: 'ONNX',
     framework: ['WebNN', 'OpenCV.js'],
+    format: 'ONNX',
     modelId: 'squeezenet_onnx',
     modelSize: '5.0MB',
     modelFile: 'https://webnnmodel.s3-us-west-2.amazonaws.com/image_classification/model/squeezenet1.1.onnx',
@@ -232,6 +242,7 @@ const modelZoo = {
     paperUrl: 'https://arxiv.org/abs/1603.05027'
   }, {
     modelName: 'Inception v2 (ONNX)',
+    framework: ['WebNN'],
     format: 'ONNX',
     modelId: 'inception_v2_onnx',
     modelSize: '45.0MB',
@@ -243,6 +254,7 @@ const modelZoo = {
     paperUrl: 'https://arxiv.org/abs/1512.00567'
   }, {
     modelName: 'DenseNet 121 (ONNX)',
+    framework: ['WebNN'],
     format: 'ONNX',
     modelId: 'densenet_121_onnx',
     modelSize: '32.7MB',
@@ -264,6 +276,7 @@ const modelZoo = {
     paperUrl: 'https://arxiv.org/abs/1608.06993'
   }, {
     modelName: 'SqueezeNet (OpenVino)',
+    framework: ['WebNN'],
     format: 'OpenVINO',
     modelId: 'squeezenet_openvino',
     modelSize: '4.9MB',
@@ -278,6 +291,7 @@ const modelZoo = {
     paperUrl: 'https://arxiv.org/abs/1602.07360'
   }, {
     modelName: 'MobileNet v1 (OpenVino)',
+    framework: ['WebNN'],
     format: 'OpenVINO',
     modelId: 'mobilenet_v1_openvino',
     modelSize: '16.9MB',
@@ -293,6 +307,7 @@ const modelZoo = {
     paperUrl: 'https://arxiv.org/pdf/1704.04861.pdf'
   }, {
     modelName: 'MobileNet v2 (OpenVino)',
+    framework: ['WebNN'],
     format: 'OpenVINO',
     modelId: 'mobilenet_v2_openvino',
     modelSize: '14.0MB',
@@ -308,6 +323,7 @@ const modelZoo = {
     paperUrl: 'https://arxiv.org/abs/1801.04381'
   }, {
     modelName: 'ResNet50 v1 (OpenVino)',
+    framework: ['WebNN'],
     format: 'OpenVINO',
     modelId: 'resnet50_v1_openvino',
     modelSize: '102.1MB',
@@ -322,6 +338,7 @@ const modelZoo = {
     paperUrl: 'https://arxiv.org/abs/1512.03385'
   }, {
     modelName: 'DenseNet 121 (OpenVino)',
+    framework: ['WebNN'],
     format: 'OpenVINO',
     modelId: 'densenet_121_openvino',
     modelSize: '31.9MB',
@@ -342,6 +359,7 @@ const modelZoo = {
     paperUrl: 'https://arxiv.org/abs/1608.06993'
   }, {
     modelName: 'Inception v2 (OpenVino)',
+    framework: ['WebNN'],
     format: 'OpenVINO',
     modelId: 'inception_v2_openvino',
     modelSize: '44.7MB',
@@ -356,6 +374,7 @@ const modelZoo = {
     paperUrl: 'https://arxiv.org/abs/1512.00567'
   }, {
     modelName: 'Inception v4 (OpenVino)',
+    framework: ['WebNN'],
     format: 'OpenVINO',
     modelId: 'inception_v4_openvino',
     modelSize: '170.6MB',
@@ -371,6 +390,7 @@ const modelZoo = {
     paperUrl: 'https://arxiv.org/abs/1602.07261'
   }, {
     modelName: 'Squeezenet (Caffe2)',
+    framework: ['WebNN'],
     format: 'Caffe2',
     modelId: 'Squeezenet_Caffe2',
     modelSize: '6.2MB',
@@ -387,6 +407,7 @@ const modelZoo = {
     paperUrl: 'https://arxiv.org/abs/1602.07360'
   }, {
     modelName: 'MobileNet v1 Quant (Caffe2)',
+    framework: ['WebNN'],
     format: 'Caffe2',
     modelId: 'mobilenet_v1_quant_caffe2',
     modelSize: '4.5MB',
@@ -407,6 +428,7 @@ const modelZoo = {
 
   objectDetectionModels: [{
     modelName: 'SSD MobileNet v1 (TFLite)',
+    framework: ['WebNN'],
     format: 'TFLite',
     modelId: 'ssd_mobilenet_v1_tflite',
     modelSize: '27.3MB',
@@ -426,6 +448,7 @@ const modelZoo = {
     paperUrl: 'https://arxiv.org/abs/1803.08225'
   }, {
     modelName: 'SSD MobileNet v1 Quant (TFLite)',
+    framework: ['WebNN'],
     format: 'TFLite',
     modelId: 'ssd_mobilenet_v1_quant_tflite',
     isQuantized: true,
@@ -442,6 +465,7 @@ const modelZoo = {
     paperUrl: 'https://arxiv.org/pdf/1712.05877.pdf'
   }, {
     modelName: 'SSD MobileNet v2 (TFLite)',
+    framework: ['WebNN'],
     format: 'TFLite',
     modelId: 'ssd_mobilenet_v2_tflite',
     modelSize: '67.3MB',
@@ -461,6 +485,7 @@ const modelZoo = {
     paperUrl: 'https://arxiv.org/abs/1801.04381'
   }, {
     modelName: 'SSD MobileNet v2 Quant (TFLite)',
+    framework: ['WebNN'],
     format: 'TFLite',
     modelId: 'ssd_mobilenet_v2_quant_tflite',
     isQuantized: true,
@@ -477,6 +502,7 @@ const modelZoo = {
     paperUrl: 'https://arxiv.org/abs/1806.08342'
   }, {
     modelName: 'SSDLite MobileNet v2 (TFLite)',
+    framework: ['WebNN'],
     format: 'TFLite',
     modelId: 'ssdlite_mobilenet_v2_tflite',
     modelSize: '17.9MB',
@@ -496,6 +522,7 @@ const modelZoo = {
     paperUrl: 'https://arxiv.org/abs/1801.04381'
   }, {
     modelName: 'Tiny Yolo v2 COCO (TFLite)',
+    framework: ['WebNN'],
     format: 'TFLite',
     modelId: 'tiny_yolov2_coco_tflite',
     modelSize: '44.9MB',
@@ -514,6 +541,7 @@ const modelZoo = {
     paperUrl: 'https://arxiv.org/abs/1612.08242'
   }, {
     modelName: 'Tiny Yolo v2 VOC (TFLite)',
+    framework: ['WebNN'],
     format: 'TFLite',
     modelId: 'tiny_yolov2_voc_tflite',
     modelSize: '63.4MB',
@@ -534,6 +562,7 @@ const modelZoo = {
 
   humanPoseEstimationModels: [{
     modelName: 'PoseNet',
+    framework: ['WebNN'],
     format: '',
     modelId: 'posenet',
     modelSize: '13.3MB',
@@ -549,6 +578,7 @@ const modelZoo = {
 
   semanticSegmentationModels: [{
     modelName: 'Deeplab 224 (TFLite)',
+    framework: ['WebNN'],
     format: 'TFLite',
     modelId: 'deeplab_mobilenet_v2_224_tflite',
     modelSize: '9.5MB',
@@ -564,6 +594,7 @@ const modelZoo = {
     paperUrl: 'https://arxiv.org/abs/1802.02611'
   }, {
     modelName: 'Deeplab 224 Atrous (TFLite)',
+    framework: ['WebNN'],
     format: 'TFLite',
     modelId: 'deeplab_mobilenet_v2_224_atrous_tflite',
     modelSize: '8.4MB',
@@ -579,6 +610,7 @@ const modelZoo = {
     paperUrl: 'https://arxiv.org/abs/1802.02611'
   }, {
     modelName: 'Deeplab 257 (TFLite)',
+    framework: ['WebNN'],
     format: 'TFLite',
     modelId: 'deeplab_mobilenet_v2_257_tflite',
     modelSize: '9.5MB',
@@ -594,6 +626,7 @@ const modelZoo = {
     paperUrl: 'https://arxiv.org/abs/1802.02611'
   }, {
     modelName: 'Deeplab 257 Atrous (TFLite)',
+    framework: ['WebNN'],
     format: 'TFLite',
     modelId: 'deeplab_mobilenet_v2_257_atrous_tflite',
     modelSize: '8.4MB',
@@ -609,6 +642,7 @@ const modelZoo = {
     paperUrl: 'https://arxiv.org/abs/1802.02611'
   }, {
     modelName: 'Deeplab 321 (TFLite)',
+    framework: ['WebNN'],
     format: 'TFLite',
     modelId: 'deeplab_mobilenet_v2_321_tflite',
     modelSize: '9.5MB',
@@ -624,6 +658,7 @@ const modelZoo = {
     paperUrl: 'https://arxiv.org/abs/1802.02611'
   }, {
     modelName: 'Deeplab 321 Atrous (TFLite)',
+    framework: ['WebNN'],
     format: 'TFLite',
     modelId: 'deeplab_mobilenet_v2_321_atrous_tflite',
     modelSize: '8.4MB',
@@ -639,6 +674,7 @@ const modelZoo = {
     paperUrl: 'https://arxiv.org/abs/1802.02611'
   }, {
     modelName: 'Deeplab 513 (TFLite)',
+    framework: ['WebNN'],
     format: 'TFLite',
     modelId: 'deeplab_mobilenet_v2_513_tflite',
     modelSize: '9.5MB',
@@ -654,6 +690,7 @@ const modelZoo = {
     paperUrl: 'https://arxiv.org/abs/1802.02611'
   }, {
     modelName: 'Deeplab 513 Atrous (TFLite)',
+    framework: ['WebNN'],
     format: 'TFLite',
     modelId: 'deeplab_mobilenet_v2_513_atrous_tflite',
     modelSize: '8.4MB',
@@ -669,6 +706,7 @@ const modelZoo = {
     paperUrl: 'https://arxiv.org/abs/1802.02611'
   }, {
     modelName: 'Deeplab 224 Atrous (OpenVINO)',
+    framework: ['WebNN'],
     format: 'OpenVINO',
     modelId: 'deeplab_mobilenet_v2_224_atrous_openvino',
     modelSize: '8.4MB',
@@ -684,6 +722,7 @@ const modelZoo = {
     paperUrl: 'https://arxiv.org/abs/1802.02611'
   }, {
     modelName: 'Deeplab 257 Atrous (OpenVINO)',
+    framework: ['WebNN'],
     format: 'OpenVINO',
     modelId: 'deeplab_mobilenet_v2_257_atrous_openvino',
     modelSize: '8.4MB',
@@ -699,6 +738,7 @@ const modelZoo = {
     paperUrl: 'https://arxiv.org/abs/1802.02611'
   }, {
     modelName: 'Deeplab 321 Atrous (OpenVINO)',
+    framework: ['WebNN'],
     format: 'OpenVINO',
     modelId: 'deeplab_mobilenet_v2_321_atrous_openvino',
     modelSize: '8.4MB',
@@ -714,6 +754,7 @@ const modelZoo = {
     paperUrl: 'https://arxiv.org/abs/1802.02611'
   }, {
     modelName: 'Deeplab 513 Atrous (OpenVINO)',
+    framework: ['WebNN'],
     format: 'OpenVINO',
     modelId: 'deeplab_mobilenet_v2_513_atrous_openvino',
     modelSize: '8.4MB',
@@ -727,11 +768,80 @@ const modelZoo = {
     },
     intro: 'Equivalent to the model above (without dilated suffix) but only available on platforms that natively support atrous convolution.',
     paperUrl: 'https://arxiv.org/abs/1802.02611'
+  }, {
+    modelName: 'Deeplab 224 (Tensorflow)',
+    framework: ['OpenCV.js'],
+    format: 'Tensorflow',
+    modelId: 'opt_deeplabv3_mnv2_224',
+    modelSize: '8.4MB',
+    modelFile: 'https://webnnmodel.s3-us-west-2.amazonaws.com/semantic_segmentation/model/opt_deeplabv3_mnv2_224.pb',
+    labelsFile: 'https://webnnmodel.s3-us-west-2.amazonaws.com/semantic_segmentation/model/labels.txt',
+    inputSize: [224, 224, 3],
+    outputSize: [224, 224, 1],
+    preOptions: {
+      mean: [0.5, 0.5, 0.5],
+      std: [0.5, 0.5, 0.5],
+      norm: true
+    },
+    intro: 'DeepLab is a state-of-art deep learning model for semantic image segmentation, where the goal is to assign semantic labels to every pixel in the input image.',
+    paperUrl: 'https://arxiv.org/abs/1606.00915'
+  }, {
+    modelName: 'Deeplab 257 (Tensorflow)',
+    framework: ['OpenCV.js'],
+    format: 'Tensorflow',
+    modelId: 'opt_deeplabv3_mnv2_257',
+    modelSize: '8.4MB',
+    modelFile: 'https://webnnmodel.s3-us-west-2.amazonaws.com/semantic_segmentation/model/opt_deeplabv3_mnv2_257.pb',
+    labelsFile: 'https://webnnmodel.s3-us-west-2.amazonaws.com/semantic_segmentation/model/labels.txt',
+    inputSize: [257, 257, 3],
+    outputSize: [257, 257, 1],
+    preOptions: {
+      mean: [0.5, 0.5, 0.5],
+      std: [0.5, 0.5, 0.5],
+      norm: true
+    },
+    intro: 'DeepLab is a state-of-art deep learning model for semantic image segmentation, where the goal is to assign semantic labels to every pixel in the input image.',
+    paperUrl: 'https://arxiv.org/abs/1606.00915'
+  }, {
+    modelName: 'Deeplab 321 (Tensorflow)',
+    framework: ['OpenCV.js'],
+    format: 'Tensorflow',
+    modelId: 'opt_deeplabv3_mnv2_321',
+    modelSize: '8.4MB',
+    modelFile: 'https://webnnmodel.s3-us-west-2.amazonaws.com/semantic_segmentation/model/opt_deeplabv3_mnv2_321.pb',
+    labelsFile: 'https://webnnmodel.s3-us-west-2.amazonaws.com/semantic_segmentation/model/labels.txt',
+    inputSize: [321, 321, 3],
+    outputSize: [321, 321, 1],
+    preOptions: {
+      mean: [0.5, 0.5, 0.5],
+      std: [0.5, 0.5, 0.5],
+      norm: true
+    },
+    intro: 'DeepLab is a state-of-art deep learning model for semantic image segmentation, where the goal is to assign semantic labels to every pixel in the input image.',
+    paperUrl: 'https://arxiv.org/abs/1606.00915'
+  }, {
+    modelName: 'Deeplab 513 (Tensorflow)',
+    framework: ['OpenCV.js'],
+    format: 'Tensorflow',
+    modelId: 'opt_deeplabv3_mnv2_513',
+    modelSize: '8.4MB',
+    modelFile: 'https://webnnmodel.s3-us-west-2.amazonaws.com/semantic_segmentation/model/opt_deeplabv3_mnv2_513.pb',
+    labelsFile: 'https://webnnmodel.s3-us-west-2.amazonaws.com/semantic_segmentation/model/labels.txt',
+    inputSize: [513, 513, 3],
+    outputSize: [513, 513, 1],
+    preOptions: {
+      mean: [0.5, 0.5, 0.5],
+      std: [0.5, 0.5, 0.5],
+      norm: true
+    },
+    intro: 'DeepLab is a state-of-art deep learning model for semantic image segmentation, where the goal is to assign semantic labels to every pixel in the input image.',
+    paperUrl: 'https://arxiv.org/abs/1606.00915'
   }],
 
   superResolutionModels: [
     {
       modelName: 'SRGAN 96x4 (TFLite)',
+      framework: ['WebNN'],
       format: 'TFLite',
       modelId: 'srgan_96x4_tflite',
       modelSize: '6.1MB',
@@ -748,6 +858,7 @@ const modelZoo = {
     },
     {
       modelName: 'SRGAN 128x4 (TFLite)',
+      framework: ['WebNN'],
       format: 'TFLite',
       modelId: 'srgan_128x4_tflite',
       modelSize: '6.1MB',
@@ -766,6 +877,7 @@ const modelZoo = {
 
   faceDetectionModels: [{
     modelName: 'SSD MobileNet v1 (TFlite)',
+    framework: ['WebNN'],
     format: 'TFLite',
     modelId: 'ssd_mobilenetv1_face_tflite',
     modelSize: '22.0MB',
@@ -784,6 +896,7 @@ const modelZoo = {
     paperUrl: 'https://arxiv.org/abs/1803.08225'
   }, {
     modelName: 'SSD MobileNet v2 (TFlite)',
+    framework: ['WebNN'],
     format: 'TFLite',
     modelId: 'ssd_mobilenetv2_face_tflite',
     modelSize: '18.4MB',
@@ -802,6 +915,7 @@ const modelZoo = {
     paperUrl: 'https://arxiv.org/abs/1801.04381'
   }, {
     modelName: 'SSDLite MobileNet v2 (TFlite)',
+    framework: ['WebNN'],
     format: 'TFLite',
     modelId: 'ssdlite_mobilenetv2_face_tflite',
     modelSize: '12.1MB',
@@ -820,6 +934,7 @@ const modelZoo = {
     paperUrl: 'https://arxiv.org/abs/1801.04381'
   }, {
     modelName: 'Tiny Yolo v2 Face (TFlite)',
+    framework: ['WebNN'],
     format: 'TFLite',
     modelId: 'tiny_yolov2_face_tflite',
     modelSize: '44.1MB',
@@ -838,6 +953,7 @@ const modelZoo = {
 
   facialLandmarkDetectionModels: [{
     modelName: 'SimpleCNN (TFlite)',
+    framework: ['WebNN'],
     format: 'TFLite',
     modelId: 'face_landmark_tflite',
     modelSize: '29.4MB',
@@ -850,6 +966,7 @@ const modelZoo = {
 
   emotionAnalysisModels: [{
     modelName: 'Simple CNN (TFlite)',
+    framework: ['WebNN'],
     format: 'TFLite',
     modelId: 'emotion_analysis_tflite',
     modelSize: '7.3MB',
@@ -866,6 +983,7 @@ const modelZoo = {
 
   speechCommandModels: [{
     modelName: 'KWS CNN (TFLite)',
+    framework: ['WebNN'],
     format: 'TFLite',
     modelId: 'kws_cnn_tflite',
     modelSize: '3.4MB',
@@ -878,6 +996,7 @@ const modelZoo = {
     paperUrl: 'https://www.isca-speech.org/archive/interspeech_2015/papers/i15_1478.pdf'
   }, {
     modelName: 'KWS DNN (OpenVINO)',
+    framework: ['WebNN'],
     format: 'OpenVINO',
     modelId: 'kws_dnn_openvino',
     modelSize: '320kB',
@@ -900,6 +1019,7 @@ const modelZoo = {
 
   faceRecognitionModels: [{
     modelName: 'FaceNet (OpenVINO)',
+    framework: ['WebNN'],
     format: 'OpenVino',
     modelId: 'facenet_recognition_openvino',
     modelSize: '93.9MB',
@@ -919,6 +1039,7 @@ const modelZoo = {
     paperUrl: 'https://arxiv.org/abs/1503.03832'
   }, {
     modelName: 'Face Reidentification (OpenVINO)',
+    framework: ['WebNN'],
     format: 'OpenVino',
     modelId: 'facereidentification_recognition_openvino',
     modelSize: '4.4MB',
@@ -940,6 +1061,7 @@ const modelZoo = {
 
   speechRecognitionModels: [{
     modelName: 'wsj_dnn5b (OpenVINO)',
+    framework: ['WebNN'],
     format: 'OpenVINO',
     modelId: 'wsj_dnn5b_openvino',
     modelSize: '115.6MB',
@@ -1048,19 +1170,18 @@ const getModelFromGivenModels = (modelsDict, id) => {
 
 // current this function works for {model: xxxModels}
 const selectModelFromGivenModels = (modelsDict, framework) => {
-  if (framework === 'WebNN') {
-    return modelsDict;
-  } else {
+  let selectedDict = new Object();
+  for (key of Object.keys(modelsDict)) {
     let newModelList = [];
-    for (const modelsList of Object.values(modelsDict)) {
-      for (const model of modelsList) {
-        if (model.framework && model.framework.includes(framework)) {
-          newModelList.push(model);
-        }
+    for (const model of modelsDict[key]) {
+      if (model.framework && model.framework.includes(framework)) {
+        newModelList.push(model);
       }
     }
-    return {model: newModelList};
+    selectedDict[key] = newModelList;
   }
+
+  return selectedDict;
 };
 
 const getFrameworkList = (modelsDict) => {
