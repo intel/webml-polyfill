@@ -1,4 +1,4 @@
-const CACHE_NAME = 'v31';
+const CACHE_NAME = 'v32';
 let urlsToCache = [];
 
 self.addEventListener('install', function (event) {
@@ -11,6 +11,10 @@ self.addEventListener('install', function (event) {
 });
 
 self.addEventListener('fetch', function (event) {
+  // check if request is made by chrome extensions or web page
+  // if request is made for web page url must contains http.
+  if (!(evt.request.url.indexOf('http') === 0)) return; // skip the request. if request is not made with http protocol
+
   event.respondWith(
     caches.match(event.request)
       .then(function (response) {
