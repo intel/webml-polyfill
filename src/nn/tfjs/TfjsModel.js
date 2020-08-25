@@ -1,4 +1,5 @@
 import * as tf from '@tensorflow/tfjs-core';
+import '@tensorflow/tfjs-backend-webgpu';
 import { FuseCode, OperandCode, OperationCode, PaddingCode, PreferenceCode } from '../Enums';
 import Graph from '../GraphUtils';
 import * as utils from '../utils';
@@ -26,16 +27,12 @@ export default class TfjsModel {
     this._preference = PreferenceCode.FAST_SINGLE_ANSWER;
     this._prepared = false;
     this._profiler = null;
-
-    if (tf.backend().floatPrecision() === 16) {
-      console.warn(
-          'The current floating point operation precision is only 16-bit');
-    }
   }
 
   /** Called in nn/Compilation.js */
   async prepareModel() {
-    if(this._model._backend === 'WASM'){
+    switch(this._model._backend) {
+    case('WASM'): {
       if(tf.getBackend() != 'wasm'){
         function _fixWasmPath(wasmPath) {
           // Assume the wasm file is located in the same folder as webml-polyfill.js
@@ -50,13 +47,24 @@ export default class TfjsModel {
         }
         setWasmPath(null, {'tfjs-backend-wasm.wasm': _fixWasmPath(wasmPath)});
         await tf.setBackend('wasm');
-      };
-    } else {
-      if(tf.getBackend() != "webgl"){
+      }; } break;
+    case ('WebGPU'): {
+      while(tf.getBackend() != 'webgpu') {
+        await tf.setBackend('webgpu');
+        await tf.ready();
+      }
+    } break;
+    case('WebGL'): {
+      while(tf.getBackend() != 'webgl') {
         await tf.setBackend('webgl');
-      };
-    };
-
+        await tf.ready();
+      }
+    } break;
+    default: {
+      throw new Error(`Backend ${this._model._backend} is not supported`);
+    }
+  }
+    
     const model = this._model;
     const operations = model._operations;
 
@@ -326,7 +334,7 @@ export default class TfjsModel {
     for (const tensorId of subgraph.outputs) {
       const buffer = this._nnOperands[tensorId];
       const operand = this._operands[tensorId];
-      buffer.set(operand.dataSync());
+      buffer.set(await operand.data());
       // const promise = operand.data().then((data) => buffer.set(data));
       // queue.push(promise);
     }
@@ -615,7 +623,8 @@ export default class TfjsModel {
         const targetShape = operands[inputs[1]];
         const output = operands[outputs[0]];
         if (targetShape.value === undefined) {
-          targetShape.value = targetShape.dataSync();
+          const operand = this._model._operands[inputs[1]];
+          targetShape.value = operand.value;
         }
         output.assign(input.reshape(targetShape.value));
       } break;
@@ -669,7 +678,8 @@ export default class TfjsModel {
         if (blockShape.value === undefined) {
           // blockShape.dataSync() return Int32Array,
           // which should be converted to Array here.
-          blockShape.value = Array.apply([], blockShape.dataSync());
+          const operand = this._model._operands[inputs[1]];
+          blockShape.value = operand.value;
         }
         output.assign(input.batchToSpaceND(blockShape.value, crops));
       } break;
@@ -679,7 +689,8 @@ export default class TfjsModel {
         const output = operands[outputs[0]];
         if (perm !== undefined) {
           if (perm.value === undefined) {
-            perm.value = perm.dataSync();
+            const operand = this._model._operands[inputs[1]];
+            perm.value = operand.value;
           }
           output.assign(input.transpose(perm.value));
         } else {
@@ -789,6 +800,16 @@ export default class TfjsModel {
   static _supportWebGL() {
     tf.setBackend('webgl');
     return tf.getBackend() === 'webgl';
+  }
+
+  static _supportWebGPU() {
+    tf.setBackend('webgpu');
+    tf.ready();
+    return tf.getBackend() === "webgpu";
+  }
+
+  static _getBackend() {
+    return tf.getBackend();
   }
 
   getSubgraphsSummary() {
