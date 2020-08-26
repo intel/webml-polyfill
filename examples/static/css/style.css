@@ -1039,6 +1039,10 @@ footer {
   display: none;
 }
 
+#inputvideo {
+  display: none;
+}
+
 .g {
   display: inline-block;
 }
