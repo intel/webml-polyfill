@@ -322,6 +322,22 @@ const modelZoo = {
     intro: 'MobileNetV2 improves the state of the art performance of mobile models.',
     paperUrl: 'https://arxiv.org/abs/1801.04381'
   }, {
+    modelName: 'MobileNet_v2_quant (OpenVino)',
+    framework: ['WebNN'],
+    format: 'OpenVINO',
+    modelId: 'mobilenet_v2_openvino',
+    modelSize: '14.0MB',
+    modelFile: '../image_classification/model/mobilenet-v2-1.0-224.bin',
+    labelsFile: '../image_classification/model/labels1001.txt',
+    inputSize: [1, 224, 224, 3],
+    outputSize: 1001,
+    preOptions: {
+      mean: [127.5, 127.5, 127.5],
+      std: [127.5, 127.5, 127.5],
+    },
+    intro: 'MobileNetV2 improves the state of the art performance of mobile models.',
+    paperUrl: 'https://arxiv.org/abs/1801.04381'
+  },{
     modelName: 'ResNet50 v1 (OpenVino)',
     framework: ['WebNN'],
     format: 'OpenVINO',

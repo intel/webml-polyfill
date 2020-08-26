@@ -126,12 +126,13 @@ openvino.Graph = class {
         this._inputs = [];
         this._outputs = [];
         this._arguments = {};
-
         for (const layer of this._const(net.layers, net.edges)) {
             const inputs = layer.inputs.map((input) => this._argument(layer.id, layer.precision, input, net.edges));
             const outputs = layer.outputs.map((output) => this._argument(layer.id, output.precision || layer.precision, output, null));
             switch (layer.type) {
-                case 'Input': {
+                case 'Input': 
+                case 'Parameter':
+                {
                     const name = layer.name || '';
                     // precision is a part of OpenVINO IR layers of IR v6 and earlier
                     // in IR v7 and newer the port is no longer an attribute of the layer but of each output port
@@ -391,6 +392,7 @@ openvino.Graph = class {
                 constMap.delete(pair[0]);
             }
         }
+        // Transfer these const layers to blobs as other layers' inputs
         for (const layer of layers) {
             if (layer.blobs.length === 0) {
                 for (let i = layer.inputs.length - 1; i > 0; i--) {
@@ -413,7 +415,8 @@ openvino.Graph = class {
                 }
             }
         }
-
+        // delete these const layer which are used as other layers' blobs
+        // blob.kind = 'Const'
         while (layers.length > 0) {
             const layer = layers.shift();
             if (layer.type === 'Const' && layer.inputs.length === 0 && layer.outputs.length === 1) {
@@ -424,7 +427,7 @@ openvino.Graph = class {
             }
             results.push(layer);
         }
-
+        console.log(`  shifted layers number: [${results.length}]`);
         return results;
     }
 };
@@ -442,6 +445,9 @@ openvino.Node = class {
         this._attributes = [];
         const precision = layer.precision;
         let inputIndex = 0;
+        // console.log(`  node name: [${this._name}]`);
+        // console.log(`  inputs length: [${inputs.length}]`);
+        // console.log(`  layer.blobs: [${layer.blobs.length}]`);
         for (const input of inputs) {
             const inputName = (inputIndex == 0) ? 'input' : inputIndex.toString();
             this._inputs.push(new openvino.Parameter(inputName, [ input ]));
@@ -524,7 +530,7 @@ openvino.Node = class {
             }
             const shape = dimensions ? new openvino.TensorShape(dimensions) : null;
             this._initializers.push(new openvino.Parameter(name, [
-                new openvino.Argument(id, null, new openvino.Tensor(dataType, shape, data, kind))
+                new openvino.Argument(id, null, new openvino.Tensor(dataType, shape, data, kind, offset, size))
             ]));
         }
     }
@@ -722,14 +728,24 @@ openvino.Attribute = class {
 
 openvino.Tensor = class {
 
-    constructor(precision, shape, data, kind) {
+    constructor(precision, shape, data, kind, offset, size) {
         this._data = data;
         this._type = new openvino.TensorType(precision, shape);
         this._kind = kind;
+        this._offset = offset;
+        this._size = size;
     }
 
     get kind() {
         return this._kind;
+    }
+
+    get offset() {
+        return this._offset;
+    }
+
+    get size() {
+        return this._size;
     }
 
     get type() {

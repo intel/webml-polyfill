@@ -28,24 +28,24 @@ class OpenVINOModel {
     return this._network.graphs;
   }
 
-  _verifyAndParse(networkText) {
+  _verifyAndParse(xml) {
+    let errors = false;
     const parser = new DOMParser({ errorHandler: () => { errors = true; } });
-    const xml = parser.parseFromString(networkText, 'text/xml');
-
-    if (xml.documentElement == null ||
-        xml.getElementsByTagName('parsererror').length > 0) {
-      throw new openvino.Error('File format is not OpenVINO XML');
+    const xmlDoc = parser.parseFromString(xml, 'text/xml');
+    if (errors || xmlDoc.documentElement == null || xmlDoc.getElementsByTagName('parsererror').length > 0) {
+        throw new openvino.Error("File format is not OpenVINO.");
     }
-    const net = xml.documentElement;
-    if (!net || net.nodeName != 'net' ||
-        openvino.Node.children(net, 'layers').length != 1 ||
-        openvino.Node.children(net, 'edges').length != 1) {
-      throw new openvino.Error('File format is not OpenVINO IR');
+    if (!xmlDoc.documentElement || xmlDoc.documentElement.nodeName != 'net') {
+        throw new openvino.Error("File format is not OpenVINO IR.");
     }
-
     // don't use metadata
     const metadata = new openvino.Metadata(null);
-    return new openvino.Model(metadata, net);
+    const net = openvino.XmlReader.read(xmlDoc.documentElement);
+    const model = new openvino.Model(metadata, net);
+    if (net.disconnectedLayers) {
+        host.exception(new openvino.Error("Graph contains not connected layers " + JSON.stringify(net.disconnectedLayers) + " in '" + identifier + "'."));
+    }
+    return model;
   }
 
   _bindHelperFunctions() {
@@ -140,7 +140,7 @@ class OpenVINOModel {
   }
 
   getKernelShape(node) {
-    if (node.operator === 'Convolution') {
+    if (node.type === 'Convolution') {
       const [kernelH, kernelW] = this.getInts(node, 'kernel');
       const inputDims = this.getTensorShape(node.inputs[0]);
       const outputDims = this.getTensorShape(node.outputs[0]);
@@ -161,6 +161,8 @@ class OpenVINOModel {
         return Float32Array;
       case 'I32':
         return Int32Array;
+      case 'uint8':
+          return Uint8Array;
       default:
         throw new Error(`Tensor type ${type} is not supported`);
     }
@@ -175,7 +177,7 @@ class OpenVINOModel {
    * reordering. No reordering will be performed if the value is undefined.
    */
   getTensorInitializer(arg, dimHints) {
-    const tensor = arg.connections[0].initializer;
+    const tensor = arg.arguments[0].initializer;
     return this._getTensorData(tensor, dimHints);
   }
 
@@ -184,8 +186,8 @@ class OpenVINOModel {
    * dimHints?: number[] (NHWC)
    */
   getNodeInitilizer(node, dimHints) {
-    // suppose each node has only one initializer
-    const tensor = node._initializers[0].connections[0].initializer;
+    // Each Const node has only one initializer
+    const tensor = node._initializers[0].arguments[0].initializer;
     return this._getTensorData(tensor, dimHints);
   }
 
@@ -194,9 +196,8 @@ class OpenVINOModel {
    * dimHints?: number[] (NHWC)
    */
   _getTensorData(tensor, dimHints) {
-    // offset and size are encoded in `tensor.reference: string`
-    const matches = tensor.reference.match(/offset: (\d+), size: (\d+)/);
-    const [offset, size] = matches.slice(1, 3).map((x) => parseInt(x));
+    const offset = tensor.offset;
+    const size = tensor.size;
     const ctor = this._getConstructorFromType(tensor.type.dataType);
     const length = size / ctor.BYTES_PER_ELEMENT;
     const data = new ctor(this._weights, offset, length);
@@ -224,7 +225,7 @@ class OpenVINOModel {
 
   getTensorGraphId(arg) {
     // graphId is unique in a graph and in the of form "layerId:portId"
-    return arg.connections[0].id;
+    return arg.arguments[0].name;
   }
 
   getTensorDataType(arg) {
@@ -242,7 +243,7 @@ class OpenVINOModel {
   }
 
   _getTensorType(arg) {
-    return arg.connections[0].type;
+    return arg.arguments[0].type;
   }
   // End of helper functions for openvino.Tensor
 }
