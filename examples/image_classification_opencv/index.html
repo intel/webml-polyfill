@@ -102,7 +102,7 @@
         <h3 class='text-center ex' id='ictitle'>
           Image Classification
         </h3>
-        <span class='fa chevron-up'>
+        <span class='fa chevron-up' style='visibility: hidden;'>
           <svg aria-hidden='true' data-prefix='fas' data-icon='chevron-up' class='svg-inline--fa fa-chevron-up fa-w-14'
             role='img' viewBox='0 0 448 512'>
             <path fill='currentColor'
@@ -121,10 +121,7 @@
       </a>
 
       <ul class='nav nav-pills'>
-        <li id='img' class='active'>
-          <a href='#image' data-toggle='tab'>Image</a>
-        </li>
-        <li id='cam'><a href='#camera' data-toggle='tab'>Live Camera</a>
+        <li id='cam' class='active'><a href='#camera' data-toggle='tab'>Video Playback</a>
         </li>
       </ul>
 
@@ -185,7 +182,8 @@
 
       <div class='tab-content clearfix row'>
         <div class='tab-pane text-center col-sm' id='imagetab'>
-          <div class='icdisplay'>
+          
+          <div class='icdisplay' style='display: none;'>
             <div class='col-lg-12 col-xs-12 text-center'>
               <figure class='item'>
                 <div class='inner'>

@@ -21,6 +21,9 @@ class ImageClassificationExample extends BaseExample {
     cv.onRuntimeInitialized = () => {
       $('#progressruntime').hide();
       this._setRuntimeInitialized(true);
+      if (this._currentInputType === 'image') {
+        this.main();
+      }
     }
   }
 
@@ -138,6 +141,21 @@ class ImageClassificationExample extends BaseExample {
       this._setStreaming(false);
       // $('#inference').hide();
     });
+
+    let inputFileElement = document.getElementById('input');
+    inputFileElement.addEventListener('change', (e) => {
+      let files = e.target.files;
+      if (files.length > 0) {
+        this._feedElement.src = URL.createObjectURL(files[0]);
+      }
+    }, false);
+
+    if (this._currentInputType == 'image') {
+      $('#fps').hide();
+      this._currentInputElement.addEventListener('load', () => {
+        this.main();
+      }, false);
+    }
 
   };
 
