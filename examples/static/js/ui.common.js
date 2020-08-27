@@ -365,13 +365,18 @@ const updateBackendComponents = (backend, prefer) => {
 };
 
 const updateTitleComponent = (backend, prefer, modelIdStr = null, modelInfoDic = null) => {
+  
   const getExampleName = () => {
     const pathArray = location.pathname.split('/');
     const dirName = pathArray[pathArray.length - 2];
     return dirName.replace(/_/g, ' ');
   };
 
-  const sampleName = getExampleName();
+  let sampleName = getExampleName();
+  if(sampleName.indexOf('opencv') > -1) {
+    sampleName = sampleName.replace('opencv', '') + 'OpenCV'
+  }
+
   let modelShow = null;
   if (modelIdStr != null) {
     if (modelIdStr != 'none') {
@@ -412,6 +417,7 @@ const updateTitleComponent = (backend, prefer, modelIdStr = null, modelInfoDic =
     if (backend !== 'WebML' && prefer !== 'none') {
       backendText = backend + ' + WebNN';
     }
+
     if (modelIdStr != null) {
       if (currentPreferText === 'None') {
         $('#ictitle').html(`${sampleName} / ${backendText} / ${modelShow}`);

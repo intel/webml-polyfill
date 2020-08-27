@@ -17,6 +17,11 @@
   <link rel="manifest" href="../static/img/favicon/site.webmanifest">
   <link href='../static/lib/bootstrap/css/bootstrap.min.css' rel='stylesheet'>
   <link href='../static/css/style.css' rel='stylesheet'>
+  <style type='text/css'>
+    video::-webkit-media-controls-fullscreen-button {
+      display: none;
+    }
+  </style>
 </head>
 
 <body id='imageclassification'>
@@ -97,7 +102,7 @@
         <h3 class='text-center ex' id='ictitle'>
           Image Classification
         </h3>
-        <span class='fa chevron-up'>
+        <span class='fa chevron-up' style='visibility: hidden;'>
           <svg aria-hidden='true' data-prefix='fas' data-icon='chevron-up' class='svg-inline--fa fa-chevron-up fa-w-14'
             role='img' viewBox='0 0 448 512'>
             <path fill='currentColor'
@@ -114,6 +119,11 @@
           </svg>
         </span>
       </a>
+
+      <ul class='nav nav-pills'>
+        <li id='cam' class='active'><a href='#camera' data-toggle='tab'>Video Playback</a>
+        </li>
+      </ul>
 
       <div id='progressContainer'>
         <div class='mb-2'>
@@ -170,42 +180,74 @@
         </div>
       </div>
 
-      <div class='icdisplay'>
-        <div id='fps'></div>
-        <div id='fullscreen'>
-          <i class='fa expand'>
-            <svg aria-hidden='true' data-prefix='fas' data-icon='expand' class='svg-inline--fa fa-expand fa-w-14'
-              role='img' viewBox='0 0 448 512'>
-              <path fill='currentColor'
-                d='M0 180V56c0-13.3 10.7-24 24-24h124c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12H64v84c0 6.6-5.4 12-12 12H12c-6.6 0-12-5.4-12-12zM288 44v40c0 6.6 5.4 12 12 12h84v84c0 6.6 5.4 12 12 12h40c6.6 0 12-5.4 12-12V56c0-13.3-10.7-24-24-24H300c-6.6 0-12 5.4-12 12zm148 276h-40c-6.6 0-12 5.4-12 12v84h-84c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12h124c13.3 0 24-10.7 24-24V332c0-6.6-5.4-12-12-12zM160 468v-40c0-6.6-5.4-12-12-12H64v-84c0-6.6-5.4-12-12-12H12c-6.6 0-12 5.4-12 12v124c0 13.3 10.7 24 24 24h124c6.6 0 12-5.4 12-12z'>
-              </path>
-            </svg>
-          </i>
-          <i class='fa compress' style='display:none;'>
-            <svg aria-hidden='true' data-prefix='fas' data-icon='compress'
-              class='svg-inline--fa fa-compress fa-w-14' role='img' viewBox='0 0 448 512'>
-              <path fill='currentColor'
-                d='M436 192H312c-13.3 0-24-10.7-24-24V44c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v84h84c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12zm-276-24V44c0-6.6-5.4-12-12-12h-40c-6.6 0-12 5.4-12 12v84H12c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12h124c13.3 0 24-10.7 24-24zm0 300V344c0-13.3-10.7-24-24-24H12c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12h84v84c0 6.6 5.4 12 12 12h40c6.6 0 12-5.4 12-12zm192 0v-84h84c6.6 0 12-5.4 12-12v-40c0-6.6-5.4-12-12-12H312c-13.3 0-24 10.7-24 24v124c0 6.6 5.4 12 12 12h40c6.6 0 12-5.4 12-12z'>
-              </path>
-            </svg>
-          </i>
+      <div class='tab-content clearfix row'>
+        <div class='tab-pane text-center col-sm' id='imagetab'>
+          
+          <div class='icdisplay' style='display: none;'>
+            <div class='col-lg-12 col-xs-12 text-center'>
+              <figure class='item'>
+                <div class='inner'>
+                  <img id='feedElement' crossorigin='anonymous' class='img-fluid' alt='Responsive image'
+                    src='./img/test.jpg'>
+                </div>
+              </figure>
+              <div class='row mt-1'>
+                <div class='col'>
+                  <div class='box'>
+                    <input type='file' name='f[]' id='input' accept='image/*' class='inputfile inputf' />
+                    <label for='input'>
+                      <svg width='20' height='17' viewBox='0 0 20 17'>
+                        <path d='M10 0l-5.2 4.9h3.3v5.1h3.8v-5.1h3.3l-5.2-4.9zm9.3 11.5l-3.2-2.1h-2l3.4 2.6h-3.5c-.1 0-.2.1-.2.1l-.8 2.3h-6l-.8-2.2c-.1-.1-.1-.2-.2-.2h-3.6l3.4-2.6h-2l-3.2 2.1c-.4.3-.7 1-.6 1.5l.6 3.1c.1.5.7.9 1.2.9h16.3c.6 0 1.1-.4 1.3-.9l.6-3.1c.1-.5-.2-1.2-.7-1.5z' />
+                      </svg>
+                      <span>Pick Image</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <canvas id='canvas' width=224 height=224></canvas>
+            </div>
+          </div>
         </div>
-        <video id='feedMediaElement' src="640x360_477k_vp9_30fps.webm" controls loop></video>
-      </div>
-     
-        <div class='box'>
-          <input type='file' name='f[]' id='inputvideo' accept='video/*' class='inputfile inputf' />
-          <label for='inputvideo'>
-            <svg width='20' height='17' viewBox='0 0 20 17'>
-              <path d='M10 0l-5.2 4.9h3.3v5.1h3.8v-5.1h3.3l-5.2-4.9zm9.3 11.5l-3.2-2.1h-2l3.4 2.6h-3.5c-.1 0-.2.1-.2.1l-.8 2.3h-6l-.8-2.2c-.1-.1-.1-.2-.2-.2h-3.6l3.4-2.6h-2l-3.2 2.1c-.4.3-.7 1-.6 1.5l.6 3.1c.1.5.7.9 1.2.9h16.3c.6 0 1.1-.4 1.3-.9l.6-3.1c.1-.5-.2-1.2-.7-1.5z' />
-            </svg>
-            <span>Pick Video</span>
-          </label>
-        </div>
+      
+        <div class='tab-pane text-center active col-sm' id='cameratab'>
 
+          <div class='icdisplay'>
+            
+            <div id='fullscreen' style='visibility: hidden;'>
+              <i class='fa expand'>
+                <svg aria-hidden='true' data-prefix='fas' data-icon='expand' class='svg-inline--fa fa-expand fa-w-14'
+                  role='img' viewBox='0 0 448 512'>
+                  <path fill='currentColor'
+                    d='M0 180V56c0-13.3 10.7-24 24-24h124c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12H64v84c0 6.6-5.4 12-12 12H12c-6.6 0-12-5.4-12-12zM288 44v40c0 6.6 5.4 12 12 12h84v84c0 6.6 5.4 12 12 12h40c6.6 0 12-5.4 12-12V56c0-13.3-10.7-24-24-24H300c-6.6 0-12 5.4-12 12zm148 276h-40c-6.6 0-12 5.4-12 12v84h-84c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12h124c13.3 0 24-10.7 24-24V332c0-6.6-5.4-12-12-12zM160 468v-40c0-6.6-5.4-12-12-12H64v-84c0-6.6-5.4-12-12-12H12c-6.6 0-12 5.4-12 12v124c0 13.3 10.7 24 24 24h124c6.6 0 12-5.4 12-12z'>
+                  </path>
+                </svg>
+              </i>
+              <i class='fa compress' style='display:none;'>
+                <svg aria-hidden='true' data-prefix='fas' data-icon='compress'
+                  class='svg-inline--fa fa-compress fa-w-14' role='img' viewBox='0 0 448 512'>
+                  <path fill='currentColor'
+                    d='M436 192H312c-13.3 0-24-10.7-24-24V44c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v84h84c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12zm-276-24V44c0-6.6-5.4-12-12-12h-40c-6.6 0-12 5.4-12 12v84H12c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12h124c13.3 0 24-10.7 24-24zm0 300V344c0-13.3-10.7-24-24-24H12c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12h84v84c0 6.6 5.4 12 12 12h40c6.6 0 12-5.4 12-12zm192 0v-84h84c6.6 0 12-5.4 12-12v-40c0-6.6-5.4-12-12-12H312c-13.3 0-24 10.7-24 24v124c0 6.6 5.4 12 12 12h40c6.6 0 12-5.4 12-12z'>
+                  </path>
+                </svg>
+              </i>
+            </div>
+            <video id='feedMediaElement' src="./img/cat.mp4" controls loop></video>
+          </div>
+      
+          <div class='box'>
+            <input type='file' name='f[]' id='inputvideo' accept='video/*' class='inputfile inputf' />
+            <label for='inputvideo'>
+              <svg width='20' height='17' viewBox='0 0 20 17'>
+                <path d='M10 0l-5.2 4.9h3.3v5.1h3.8v-5.1h3.3l-5.2-4.9zm9.3 11.5l-3.2-2.1h-2l3.4 2.6h-3.5c-.1 0-.2.1-.2.1l-.8 2.3h-6l-.8-2.2c-.1-.1-.1-.2-.2-.2h-3.6l3.4-2.6h-2l-3.2 2.1c-.4.3-.7 1-.6 1.5l.6 3.1c.1.5.7.9 1.2.9h16.3c.6 0 1.1-.4 1.3-.9l.6-3.1c.1-.5-.2-1.2-.7-1.5z' />
+              </svg>
+              <span>Pick Video</span>
+            </label>
+          </div>
+        </div>
         <div id='inference' class='shoulddisplay col-sm' style='display: none;'>
           <div class='row text-center tc' id='inferencetitle'>
-            <div id='inferenceTime'></div>
+            <div id='inferenceTime' style='width: 50%;'></div>
+            <div style='width: 50%; text-align: right; margin-top: -0.5rem;'><div id='fps'></div></div>
           </div>
           <div class='row text-center' id='inferenceresult'>
             <table class='table table-sm'>
@@ -249,7 +291,7 @@
       <div class='row'>
         <div class='col-lg-12 col-xs-12 text-lg-center text-center'>
           <div id='trademark' class='mb-4'></div>
-          <div id='simdnotes' class='mb-4'></div>
+          <div id='simdnotes-no' class='mb-4'></div>
           <div class='webmlbadge mb-4'>
             <div class='webml-title'>WebNN API</div>
             <div id='webmlstatus'></div>
@@ -259,7 +301,7 @@
             <div class='webml-status-true'><a href='https://webmachinelearning.github.io/webnn/#usecases'
                 title='W3C Web Neural Network API Use Cases'>Use Cases</a></div>
           </div>
-          <p>&copy;2019 <a href='../index.html'>WebNN API</a></p>
+          <p>&copy;2020 <a href='../index.html'>WebNN API</a></p>
         </div>
       </div>
     </div>
@@ -327,7 +369,6 @@
   <script src='../util/base.js'></script>
   <script src='../util/modelZoo.js'></script>
   <script src='../util/BaseRunner.js'></script>
-  <script src='../util/WebNNRunner.js'></script>
   <script src='../util/OpenCVRunner.js'></script>
   <script src='../util/BaseApp.js'></script>
   <script src='../util/BaseExample.js'></script>
