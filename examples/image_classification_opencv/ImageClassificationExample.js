@@ -35,7 +35,7 @@ class ImageClassificationExample extends BaseExample {
         this._setOpenCVJSBackend('WASM');
         this._setModelId('none');
         this._setInputType('camera');
-        this._setInputElement(this._feedElement);
+        this._setInputElement(this._feedMediaElement);
         this._setHiddenControlsFlag('0');
         this._setFramework('OpenCV.js');
         this._setRuntimeInitialized(false);
