@@ -70,9 +70,9 @@ $(document).ready(() => {
 
 $(window).load(() => {
   // Execute inference
-
   if(parseSearchParams('s') === 'image') {
     var time = 0
+    var i = 0
     $("#gallery .gallery-item").each(function() {
       var $this = $(this)
       setTimeout(function() {
@@ -80,7 +80,14 @@ $(window).load(() => {
         $this.addClass('hl')
         let src = $this.children('img').attr('src')
         $('#feedElement').attr('src', src)
-        example.main()
+        if(i === 0) {
+          example.main()
+          console.log('main')
+        } else {
+          example.mainupdate()
+          console.log('mainupdate')
+        }
+        i++
       }, time);
       time += 5000
     });

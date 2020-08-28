@@ -205,4 +205,35 @@ class ImageClassificationExample extends BaseExample {
       probElement.innerHTML = '';
     }
   };
+
+  mainupdate = async () => {
+    try {
+ 
+      console.log('FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFf')
+      // Inference with Web NN API
+      switch (this._currentInputType) {
+        case 'image':
+        case 'audio':
+          // Stop webcam opened by navigator.getUserMedia
+          if (this._track != null) {
+            this._track.stop();
+          }
+          await this._predict();
+          readyShowResultComponents();
+          break;
+        case 'camera':
+        case 'microphone':
+          this._setStreaming(true);
+          await this._predictStream();
+          break;
+        default:
+        // Never goes here
+      }
+    } catch (e) {
+      showAlertComponent(e);
+      showErrorComponent();
+    }
+  }
+
 }
+
