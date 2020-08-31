@@ -99,9 +99,7 @@ $(window).load(() => {
         let src = $this.children('img').attr('src')
         $('#feedElement').attr('src', src)
       }, time);
-      time += 5000
+      time += 4000
     });
-  } else {
-    example.main()
   }
 });
