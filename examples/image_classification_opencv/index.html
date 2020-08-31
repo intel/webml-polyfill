@@ -64,6 +64,14 @@
         margin: 0;
       }
     }
+
+    .fullwidth {
+      width: 100% !important;
+    }
+
+    .halfwidth {
+      width: 50% !important;
+    }
   </style>
 </head>
 
@@ -297,8 +305,8 @@
         </div>
         <div id='inference' class='shoulddisplay col-sm' style='display: none;'>
           <div class='row text-center tc' id='inferencetitle'>
-            <div id='inferenceTime' style='width: 50%;'></div>
-            <div style='width: 50%; text-align: right; margin-top: -0.5rem;'><div id='fps'></div></div>
+            <div id='inferenceTime'></div>
+            <div id='fpsparent' style='width: 50%; text-align: right; margin-top: -0.5rem;'><div id='fps'></div></div>
           </div>
           <div class='row text-center' id='inferenceresult'>
             <table class='table table-sm'>

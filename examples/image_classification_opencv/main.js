@@ -75,6 +75,9 @@ $(document).ready(() => {
     $('#cameratab').addClass('active')
     $('#gallery').hide()
     $('.inputf+label').show()
+    $('#fpsparent').show()
+    $('#inferenceTime').removeClass('fullwidth')
+    $('#inferenceTime').addClass('halfwidth')
   }
 
   if(parseSearchParams('s') === 'image') {
@@ -84,6 +87,9 @@ $(document).ready(() => {
     $('#cameratab').removeClass('active')
     $('#gallery').fadeIn()
     $('.inputf+label').hide()
+    $('#fpsparent').hide()
+    $('#inferenceTime').removeClass('halfwidth')
+    $('#inferenceTime').addClass('fullwidth')
   }
 
   $("#gallery .gallery-item:first-child").hide()
