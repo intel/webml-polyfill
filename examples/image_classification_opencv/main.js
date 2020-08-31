@@ -52,6 +52,22 @@ $(document).ready(() => {
     location.href = cvpath + video
   })
 
+  $('#squeezenet_onnx').click(function(){
+    location.href = cvpath + '?b=' + parseSearchParams('b') + '&m=squeezenet_onnx&s='+ parseSearchParams('s') +'&d=0&f=OpenCV.js'
+  })
+
+  $('#mobilenet_v2_onnx').click(function(){
+    location.href = cvpath + '?b=' + parseSearchParams('b') + '&m=mobilenet_v2_onnx&s=' + parseSearchParams('s') +'&d=0&f=OpenCV.js'
+  })
+
+  $('#resnet_v1_onnx').click(function(){
+    location.href = cvpath + '?b=' + parseSearchParams('b') + '&m=resnet_v1_onnx&s=' + parseSearchParams('s') +'&d=0&f=OpenCV.js'
+  })
+
+  $('#resnet_v2_onnx').click(function(){
+    location.href = cvpath + '?b=' + parseSearchParams('b') + '&m=resnet_v2_onnx&s=' + parseSearchParams('s') +'&d=0&f=OpenCV.js'
+  })
+
   if(parseSearchParams('s') === 'camera') {
     $('#tabcvcannedimage').removeClass('active')
     $('#tabcvvideo').addClass('active')
