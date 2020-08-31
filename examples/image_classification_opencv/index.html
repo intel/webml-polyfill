@@ -21,10 +21,61 @@
     video::-webkit-media-controls-fullscreen-button {
       display: none;
     }
+
+    .oc .nav-pills li {
+      width: 25%;
+    }
+
+    .gallery {
+      display: flex;
+      flex-wrap: wrap;
+    }
+
+    .gallery-item {
+      flex: 1 0 3rem;
+      margin: 1rem;
+      box-shadow: 0.1rem 0.1rem 0.1rem rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+
+    .gallery-image {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 400ms ease-out;
+    }
+
+    .gallery-image:hover {
+      transform: scale(1.25);
+    }
+
+    .hl {
+      border: 2px solid rgba(25, 190, 225, 1.0);
+    }
+
+    #feedElement {
+      width: 300px;
+    }
+
+    @supports (display: grid) {
+      .gallery,
+      .gallery-item {
+        margin: 0;
+      }
+    }
+
+    .fullwidth {
+      width: 100% !important;
+    }
+
+    .halfwidth {
+      width: 50% !important;
+    }
   </style>
 </head>
 
-<body id='imageclassification'>
+<body id='imageclassification' class='oc'>
   <header id='header'>
     <div class='container'>
       <div id='logo' class='pull-left'>
@@ -98,7 +149,7 @@
 
   <section class='ic' id='ic'>
     <div class='container' id='container'>
-      <a id='extra' href='#' class='mb-1 mt-3'>
+      <a id='extra' href='#' class='mt-3'>
         <h3 class='text-center ex' id='ictitle'>
           Image Classification
         </h3>
@@ -121,7 +172,14 @@
       </a>
 
       <ul class='nav nav-pills'>
-        <li id='cam' class='active'><a href='#camera' data-toggle='tab'>Video Playback</a>
+        <li id='tabcvimage'>
+          <a id='cvimage' href='#image' data-toggle='tab'>Image</a>
+        </li>
+        <li id='tabcvcamera'><a id='cvcamera' href='#camera' data-toggle='tab'>Live Camera</a>
+        </li>
+        <li id='tabcvcannedimage'><a id='cvcannedimage' href='#can' data-toggle='tab'>Canned Images</a>
+        </li>
+        <li id='tabcvvideo'><a id='cvvideo' href='#video' data-toggle='tab'>Video Playback</a>
         </li>
       </ul>
 
@@ -133,6 +191,8 @@
           </div>
         </div>
       </div>
+
+      <div class='gallery' id='gallery'></div>
 
       <div class='tab-content clearfix' style='display: none;' id='progressmodel'>
         <div class='loading-page'>
@@ -180,15 +240,14 @@
         </div>
       </div>
 
-      <div class='tab-content clearfix row'>
-        <div class='tab-pane text-center col-sm' id='imagetab'>
-          
+      <div class='tab-content clearfix row' id='cvresult'>
+        <div class='tab-pane text-center active col-sm' id='imagetab'>
           <div class='icdisplay' style='display: none;'>
             <div class='col-lg-12 col-xs-12 text-center'>
               <figure class='item'>
                 <div class='inner'>
                   <img id='feedElement' crossorigin='anonymous' class='img-fluid' alt='Responsive image'
-                    src='./img/test.jpg'>
+                    src='./img/1.jpg'>
                 </div>
               </figure>
               <div class='row mt-1'>
@@ -209,7 +268,7 @@
           </div>
         </div>
       
-        <div class='tab-pane text-center active col-sm' id='cameratab'>
+        <div class='tab-pane text-center col-sm' id='cameratab'>
 
           <div class='icdisplay'>
             
@@ -246,8 +305,8 @@
         </div>
         <div id='inference' class='shoulddisplay col-sm' style='display: none;'>
           <div class='row text-center tc' id='inferencetitle'>
-            <div id='inferenceTime' style='width: 50%;'></div>
-            <div style='width: 50%; text-align: right; margin-top: -0.5rem;'><div id='fps'></div></div>
+            <div id='inferenceTime'></div>
+            <div id='fpsparent' style='width: 50%; text-align: right; margin-top: -0.5rem;'><div id='fps'></div></div>
           </div>
           <div class='row text-center' id='inferenceresult'>
             <table class='table table-sm'>

@@ -3078,3 +3078,20 @@ tr.model th {
     left: 80%;
   }
 }
+
+#opencvspecial {
+  letter-spacing: 0.2em;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+}
+
+#opencvspecial svg {
+  color: #333;
+  height: 20px;
+  width: 20px;
+  margin: -0.3rem 0.6rem 0 0;
+}
+
+#opencvspecial a:hover {
+  text-decoration: underline !important;
+}
