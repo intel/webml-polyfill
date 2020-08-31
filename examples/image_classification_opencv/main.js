@@ -1,6 +1,6 @@
 const example = new ImageClassificationExample({model: imageClassificationModels});
 
-const gallery = ['./img/0.jpg',
+const gallery = ['./img/0.png',
   './img/1.jpg',
   './img/2.jpg',
   './img/3.jpg',
@@ -12,6 +12,7 @@ const gallery = ['./img/0.jpg',
   './img/9.jpg',
   './img/10.jpg',
   './img/11.jpg',
+  './img/12.jpg'
 ]
 
 $(document).ready(() => {
@@ -51,6 +52,22 @@ $(document).ready(() => {
     location.href = cvpath + video
   })
 
+  $('#squeezenet_onnx').click(function(){
+    location.href = cvpath + '?b=' + parseSearchParams('b') + '&m=squeezenet_onnx&s='+ parseSearchParams('s') +'&d=0&f=OpenCV.js'
+  })
+
+  $('#mobilenet_v2_onnx').click(function(){
+    location.href = cvpath + '?b=' + parseSearchParams('b') + '&m=mobilenet_v2_onnx&s=' + parseSearchParams('s') +'&d=0&f=OpenCV.js'
+  })
+
+  $('#resnet_v1_onnx').click(function(){
+    location.href = cvpath + '?b=' + parseSearchParams('b') + '&m=resnet_v1_onnx&s=' + parseSearchParams('s') +'&d=0&f=OpenCV.js'
+  })
+
+  $('#resnet_v2_onnx').click(function(){
+    location.href = cvpath + '?b=' + parseSearchParams('b') + '&m=resnet_v2_onnx&s=' + parseSearchParams('s') +'&d=0&f=OpenCV.js'
+  })
+
   if(parseSearchParams('s') === 'camera') {
     $('#tabcvcannedimage').removeClass('active')
     $('#tabcvvideo').addClass('active')
@@ -66,13 +83,14 @@ $(document).ready(() => {
     $('#cameratab').removeClass('active')
     $('#gallery').fadeIn()
   }
+
+  $("#gallery .gallery-item:first-child").hide()
 });
 
 $(window).load(() => {
   // Execute inference
   if(parseSearchParams('s') === 'image') {
     var time = 0
-    var i = 0
     $("#gallery .gallery-item").each(function() {
       var $this = $(this)
       setTimeout(function() {
@@ -80,14 +98,6 @@ $(window).load(() => {
         $this.addClass('hl')
         let src = $this.children('img').attr('src')
         $('#feedElement').attr('src', src)
-        if(i === 0) {
-          example.main()
-          console.log('main')
-        } else {
-          example.mainupdate()
-          console.log('mainupdate')
-        }
-        i++
       }, time);
       time += 5000
     });

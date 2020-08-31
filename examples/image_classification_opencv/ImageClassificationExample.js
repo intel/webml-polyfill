@@ -153,7 +153,8 @@ class ImageClassificationExample extends BaseExample {
     if (this._currentInputType == 'image') {
       $('#fps').hide();
       this._currentInputElement.addEventListener('load', () => {
-        this.main();
+        // this.main();
+        this._predict();
       }, false);
     }
 
@@ -208,8 +209,6 @@ class ImageClassificationExample extends BaseExample {
 
   mainupdate = async () => {
     try {
- 
-      console.log('FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFf')
       // Inference with Web NN API
       switch (this._currentInputType) {
         case 'image':
