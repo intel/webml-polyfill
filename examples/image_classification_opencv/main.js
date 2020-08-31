@@ -74,6 +74,7 @@ $(document).ready(() => {
     $('#imagetab').removeClass('active')
     $('#cameratab').addClass('active')
     $('#gallery').hide()
+    $('.inputf+label').show()
   }
 
   if(parseSearchParams('s') === 'image') {
@@ -82,24 +83,9 @@ $(document).ready(() => {
     $('#imagetab').addClass('active')
     $('#cameratab').removeClass('active')
     $('#gallery').fadeIn()
+    $('.inputf+label').hide()
   }
 
   $("#gallery .gallery-item:first-child").hide()
-});
 
-$(window).load(() => {
-  // Execute inference
-  if(parseSearchParams('s') === 'image') {
-    var time = 0
-    $("#gallery .gallery-item").each(function() {
-      var $this = $(this)
-      setTimeout(function() {
-        $("#gallery .gallery-item").removeClass('hl')
-        $this.addClass('hl')
-        let src = $this.children('img').attr('src')
-        $('#feedElement').attr('src', src)
-      }, time);
-      time += 4000
-    });
-  }
 });

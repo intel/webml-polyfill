@@ -207,8 +207,82 @@ class ImageClassificationExample extends BaseExample {
     }
   };
 
-  mainupdate = async () => {
+  main = async () => {
+    if (!this._runtimeInitialized) {
+      console.log(`Runtime isn't initialized`);
+      return;
+    }
+    this._setStreaming(false);
+    // Update UI title component info
+    if (this._currentFramework === 'WebNN') {
+      updateTitleComponent(this._currentBackend, this._currentPrefer, this._currentModelId, this._inferenceModels);
+    } else if (this._currentFramework === 'OpenCV.js') {
+      updateTitleComponent(this._currentOpenCVJSBackend, null, this._currentModelId, this._inferenceModels);
+    }
+
+    if (this._currentModelId === 'none') {
+      showErrorComponent('No model selected', 'Please select model to start prediction.');
+      return;
+    } else {
+      if (this._currentModelId === 'mobilenet_v1_quant_caffe2') {
+        let checkFlag = false;
+        if (this._currentBackend !== 'WebML') {
+          checkFlag = true;
+        } else {
+          if (this._currentPrefer !== 'fast') {
+            checkFlag = true;
+          }
+        }
+
+        if (checkFlag) {
+          showErrorComponent('Incorrect backend', `Current model just support 'FAST_SINGLE_ANSWER' backend.`);
+          return;
+        }
+      }
+
+      const modelCategoryLen = Object.keys(this._inferenceModels).length;
+      if (modelCategoryLen > 1) {
+        if (this._currentModelId.includes('+') || this._currentModelId.includes(' ')) {
+          let modelIdArray;
+          if (this._currentModelId.includes('+')) {
+            modelIdArray = this._currentModelId.split('+');
+          } else if (this._currentModelId.includes(' ')) {
+            modelIdArray = this._currentModelId.split(' ');
+          }
+          if (modelCategoryLen > modelIdArray.length) {
+            showErrorComponent('Not enough selected models', `Please select ${modelCategoryLen} kinds of models to start prediction.`);
+            return;
+          }
+        } else {
+          showErrorComponent('Not enough selected models', `Please select ${modelCategoryLen} kinds of models to start prediction.`);
+          return;
+        }
+      }
+    }
     try {
+      // Get Runner for execute inference
+      this._getRunner();
+      // intial runner
+      this._doInitialRunner();
+      // UI shows loading model progress
+      await showProgressComponent('current', 'pending', 'pending');
+      // Load model
+      await this._loadModel();
+      // UI shows compiling model progress, includes warm up model
+      await showProgressComponent('done', 'current', 'pending');
+      // Compile model
+      await this._compileModel();
+      if (this._currentFramework === 'WebNN') {
+        const requiredOps = this._getRequiredOps();
+        // show offload ops info
+        const supportedOps = getSupportedOps(this._currentBackend, this._currentPrefer);
+        showHybridComponent(supportedOps, requiredOps, this._currentBackend, this._currentPrefer);
+        // show sub graphs summary
+        const subgraphsSummary = this._getSubgraphsSummary();
+        showSubGraphsSummary(subgraphsSummary);
+      }
+      // UI shows inferencing progress
+      await showProgressComponent('done', 'done', 'current');
       // Inference with Web NN API
       switch (this._currentInputType) {
         case 'image':
@@ -218,6 +292,7 @@ class ImageClassificationExample extends BaseExample {
             this._track.stop();
           }
           await this._predict();
+          await showProgressComponent('done', 'done', 'done'); // 'COMPLETED_INFERENCE'
           readyShowResultComponents();
           break;
         case 'camera':
@@ -228,11 +303,26 @@ class ImageClassificationExample extends BaseExample {
         default:
         // Never goes here
       }
+
+      if(parseSearchParams('s') === 'image') {
+        var time = 0
+        $("#gallery .gallery-item").each(function() {
+          var $this = $(this)
+          setTimeout(function() {
+            $("#gallery .gallery-item").removeClass('hl')
+            $this.addClass('hl')
+            let src = $this.children('img').attr('src')
+            $('#feedElement').attr('src', src)
+          }, time);
+          time += 4000
+        });
+      }
+      
     } catch (e) {
       showAlertComponent(e);
       showErrorComponent();
     }
-  }
+  };
 
 }
 
