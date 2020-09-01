@@ -776,11 +776,11 @@ const modelZoo = {
     modelSize: '2.3MB',
     modelFile: '../semantic_segmentation/model/deeplabv3_513_quant.bin',
     labelsFile: '../semantic_segmentation/model/labels.txt',
-    inputSize: [1,513, 513, 3],
-    outputSize: [1,513, 513, 1],
+    inputSize: [513, 513, 3],
+    outputSize: [513, 513, 1],
     preOptions: {
-      mean: [127.5, 127.5, 127.5],
-      std: [127.5, 127.5, 127.5],
+      mean: [0, 0, 0],
+      std: [1, 1, 1],
     },
     intro: 'Equivalent to the model above (without dilated suffix) but only available on platforms that natively support atrous convolution.',
     paperUrl: 'https://arxiv.org/abs/1802.02611'
