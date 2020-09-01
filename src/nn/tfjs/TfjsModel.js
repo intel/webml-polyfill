@@ -4,6 +4,7 @@ import Graph from '../GraphUtils';
 import * as utils from '../utils';
 import CyclicProfiler from '../instrument';
 import wasmPath from '../../../node_modules/@tensorflow/tfjs-backend-wasm/dist/tfjs-backend-wasm.wasm';
+import simdPath from '../../../node_modules/@tensorflow/tfjs-backend-wasm/dist/tfjs-backend-wasm-simd.wasm';
 import {setWasmPath} from '@tensorflow/tfjs-backend-wasm';
 import "@tensorflow/tfjs-backend-webgl";
 
@@ -47,7 +48,7 @@ export default class TfjsModel {
           }
           return '';
         }
-        setWasmPath(_fixWasmPath(wasmPath));
+        setWasmPath(null, {'tfjs-backend-wasm.wasm': _fixWasmPath(wasmPath)});
         await tf.setBackend('wasm');
       };
     } else {
