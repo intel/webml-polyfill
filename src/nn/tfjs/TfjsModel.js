@@ -4,7 +4,6 @@ import Graph from '../GraphUtils';
 import * as utils from '../utils';
 import CyclicProfiler from '../instrument';
 import wasmPath from '../../../node_modules/@tensorflow/tfjs-backend-wasm/dist/tfjs-backend-wasm.wasm';
-import simdPath from '../../../node_modules/@tensorflow/tfjs-backend-wasm/dist/tfjs-backend-wasm-simd.wasm';
 import {setWasmPath} from '@tensorflow/tfjs-backend-wasm';
 import "@tensorflow/tfjs-backend-webgl";
 
@@ -48,7 +47,7 @@ export default class TfjsModel {
           }
           return '';
         }
-        setWasmPath(null, {'tfjs-backend-wasm.wasm': _fixWasmPath(wasmPath)});
+        setWasmPath(_fixWasmPath(wasmPath));
         await tf.setBackend('wasm');
       };
     } else {
@@ -353,15 +352,24 @@ export default class TfjsModel {
 
     switch(op) {
       case OperationCode.ADD:
-      case OperationCode.MUL: {
+      case OperationCode.MUL:
+      case OperationCode.SUB:
+      case OperationCode.DIV: 
+      case OperationCode.POW: {
         const input1 = operands[inputs[0]];
         const input2 = operands[inputs[1]];
         const activation = FuseFunctionMap.get(operands[inputs[2]].value[0]);
         const output = operands[outputs[0]];
         if (op === OperationCode.ADD) {
           output.assign(activation(tf.add(input1, input2)));
-        } else {
+        } else if (op === OperationCode.MUL) {
           output.assign(activation(tf.mul(input1, input2)));
+        } else if (op === OperationCode.SUB) {
+          output.assign(activation(tf.sub(input1, input2)));
+        } else if (op === OperationCode.DIV) {
+          output.assign(activation(tf.div(input1, input2)));
+        } else {
+          output.assign(activation(tf.pow(input1, input2)));
         }
       } break;
       case OperationCode.CONV_2D:
@@ -708,6 +716,28 @@ export default class TfjsModel {
         const input1 = operands[inputs[0]];
         const output = operands[outputs[0]];
         output.assign(tf.sigmoid(input1));
+      } break;
+      case OperationCode.PAD: { //reflect
+        const input = operands[inputs[0]];
+        const paddingModeCode = operands[inputs[1]];
+        const paddings = operands[inputs[2]].arraySync();
+        const output = operands[outputs[0]];
+        output.assign(tf.pad(input, paddings));
+      } break;
+      case OperationCode.MEAN: {
+        const input = operands[inputs[0]];
+        const axes = operands[inputs[1]].arraySync();
+        const keepdims = operands[inputs[2]].value[0];
+        const output = operands[outputs[0]];
+        output.assign(tf.mean(input, axes, keepdims));
+      } break;
+      case OperationCode.TRANSPOSE_CONV_2D: {
+        const input = operands[inputs[0]];
+        const filter = operands[inputs[1]];
+        const outputShape = operands[inputs[2]].arraySync();
+        const strides = operands[inputs[3]].arraySync();
+        const output = operands[outputs[0]];
+        output.assign(tf.conv2dTranspose(input, filter, outputShape, strides, 'valid'));
       } break;
       default: {
         throw new Error(`Operation ${op} is not supported`);

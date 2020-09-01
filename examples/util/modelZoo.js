@@ -1072,6 +1072,63 @@ const modelZoo = {
     scoreFile: '../speech_recognition/ark/dev93_scores.ark',
     intro: 'This model was trained by the Kaldi s5 recipe and the Kaldi Nnet (nnet1) framework and using the Wall Street Journal corpus.',
     paperUrl: 'https://docs.openvinotoolkit.org/latest/_inference_engine_samples_speech_sample_README.html'
+  }],
+
+  styleTransferModels: [{
+    modelName: 'StarryNight (ONNX)',
+    framework: ['WebNN'],
+    format: 'ONNX',
+    modelId: 'starry_night_onnx',
+    modelSize: '134.1kB',
+    inputSize: [165, 250, 3],
+    outputSize: [168, 252, 3],
+    modelFile: '../style_transfer/model/starry-night.onnx',
+    intro: 'Neural style transfer is the process of taking the style of one image then applying it to the content of another image.',
+    paperUrl: 'https://arxiv.org/abs/1705.04058'
+  }, {
+    modelName: 'SelfPortrait (ONNX)',
+    framework: ['WebNN'],
+    format: 'ONNX',
+    modelId: 'self_portrait_onnx',
+    modelSize: '133.9kMB',
+    inputSize: [187, 250, 3],
+    outputSize: [188, 252, 3],
+    modelFile: '../style_transfer/model/self-portrait.onnx',
+    intro: 'Neural style transfer is the process of taking the style of one image then applying it to the content of another image.',
+    paperUrl: 'https://arxiv.org/abs/1705.04058'
+  }, {
+    modelName: 'SienWithCigar (ONNX)',
+    framework: ['WebNN'],
+    format: 'ONNX',
+    modelId: 'sien_with_cigar_onnx',
+    modelSize: '134.2kB',
+    inputSize: [166, 250, 3],
+    outputSize: [168, 252, 3],
+    modelFile: '../style_transfer/model/sien-with-cigar.onnx',
+    intro: 'Neural style transfer is the process of taking the style of one image then applying it to the content of another image.',
+    paperUrl: 'https://arxiv.org/abs/1705.04058'
+  }, {
+    modelName: 'Bedroom (ONNX)',
+    framework: ['WebNN'],
+    format: 'ONNX',
+    modelId: 'bedroom_onnx',
+    modelSize: '134.3kB',
+    inputSize: [256, 256, 3],
+    outputSize: [256, 256, 3],
+    modelFile: '../style_transfer/model/bedroom.onnx',
+    intro: 'Neural style transfer is the process of taking the style of one image then applying it to the content of another image.',
+    paperUrl: 'https://arxiv.org/abs/1705.04058'
+  }, {
+    modelName: 'LaCampesinos (ONNX)',
+    framework: ['WebNN'],
+    format: 'ONNX',
+    modelId: 'la_campesinos_onnx',
+    modelSize: '134.3kB',
+    inputSize: [256, 256, 3],
+    outputSize: [256, 256, 3],
+    modelFile: '../style_transfer/model/la-campesinos.onnx',
+    intro: 'Neural style transfer is the process of taking the style of one image then applying it to the content of another image.',
+    paperUrl: 'https://arxiv.org/abs/1705.04058'
   }]
 };
 

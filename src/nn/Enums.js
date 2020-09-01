@@ -1568,6 +1568,13 @@ export const OperationCode = {
    *      condition must be satisfied: output_scale > input_scale * filter_scale.
    */
   ATROUS_DEPTHWISE_CONV_2D: 10004,
+
+  SUB: 36,
+  DIV: 30,
+  POW: 70,
+  PAD: 32,
+  MEAN: 31,
+  TRANSPOSE_CONV_2D: 91,
 };
 
 export const ResultCode = {

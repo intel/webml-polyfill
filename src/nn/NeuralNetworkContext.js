@@ -77,6 +77,13 @@ export default class NeuralNetworkContext {
     this.PRELU = OperationCode.PRELU;
     this.ATROUS_CONV_2D = OperationCode.ATROUS_CONV_2D;
     this.ATROUS_DEPTHWISE_CONV_2D = OperationCode.ATROUS_DEPTHWISE_CONV_2D;
+
+    this.SUB = OperationCode.SUB;
+    this.DIV = OperationCode.DIV;
+    this.POW = OperationCode.POW;
+    this.PAD = OperationCode.PAD;
+    this.MEAN = OperationCode.MEAN;
+    this.TRANSPOSE_CONV_2D = OperationCode.TRANSPOSE_CONV_2D;
   }
 
   _initFusedActivationFunctionTypes() {
