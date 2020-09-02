@@ -62,9 +62,8 @@ export default class Compilation {
           await this._preparedModel.prepareModel();  
         }
       } break;
-      case 'WebGL': 
-      case 'WebGPU': {
-        this._preparedModel =  new TfjsModel(this._model);
+      case 'WebGL': {
+        this._preparedModel = new TfjsModel(this._model);
         await this._preparedModel.prepareModel();
       } break;
       default: {
