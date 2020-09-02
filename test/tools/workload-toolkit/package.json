@@ -1,0 +1,34 @@
+{
+  "name": "workload-toolkit",
+  "version": "0.1.0",
+  "description": "Automation test toolkit for workload testing.",
+  "main": "./src/main.js",
+  "directories": {
+    "lib": "lib",
+    "util": "util",
+    "src": "src"
+  },
+  "dependencies": {
+    "@fast-csv/parse": "^4.3.1",
+    "childprocess": "^2.0.2",
+    "csvtojson": "^2.0.10",
+    "extract-zip": "^2.0.1",
+    "moment": "^2.22.2",
+    "sleep-promise": "^8.0.1"
+  },
+  "devDependencies": {
+    "fast-csv": "^2.4.1",
+    "cheerio": "*",
+    "jsdom": "^16.4.0",
+    "playwright": "^1.2.1"
+  },
+  "scripts": {
+    "compare": "node ./util/compare-result.js",
+    "downloadbuild": "node ./util/download-build.js",
+    "installbuild": "node ./util/install-build.js",
+    "test": "node ./util/run-test.js",
+    "rc": "node ./src/main.js without-baseline",
+    "rcs": "node ./src/main.js existed-baseline",
+    "start": "node ./src/main.js"
+  }
+}
