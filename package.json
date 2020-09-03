@@ -32,7 +32,7 @@
     "babel-loader": "^7.1.1",
     "babel-polyfill": "^6.26.0",
     "babel-preset-env": "^1.6.1",
-    "chromedriver": "83.0.0",
+    "chromedriver": "85.0.0",
     "fast-csv": "^2.4.1",
     "file-loader": "^5.0.2",
     "globby": "^8.0.1",
