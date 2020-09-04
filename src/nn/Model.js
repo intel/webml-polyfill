@@ -6,7 +6,7 @@ export default class Model {
   /**
    * Create an empty model.
    *
-   * @typedef  {'WebGL' | 'WebGPU' | 'WASM'} Backend
+   * @typedef  {'WebGL' | 'WASM'} Backend
    *
    * @typedef  {Object}      ModelOptions  Options for polyfill only
    * @property {Backend}     backend       Backend selection
