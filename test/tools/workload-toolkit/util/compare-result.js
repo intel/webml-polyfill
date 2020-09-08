@@ -184,7 +184,6 @@ const subCompare = (compare, baseline) => {
   let dom = new jsdom.JSDOM(htmlSource);
   let h2Ele = dom.window.document.createElement('h2');
   h2Ele.innerHTML = `Check Report on ${targetPlatform}`;
-  let hrEle = dom.window.document.createElement('hr');
   let h3Ele = dom.window.document.createElement('h3');
   h3Ele.innerHTML = 'Detials:';
 
@@ -217,7 +216,6 @@ const subCompare = (compare, baseline) => {
   }
 
   dom.window.document.body.appendChild(h2Ele);
-  dom.window.document.body.appendChild(hrEle);
   dom.window.document.body.appendChild(h3Ele);
   dom.window.document.body.appendChild(detailDiv);
 
