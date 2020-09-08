@@ -118,8 +118,9 @@ const getBaselineRow = (rowDicList, category, model) => {
 };
 
 const scoreCompare = (compare, baseline) => {
-  let status = Number(compare) / Number(baseline) * 100;
-  return `${status.toFixed(2)}%`;
+  let downgradeFlag = Number(compare) > Number(baseline) * 1.1;
+  let speedup = Number(compare) / Number(baseline) * 100;
+  return [downgradeFlag, `${speedup.toFixed(2)}%`];
 };
 
 const labelCompare = (compare, baseline) => {
@@ -128,12 +129,12 @@ const labelCompare = (compare, baseline) => {
   let [baselineLabel, baselineProbability] = baseline.split(':');
 
   if (compareLabel !== baselineLabel) {
-    status = 'FAIL by Top1 lable';
+    status = 'FAIL of incorrect Top1 lable';
   } else {
     const np1 = Number(compareProbability.split('%')[0]);
     const np2 = Number(baselineProbability.split('%')[0]);
     if (np1 < np2) {
-      status = 'FAIL by downgrade of Top1 probability';
+      status = 'FAIL of Top1 probability downgrade';
     }
   }
 
@@ -143,9 +144,21 @@ const labelCompare = (compare, baseline) => {
 const subCompare = (compare, baseline) => {
   let [compareScore, compareTop1] = compare.split('/').slice(0,2);
   let [baselineScore, baselineTop1] = baseline.split('/').slice(0,2);
-  let scoreStatus = scoreCompare(compareScore.split('+')[0], baselineScore.split('+')[0]);
+  let [downgradeFlag, speedup]= scoreCompare(compareScore.split('+')[0], baselineScore.split('+')[0]);
   let labelStatus = labelCompare(compareTop1, baselineTop1);
-  return labelStatus !== 'OK' ? labelStatus : scoreStatus;
+  if (downgradeFlag) {
+    if (labelStatus !== 'OK') {
+      return `FAIL of Performance downgrade and ${labelStatus}`;
+    } else {
+      return `FAIL of Performance downgrade`;
+    }
+  } else {
+    if (labelStatus !== 'OK') {
+      return `${labelStatus}`;
+    } else {
+      return speedup;
+    }
+  }
 };
 
 (async () => {
