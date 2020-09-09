@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const csv = require('csvtojson');
 const jsdom = require("jsdom");
-const {chromium} = require('playwright');
+const {chromium} = require('playwright-chromium');
 const settings = require("../settings.js");
 const util = require("../lib/Util.js");
 

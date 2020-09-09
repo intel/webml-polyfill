@@ -1,4 +1,4 @@
-const { chromium } = require('playwright');
+const { chromium } = require('playwright-chromium');
 const path = require('path');
 const sleep = require('sleep-promise');
 const settings = require("../settings.js");
