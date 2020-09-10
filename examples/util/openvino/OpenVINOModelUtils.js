@@ -33,17 +33,17 @@ class OpenVINOModel {
     const parser = new DOMParser({ errorHandler: () => { errors = true; } });
     const xmlDoc = parser.parseFromString(xml, 'text/xml');
     if (errors || xmlDoc.documentElement == null || xmlDoc.getElementsByTagName('parsererror').length > 0) {
-        throw new openvino.Error("File format is not OpenVINO.");
+      throw new openvino.Error("File format is not OpenVINO.");
     }
     if (!xmlDoc.documentElement || xmlDoc.documentElement.nodeName != 'net') {
-        throw new openvino.Error("File format is not OpenVINO IR.");
+      throw new openvino.Error("File format is not OpenVINO IR.");
     }
     // don't use metadata
     const metadata = new openvino.Metadata(null);
     const net = openvino.XmlReader.read(xmlDoc.documentElement);
     const model = new openvino.Model(metadata, net);
     if (net.disconnectedLayers) {
-        host.exception(new openvino.Error("Graph contains not connected layers " + JSON.stringify(net.disconnectedLayers) + " in '" + identifier + "'."));
+      host.exception(new openvino.Error("Graph contains not connected layers " + JSON.stringify(net.disconnectedLayers) + " in '" + identifier + "'."));
     }
     return model;
   }
@@ -71,7 +71,6 @@ class OpenVINOModel {
       node.getFloats = (name, defaultValue) => this.getFloats(node, name, defaultValue);
       node.getString = (name, defaultValue) => this.getString(node, name, defaultValue);
       node.getInitializer = (dimHints) => this.getNodeInitilizer(node, dimHints);
-      node.getKernelShape = () => this.getKernelShape(node);
     }
 
     // bind helper functions for openvino.Tensor
@@ -139,19 +138,6 @@ class OpenVINOModel {
     }
   }
 
-  getKernelShape(node) {
-    if (node.type === 'Convolution') {
-      const [kernelH, kernelW] = this.getInts(node, 'kernel');
-      const inputDims = this.getTensorShape(node.inputs[0]);
-      const outputDims = this.getTensorShape(node.outputs[0]);
-      const inChannels = inputDims[inputDims.length - 1];
-      const outChannels = outputDims[outputDims.length - 1];
-      const groups = this.getInt(node, 'group', 1);
-      return [outChannels, kernelH, kernelW, inChannels / groups];
-    } else {
-      throw new Error(`Kernel shape cannot be inferred on a ${node.operator}`);
-    }
-  }
   // End of helper functions for openvino.Node
 
   // Helper functions for openvino.Tensor
@@ -159,6 +145,7 @@ class OpenVINOModel {
     switch (type) {
       case 'float32':
         return Float32Array;
+      case 'int64':
       case 'I32':
         return Int32Array;
       case 'uint8':

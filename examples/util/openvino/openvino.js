@@ -32,12 +32,12 @@ openvino.ModelFactory = class {
                     return false;
             }
             const buffer = context.buffer;
-            const signature = [ 0x21, 0xA8, 0xEF, 0xBE, 0xAD, 0xDE ];
+            const signature = [0x21, 0xA8, 0xEF, 0xBE, 0xAD, 0xDE];
             if (buffer && buffer.length > 6 && signature.every((v, i) => v == buffer[i])) {
                 return false;
             }
             if (buffer.length > 4) {
-                const signature = buffer[0] | buffer[1] << 8 | buffer[2] << 16 | buffer [3] << 24;
+                const signature = buffer[0] | buffer[1] << 8 | buffer[2] << 16 | buffer[3] << 24;
                 if (signature === 0x00000000 || signature === 0x00000001 ||
                     signature === 0x01306B47 || signature === 0x000D4B38 || signature === 0x0002C056) {
                     return false;
@@ -101,7 +101,7 @@ openvino.Model = class {
 
     constructor(metadata, net, bin) {
         this._name = net.name || '';
-        this._graphs = [ new openvino.Graph(metadata, net, bin) ];
+        this._graphs = [new openvino.Graph(metadata, net, bin)];
     }
 
     get name() {
@@ -130,19 +130,18 @@ openvino.Graph = class {
             const inputs = layer.inputs.map((input) => this._argument(layer.id, layer.precision, input, net.edges));
             const outputs = layer.outputs.map((output) => this._argument(layer.id, output.precision || layer.precision, output, null));
             switch (layer.type) {
-                case 'Input': 
                 case 'Parameter':
-                {
-                    const name = layer.name || '';
-                    // precision is a part of OpenVINO IR layers of IR v6 and earlier
-                    // in IR v7 and newer the port is no longer an attribute of the layer but of each output port
-                    // IR input is not just a placeholder, it is conceptually the legitimate layer
-                    // in order not to break compatibility with the overall approach
-                    // with openvino.Parameter for inputs and openvino.Node for outputs
-                    // input openvino.Node would be stored as an optional attribute of openvino.Parameter
-                    this._inputs.push(new openvino.Parameter(name, outputs));
-                    break;
-                }
+                    {
+                        const name = layer.name || '';
+                        // precision is a part of OpenVINO IR layers of IR v6 and earlier
+                        // in IR v7 and newer the port is no longer an attribute of the layer but of each output port
+                        // IR input is not just a placeholder, it is conceptually the legitimate layer
+                        // in order not to break compatibility with the overall approach
+                        // with openvino.Parameter for inputs and openvino.Node for outputs
+                        // input openvino.Node would be stored as an optional attribute of openvino.Parameter
+                        this._inputs.push(new openvino.Parameter(name, outputs));
+                        break;
+                    }
                 default: {
                     this._nodes.push(new openvino.Node(this, metadata, bin, layer, inputs, outputs));
                     break;
@@ -182,7 +181,7 @@ openvino.Graph = class {
                 }
             }
         }
-        if (nodesWithNonExistentInputs.size !== 0){
+        if (nodesWithNonExistentInputs.size !== 0) {
             net.disconnectedLayers = Array.from(nodesWithNonExistentInputs).map((node) => node.name);
         }
     }
@@ -236,7 +235,7 @@ openvino.Graph = class {
                         // we had a argument with id: 0:1  - meaning from layer "0" and its port "1"
                         // now as we rename all internal nodes to have an id of the TI included
                         // e.g. internal layer with id "0" and TI with id "14" results in internal layer to get id "14_0"
-                        if (input_argument.name){
+                        if (input_argument.name) {
                             input_argument._name = singleTensorIteratorNodeId + '_' + input_argument.name;
                         }
                     }
@@ -247,7 +246,7 @@ openvino.Graph = class {
                         // we had a argument with id: 1:1  - meaning from me with id "1" and my port "1"
                         // now as we rename all internal nodes to have an id of the TI included
                         // e.g. my layer with id "1" and TI with id "14" results in internal layer to get id "14_1"
-                        if (output_argument.name){
+                        if (output_argument.name) {
                             output_argument._name = singleTensorIteratorNodeId + '_' + output_argument.name;
                         }
                     }
@@ -278,13 +277,13 @@ openvino.Graph = class {
                         });
                         if (inputWithoutId) {
                             const argumentWithoutId = inputWithoutId.arguments.find((argument) => !argument.name);
-                            if (argumentWithoutId){
+                            if (argumentWithoutId) {
                                 argumentWithoutId._name = potentialParentInput.arguments[0].name;
                             }
                         }
                     }
                     else {
-                        if (!nestedNode._inputs){
+                        if (!nestedNode._inputs) {
                             throw new openvino.Error("Tensor Iterator node with name '" + nestedNode._id + "' does not have inputs.");
                         }
 
@@ -294,7 +293,7 @@ openvino.Graph = class {
                         });
                         if (inputWithoutId) {
                             const argumentWithoutId = inputWithoutId._arguments.find((argument) => !argument._name);
-                            if (argumentWithoutId){
+                            if (argumentWithoutId) {
                                 argumentWithoutId._name = newId;
                             }
                         }
@@ -315,7 +314,7 @@ openvino.Graph = class {
                 for (const candidate_edge of candidate_edges) {
                     const childLayerID = candidate_edge.split(':')[0];
                     const child = this._nodes.find((layer) => layer._id === childLayerID);
-                    if (!child._inputs || (child._inputs && child._inputs.length === 0)){
+                    if (!child._inputs || (child._inputs && child._inputs.length === 0)) {
                         continue;
                     }
                     if (nestedNode._outputs && nestedNode._outputs[0]) {
@@ -427,7 +426,6 @@ openvino.Graph = class {
             }
             results.push(layer);
         }
-        console.log(`  shifted layers number: [${results.length}]`);
         return results;
     }
 };
@@ -450,13 +448,13 @@ openvino.Node = class {
         // console.log(`  layer.blobs: [${layer.blobs.length}]`);
         for (const input of inputs) {
             const inputName = (inputIndex == 0) ? 'input' : inputIndex.toString();
-            this._inputs.push(new openvino.Parameter(inputName, [ input ]));
+            this._inputs.push(new openvino.Parameter(inputName, [input]));
             inputIndex++;
         }
         let outputIndex = 0;
         for (const output of outputs) {
             const outputName = (outputIndex == 0) ? 'output' : outputIndex.toString();
-            this._outputs.push(new openvino.Parameter(outputName, [ output ]));
+            this._outputs.push(new openvino.Parameter(outputName, [output]));
             outputIndex++;
         }
         const attributes = {};
@@ -484,11 +482,11 @@ openvino.Node = class {
                 switch (this._type + ':' + name) {
                     case 'FullyConnected:weights': {
                         const outSize = parseInt(attributes['out-size'], 10);
-                        dimensions = [ size / (outSize * itemSize), outSize ];
+                        dimensions = [size / (outSize * itemSize), outSize];
                         break;
                     }
                     case 'FullyConnected:biases': {
-                        dimensions = [ parseInt(attributes['out-size'], 10) ];
+                        dimensions = [parseInt(attributes['out-size'], 10)];
                         break;
                     }
                     case 'Convolution:weights':
@@ -496,15 +494,15 @@ openvino.Node = class {
                         const c = this.inputs[0].arguments[0].type.shape.dimensions[1];
                         const group = parseInt(attributes['group'] || '1', 10);
                         const kernel = attributes['kernel-x'] && attributes['kernel-y'] ?
-                            [ parseInt(attributes['kernel-x'], 10), parseInt(attributes['kernel-y'], 10) ] :
+                            [parseInt(attributes['kernel-x'], 10), parseInt(attributes['kernel-y'], 10)] :
                             attributes['kernel'].split(',').map((v) => parseInt(v.trim(), 10));
                         const n = parseInt(attributes['output'], 10);
-                        dimensions = [ Math.floor(c / group), n ].concat(kernel);
+                        dimensions = [Math.floor(c / group), n].concat(kernel);
                         break;
                     }
                     case 'LSTMCell:weights': {
                         const hidden_size = parseInt(attributes['hidden_size'], 10);
-                        dimensions = [ Math.floor(size / (itemSize * hidden_size)) , hidden_size ];
+                        dimensions = [Math.floor(size / (itemSize * hidden_size)), hidden_size];
                         break;
                     }
                     case 'ScaleShift:weights':
@@ -513,7 +511,7 @@ openvino.Node = class {
                     case 'Normalize:weights':
                     case 'LSTMCell:biases':
                     case 'PReLU:weights': {
-                        dimensions = [ Math.floor(size / itemSize) ];
+                        dimensions = [Math.floor(size / itemSize)];
                         break;
                     }
                     case 'Const:custom': {
@@ -799,7 +797,7 @@ openvino.Tensor = class {
     }
 
     _decode(context, dimension) {
-        const shape = context.shape.length == 0 ? [ 1 ] : context.shape;
+        const shape = context.shape.length == 0 ? [1] : context.shape;
         const results = [];
         const size = shape[dimension];
         if (dimension == shape.length - 1) {
@@ -909,22 +907,22 @@ openvino.TensorType = class {
     constructor(precision, shape) {
         precision = precision ? precision.toLowerCase() : precision;
         switch (precision) {
-            case 'f16':  this._dataType = 'float16'; break;
+            case 'f16': this._dataType = 'float16'; break;
             case 'fp16': this._dataType = 'float16'; break;
-            case 'f32':  this._dataType = 'float32'; break;
+            case 'f32': this._dataType = 'float32'; break;
             case 'fp32': this._dataType = 'float32'; break;
-            case 'i8':   this._dataType = 'int8'; break;
-            case 'i16':  this._dataType = 'int16'; break;
-            case 'i32':  this._dataType = 'int32'; break;
-            case 'i64':  this._dataType = 'int64'; break;
-            case 'u1':   this._dataType = 'boolean'; break;
-            case 'u8':   this._dataType = 'uint8'; break;
-            case 'u16':  this._dataType = 'uint16'; break;
-            case 'u32':  this._dataType = 'uint32'; break;
-            case 'u64':  this._dataType = 'uint64'; break;
+            case 'i8': this._dataType = 'int8'; break;
+            case 'i16': this._dataType = 'int16'; break;
+            case 'i32': this._dataType = 'int32'; break;
+            case 'i64': this._dataType = 'int64'; break;
+            case 'u1': this._dataType = 'boolean'; break;
+            case 'u8': this._dataType = 'uint8'; break;
+            case 'u16': this._dataType = 'uint16'; break;
+            case 'u32': this._dataType = 'uint32'; break;
+            case 'u64': this._dataType = 'uint64'; break;
             case 'bool': this._dataType = 'boolean'; break;
-            case '':     this._dataType = '?'; break;
-            case null:   this._dataType = '?'; break;
+            case '': this._dataType = '?'; break;
+            case null: this._dataType = '?'; break;
             default: throw new openvino.Error("Unknown precision '" + JSON.stringify(precision) + "'.");
         }
         this._shape = shape;
@@ -1063,7 +1061,7 @@ openvino.XmlReader = class {
                         type: element.getAttribute('type'),
                         precision: element.getAttribute('precision'),
                         data: !data ? [] : Array.from(data.attributes).map((attribute) => {
-                            return { name: attribute.name, value: attribute.value};
+                            return { name: attribute.name, value: attribute.value };
                         }),
                         blobs: !blobs ? [] : Array.from(blobs.childNodes).filter((node) => node.nodeType === 1).map((blob) => {
                             return {

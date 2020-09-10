@@ -136,8 +136,17 @@ class WebNNRunner extends BaseRunner {
    * @returns {function} This returns Uint8Array or Float32Array function or other typedArray function if inherited.
    */
   _getInputTensorTypedArray = () => {
-    const typedArray = this._currentModelInfo.isQuantized || false ? (this._currentModelInfo.isDNNL || false ? Int8Array : Uint8Array) : Float32Array;
-    return typedArray;
+    if (this._currentModelInfo.isQuantized || false) {
+      if (this._currentModelInfo.isDNNL || false) {
+        return Int8Array;
+      } else if (this._currentModelInfo.isIE || false){
+        return Float32Array;
+      } else {
+        return Uint8Array;
+      }
+    } else {
+      return Float32Array;
+    }
   };
 
   /**
@@ -154,7 +163,7 @@ class WebNNRunner extends BaseRunner {
    */
   _getOutputTensorTypedArray = () => {
     // Override by inherited if needed
-    const typedArray = this._currentModelInfo.isQuantized || false ? (this._currentModelInfo.isDNNL || false ? Float32Array : Uint8Array) : Float32Array;
+    const typedArray = this._currentModelInfo.isQuantized || false ? (this._currentModelInfo.isDNNL || this._currentModelInfo.isIE || false ? Float32Array : Uint8Array) : Float32Array;
     return typedArray;
   };
 
@@ -217,6 +226,7 @@ class WebNNRunner extends BaseRunner {
       softmax: postOptions.softmax || false,
       inputScaleFactor: options.scaleFactor, // for GNA
       isQuantized: this._currentModelInfo.isQuantized || false,
+      isIE: this._currentModelInfo.isIE || false,
       isDNNL: this._currentModelInfo.isDNNL || false,
       inputSize: this._currentModelInfo.inputSize // for caffe2 model
     };
@@ -597,7 +607,9 @@ class WebNNRunner extends BaseRunner {
         bin: OpenVINOModelImporter,
       }[fileExtension];
       const model = await new importer({
-        isQuantized: this._currentModelInfo.isQuantized,
+        isQuantized: this._currentModelInfo.isQuantized || false,
+        isIE: this._currentModelInfo.isIE || false,
+        isDNN: this._currentModelInfo.isDNN || false,
         rawModel: this._rawModel,
         backend: config.backend,
         prefer: config.prefer || null,

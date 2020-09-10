@@ -1,6 +1,8 @@
 class OpenVINOModelImporter {
   constructor(kwargs) {
     this._isQuantized = kwargs.isQuantized;
+    this._isIE = kwargs.isIE;
+    this._isDNN = kwargs.isDNN;
     this._rawModel = kwargs.rawModel;
     this._model = null;
     this._compilation = null;
@@ -44,7 +46,7 @@ class OpenVINOModelImporter {
       supportedOps: this._supportedOps,
     };
     this._model = await this._nn.createModel(options);
-    
+
     this._addTensorOperands();
     this._addOpsAndParams();
     this._addInputsOutputs();
@@ -77,7 +79,7 @@ class OpenVINOModelImporter {
 
   async * layerIterator(inputTensors, layerList) {
     const graph = this._rawModel.graphs[0];
-    const getLayerOutput = async (lastNodeIdx) => {
+    const getLayerOutput = async (lastNodeIndex) => {
       this._tensorIds = [];
       this._tensorTypes = [];
       this._operations = [];
@@ -87,14 +89,22 @@ class OpenVINOModelImporter {
         this._compilation._preparedModel._deleteAll();
       }
 
-      this._model = await this._nn.createModel({backend: this._backend});
+      this._model = await this._nn.createModel({ backend: this._backend });
       this._addTensorOperands();
-      lastNodeIdx = this._addOpsAndParams(lastNodeIdx);
-
-      const lastNode = graph.nodes[lastNodeIdx];
-      const output = lastNode.outputs[0];
+      lastNodeIndex = this._addOpsAndParams(lastNodeIndex);
+      const lastNode = graph.nodes[lastNodeIndex];
+      let output;
+      if (lastNode.type === 'Result') {
+        output = lastNode.inputs[0];
+      } else {
+        output = lastNode.outputs[0];
+      }
       const inputIds = graph.inputs.map((input) => this._getTensorId(input));
-      const outputIds = [this._getTensorId(output)];
+      let outputIds = [this._getTensorId(output)];
+      if (lastNodeIndex === graph.nodes.length - 2 && this._options.softmax &&
+        lastNode.operator !== 'SoftMax') {
+        outputsIds = [this._tensorIds['softmax_appended']];
+      }
       this._model.identifyInputsAndOutputs(inputIds, outputIds);
 
       await this._model.finish();
@@ -105,24 +115,21 @@ class OpenVINOModelImporter {
 
       const outputSize = output.shape().reduce((a, b) => a * b);
       let outputTensor;
-      if (this._isQuantized) {
-        outputTensor = new Uint8Array(outputSize);
-      } else {
-        outputTensor = new Float32Array(outputSize);
-      }
+      const typedArray = this._isQuantized || false ? (this._isDNNL || this._isIE || false ? Float32Array : Uint8Array) : Float32Array;
+      outputTensor = new typedArray(outputSize);
       await this.compute(inputTensors, [outputTensor]);
       return {
-        layerId: lastNodeIdx, outputName: lastNode.name, tensor: outputTensor,
+        layerId: lastNodeIndex, outputName: lastNode.name, tensor: outputTensor,
         outputIds: outputIds, inputIds: inputIds
       };
     };
 
     const operatorsLength = graph.nodes.length;
     if (typeof layerList === 'undefined') {
-      for (let lastNode = 0; lastNode < operatorsLength;) {
-        const layerOutput = await getLayerOutput(lastNode);
+      for (let lastNodeIndex = 0; lastNodeIndex < operatorsLength;) {
+        const layerOutput = await getLayerOutput(lastNodeIndex);
         yield layerOutput;
-        lastNode = layerOutput.layerId + 1;
+        lastNodeIndex = layerOutput.layerId + 1;
       }
     } else {
       for (let layerId of layerList) {
@@ -137,14 +144,10 @@ class OpenVINOModelImporter {
   _addInputsOutputs() {
     let graph = this._rawModel.graphs[0];
     let inputs = graph.inputs.map((input) => this._getTensorId(input));
-    let outputs = graph.outputs.map((output) => this._getTensorId(output));
-    if (outputs.length === 0) {
-      console.log(`  outputs.length === 0`);
-      outputs = [this._getTensorId(graph.nodes[graph.nodes.length - 1].outputs[1])];
-      // outputs = [this._getTensorId(graph.nodes[17 + 6].outputs[0])];
-    }
+    // Set Result node's input as the model's output.
+    let outputs = [this._getTensorId(graph.nodes[graph.nodes.length - 1].inputs[0])];
     if (this._options.softmax &&
-        graph.nodes[graph.nodes.length-1].type !== 'SoftMax') {
+      graph.nodes[graph.nodes.length - 2].operator !== 'SoftMax') {
       outputs = [this._tensorIds['softmax_appended']];
     }
     this._model.identifyInputsAndOutputs(inputs, outputs);
@@ -184,11 +187,11 @@ class OpenVINOModelImporter {
   }
 
   _addScalarInt32(value) {
-    return this._addOperand({type: this._nn.INT32}, new Int32Array([value]));
+    return this._addOperand({ type: this._nn.INT32 }, new Int32Array([value]));
   }
 
   _addScalarFloat32(value) {
-    return this._addOperand({type: this._nn.FLOAT32}, new Float32Array([value]));
+    return this._addOperand({ type: this._nn.FLOAT32 }, new Float32Array([value]));
   }
 
   _addTensorFloat32(tensor, dims) {
@@ -214,7 +217,7 @@ class OpenVINOModelImporter {
   _getOperandValue(id) {
     return this._operands[id];
   }
-// find id via _tensorIds[arg.name] = tensor_id
+  // Get operand index by its name
   _getTensorId(arg) {
     const name = arg.graphId();
     console.log(`  input tensor: ${name}`);
@@ -244,7 +247,6 @@ class OpenVINOModelImporter {
   _getTypeCode(dataType) {
     let type;
     switch (dataType) {
-      case '?':
       case 'float32': {
         type = this._nn.TENSOR_FLOAT32;
       } break;
@@ -255,9 +257,6 @@ class OpenVINOModelImporter {
       case 'uint8': {
         type = this._nn.TENSOR_QUANT8_ASYMM;
       } break;
-      // case 'int64': {
-      //   type = this._nn.TENSOR_INT64;
-      // } break;
       default: {
         throw new Error(`Tensor type ${dataType} is not supported.`);
       }
@@ -274,94 +273,121 @@ class OpenVINOModelImporter {
       console.log(`${inputName}`);
       const scale = this._inputScaleFactor == undefined ? 1.0 : this._inputScaleFactor;
       const inputType = {
-        type: this._getTypeCode(input.arguments[0].type.dataType), dimensions: input.arguments[0].type.shape, scale
+        type: this._getTypeCode(input.dataType()), dimensions: input.shape(), scale
       };
-      console.log(`=============inputType: ${inputType.type}`);
       this._addNamedOperand(inputName, inputType);
     }
   }
 
 
-  _addOpsAndParams(lastNode) {
+  _addOpsAndParams(lastNodeIndex) {
     const graph = this._rawModel.graphs[0];
     let i;
-    if (typeof lastNode === 'undefined') {
-      lastNode = graph.nodes.length - 1;
-      // lastNode = 17 +6 ;
+    if (typeof lastNodeIndex === 'undefined') {
+      lastNodeIndex = graph.nodes.length - 1;
     }
-    console.log(`lastNode:${lastNode}`);
-    for (i = 0; i <= lastNode; ++i) {
+    console.log(`lastNodeIndex:${lastNodeIndex}`);
+    for (i = 0; i <= lastNodeIndex; ++i) {
       let node = graph.nodes[i];
       console.log(`${node.type} (${node.name})`);
       let opCode;
       let inputs = [];
       let outputs = [];
-      switch(node.type) {
-        case 'Convolution': 
-        case 'GroupConvolution':{
+      switch (node.type) {
+        case 'Convolution':
+        case 'GroupConvolution': {
           // Add inputs
           const input = node.inputs[0];
           inputs.push(this._getTensorId(input));
-          console.log(`  input shape: [${input.shape()}]`);
+          const inDims = input.shape();
+          console.log(`  input shape: [${inDims}]`);
+
+          let output = node.outputs[0];
+          const outDims = output.shape();
+          const outChannels = outDims[outDims.length - 1];
+
+          const isDepthWiseConv = (node.type === 'GroupConvolution');
 
           // Add weights
           const convFilter = node.inputs[1];
-          const convFilterDims = convFilter.shape();
+          let convFilterDims = convFilter.shape();
           const convFilterName = convFilter.graphId();
-
-          if (!this._tensorIds.hasOwnProperty(convFilterName)) {
-          const convFilterType = {
-            type: this._getTypeCode(convFilter.dataType()), dimensions: convFilterDims
-          };
-          let convFilterTensor = input.getInitializer(convFilterDims);
-          this._addNamedOperand(name, convFilterType, convFilterTensor);
-          }
-          inputs.push(this._getTensorId(convFilter));
           console.log(`  kernel shape: [${convFilterDims}]`);
-     
-          let output = node.outputs[0];
-	
-	  // add bias
-          const addNode = graph.nodes[i+1];
-          if (addNode && addNode.type === 'Add' &&
-          node.outputs[0].graphId() === addNode.inputs[0].graphId()) {
-          const bias = addNode.inputs[1];
-          const biasDims = bias.shape();
-          const biasType = {
-            type: this._getTypeCode(bias.dataType()), dimensions: biasDims
-          };
-          const biasTensor = bias.getInitializer(biasDims);
-          inputs.push(this._addOperand(biasType, biasTensor));
-          i++;
-          console.log(`  add bias via ${addNode.name}->${node.name}`);
-          output = addNode.outputs[0];
+          if (this._isQuantized && this._isIE) {
+            if (!this._tensorIds.hasOwnProperty(convFilterName)) {
+              const convFilterType = {
+                type: this._getTypeCode(convFilter.dataType()), dimensions: convFilterDims
+              };
+              const convFilterTensor = convFilter.getInitializer(convFilterDims);
+              inputs.push(this._addOperand(convFilterType, convFilterTensor));
+            } else {
+              inputs.push(this._getTensorId(convFilter));
+            }
           } else {
-          throw new Error(`No bias for this convolution`);
+            let convFilterTensor;
+            if (isDepthWiseConv) {
+              // Reshape GOIHW kernel for depthwise conv
+              const kernelH = convFilterDims[3];
+              const kernelW = convFilterDims[4];
+              const inChannels = inDims[inDims.length - 1];
+              const groups = inChannels;
+              convFilterDims = [outChannels, kernelH, kernelW, inChannels / groups];
+              convFilterTensor = convFilter.getInitializer(convFilterDims);
+              const nhwcData = convFilterTensor;
+              const chwnData = new Float32Array(nhwcData.length);
+              const N = convFilterDims[0];
+              const H = convFilterDims[1];
+              const W = convFilterDims[2];
+              // NHWC -> CHWN where C === 1
+              for (let n = 0; n < N; ++n) {
+                for (let h = 0; h < H; ++h) {
+                  for (let w = 0; w < W; ++w) {
+                    chwnData[h * W * N + w * N + n] = nhwcData[n * H * W + h * W + w];
+                  }
+                }
+              }
+              convFilterTensor.set(chwnData);
+              convFilterDims[0] = 1;
+              convFilterDims[3] = groups;
+              console.log(`  reshaped kernel shape: [${convFilterDims}]`);
+            } else {
+              convFilterTensor = convFilter.getInitializer(convFilterDims);
+            }
+
+            const convFilterType = {
+              type: this._getTypeCode(convFilter.dataType()), dimensions: convFilterDims
+            };
+            inputs.push(this._addOperand(convFilterType, convFilterTensor));
           }
 
-          /*
           // Add bias
-          const addNode = graph.nodes[i+1];
-          if (addNode && addNode.type === 'Add' &&
-          node.outputs[0].graphId() === addNode.inputs[0].graphId()) {
-          const bias = addNode.inputs[1];
-          const biasDims = bias.shape();
-          const biasType = {
-            type: this._getTypeCode(bias.dataType()), dimensions: biasDims
-          };
-          const biasTensor = bias.getInitializer(biasDims);
-          inputs.push(this._addOperand(biasType, biasTensor));
-          i++;
-          console.log(`  add bias via ${addNode.name}->${node.name}`);
-          output = addNode.outputs[0];
+          let addNode;
+          if (i + 1 > lastNodeIndex) {
+            inputs.push(this._addTensorFloat32(new Array(outChannels).fill(0), [outChannels]));
+            console.log(`  add bias filled with 0`);
           } else {
-          throw new Error(`No bias for this convolution`);
+            addNode = graph.nodes[i + 1];
+            if (addNode && addNode.type === 'Add' &&
+              node.outputs[0].graphId() === addNode.inputs[0].graphId()) {
+              const bias = addNode.inputs[1];
+              const biasDims = bias.shape();
+              const biasType = {
+                type: this._getTypeCode(bias.dataType()), dimensions: biasDims
+              };
+              const biasTensor = bias.getInitializer(biasDims);
+              inputs.push(this._addOperand(biasType, biasTensor));
+              i++;
+              console.log(`  add bias via ${addNode.name}->${node.name}`);
+              output = addNode.outputs[0];
+            } else {
+              inputs.push(this._addTensorFloat32(new Array(outChannels).fill(0), [outChannels]));
+              console.log(`  add bias filled with 0`);
+            }
           }
-	  */
 
           // Add attributes
-          const pads_begin = node.getInts('pads_begin', [0, 0]);
-          const pads_end = node.getInts('pads_end', [0, 0]);
+          const pads_begin = node.getInts('pads_begin', '0, 0');
+          const pads_end = node.getInts('pads_end', '0, 0');
           const [paddingHeightBegin, paddingWidthBegin] = pads_begin;
           const [paddingHeightEnd, paddingWidthEnd] = pads_end;
           console.log(`  pads begin: [${pads_begin}]`);
@@ -377,7 +403,6 @@ class OpenVINOModelImporter {
           }
           const [strideY, strideX] = strides;
           console.log(`  strides: [${strides}]`);
-          let isDepthWiseConv = (node.type === 'GroupConvolution');
           inputs.push(this._addScalarInt32(paddingWidthBegin));
           inputs.push(this._addScalarInt32(paddingWidthEnd));
           inputs.push(this._addScalarInt32(paddingHeightBegin));
@@ -388,11 +413,11 @@ class OpenVINOModelImporter {
             inputs.push(this._addScalarInt32(1)); // depth multiplier
           }
 
-          //add fused code
-	  if (i+1 > lastNode) {
-	    inputs.push(this._addScalarInt32(this._nn.FUSED_NONE));
-	  } else {
-	    const fusedNode = graph.nodes[i+1];
+          // Add fused code
+          if (i + 1 > lastNodeIndex) {
+            inputs.push(this._addScalarInt32(this._nn.FUSED_NONE));
+          } else {
+            const fusedNode = graph.nodes[i + 1];
             if (fusedNode && ['Clamp', 'ReLU'].includes(fusedNode.type) &&
               addNode.outputs[0].graphId() === fusedNode.inputs[0].graphId()) {
               // Fuse relu
@@ -403,16 +428,16 @@ class OpenVINOModelImporter {
             } else {
               inputs.push(this._addScalarInt32(this._nn.FUSED_NONE));
             }
-	  }
+          }
 
-          const outDims = output.shape();
+          // Add output
           const outputType = {
             type: this._getTypeCode(output.dataType()), dimensions: outDims
           };
           const outputId = this._addNamedOperand(output.graphId(), outputType);
           outputs.push(outputId);
           console.log(`  output shape: [${outDims}]`);
-          
+
           if (isDepthWiseConv == true) {
             opCode = isAtrous ? this._nn.ATROUS_DEPTHWISE_CONV_2D : this._nn.DEPTHWISE_CONV_2D;
           } else {
@@ -421,36 +446,46 @@ class OpenVINOModelImporter {
         } break;
         case 'Multiply': {
           // Add inputs
-          for(let i= 0; i< node.inputs.length; i ++){
-            let input = node.inputs[i];
+          for (let i = 0; i < node.inputs.length; i++) {
+            const input = node.inputs[i];
             let name = input.graphId();
-            if (!this._tensorIds.hasOwnProperty(name)) {
             const inputDims = input.shape();
-            const inputType = {
-              type: this._getTypeCode(input.dataType()), dimensions: inputDims
-            };
-            let inputTensor = input.getInitializer(inputDims);
-            this._addNamedOperand(name, inputType, inputTensor);
+            if (!this._tensorIds.hasOwnProperty(name)) {
+              const inputType = {
+                type: this._getTypeCode(input.dataType()), dimensions: inputDims
+              };
+              const inputTensor = input.getInitializer(inputDims);
+              inputs.push(this._addOperand(inputType, inputTensor));
+            } else {
+              inputs.push(this._getTensorId(input));
             }
-            inputs.push(this._getTensorId(input));
-            }
-          console.log(`  inputs shape: ` +
-              `[${node.inputs.map((input) => input.shape()).join('], [')}]`);
-          let output = node.outputs[0];
-          opCode = this._nn.MUL;
-          const nextNode = graph.nodes[i+1];
-          if (nextNode && ['Clamp', 'ReLU'].includes(nextNode.type) &&
-              node.outputs[0].graphId() === nextNode.inputs[0].graphId()) {
-            // Fuse relu
-            inputs.push(this._addScalarInt32(this._getFuseCode(nextNode)));
-            i++;
-            console.log(`  fuse relu: output of ${nextNode.name}->${node.name}`);
-            output = nextNode.outputs[0];
-          } else {
-            inputs.push(this._addScalarInt32(this._nn.FUSED_NONE));
           }
 
-          // Add outputs
+          console.log(`  inputs shape: ` +
+            `[${node.inputs.map((input) => input.shape()).join('], [')}]`);
+
+          let output = node.outputs[0];
+          opCode = this._nn.MUL;
+
+          // Add fused code
+          if (i + 1 > lastNodeIndex) {
+            inputs.push(this._addScalarInt32(this._nn.FUSED_NONE));
+          } else {
+            const fusedNode = graph.nodes[i + 1];
+            if (fusedNode && ['Clamp', 'ReLU'].includes(fusedNode.type) &&
+              node.outputs[0].graphId() === fusedNode.inputs[0].graphId()) {
+              // Fuse relu
+              inputs.push(this._addScalarInt32(this._getFuseCode(fusedNode)));
+              i++;
+              console.log(`  fuse relu: output of ${fusedNode.name}->${node.name}`);
+              output = fusedNode.outputs[0];
+            } else {
+              inputs.push(this._addScalarInt32(this._nn.FUSED_NONE));
+            }
+          }
+
+
+          // Add output
           const outDims = output.shape();
           const outputType = {
             type: this._getTypeCode(output.dataType()), dimensions: outDims
@@ -461,36 +496,45 @@ class OpenVINOModelImporter {
         } break;
         case 'Add': {
           // Add inputs
-          for(let i= 0; i< node.inputs.length; i ++){
-          let input = node.inputs[i];
-          let name = input.graphId();
-          if (!this._tensorIds.hasOwnProperty(name)) {
-          const inputDims = input.shape();
-          const inputType = {
-            type: this._getTypeCode(input.dataType()), dimensions: inputDims
-          };
-          let inputTensor = input.getInitializer(inputDims);
-          this._addNamedOperand(name, inputType,inputTensor);
-          }
-          inputs.push(this._getTensorId(input));
-          }
-          console.log(`  inputs shape: ` +
-          `[${node.inputs.map((input) => input.shape()).join('], [')}]`);
-          let output = node.outputs[0];
-          opCode = this._nn.ADD;
-          const nextNode = graph.nodes[i+1];
-          if (nextNode && ['Clamp', 'ReLU'].includes(nextNode.type) &&
-              node.outputs[0].graphId() === nextNode.inputs[0].graphId()) {
-            // Fuse relu
-            inputs.push(this._addScalarInt32(this._getFuseCode(nextNode)));
-            i++;
-            console.log(`  fuse relu: output of ${nextNode.name}->${node.name}`);
-            output = nextNode.outputs[0];
-          } else {
-            inputs.push(this._addScalarInt32(this._nn.FUSED_NONE));
+          for (let i = 0; i < node.inputs.length; i++) {
+            const input = node.inputs[i];
+            let name = input.graphId();
+            const inputDims = input.shape();
+            if (!this._tensorIds.hasOwnProperty(name)) {
+              const inputType = {
+                type: this._getTypeCode(input.dataType()), dimensions: inputDims
+              };
+              const inputTensor = input.getInitializer(inputDims);
+              inputs.push(this._addOperand(inputType, inputTensor));
+            } else {
+              inputs.push(this._getTensorId(input));
+            }
           }
 
-          // Add outputs
+          console.log(`  inputs shape: ` +
+            `[${node.inputs.map((input) => input.shape()).join('], [')}]`);
+
+          let output = node.outputs[0];
+          opCode = this._nn.ADD;
+
+          // Add fused code
+          if (i + 1 > lastNodeIndex) {
+            inputs.push(this._addScalarInt32(this._nn.FUSED_NONE));
+          } else {
+            const fusedNode = graph.nodes[i + 1];
+            if (fusedNode && ['Clamp', 'ReLU'].includes(fusedNode.type) &&
+              node.outputs[0].graphId() === fusedNode.inputs[0].graphId()) {
+              // Fuse relu
+              inputs.push(this._addScalarInt32(this._getFuseCode(fusedNode)));
+              i++;
+              console.log(`  fuse relu: output of ${fusedNode.name}->${node.name}`);
+              output = fusedNode.outputs[0];
+            } else {
+              inputs.push(this._addScalarInt32(this._nn.FUSED_NONE));
+            }
+          }
+
+          // Add output
           const outDims = output.shape();
           const outputType = {
             type: this._getTypeCode(output.dataType()), dimensions: outDims
@@ -499,43 +543,76 @@ class OpenVINOModelImporter {
           outputs.push(outputId);
           console.log(`  output shape: [${outDims}]`);
         } break;
-        case 'FullyConnected': {
+        case 'MatMul': {
           // Add inputs
           const input = node.inputs[0];
-          const weights = node.inputs[1];
-          const bias = node.inputs[2];
-
           const inDims = input.shape();
-          let inSize = 0;
-          if (inDims.length === 4) inSize = inDims[1] * inDims[2] * inDims[3];
-          if (inDims.length === 3) inSize = inDims[1] * inDims[2];
-          if (inDims.length === 2) inSize = inDims[1];
-          const outputSize = node.getInt('out-size');
-          const weightsDims = [outputSize, inSize];
-          const weightsTensor = weights.getInitializer();
-          const biasTensor = bias ? bias.getInitializer() : new Float32Array(outputSize).fill(0);
-          console.log(`  input shape: [${inDims}]`);
-          console.log(`  weights shape: [${weightsDims}]`);
-          console.log(`  bias shape: [${outputSize}]`);
-
           inputs.push(this._getTensorId(input));
-          inputs.push(this._addTensorFloat32(weightsTensor, weightsDims));
-          inputs.push(this._addTensorFloat32(biasTensor, [outputSize]));
+          console.log(`  input shape: [${inDims}]`);
 
-          let output = node.outputs[0];
-          let nextNode = graph.nodes[i+1];
-          if (nextNode && ['Clamp', 'ReLU'].includes(nextNode.type) &&
-              node.outputs[0].graphId() === nextNode.inputs[0].graphId()) {
-            // Fuse relu
-            inputs.push(this._addScalarInt32(this._getFuseCode(nextNode)));
-            i++;
-            console.log(`  fuse relu: output of ${nextNode.name}->${node.name}`);
-            output = nextNode.outputs[0];
+          // Add weights
+          const weights = node.inputs[1];
+          const weightsDims = weights.shape();
+          const num_units = weightsDims[0];
+          const weightsName = weights.graphId();
+          console.log(`  weights shape: [${weightsDims}]`);
+
+          if (!this._tensorIds.hasOwnProperty(weightsName)) {
+            const weightsType = {
+              type: this._getTypeCode(weights.dataType()), dimensions: weightsDims
+            };
+            const weightsTensor = weights.getInitializer(weightsDims);
+            inputs.push(this._addOperand(weightsType, weightsTensor));
           } else {
-            inputs.push(this._addScalarInt32(this._nn.FUSED_NONE));
+            inputs.push(this._getTensorId(weights));
           }
 
-          // Add outputs
+          let output = node.outputs[0];
+
+          // Add bias
+          let addNode;
+          if (i + 1 > lastNodeIndex) {
+            inputs.push(this._addTensorFloat32(new Array(num_units).fill(0), [num_units]));
+            console.log(`  add bias filled with 0`);
+          } else {
+            addNode = graph.nodes[i + 1];
+            if (addNode && addNode.type === 'Add' &&
+              node.outputs[0].graphId() === addNode.inputs[0].graphId()) {
+              const bias = addNode.inputs[1];
+              const biasDims = bias.shape();
+              console.log(`  bias shape: [${biasDims}]`);
+              const biasType = {
+                type: this._getTypeCode(bias.dataType()), dimensions: [num_units]
+              };
+              const biasTensor = bias.getInitializer(biasDims);
+              inputs.push(this._addOperand(biasType, biasTensor));
+              i++;
+              console.log(`  add bias via ${addNode.name}->${node.name}`);
+              output = addNode.outputs[0];
+            } else {
+              inputs.push(this._addTensorFloat32(new Array(num_units).fill(0), [num_units]));
+              console.log(`  add bias filled with 0`);
+            }
+          }
+
+          // Add fused code
+          if (i + 1 > lastNodeIndex) {
+            inputs.push(this._addScalarInt32(this._nn.FUSED_NONE));
+          } else {
+            const fusedNode = graph.nodes[i + 1];
+            if (fusedNode && ['Clamp', 'ReLU'].includes(fusedNode.type) &&
+              addNode.outputs[0].graphId() === fusedNode.inputs[0].graphId()) {
+              // Fuse relu
+              inputs.push(this._addScalarInt32(this._getFuseCode(fusedNode)));
+              i++;
+              console.log(`  fuse relu: output of ${fusedNode.name}->${node.name}`);
+              output = fusedNode.outputs[0];
+            } else {
+              inputs.push(this._addScalarInt32(this._nn.FUSED_NONE));
+            }
+          }
+
+          // Add output
           const outDims = output.shape();
           const outputType = {
             type: this._getTypeCode(output.dataType()), dimensions: outDims
@@ -546,77 +623,20 @@ class OpenVINOModelImporter {
 
           opCode = this._nn.FULLY_CONNECTED;
         } break;
-
-        case 'ScaleShift': {
-          // ScaleShift is split into Mul and Add
-          const input = node.inputs[0];
-          const inDims = input.shape();
-          console.log(`  input shape: [${inDims}]`);
-
-          const weights = node.inputs[1];
-          const bias = node.inputs[2];
-          const weightsTensor = weights.getInitializer();
-          const biasTensor = bias.getInitializer();
-          // put length into channel of NHWC
-          const dims = [1, 1, 1, weightsTensor.length];
-
-          // add intputs for Mul
-          inputs.push(this._getTensorId(input));
-          inputs.push(this._addTensorFloat32(weightsTensor, dims));
-          inputs.push(this._addScalarInt32(this._nn.FUSED_NONE));
-
-          // create intermediate output for Mul
-          const mulOutputType = {type: this._nn.TENSOR_FLOAT32, dimensions: inDims};
-          const mulOutputId = this._addOperand(mulOutputType);
-          outputs.push(mulOutputId);
-
-          // push the Mul op
-          this._addOperation(this._nn.MUL, inputs, outputs);
-
-          // link Mul's output to Add's input
-          inputs = [];
-          inputs.push(mulOutputId);
-          inputs.push(this._addTensorFloat32(biasTensor, dims));
-
-          let output = node.outputs[0];
-          let nextNode = graph.nodes[i+1];
-          if (nextNode && ['Clamp', 'ReLU'].includes(nextNode.type) &&
-              node.outputs[0].graphId() === nextNode.inputs[0].graphId()) {
-            // Fuse relu
-            inputs.push(this._addScalarInt32(this._getFuseCode(nextNode)));
-            i++;
-            console.log(`  fuse relu: output of ${nextNode.name}->${node.name}`);
-            output = nextNode.outputs[0];
-          } else {
-            inputs.push(this._addScalarInt32(this._nn.FUSED_NONE));
-          }
-
-          // use output of current node as Add's output
-          outputs = [];
-          const outDims = output.shape();
-          const outputType = {
-            type: this._getTypeCode(output.dataType()), dimensions: outDims
-          };
-          const outputId = this._addNamedOperand(output.graphId(), outputType);
-          outputs.push(outputId);
-          console.log(`  output shape: [${outDims}]`);
-
-          opCode = this._nn.ADD;
-        } break;
+        case 'ReduceMean':
         case 'MaxPool':
         case 'AvgPool': {
+          const isReduceMean = node.type === 'ReduceMean'
           const input = node.inputs[0];
           const inDims = input.shape();
           console.log(`  input shape: [${inDims}]`);
 
-          const poolMethod = node.type === 'MaxPool'? 'max':'avg';
+          const poolMethod = isReduceMean ? 'avgReplaced' : node.type === 'MaxPool' ? 'max' : 'avg';
           console.log(`  pool method: ${poolMethod}`);
-
-          const strides = node.getInts('strides', [1, 1]);
+          const strides = node.getInts('strides', '1, 1');
           const [strideY, strideX] = strides;
           console.log(`  strides: [${strides}]`);
-
-          const kernelShape = node.getInts('kernel');
+          const kernelShape = isReduceMean ? [inDims[1], inDims[2]] : node.getInts('kernel');
           if (!kernelShape || kernelShape.length !== 2) {
             throw new Error(`Invalid kernel shape [${kernelShape}]`);
           }
@@ -624,38 +644,37 @@ class OpenVINOModelImporter {
           const kernelWidth = kernelShape[1];
           console.log(`  kernel shape: [${kernelShape}]`);
 
-          const pads_begin = node.getInts('pads_begin', [0, 0]);
-          const pads_end = node.getInts('pads_end', [0, 0]);
+          const pads_begin = node.getInts('pads_begin', '0, 0');
+          const pads_end = node.getInts('pads_end', '0, 0');
           let [padHeightBegin, padWidthBegin] = pads_begin;
           let [padHeightEnd, padWidthEnd] = pads_end;
           console.log(`  pads begin: [${pads_begin}]`);
           console.log(`  pads end: [${pads_end}]`);
+          const roundingType = isReduceMean ? 'ceil' : node.getString('rounding_type');
+          console.log(`  rounding type: ${roundingType}`);
+          // some caffe models uses ceil-mode padding, but we only support the
+          // floor-mode padding. So we ajust the padding on both sides to make
+          // it compatible but it's not equivalent to ceil-mode padding
+          if (roundingType === 'ceil' &&
+            (inDims[1] - kernelHeight + padHeightBegin + padHeightEnd) % strideY !== 0) {
+            padHeightBegin += Math.floor(strideY / 2);
+            padHeightEnd += Math.floor(strideY / 2);
+            console.warn(`Ceil mode is not supported. Ajusted padHeight to ` +
+              `[${padHeightBegin},${padHeightEnd}]`);
+          }
+          if (roundingType === 'ceil' &&
+            (inDims[2] - kernelWidth + padWidthBegin + padWidthEnd) % strideX !== 0) {
+            padWidthBegin += Math.floor(strideX / 2);
+            padWidthEnd += Math.floor(strideX / 2);
+            console.warn(`Ceil mode is not supported. Ajusted padWidth to ` +
+              `[${padWidthBegin},${padWidthEnd}]`);
+          }
 
-          // const roundingType = node.getString('rounding_type');
-          // console.log(`  rounding type: ${roundingType}`);
-          // // some caffe models uses ceil-mode padding, but we only support the
-          // // floor-mode padding. So we ajust the padding on both sides to make
-          // // it compatible but it's not equivalent to ceil-mode padding
-          // if (roundingType === 'ceil' &&
-          //     (inDims[1]-kernelHeight+padHeightBegin+padHeightEnd)%strideY !== 0) {
-          //   padHeightBegin += Math.floor(strideY / 2);
-          //   padHeightEnd += Math.floor(strideY / 2);
-          //   console.warn(`Ceil mode is not supported. Ajusted padHeight to ` +
-          //       `[${padHeightBegin},${padHeightEnd}]`);
-          // }
-          // if (roundingType === 'ceil' &&
-          //     (inDims[2]-kernelWidth+padWidthBegin+padWidthEnd)%strideX !== 0) {
-          //   padWidthBegin += Math.floor(strideX / 2);
-          //   padWidthEnd += Math.floor(strideX / 2);
-          //   console.warn(`Ceil mode is not supported. Ajusted padWidth to ` +
-          //       `[${padWidthBegin},${padWidthEnd}]`);
-          // }
-
-          // // zero values in the padding are not used if exclude-pad is "true"
-          const excludePad = node.getBool('exclude-pad', true);
+          // zero values in the padding are not used if exclude-pad is "true"
+          const excludePad = isReduceMean ? false : node.getBool('exclude-pad', true);
           console.log(`  exclude pad: ${excludePad}`);
           if (!excludePad &&
-              (padHeightBegin || padHeightEnd || padWidthBegin || padWidthEnd)) {
+            (padHeightBegin || padHeightEnd || padWidthBegin || padWidthEnd)) {
             console.warn('Non execude-pad is not supported');
           }
 
@@ -679,10 +698,9 @@ class OpenVINOModelImporter {
           const outputId = this._addNamedOperand(output.graphId(), outputType);
           outputs.push(outputId);
           console.log(`  output shape: [${outDims}]`);
-
           if (poolMethod === 'max') {
             opCode = this._nn.MAX_POOL_2D;
-          } else if (poolMethod === 'avg') {
+          } else if (poolMethod === 'avg' || poolMethod === 'avgReplaced') {
             opCode = this._nn.AVERAGE_POOL_2D;
           } else {
             throw new Error(`Invalid pooling method ${poolMethod}`);
@@ -690,7 +708,7 @@ class OpenVINOModelImporter {
         } break;
         case 'Concat': {
           console.log(`  inputs shape: ` +
-              `[${node.inputs.map((input) => input.shape()).join('], [')}]`);
+            `[${node.inputs.map((input) => input.shape()).join('], [')}]`);
           for (let i = 0; i < node.inputs.length; ++i) {
             inputs.push(this._getTensorId(node.inputs[i]));
           }
@@ -726,17 +744,27 @@ class OpenVINOModelImporter {
 
           opCode = this._nn.CONCATENATION;
         } break;
-        case 'Permute': {
+        case 'Transpose': {
           const input = node.inputs[0];
-          const order = node.getInts('order');
           const inDims = input.shape();
           const inputId = this._getTensorId(input);
+          const transposeOrder = node.inputs[1];
+          const orderTensor = transposeOrder.getInitializer()
+          // const order = orderTensor.filter(x => orderTensor.indexOf(x)%2 === 0); 
+
+          let order = [];
+          for (let i = 0; i < orderTensor.length; i++) {
+            if (i % 2 === 0)
+              order.push(orderTensor[i])
+          }
+
+          console.log(`  transpose order: [${order}]`);
           const output = node.outputs[0];
           const outputName = output.graphId();
           if (order.toString() === '0,2,3,1') {
             this._tensorIds[outputName] = inputId;
             // equivalent to NCHW -> NHWC
-            console.log(`  skip permuting to ${order.toString()}`);
+            console.log(`  skip transpose to ${order.toString()}`);
           } else {
             if (order.length === 4) {
               console.log(`  input shape: [${inDims}]`);
@@ -771,12 +799,12 @@ class OpenVINOModelImporter {
 
               this._addOperation(this._nn.TRANSPOSE, inputs, outputs);
             } else {
-              throw new Error(`Permuting to ${order} is not supported`);
+              throw new Error(`Transpose to ${order} is not supported`);
             }
           }
         } break;
         case 'Const': {
-          // initializer is contained in the node
+          // Initializer is contained in the node
           const data = node.getInitializer();
           const output = node.outputs[0];
           const outDims = output.shape();
@@ -793,9 +821,18 @@ class OpenVINOModelImporter {
           const shape = node.inputs[1];
           const outDims = output.shape();
           const shapeType = {
-            type: this._getTypeCode(shape.dataType()), dimensions: outDims
+            type: this._getTypeCode(shape.dataType()), dimensions: [outDims.length]
           };
-          const newShape = new Int32Array(output.shape());
+          let temp = new Int32Array(outDims);
+          // NGCHW -> NGHWC
+          if (outDims.length == 5) {
+            outDims[0] = temp[0];
+            outDims[1] = temp[1];
+            outDims[2] = temp[3];
+            outDims[3] = temp[4];
+            outDims[4] = temp[2];
+          }
+          const newShape = new Int32Array(outDims);
           const shapeId = this._addNamedOperand(shape.graphId(), shapeType, newShape);
           // `Reshape` requires `shape` to be integer. However, `shape` tensor
           // in the OpenVINO model is of type float. So we modify the type
@@ -803,7 +840,7 @@ class OpenVINOModelImporter {
           inputs.push(this._getTensorId(input));
           inputs.push(shapeId);
 
-          // Add outputs
+          // Add output
           const outputType = {
             type: this._getTypeCode(output.dataType()), dimensions: outDims
           };
@@ -820,6 +857,7 @@ class OpenVINOModelImporter {
           inputs.push(this._getTensorId(input));
           inputs.push(this._addScalarFloat32(1.0)); // Set beta to 1.0
 
+          // Add output
           const output = node.outputs[0];
           const outDims = output.shape();
           const outputType = {
@@ -834,7 +872,6 @@ class OpenVINOModelImporter {
         case 'PReLU': {
           // Now, we don't support 'channel_shared' parameter of OpenVINO's PReLU.
           const input = node.inputs[0];
-          const inDims = input.shape();
           console.log(`  input shape: [${input.shape()}]`);
 
           const slope = node.inputs[1];
@@ -845,6 +882,7 @@ class OpenVINOModelImporter {
           inputs.push(this._getTensorId(input));
           inputs.push(this._addTensorFloat32(slopeTensor, slopeDims));
 
+          // Add output
           const output = node.outputs[0];
           const outDims = output.shape();
           const outputType = {
@@ -859,46 +897,22 @@ class OpenVINOModelImporter {
         case 'Interpolate': {
           // Add inputs
           const input = node.inputs[0];
-          const inputShape = input.shape();
-          console.log(`  input shape: [${inputShape}]`);
+          console.log(`  input shape: [${input.shape()}]`);
           inputs.push(this._getTensorId(input));
-	  /*
-          const factor = node.getFloat("factor");
-          let height = null;
-          let width = null;
-          if (factor !== 0) {
-            // inputShape[N, H, W, C]
-            height = inputShape[1] * factor;
-            width = inputShape[2] * factor;
-          } else {
-            height = node.getFloat("height");
-            width = node.getFloat("width");
-          }
-	  */
-	  /*
-          const target_spatial_shape = node.inputs[1];
-	  let ShapeDims = target_spatial_shape.shape();
 
+          const output = node.outputs[0];
+          const outDims = output.shape();
 
-	  const ShapeDimsTensor = target_spatial_shape.getInitializer(ShapeDims);
-	  const newShape = new Int32Array(output.shape()); 
-	  
-	  console.log(`  target_spatial_shape: [${target_spatial_shape[0]}]`);
-	  console.log(`  target_spatial_shape: [${target_spatial_shape[1]}]`);
-	  */
-	  const output = node.outputs[0];
-	  const outDims = output.shape();
+          // Specify the width and hight of output
           inputs.push(this._addScalarInt32(outDims[2]));
-	  inputs.push(this._addScalarInt32(outDims[1]));
-          // inputs.push(this._addScalarInt32(width));
+          inputs.push(this._addScalarInt32(outDims[1]));
+
           const align_corners = node.getInt("align_corners");
           if (align_corners !== 'undefined') {
             inputs.push(this._addScalarInt32(align_corners));
           }
 
-          // Add outputs
-          // const output = node.outputs[0];
-          // const outDims = output.shape();
+          // Add output
           const outputType = {
             type: this._getTypeCode(output.dataType()), dimensions: outDims
           };
@@ -911,12 +925,12 @@ class OpenVINOModelImporter {
         case 'TopK': {
           // Add inputs
           const input = node.inputs[0];
-          const inputShape = input.shape();
-          console.log(`  input shape: [${inputShape}]`);
+          const inputDims = input.shape();
+          console.log(`  input shape: [${inputDims}]`);
           inputs.push(this._getTensorId(input));
           const axis = node.getInt("axis");
           let argMaxAxis = axis;
-          if (inputShape.length === 4) {
+          if (inputDims.length === 4) {
             // NCHW -> NHWC
             argMaxAxis = {
               0: 0,
@@ -927,7 +941,8 @@ class OpenVINOModelImporter {
           }
           inputs.push(this._addScalarInt32(argMaxAxis));
 
-          // Add outputs
+          // Add output
+          // Outputs[1] is the index output of TopK
           const output = node.outputs[1];
           const outDims = output.shape();
           // The result has the same shape as input with the dimension along axis removed.
@@ -937,7 +952,6 @@ class OpenVINOModelImporter {
           };
           const outputId = this._addNamedOperand(output.graphId(), outputType);
           outputs.push(outputId);
-          console.log(` topk outputId: ${outputId}`);
           console.log(`  output shape: [${outDims}]`);
 
           opCode = this._nn.ARGMAX;
@@ -948,7 +962,7 @@ class OpenVINOModelImporter {
           const input = node.inputs[0];
           inputs.push(this._getTensorId(input));
 
-          // Add outputs
+          // Add output
           const output = node.outputs[0];
           const outDims = output.shape();
           const outputType = {
@@ -963,7 +977,7 @@ class OpenVINOModelImporter {
           const in1 = node.inputs[0];
           inputs.push(this._getTensorId(in1));
           console.log(`  inputs shape: ` +
-              `[${node.inputs.map((input) => input.shape()).join('], [')}]`);
+            `[${node.inputs.map((input) => input.shape()).join('], [')}]`);
 
           const type = node.getString('type');
           console.log(`  type: ${type}`);
@@ -975,7 +989,7 @@ class OpenVINOModelImporter {
               throw new Error(`The type ${type} of Activation is not supported`);
           }
 
-          // Add outputs
+          // Add output
           const output = node.outputs[0];
           const outDims = output.shape();
           const outputType = {
@@ -987,10 +1001,10 @@ class OpenVINOModelImporter {
         } break;
         case 'FakeQuantize': {
           const input = node.inputs[0];
-          const inputLow = node.inputs[1];
-          const inputHigh = node.inputs[2];
-          const outputLow = node.inputs[3];
-          const outputHigh = node.inputs[4];
+          const inputLow = node.inputs[4];
+          const inputHigh = node.inputs[3];
+          const outputLow = node.inputs[2];
+          const outputHigh = node.inputs[1];
 
           let inputLowDims = inputLow.shape();
           let inputHighDims = inputHigh.shape();
@@ -999,20 +1013,19 @@ class OpenVINOModelImporter {
 
           const output = node.outputs[0];
           const outDims = output.shape();
-          
-          const inputLowDimsTensor = inputLow.getInitializer(inputLowDims);
-          const inputHighDimsTensor = inputHigh.getInitializer(inputHighDims);
-          const outputLowDimsTensor = outputLow.getInitializer(outputLowDims);
-          const outputHighDimsTensor = outputHigh.getInitializer(outputHighDims);
-          
+
+          const inputLowTensor = inputLow.getInitializer(inputLowDims);
+          const inputHighTensor = inputHigh.getInitializer(inputHighDims);
+          const outputLowTensor = outputLow.getInitializer(outputLowDims);
+          const outputHighTensor = outputHigh.getInitializer(outputHighDims);
+
           console.log(`  input shape: [${input.shape()}]`);
           inputs.push(this._getTensorId(input));
+          inputs.push(this._addTensorFloat32(inputLowTensor, inputLowDims.length == 0 ? [1] : inputLowDims));
+          inputs.push(this._addTensorFloat32(inputHighTensor, inputHighDims.length == 0 ? [1] : inputHighDims));
+          inputs.push(this._addTensorFloat32(outputLowTensor, outputLowDims.length == 0 ? [1] : outputLowDims));
+          inputs.push(this._addTensorFloat32(outputHighTensor, outputHighDims.length == 0 ? [1] : outputHighDims));
 
-          inputs.push(this._addTensorFloat32(inputLowDimsTensor, inputLowDims));
-          inputs.push(this._addTensorFloat32(inputHighDimsTensor, inputHighDims));
-          inputs.push(this._addTensorFloat32(outputLowDimsTensor, outputLowDims));
-          inputs.push(this._addTensorFloat32(outputHighDimsTensor, outputHighDims));
-          
           const levels = node.getInts('levels');
           inputs.push(this._addScalarInt32(levels));
 
@@ -1031,6 +1044,7 @@ class OpenVINOModelImporter {
 
           inputs.push(this._getTensorId(input));
 
+          // Add output
           const output = node.outputs[0];
           const outDims = output.shape();
           const outputType = {
@@ -1043,11 +1057,21 @@ class OpenVINOModelImporter {
 
           opCode = this._nn.CONVERT;
         } break;
-        // case 'Result': {
-        //   const input = node.inputs[0];
-        //   console.log(`  input shape: [${input.shape()}]`);
-        //   inputs.push(this._getTensorId(input));
-        // } break;
+        case 'Squeeze': {
+          // Skip this unsupported Squeeze op
+          const input = node.inputs[0];
+          const inputId = this._getTensorId(input);
+          const output = node.outputs[0];
+          const outputName = output.graphId();
+          this._tensorIds[outputName] = inputId;
+          console.log(`  Skip Squeeze op`);
+        } break;
+        case 'Result': {
+          // Result node has one input, and no output.
+          const input = node.inputs[0];
+          console.log(`  input shape: [${input.shape()}]`);
+          inputs.push(this._getTensorId(input))
+        } break;
         default: {
           throw new Error(`${node.type} is not supported.`);
         }
@@ -1058,8 +1082,9 @@ class OpenVINOModelImporter {
         continue;
       }
 
-      if (i === graph.nodes.length - 1 && this._options.softmax &&
-          node.type !== 'SoftMax') {
+      if (i === graph.nodes.length - 2 && this._options.softmax &&
+        node.operator !== 'SoftMax') {
+        // Add the node[i] followed by appended SoftMax
         this._addOperation(opCode, inputs, outputs);
 
         // Add inputs
@@ -1071,33 +1096,21 @@ class OpenVINOModelImporter {
         console.log(`SoftMax (appended automatically)`);
         console.log(`  input shape: [${inDims}]`);
 
-        // Add outputs
+        // Add output
         outputs = [];
-        const outputType = {type: this._nn.TENSOR_FLOAT32, dimensions: inDims};
+        const outputType = { type: this._nn.TENSOR_FLOAT32, dimensions: inDims };
         const outputId = this._addNamedOperand('softmax_appended', outputType);
         outputs.push(outputId);
 
         opCode = this._nn.SOFTMAX;
       }
-
+      // Add the appended SoftMax if defined or add node[i] directly
       this._addOperation(opCode, inputs, outputs);
     }
 
     // Write back all cached operands and operations
-    
-    console.log(`  _tensorTypes.length: ${this._tensorTypes.length}`);
-    this._tensorTypes[0] = {type: this._nn.TENSOR_FLOAT32, dimensions: [1, 513, 513, 3]};
-    let index = 0;
     for (const type of this._tensorTypes) {
-      if (index < 20) {
-        // console.log(`index: ${index}`);
-        // console.log(`type: ${type.type}`);
-	if (type.dimensions) {
-          // console.log(`dimensions.size: ${type.dimensions.length}`);
-        }
-      } 
       this._model.addOperand(type);
-      index++;
     }
 
     for (const [index, value] of Object.entries(this._operands)) {
