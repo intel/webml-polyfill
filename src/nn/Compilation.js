@@ -7,7 +7,7 @@ import TfjsModel from './tfjs/TfjsModel'
 export default class Compilation {
   /**
    * Create a Compilation to compile the given model.
-   * 
+   *
    * @param {Model} model - The model to be compiled.
    */
   constructor(model) {
@@ -22,7 +22,7 @@ export default class Compilation {
 
   /**
    * Create a executino from compilation.
-   * 
+   *
    * @returns {Execution} - the execution object.
    */
   async createExecution() {
@@ -34,7 +34,7 @@ export default class Compilation {
 
   /**
    * Sets the execution preference.
-   * 
+   *
    * @param {number} preference - The execution preference, e.g. PreferenceCode.LOW_POWER.
    */
   setPreference(preference) {
@@ -59,11 +59,12 @@ export default class Compilation {
           this._preparedModel = await this._device.prepareModel(this._model);
         } else {
           this._preparedModel = new TfjsModel(this._model);
-          await this._preparedModel.prepareModel();  
+          await this._preparedModel.prepareModel();
         }
       } break;
-      case 'WebGL': {
-        this._preparedModel = new TfjsModel(this._model);
+      case 'WebGL':
+      case 'WebGPU': {
+        this._preparedModel =  new TfjsModel(this._model);
         await this._preparedModel.prepareModel();
       } break;
       default: {

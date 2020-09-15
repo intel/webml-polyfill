@@ -6,7 +6,7 @@ export default class Model {
   /**
    * Create an empty model.
    *
-   * @typedef  {'WebGL' | 'WASM'} Backend
+   * @typedef  {'WebGL' | 'WebGPU' | 'WASM'} Backend
    *
    * @typedef  {Object}      ModelOptions  Options for polyfill only
    * @property {Backend}     backend       Backend selection
@@ -111,7 +111,7 @@ export default class Model {
 
   /**
    * Sets an operand's per channel quantization parameters.
-   * 
+   *
    * @param {number} index - The index of the model operand we're setting.
    * @param {number} params.channelDim - The index of the channel dimension
    * @param {Float32Array} params.scales - The array of scaling values for each channel.
@@ -269,7 +269,7 @@ export default class Model {
     }
 
     if (channelQuant.channelDim >= operand.dimensions.length) {
-      console.error(`Invalid channelDim ${channelDim} for 
+      console.error(`Invalid channelDim ${channelDim} for
           operand dimensions with length ${operand.dimensions.length}`);
       return false;
     }
@@ -288,7 +288,7 @@ export default class Model {
       console.log(`Channle dimension ${channelQuant.channelDim} is underspecified`);
       return false;
     }
-    
+
     for (let i = 0; i < operand.dimensions[channelQuant.channelDim]; i++) {
       if (channelQuant.scales[i] <= 0) {
         console.error(`Invalid value of scales[${i}]`);
