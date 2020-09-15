@@ -8,14 +8,34 @@ $ git clone https://github.com/acerwebai/VangoghCrazyWorld.git
 $ pip install -r requirements.txt
 ```
 
-### 2. Get Dataset & VGG19
+### 2. Convert Pre-Trained Model
+
+Freeze model file, following the instruction that tensorflow bundled here:
+```
+python -m tensorflow.python.tools.freeze_graph \
+--input_graph=tf-model/starrynight-300-255-NHWC_nbc8_bs1_7e00_1e03_0.001/graph.pbtxt \
+--input_checkpoint=tf-model/starrynight-300-255-NHWC_nbc8_bs1_7e00_1e03_0.001/saver \
+--output_graph=tf-models/starrynight.pb \
+--output_node_names="output"
+```
+Convert TensorFlow `pb` model to `tflite` model:
+```
+tflite_convert \
+--graph_def_file=tf-models/starrynight.pb \
+--output_file=tf-models/starrynight.tflite \
+--input_arrays=img_placeholder \
+--output_arrays=add_37
+```
+Then you'll get a tflite model named `starrynight.tflite`.
+
+### 3. Get Dataset & VGG19
 
 Before training, you need get dataset from [COCO](http://images.cocodataset.org/zips/test2014.zip) and VGG19 from [matconvnet](http://www.vlfeat.org/matconvnet/), or execute `setup.sh` to get dataset and VGG19.
 ```
 $ ./setup.sh
 ```
 
-### 3. Training and Evaluating
+### 4. Training and Evaluating
 You need create a folder "ckpts" in the root of this project to save chackpoint files. And you can change `--data-format` to get the data format you want.
 ```
 $ python style.py 
@@ -41,7 +61,7 @@ $ python evaluate.py
   --out-path examples/results/
 ```
 
-### 4. Convert `.meta` to `.onnx`
+### 5. Convert `.meta` to `.onnx`
 
 Install tf2onnx from pypi:
 ```
@@ -56,5 +76,4 @@ $ python -m tf2onnx.convert \
   --outputs add_37:0 \
   --inputs-as-nchw img_placeholder:0 \
 ```
-
 Then you'll get a onnx model named `TARGET_ONNX_MODEL.onnx`.

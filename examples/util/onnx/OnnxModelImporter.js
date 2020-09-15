@@ -551,8 +551,7 @@ class OnnxModelImporter {
         case 'Sum':
         case 'Add': 
         case 'Sub': 
-        case 'Div':
-        case 'Pow': {
+        case 'Div': {
           if (node.opType === 'Sum' && node.input.length !== 2) {
             throw new Error(`Only support Sum with two inputs`);
           }
@@ -603,10 +602,24 @@ class OnnxModelImporter {
             opCode = this._nn.MUL;
           else if (node.opType === 'Sub')
             opCode = this._nn.SUB;
-          else if (node.opType === 'Div')
-            opCode = this._nn.DIV;
           else
-            opCode = this._nn.POW;
+            opCode = this._nn.DIV;
+        } break;
+        case 'Pow': {
+          // Add inputs
+          console.log(`  inputs: [${node.input}]`);
+          const in1 = node.input[0];
+          const in2 = node.input[1];
+          inputs.push(this._getTensorIdByName(in1));
+          inputs.push(this._getTensorIdByName(in2));
+          // Add outputs
+          const output = node.output[0];
+          const inputType = this._getTensorTypeByName(in1);
+          const outputType = inputType;
+          const outputId = this._addNewTensorOperand(output, outputType);
+          outputs.push(outputId);
+          
+          opCode = this._nn.POW;
         } break;
         case 'Gemm': {
           // Add inputs

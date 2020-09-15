@@ -1575,6 +1575,7 @@ export const OperationCode = {
   PAD: 32,
   MEAN: 31,
   TRANSPOSE_CONV_2D: 91,
+  SQUARED_DIFFERENCE: 10008
 };
 
 export const ResultCode = {

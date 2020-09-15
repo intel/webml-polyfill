@@ -84,6 +84,7 @@ export default class NeuralNetworkContext {
     this.PAD = OperationCode.PAD;
     this.MEAN = OperationCode.MEAN;
     this.TRANSPOSE_CONV_2D = OperationCode.TRANSPOSE_CONV_2D;
+    this.SQUARED_DIFFERENCE = OperationCode.SQUARED_DIFFERENCE;
   }
 
   _initFusedActivationFunctionTypes() {

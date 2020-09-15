@@ -1,8 +1,8 @@
 class StyleTransferExample extends BaseCameraExample {
   constructor(models) {
     super(models);
-    this.maxWidth = 300;
-    this.maxHeight = 300;
+    this.maxWidth = 480;
+    this.maxHeight = 480;
   }
 
     /** @override */
@@ -12,8 +12,7 @@ class StyleTransferExample extends BaseCameraExample {
         options: {
           inputSize: this._currentModelInfo.inputSize,
           preOptions: this._currentModelInfo.preOptions,
-          imageChannels: 4,
-          scaledFlag: true,
+          imageChannels: 4
         },
       };
       await this._runner.run(input);
@@ -50,15 +49,12 @@ class StyleTransferExample extends BaseCameraExample {
         bytes[j + 3] = Math.round(a);
       }
       const imageData = new ImageData(bytes, width, height);
-      const resizeRatio = Math.max(Math.max(srcElement.width / width, srcElement.height / height), 1);
-      const scaledWidth = Math.floor(srcElement.width / resizeRatio);
-      const scaledHeight = Math.floor(srcElement.height / resizeRatio);
       const outCanvas = document.createElement('canvas');
       let outCtx = outCanvas.getContext('2d');
-      outCanvas.width = scaledWidth;
-      outCanvas.height = scaledHeight;
+      outCanvas.width = width;
+      outCanvas.height = height;
       outCtx.putImageData(imageData, 0, 0, 0, 0, outCanvas.width, outCanvas.height);
-
+      
       const inputCanvas = document.getElementById('inputCanvas');
       const outputCanvas = document.getElementById('outputCanvas');
       outputCanvas.width = inputCanvas.width;

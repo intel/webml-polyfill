@@ -1129,6 +1129,105 @@ const modelZoo = {
     modelFile: '../style_transfer/model/la-campesinos.onnx',
     intro: 'Neural style transfer is the process of taking the style of one image then applying it to the content of another image.',
     paperUrl: 'https://arxiv.org/abs/1705.04058'
+  }, {
+    modelName: 'StarryNight (TFLite)',
+    framework: ['WebNN'],
+    format: 'TFLite',
+    modelId: 'starry_night_tflite',
+    modelSize: '150.7kB',
+    inputSize: [898, 1354, 3],
+    outputSize: [900, 1356, 3],
+    modelFile: '../style_transfer/model/starry-night.tflite',
+    intro: 'Neural style transfer is the process of taking the style of one image then applying it to the content of another image.',
+    paperUrl: 'https://arxiv.org/abs/1705.04058'
+  }, {
+    modelName: 'SelfPortrait (TFLite)',
+    framework: ['WebNN'],
+    format: 'TFLite',
+    modelId: 'self_portrait_tflite',
+    modelSize: '150.7kB',
+    inputSize: [898, 1354, 3],
+    outputSize: [900, 1356, 3],
+    modelFile: '../style_transfer/model/self-portrait.tflite',
+    intro: 'Neural style transfer is the process of taking the style of one image then applying it to the content of another image.',
+    paperUrl: 'https://arxiv.org/abs/1705.04058'
+  }, {
+    modelName: 'Bedroom (TFLite)',
+    framework: ['WebNN'],
+    format: 'TFLite',
+    modelId: 'bedroom_tflite',
+    modelSize: '150.7kB',
+    inputSize: [898, 1354, 3],
+    outputSize: [900, 1356, 3],
+    modelFile: '../style_transfer/model/bedroom.tflite',
+    intro: 'Neural style transfer is the process of taking the style of one image then applying it to the content of another image.',
+    paperUrl: 'https://arxiv.org/abs/1705.04058'
+  }, {
+    modelName: 'Sunflowers (TFLite)',
+    framework: ['WebNN'],
+    format: 'TFLite',
+    modelId: 'sunflowers_tflite',
+    modelSize: '150.7kB',
+    inputSize: [898, 1354, 3],
+    outputSize: [900, 1356, 3],
+    modelFile: '../style_transfer/model/sunflowers-bew.tflite',
+    intro: 'Neural style transfer is the process of taking the style of one image then applying it to the content of another image.',
+    paperUrl: 'https://arxiv.org/abs/1705.04058'
+  }, {
+    modelName: 'RedVineyards (TFLite)',
+    framework: ['WebNN'],
+    format: 'TFLite',
+    modelId: 'red_vineyards_tflite',
+    modelSize: '150.7kB',
+    inputSize: [898, 1354, 3],
+    outputSize: [900, 1356, 3],
+    modelFile: '../style_transfer/model/red-vineyards.tflite',
+    intro: 'Neural style transfer is the process of taking the style of one image then applying it to the content of another image.',
+    paperUrl: 'https://arxiv.org/abs/1705.04058'
+  }, {
+    modelName: 'SienWithCigar (TFLite)',
+    framework: ['WebNN'],
+    format: 'TFLite',
+    modelId: 'sien_with_cigar_tflite',
+    modelSize: '150.7kB',
+    inputSize: [898, 1354, 3],
+    outputSize: [900, 1356, 3],
+    modelFile: '../style_transfer/model/sien-with-cigar.tflite',
+    intro: 'Neural style transfer is the process of taking the style of one image then applying it to the content of another image.',
+    paperUrl: 'https://arxiv.org/abs/1705.04058'
+  }, {
+    modelName: 'SoupDistribution (TFLite)',
+    framework: ['WebNN'],
+    format: 'TFLite',
+    modelId: 'soup_distribution_tflite',
+    modelSize: '150.7kB',
+    inputSize: [898, 1354, 3],
+    outputSize: [900, 1356, 3],
+    modelFile: '../style_transfer/model/soup-distribution.tflite',
+    intro: 'Neural style transfer is the process of taking the style of one image then applying it to the content of another image.',
+    paperUrl: 'https://arxiv.org/abs/1705.04058'
+  }, {
+    modelName: 'WheatfieldCrows (TFLite)',
+    framework: ['WebNN'],
+    format: 'TFLite',
+    modelId: 'wheatfield_crows_tflite',
+    modelSize: '150.7kB',
+    inputSize: [898, 1354, 3],
+    outputSize: [900, 1356, 3],
+    modelFile: '../style_transfer/model/wheatfield-crows.tflite',
+    intro: 'Neural style transfer is the process of taking the style of one image then applying it to the content of another image.',
+    paperUrl: 'https://arxiv.org/abs/1705.04058'
+  }, {
+    modelName: 'laCampesinos (TFLite)',
+    framework: ['WebNN'],
+    format: 'TFLite',
+    modelId: 'la_campesinos_tflite',
+    modelSize: '150.7kB',
+    inputSize: [480, 640, 3],
+    outputSize: [480, 640, 3],
+    modelFile: '../style_transfer/model/la-campesinos.tflite',
+    intro: 'Neural style transfer is the process of taking the style of one image then applying it to the content of another image.',
+    paperUrl: 'https://arxiv.org/abs/1705.04058'
   }]
 };
 
