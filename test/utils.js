@@ -110,7 +110,7 @@ function setOptionsPerLayer() {
 function setOptions() {
   // visit URL(http://domain-name/test/index.html?prefer=fast/sustained/low)
   const parameterStr = new URLSearchParams(location.search);
-  const prefer = parameterStr.get('prefer');
+  let prefer = parameterStr.get('prefer');
 
   const macosPlatforms = ['Macintosh', 'MacIntel', 'MacPPC', 'Mac68K'];
   const windowsPlatforms = ['Win32', 'Win64', 'Windows', 'WinCE'];
