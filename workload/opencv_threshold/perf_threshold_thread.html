@@ -4,31 +4,7 @@
     <meta charset="utf-8">
     <title>OpenCV.js Performance Test (Thread)</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-    <style>
-      body {
-        font-size: 13px;
-      }
-      .top-margin {
-        margin-top:10px;
-      }
-      h1, h4 {
-        margin: 24px 0 0;
-      }
-      h1 {
-        font-size: 2.0em;
-      }
-      h4 {
-        font-size: 1.2em;
-      }
-      pre {
-        font-family: 'Consolas', 'Monaco', monospace, serif;
-        font-size: 12px;
-        tab-size: 2;
-      }
-      input[type=checkbox] {
-        vertical-align: middle;
-      }
-    </style>
+    <link rel="stylesheet" href="css/style.css">
   </head>
   <body>
     <div class="container" id="container">
@@ -58,6 +34,24 @@
           <div>
             <pre id="log"></pre>
           </div>
+          <div id="nav">
+            <ul>
+              <li>
+                <a href="perf_threshold.html">Scalar Wasm</a>
+              </li>
+              <li>
+                <a href="perf_threshold_thread.html">Wasm Threads</a>
+              </li>
+              <li>
+                <a href="perf_threshold_simd.html">Wasm SIMD</a>
+              </li>
+              <li>
+                <a href="perf_threshold_thread_simd.html">Wasm Threads + SIMD</a>
+              </li>
+              <li><a href="../index.html">Web AI Workload with OpenCV.js (DNN)</a></li>
+            </ul>
+          </div>
+          <p>&copy;2020 WebNN API</p>
         </div>
       </div>
     </div>
