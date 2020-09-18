@@ -15,7 +15,7 @@ async function main() {
     constant2Element.innerHTML = constant2Value;
 
     start = performance.now();
-    await simpleModel.compile({ powerPreference: 'low-power' });
+    await simpleModel.compile({ powerPreference: 'default' });
     console.log(`compilation elapsed time: ${(performance.now() - start).toFixed(2)} ms`);
 
     computeButton.removeAttribute('disabled');
@@ -30,9 +30,8 @@ async function main() {
       resultElement.innerHTML = '';
       addWarning('<strong>Invalid inputs!</strong> Please input valid float numbers in below fields.');
       return;
-    } else {
-      removeWarning();
     }
+
     try {
       let start = performance.now();
       const result = await simpleModel.compute(input1, input2);
