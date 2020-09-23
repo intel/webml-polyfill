@@ -3,6 +3,9 @@ import { FuseCode, OperandCode, OperationCode, PaddingCode, PreferenceCode } fro
 import Graph from '../GraphUtils';
 import * as utils from '../utils';
 import CyclicProfiler from '../instrument';
+import wasmPath from '../../../node_modules/@tensorflow/tfjs-backend-wasm/dist/tfjs-backend-wasm.wasm';
+import simdPath from '../../../node_modules/@tensorflow/tfjs-backend-wasm/dist/tfjs-backend-wasm-simd.wasm';
+import threadedSimdPath from '../../../node_modules/@tensorflow/tfjs-backend-wasm/dist/tfjs-backend-wasm-threaded-simd.wasm';
 import {setWasmPaths} from '@tensorflow/tfjs-backend-wasm';
 import "@tensorflow/tfjs-backend-webgl";
 
