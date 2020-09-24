@@ -49,7 +49,7 @@ Add follwing code for registering service worker in page footer before `</body>`
 
  with 
 
- `: 'https://webnnmodel.s3-us-west-2.amazonaws.com/`
+ `: 'https://d3i5xkfad89fac.cloudfront.net/`
 
 
 ### examples/skeleton_detection/src/helperFunc.js in Line 33
@@ -64,7 +64,7 @@ Replace
 with
 
 ```
-  const urlBase = 'https://webnnmodel.s3-us-west-2.amazonaws.com/skeleton_detection/model/';
+  const urlBase = 'https://d3i5xkfad89fac.cloudfront.net/skeleton_detection/model/';
   // const urlBase = '../skeleton_detection/model/';
 ```
 

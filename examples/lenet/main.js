@@ -39,7 +39,7 @@ function clearResult() {
 async function main() {
   drawNextDigitFromMnist();
   let pen = new Pen(visualCanvas);
-  const lenet = new Lenet('https://webnnmodel.s3-us-west-2.amazonaws.com/lenet/model/lenet.bin');
+  const lenet = new Lenet('https://d3i5xkfad89fac.cloudfront.net/lenet/model/lenet.bin');
   try {
     let start = performance.now();
     await lenet.load();
