@@ -1,6 +1,6 @@
 # Prerequisites
 
-Download all DeepLab [tflite models](https://drive.google.com/open?id=1hwsB3jxLbNpGuhUY5KHBW8xtxg1fZSq8), [OpenVINO models](https://drive.google.com/drive/folders/1NhAg8JKsppEllN65BUfxp4jr6TYiNdP1?usp=sharing ) and [tensorflow models](https://drive.google.com/drive/folders/14YoOLQs7-xArjWD6TSi6i2X62N3OiXQd)to this directory. It should contain the following files:
+Download all DeepLab [tflite models](https://drive.google.com/open?id=1hwsB3jxLbNpGuhUY5KHBW8xtxg1fZSq8), [OpenVINO models](https://drive.google.com/drive/folders/1We0_mTa9hvtflLnqWAQM2hQuX95490bK?usp=sharing ) and [tensorflow models](https://drive.google.com/drive/folders/14YoOLQs7-xArjWD6TSi6i2X62N3OiXQd)to this directory. It should contain the following files:
 
 ```txt
 deeplab_mobilenetv2_513_dilated.tflite
@@ -19,6 +19,14 @@ deeplab_mobilenetv2_257_dilated.xml
 deeplab_mobilenetv2_257_dilated.bin
 deeplab_mobilenetv2_224_dilated.xml
 deeplab_mobilenetv2_224_dilated.bin
+deeplab_mobilenetv2_513_dilated_quant.xml
+deeplab_mobilenetv2_513_dilated_quant.bin
+deeplab_mobilenetv2_321_dilated_quant.xml
+deeplab_mobilenetv2_321_dilated_quant.bin
+deeplab_mobilenetv2_257_dilated_quant.xml
+deeplab_mobilenetv2_257_dilated_quant.bin
+deeplab_mobilenetv2_224_dilated_quant.xml
+deeplab_mobilenetv2_224_dilated_quant.bin
 opt_deeplabv3_mnv2_513.pb
 opt_deeplabv3_mnv2_321.pb
 opt_deeplabv3_mnv2_257.pb
@@ -152,7 +160,9 @@ The frozen graph is exported in `datasets/pascal_voc_seg/exp/train_on_trainval_s
 python3 mo_tf.py \
 --input_model frozen_inference_graph_224.pb \
 --output_dir ./out \
---input 'sub_2'
+--input 'ExpandDims'
 --output 'ArgMax'
-
 ```
+
+After generating the openvino model(`.xml` & `.bin`), you can quant the model into 8-bit precious according to this [doc](https://docs.openvinotoolkit.org/latest/pot_README.html).
+

@@ -22,8 +22,8 @@ tiny_yolov2_face.tflite
 ### Face Recognition Model
 Download and convert following models here:
 
-1. [facenet.bin](https://drive.google.com/open?id=17HINkLRewWNOBGCK_bamPp2RweQHtv90) and [facenet.xml](https://drive.google.com/open?id=1qHom5LEc0K9Asoa4__68HT0g6L3g9cft).
-2. [face-reidentification-retail-0095.bin](https://download.01.org/opencv/2019/open_model_zoo/R2/20190716_170000_models_bin/face-reidentification-retail-0095/FP32/face-reidentification-retail-0095.bin) and [face-reidentification-retail-0095.xml](https://download.01.org/opencv/2019/open_model_zoo/R2/20190716_170000_models_bin/face-reidentification-retail-0095/FP32/face-reidentification-retail-0095.xml).
+1. [facenet.bin](https://drive.google.com/file/d/15WCBhkck6NtVanLRUh3K-y9AUcgiGvha/view?usp=sharing) and [facenet.xml](https://drive.google.com/file/d/1dwDCzsMx_DmNJkoy4TG6E8g1kLF7xdUs/view?usp=sharing).
+2. [face-reidentification-retail-0095.bin](https://drive.google.com/file/d/1wGlPqVPZDC9JL4ePNOUPp2BDeFgKQWTL/view?usp=sharing) and [face-reidentification-retail-0095.xml](https://drive.google.com/file/d/1XGFvIPtG929gdViGAWrF6P-JopuHK7Yy/view?usp=sharing).
 
 The model files are:
 
