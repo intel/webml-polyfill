@@ -1,6 +1,23 @@
 <!DOCTYPE html>
 <html lang='en'>
 
+<style type="text/css">
+.photo-scrollbar {
+    /* width: 96px; */
+    height: 380px;
+    overflow: auto;
+    display: inline-block;
+}
+/* .images {
+  overflow-y: hidden;
+ } */
+.image {
+    width:80px;
+    height: 80px;
+    cursor: pointer;
+}
+</style>
+
 <head>
   <meta charset='utf-8'>
   <title>Web Neural Network API - Examples - Style Transfer</title>
@@ -186,15 +203,49 @@
           <div class='icdisplay' style='display: none;'>
             <div class='col-lg-12 col-xs-12 text-center'>
               <div class='row'>
-                <div class='col bt-3 mb-3'>
-                  <img id='feedElement' hidden crossorigin='anonymous' class='img-fluid' alt='Responsive image'
-                    src='./img/travelspace.jpg'>
-                  <canvas id='inputCanvas'></canvas>
-                  <h4>Raw Photo</h4>
+                <div class='col bt-3 mb-3' style="display: flex;">
+                  <div style="margin: auto; display: flex;">
+                    <img id='feedElement' hidden crossorigin='anonymous' class='img-fluid' alt='Responsive image'
+                      src='./img/travelspace.jpg'>
+                    <canvas id='inputCanvas'></canvas>
+                    <div class="photo-scrollbar">
+                      <div id="images-photo">
+                        <ul style="list-style: none; padding-inline-start: 0px;">
+                          <li><img class="image" id="travelspace" src='./img/travelspace.jpg' /></li>
+                          <li><img class="image" id="fanjason" src='./img/fanjason.jpg' /></li>
+                          <li><img class="image" id="orangeboynd" src='./img/orangeboynd.jpg' /></li>
+                          <li><img class="image" id="sunflower" src='./img/sunflower.jpg' /></li>
+                          <li><img class="image" id="sommerach" src='./img/sommerach.jpg' /></li>
+                          <li><img class="image" id="ghostsmelancholy" src='./img/ghostsmelancholy.jpg' /></li>
+                          <li><img class="image" id="partnerthail" src='./img/partnerthail.jpg' /></li>
+                          <li><img class="image" id="whenorway" src='./img/whenorway.jpg' /></li>
+                          <li><img class="image" id="localfarmer" src='./img/localfarmer.jpg' /></li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- <h4>Raw Photo</h4> -->
                 </div>
-                <div class='col bt-3 mb-3'>
-                  <canvas id='outputCanvas'></canvas>
-                  <h4>Style Transfer</h4>
+                <div class='col bt-3 mb-3' style="display: flex;">
+                  <div style="margin: auto; display: flex;">
+                    <canvas id='outputCanvas'></canvas>
+                    <div class="photo-scrollbar">
+                      <div id="images-style">
+                        <ul style="list-style: none; padding-inline-start: 0px;">
+                          <li><img class="image" id="starry-night" src='./img/starrynight.jpg' title="The starry night" /></li>
+                          <li><img class="image" id="self-portrait" src='./img/self-portrait.jpg'  title="Self-Portrait" /></li>
+                          <li><img class="image" id="bedroom" src='./img/bedroom.jpg'  title="Vincent`s Bedroom in Arles" /></li>
+                          <li><img class="image" id="sunflowers-bew" src='./img/Sunflowers-Bew.jpg'  title="“Sunflowers” (1889)" /></li>
+                          <li><img class="image" id="red-vineyards" src='./img/Red-Vineyards.jpg' title="The Red Vineyard"  /></li>
+                          <li><img class="image" id="sien_with_a_cigar" src='./img/sien_with_a_cigar.jpg'  title="Sien with a cigar" /></li>
+                          <li><img class="image" id="soup-distribution" src='./img/Soup-Distribution.jpg'  title="Soup Distribution in a Public Soup Kitchen" /></li>
+                          <li><img class="image" id="wheatfield_with_crows" src='./img/Wheatfield_with_Crows.jpg'  title="Wheatfield with Crows" /></li>
+                          <li><img class="image" id="la-campesinos" src='./img/la-campesinos.jpg'  title="Rest from Work" /></li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- <h4>Style Transfer</h4> -->
                 </div>
               </div>
               <div class='row mt-1'>
