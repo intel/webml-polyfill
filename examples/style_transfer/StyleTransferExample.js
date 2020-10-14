@@ -129,6 +129,8 @@ class StyleTransferExample extends BaseCameraExample {
       } else {
         throw new Error('Unrecorgnized model, please check your model list.');
       }
+      let stname = $('#' + modelId).attr('title');
+      $('#stname').html(stname);
       this.main();
     });
   };

@@ -7,7 +7,14 @@
     height: 380px;
     overflow: auto;
     display: inline-block;
+    visibility: hidden;
 }
+
+#div-photos:hover .photo-scrollbar,
+#div-styles:hover .photo-scrollbar {
+  visibility:visible;
+}
+
 /* .images {
   overflow-y: hidden;
  } */
@@ -16,6 +23,32 @@
     height: 80px;
     cursor: pointer;
 }
+
+.photo-scrollbar::-webkit-scrollbar-track
+{
+	-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.1);
+}
+
+.photo-scrollbar::-webkit-scrollbar
+{
+	width: 5px;
+	background-color: #F5F5F5;
+}
+
+.photo-scrollbar::-webkit-scrollbar-thumb
+{
+	background-color: rgba(25, 190, 225, 1.0);	
+  border-radius: 10px;
+	background-image: -webkit-linear-gradient(45deg,
+  rgba(255, 255, 255, .2) 25%,
+    transparent 25%,
+    transparent 50%,
+    rgba(255, 255, 255, .2) 50%,
+    rgba(255, 255, 255, .2) 75%,
+    transparent 75%,
+    transparent)
+}
+
 </style>
 
 <head>
@@ -200,12 +233,13 @@
         </div>
       </div>
       <div class='tab-content clearfix row'>
-        <div class='tab-pane text-center active col-sm' id='imagetab'>
+        <div class='tab-pane text-center active col-sm'>
           <div class='icdisplay' style='display: none;'>
             <div class='col-lg-12 col-xs-12 text-center'>
               <div class='row'>
                 <div class='col bt-3 mb-3' style="display: flex;">
-                  <div style="margin: auto; display: flex;">
+                  <div id='div-photos' style="margin: auto; display: flex;">
+                    <video id='feedMediaElement' autoplay playsinline style='display:none'></video>
                     <img id='feedElement' hidden crossorigin='anonymous' class='img-fluid' alt='Responsive image'
                       src='./img/travelspace.jpg'>
                     <canvas id='inputCanvas'></canvas>
@@ -228,7 +262,7 @@
                   <!-- <h4>Raw Photo</h4> -->
                 </div>
                 <div class='col bt-3 mb-3' style="display: flex;">
-                  <div style="margin: auto; display: flex;">
+                  <div id='div-styles' style="margin: auto; display: flex;">
                     <canvas id='outputCanvas'></canvas>
                     <div class="photo-scrollbar">
                       <div id="images-style">
@@ -247,6 +281,11 @@
                     </div>
                   </div>
                   <!-- <h4>Style Transfer</h4> -->
+                </div>
+              </div>
+              <div class='row'>
+                <div class='col'>
+                  <div class='box' id='stname'></div>
                 </div>
               </div>
               <div class='row mt-1'>
