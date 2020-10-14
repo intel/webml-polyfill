@@ -1093,7 +1093,7 @@ const modelZoo = {
     modelSize: '150.7kB',
     inputSize: [540, 540, 3],
     outputSize: [540, 540, 3],
-    modelFile: '../style_transfer/model/self-portrait.tflite',
+    modelFile: '../style_transfer/model/starry-night.onnx',
     intro: 'Neural style transfer is the process of taking the style of one image then applying it to the content of another image.',
     paperUrl: 'https://arxiv.org/abs/1705.04058'
   }]
