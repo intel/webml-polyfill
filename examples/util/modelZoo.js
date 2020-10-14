@@ -1072,6 +1072,30 @@ const modelZoo = {
     scoreFile: '../speech_recognition/ark/dev93_scores.ark',
     intro: 'This model was trained by the Kaldi s5 recipe and the Kaldi Nnet (nnet1) framework and using the Wall Street Journal corpus.',
     paperUrl: 'https://docs.openvinotoolkit.org/latest/_inference_engine_samples_speech_sample_README.html'
+  }],
+
+  styleTransferModels: [{
+    modelName: 'Fast Style Transfer (TFLite)',
+    framework: ['WebNN'],
+    format: 'TFLite',
+    modelId: 'fast_style_transfer_tflite',
+    modelSize: '150.7kB',
+    inputSize: [540, 540, 3],
+    outputSize: [540, 540, 3],
+    modelFile: '../style_transfer/model/starry-night.tflite',
+    intro: 'Neural style transfer is the process of taking the style of one image then applying it to the content of another image.',
+    paperUrl: 'https://arxiv.org/abs/1705.04058'
+  }, {
+    modelName: 'Fast Style Transfer (ONNX)',
+    framework: ['WebNN'],
+    format: 'ONNX',
+    modelId: 'fast_style_transfer_onnx',
+    modelSize: '150.7kB',
+    inputSize: [540, 540, 3],
+    outputSize: [540, 540, 3],
+    modelFile: '../style_transfer/model/starry-night.onnx',
+    intro: 'Neural style transfer is the process of taking the style of one image then applying it to the content of another image.',
+    paperUrl: 'https://arxiv.org/abs/1705.04058'
   }]
 };
 
