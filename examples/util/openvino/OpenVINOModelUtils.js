@@ -180,34 +180,22 @@ class OpenVINOModel {
 
   /**
    * tensor: openvino.Tensor
-   * dimHints?: number[] (NHWC)
+   * dimHints?: number[] (NCHW)
    */
   _getTensorData(tensor, dimHints) {
     const offset = tensor.offset;
     const size = tensor.size;
     const ctor = this._getConstructorFromType(tensor.type.dataType);
     const length = size / ctor.BYTES_PER_ELEMENT;
-    const data = new ctor(this._weights, offset, length);
-    if (typeof dimHints === 'undefined' || dimHints.length !== 4) {
-      return data;
-    }
-
-    if (OpenVINOUtils.product(dimHints) !== length) {
-      throw new Error(`Product of ${dimHints} doesn't match the length ${length}`);
-    }
-    // NCHW -> NHWC
-    const nhwcData = new ctor(data.length);
-    const [N, H, W, C] = dimHints;
-    for (let n = 0; n < N; ++n) {
-      for (let c = 0; c < C; ++c) {
-        for (let h = 0; h < H; ++h) {
-          for (let w = 0; w < W; ++w) {
-            nhwcData[n*H*W*C + h*W*C + w*C + c] = data[n*C*H*W + c*H*W + h*W + w];
-          }
-        }
+    const nchwdata = new ctor(this._weights, offset, length);
+    if (typeof dimHints !== 'undefined' && dimHints.length !== 0) {
+      if (OpenVINOUtils.product(dimHints) !== length) {
+        throw new Error(`Product of ${dimHints} doesn't match the length ${length}`);
       }
+      return nchwdata;
+    } else {
+      return nchwdata;
     }
-    return nhwcData;
   }
 
   getTensorGraphId(arg) {
@@ -219,14 +207,10 @@ class OpenVINOModel {
     return this._getTensorType(arg).dataType;
   }
 
+  // NCHW dims
   getTensorShape(arg) {
     const dims = this._getTensorType(arg).shape.dimensions;
-    if (dims.length !== 4) {
-      return dims;
-    } else {
-      const [N, C, H, W] = dims;
-      return [N, H, W, C];
-    }
+    return dims;
   }
 
   _getTensorType(arg) {

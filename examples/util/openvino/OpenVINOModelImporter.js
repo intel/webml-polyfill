@@ -304,7 +304,7 @@ class OpenVINOModelImporter {
 
           let output = node.outputs[0];
           const outDims = output.shape();
-          const outChannels = outDims[outDims.length - 1];
+          const outChannels = outDims[1];
 
           const isDepthWiseConv = (node.type === 'GroupConvolution');
 
@@ -329,24 +329,10 @@ class OpenVINOModelImporter {
               // Reshape GOIHW kernel for depthwise conv
               const kernelH = convFilterDims[3];
               const kernelW = convFilterDims[4];
-              const inChannels = inDims[inDims.length - 1];
+              const inChannels = inDims[1];
               const groups = inChannels;
               convFilterDims = [outChannels, kernelH, kernelW, inChannels / groups];
               convFilterTensor = convFilter.getInitializer(convFilterDims);
-              const nhwcData = convFilterTensor;
-              const chwnData = new Float32Array(nhwcData.length);
-              const N = convFilterDims[0];
-              const H = convFilterDims[1];
-              const W = convFilterDims[2];
-              // NHWC -> CHWN where C === 1
-              for (let n = 0; n < N; ++n) {
-                for (let h = 0; h < H; ++h) {
-                  for (let w = 0; w < W; ++w) {
-                    chwnData[h * W * N + w * N + n] = nhwcData[n * H * W + h * W + w];
-                  }
-                }
-              }
-              convFilterTensor.set(chwnData);
               convFilterDims[0] = 1;
               convFilterDims[3] = groups;
               console.log(`  reshaped kernel shape: [${convFilterDims}]`);
@@ -429,6 +415,9 @@ class OpenVINOModelImporter {
               inputs.push(this._addScalarInt32(this._nn.FUSED_NONE));
             }
           }
+
+          // Specify NCHW layout
+          inputs.push(this._addScalarInt32(1))
 
           // Add output
           const outputType = {
@@ -636,7 +625,7 @@ class OpenVINOModelImporter {
           const strides = node.getInts('strides', '1, 1');
           const [strideY, strideX] = strides;
           console.log(`  strides: [${strides}]`);
-          const kernelShape = isReduceMean ? [inDims[1], inDims[2]] : node.getInts('kernel');
+          const kernelShape = isReduceMean ? [inDims[2], inDims[3]] : node.getInts('kernel');
           if (!kernelShape || kernelShape.length !== 2) {
             throw new Error(`Invalid kernel shape [${kernelShape}]`);
           }
@@ -656,14 +645,14 @@ class OpenVINOModelImporter {
           // floor-mode padding. So we ajust the padding on both sides to make
           // it compatible but it's not equivalent to ceil-mode padding
           if (roundingType === 'ceil' &&
-            (inDims[1] - kernelHeight + padHeightBegin + padHeightEnd) % strideY !== 0) {
+            (inDims[2] - kernelHeight + padHeightBegin + padHeightEnd) % strideY !== 0) {
             padHeightBegin += Math.floor(strideY / 2);
             padHeightEnd += Math.floor(strideY / 2);
             console.warn(`Ceil mode is not supported. Ajusted padHeight to ` +
               `[${padHeightBegin},${padHeightEnd}]`);
           }
           if (roundingType === 'ceil' &&
-            (inDims[2] - kernelWidth + padWidthBegin + padWidthEnd) % strideX !== 0) {
+            (inDims[3] - kernelWidth + padWidthBegin + padWidthEnd) % strideX !== 0) {
             padWidthBegin += Math.floor(strideX / 2);
             padWidthEnd += Math.floor(strideX / 2);
             console.warn(`Ceil mode is not supported. Ajusted padWidth to ` +
@@ -688,6 +677,9 @@ class OpenVINOModelImporter {
           inputs.push(this._addScalarInt32(kernelWidth));
           inputs.push(this._addScalarInt32(kernelHeight));
           inputs.push(this._addScalarInt32(this._nn.FUSED_NONE));
+
+          // Specify NCHW layout
+          inputs.push(this._addScalarInt32(1))
 
           // Add output
           const output = node.outputs[0];
@@ -718,19 +710,8 @@ class OpenVINOModelImporter {
             throw new Error(`Invalid axis ${axis}`);
           }
 
-          const input0Dims = node.inputs[0].shape();
-          let concatAxis = axis;
-          if (input0Dims.length === 4) {
-            // NCHW -> NHWC
-            concatAxis = {
-              0: 0,
-              1: 3,
-              2: 1,
-              3: 2,
-            }[axis];
-          }
-          inputs.push(this._addScalarInt32(concatAxis));
-          console.log(`  concatAxis: ${concatAxis}`);
+          inputs.push(this._addScalarInt32(axis));
+          console.log(`  concatAxis: ${axis}`);
 
           // Add output
           const output = node.outputs[0];
@@ -823,15 +804,6 @@ class OpenVINOModelImporter {
           const shapeType = {
             type: this._getTypeCode(shape.dataType()), dimensions: [outDims.length]
           };
-          let temp = new Int32Array(outDims);
-          // NGCHW -> NGHWC
-          if (outDims.length == 5) {
-            outDims[0] = temp[0];
-            outDims[1] = temp[1];
-            outDims[2] = temp[3];
-            outDims[3] = temp[4];
-            outDims[4] = temp[2];
-          }
           const newShape = new Int32Array(outDims);
           const shapeId = this._addNamedOperand(shape.graphId(), shapeType, newShape);
           // `Reshape` requires `shape` to be integer. However, `shape` tensor
@@ -904,9 +876,12 @@ class OpenVINOModelImporter {
           const outDims = output.shape();
 
           // Specify the width and hight of output
+          inputs.push(this._addScalarInt32(outDims[3]));
           inputs.push(this._addScalarInt32(outDims[2]));
-          inputs.push(this._addScalarInt32(outDims[1]));
 
+          // Specify NCHW layout
+          inputs.push(this._addScalarInt32(1))
+          
           const align_corners = node.getInt("align_corners");
           if (align_corners !== 'undefined') {
             inputs.push(this._addScalarInt32(align_corners));
@@ -929,24 +904,14 @@ class OpenVINOModelImporter {
           console.log(`  input shape: [${inputDims}]`);
           inputs.push(this._getTensorId(input));
           const axis = node.getInt("axis");
-          let argMaxAxis = axis;
-          if (inputDims.length === 4) {
-            // NCHW -> NHWC
-            argMaxAxis = {
-              0: 0,
-              1: 3,
-              2: 1,
-              3: 2,
-            }[axis];
-          }
-          inputs.push(this._addScalarInt32(argMaxAxis));
+          inputs.push(this._addScalarInt32(axis));
 
           // Add output
           // Outputs[1] is the index output of TopK
           const output = node.outputs[1];
           const outDims = output.shape();
           // The result has the same shape as input with the dimension along axis removed.
-          outDims.splice(argMaxAxis, 1);
+          outDims.splice(axis, 1);
           const outputType = {
             type: this._getTypeCode('I32'), dimensions: outDims
           };
@@ -1005,7 +970,6 @@ class OpenVINOModelImporter {
           const inputHigh = node.inputs[3];
           const outputLow = node.inputs[2];
           const outputHigh = node.inputs[1];
-
           let inputLowDims = inputLow.shape();
           let inputHighDims = inputHigh.shape();
           let outputLowDims = outputLow.shape();
