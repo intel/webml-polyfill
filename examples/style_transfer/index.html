@@ -239,7 +239,6 @@
               <div class='row'>
                 <div class='col bt-3 mb-3' style="display: flex;">
                   <div id='div-photos' style="margin: auto; display: flex;">
-                    <video id='feedMediaElement' autoplay playsinline style='display:none'></video>
                     <img id='feedElement' hidden crossorigin='anonymous' class='img-fluid' alt='Responsive image'
                       src='./img/travelspace.jpg'>
                     <canvas id='inputCanvas'></canvas>
@@ -259,7 +258,6 @@
                       </div>
                     </div>
                   </div>
-                  <!-- <h4>Raw Photo</h4> -->
                 </div>
                 <div class='col bt-3 mb-3' style="display: flex;">
                   <div id='div-styles' style="margin: auto; display: flex;">
@@ -280,7 +278,6 @@
                       </div>
                     </div>
                   </div>
-                  <!-- <h4>Style Transfer</h4> -->
                 </div>
               </div>
               <div class='row'>
@@ -306,8 +303,8 @@
         </div>
         <div class='tab-pane text-center col-sm' id='cameratab'>
           <div class='icdisplay' style='display: none;'>
-            <div id='fps'></div>
-            <div id='fullscreen'>
+            <div id='fps' style="margin-bottom: 20px;"></div>
+            <!-- <div id='fullscreen'>
               <i class='fa expand'>
                 <svg aria-hidden='true' data-prefix='fas' data-icon='expand' class='svg-inline--fa fa-expand fa-w-14'
                   role='img' viewBox='0 0 448 512'>
@@ -324,8 +321,36 @@
                   </path>
                 </svg>
               </i>
+            </div> -->
+            <div class='row'>
+              <div class='col bt-3 mb-3' style="display: flex;">
+                <div id='div-photos' style="margin: auto; display: flex;">
+                  <canvas id='camInCanvas'></canvas>
+                </div>
+              </div>
+              <video id='feedMediaElement' autoplay playsinline style="display: none;"></video>
+              
+              <div class='col bt-3 mb-3' style="display: flex;">
+                <div id='div-styles' style="margin: auto; display: flex;">
+                  <canvas id='camOutCanvas'></canvas>
+                  <div class="photo-scrollbar">
+                    <div id="images-style">
+                      <ul style="list-style: none; padding-inline-start: 0px;">
+                        <li><img class="image" id="starry-night" src='./img/starrynight.jpg' title="The starry night" /></li>
+                        <li><img class="image" id="self-portrait" src='./img/self-portrait.jpg'  title="Self-Portrait" /></li>
+                        <li><img class="image" id="bedroom" src='./img/bedroom.jpg'  title="Vincent`s Bedroom in Arles" /></li>
+                        <li><img class="image" id="sunflowers-bew" src='./img/Sunflowers-Bew.jpg'  title="“Sunflowers” (1889)" /></li>
+                        <li><img class="image" id="red-vineyards" src='./img/Red-Vineyards.jpg' title="The Red Vineyard"  /></li>
+                        <li><img class="image" id="sien_with_a_cigar" src='./img/sien_with_a_cigar.jpg'  title="Sien with a cigar" /></li>
+                        <li><img class="image" id="soup-distribution" src='./img/Soup-Distribution.jpg'  title="Soup Distribution in a Public Soup Kitchen" /></li>
+                        <li><img class="image" id="wheatfield_with_crows" src='./img/Wheatfield_with_Crows.jpg'  title="Wheatfield with Crows" /></li>
+                        <li><img class="image" id="la-campesinos" src='./img/la-campesinos.jpg'  title="Rest from Work" /></li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
-            <video id='video' autoplay playsinline></video>
           </div>
         </div>
       </div>
