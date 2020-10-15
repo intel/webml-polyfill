@@ -1,9 +1,11 @@
-## Training and Conversion
-
-### 1. Style Transfer Model
+## Style Transfer Model
 Download [pre-trained](https://drive.google.com/drive/folders/1KBPiovE6GhmOTxR_YkQxPIbv5UPRgFSP) models and put them to `style_transfer/model`.
 
-### 2. Prepare Environment
+## Training and Conversion
+
+You can also train and convert the models from scratch with following steps.
+
+### 1. Prepare Environment
 
 Clone [repo](https://github.com/acerwebai/VangoghCrazyWorld), install TensorFlow 1.14 and Pillow 3.4.2, scipy 0.18.1, numpy 1.11.2, ffmpeg 3.1.3 or later version.
 ```
@@ -11,7 +13,7 @@ $ git clone https://github.com/acerwebai/VangoghCrazyWorld.git
 $ pip install -r requirements.txt
 ```
 
-### 3. Convert Pre-Trained Model
+### 2. Convert Pre-Trained Model
 
 Freeze model file, following the instruction that tensorflow bundled here:
 ```
@@ -31,14 +33,14 @@ tflite_convert \
 ```
 Then you'll get a tflite model named `starrynight.tflite`.
 
-### 4. Get Dataset & VGG19
+### 3. Get Dataset & VGG19
 
 Before training, you need get dataset from [COCO](http://images.cocodataset.org/zips/test2014.zip) and VGG19 from [matconvnet](http://www.vlfeat.org/matconvnet/), or execute `setup.sh` to get dataset and VGG19.
 ```
 $ ./setup.sh
 ```
 
-### 5. Training and Evaluating
+### 4. Training and Evaluating
 You need create a folder "ckpts" in the root of this project to save chackpoint files. And you can change `--data-format` to get the data format you want.
 ```
 $ python style.py 
@@ -64,7 +66,7 @@ $ python evaluate.py
   --out-path examples/results/
 ```
 
-### 6. Convert `.meta` to `.onnx`
+### 5. Convert `.meta` to `.onnx`
 
 Install tf2onnx from pypi:
 ```

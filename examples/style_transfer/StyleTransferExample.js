@@ -58,8 +58,8 @@ class StyleTransferExample extends BaseCameraExample {
   };
 
   _processExtra = (output) => {
-    const drawInput = (srcElement) => {
-      const inputCanvas = document.getElementById('inputCanvas');
+    const drawInput = (srcElement, canvasId) => {
+      const inputCanvas = document.getElementById(canvasId);
       const resizeRatio = Math.max(Math.max(srcElement.width / this.maxWidth, srcElement.height / this.maxHeight), 1);
       const scaledWidth = Math.floor(srcElement.width / resizeRatio);
       const scaledHeight = Math.floor(srcElement.height / resizeRatio);
@@ -69,7 +69,9 @@ class StyleTransferExample extends BaseCameraExample {
       ctx.drawImage(srcElement, 0, 0, scaledWidth, scaledHeight);
     };
 
-    const drawOutput = (outputTensor, height, width) => {
+    const drawOutput = (outputTensor, inCanvasId, outCanvasId) => {
+      const height = this._currentModelInfo.outputSize[0];
+      const width = this._currentModelInfo.outputSize[1];
       const mean = [1, 1, 1, 1];
       const offset = [0, 0, 0, 0];
       const bytes = new Uint8ClampedArray(width * height * 4);
@@ -92,25 +94,31 @@ class StyleTransferExample extends BaseCameraExample {
       outCanvas.height = height;
       outCtx.putImageData(imageData, 0, 0, 0, 0, outCanvas.width, outCanvas.height);
       
-      const inputCanvas = document.getElementById('inputCanvas');
-      const outputCanvas = document.getElementById('outputCanvas');
+      const inputCanvas = document.getElementById(inCanvasId);
+      const outputCanvas = document.getElementById(outCanvasId);
       outputCanvas.width = inputCanvas.width;
       outputCanvas.height = inputCanvas.height;
       const ctx = outputCanvas.getContext('2d');
       ctx.drawImage(outCanvas, 0, 0, outputCanvas.width, outputCanvas.height);
     };
 
-    const updateUI = () => {
-      const outputCanvas = document.getElementById('outputCanvas');
+    const updateUI = (canvasId) => {
+      const outputCanvas = document.getElementById(canvasId);
       const psElement = document.getElementsByClassName('photo-scrollbar');
       for(let i=0; i<psElement.length; i++) {
         psElement[i].style.height = outputCanvas.height + 'px';
       }
     }
 
-    drawInput(this._currentInputElement);
-    drawOutput(output.tensor, this._currentModelInfo.outputSize[0], this._currentModelInfo.outputSize[1]);
-    updateUI();
+    if(this._currentInputType == 'image') {
+      drawInput(this._currentInputElement, 'inputCanvas');
+      drawOutput(output.tensor,'inputCanvas', 'outputCanvas');
+      updateUI('outputCanvas');
+    } else {
+      drawInput(this._currentInputElement, 'camInCanvas');
+      drawOutput(output.tensor,'camInCanvas', 'camOutCanvas');
+      updateUI('camOutCanvas');
+    }
   };
 
   _customUI = () => {
@@ -129,6 +137,8 @@ class StyleTransferExample extends BaseCameraExample {
       } else {
         throw new Error('Unrecorgnized model, please check your model list.');
       }
+      let stname = $('#' + modelId).attr('title');
+      $('#stname').html(stname);
       this.main();
     });
   };
