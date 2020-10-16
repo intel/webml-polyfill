@@ -181,7 +181,7 @@ class BaseRunner {
    * Compilation model by OpenCV.js framework doesn't need options paratmeter.
    * @param {!Object<string, *>|undefined} options
    *     options = { // for WebNN
-   *       backend: {string}, // 'WASM'|'WebGL'|'WebML'
+   *       backend: {string}, // 'WASM'|'WebGL'|'WebGPU'|'WebML'
    *       prefer: {string}, // 'fast'|'sustained'|'low'|'ultra_low'
    *     };
    */
@@ -191,7 +191,7 @@ class BaseRunner {
    * This method is to check whether model compiled.
    * @param {!Object<string, *>|undefined} options
    *     options = { // for WebNN
-   *       backend: {string}, // 'WASM'|'WebGL'|'WebML'
+   *       backend: {string}, // 'WASM'|'WebGL'|'WebGPU'|'WebML'
    *       prefer: {string}, // 'fast'|'sustained'|'low'|'ultra_low'
    *     };
    */
@@ -205,7 +205,7 @@ class BaseRunner {
    * Compilation model by OpenCV.js framework doesn't need options paratmeter.
    * @param {!Object<string, *>|undefined} options
    *     options = { // for WebNN
-   *       backend: {string}, // 'WASM'|'WebGL'|'WebML'
+   *       backend: {string}, // 'WASM'|'WebGL'|'WebGPU'|'WebML'
    *       prefer: {string}, // 'fast'|'sustained'|'low'|'ultra_low'
    *     };
    */

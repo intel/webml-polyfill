@@ -58,6 +58,7 @@ $(document).ready(function () {
   showModel('#modelcv-sr tbody', superResolutionModels)
   showModel('#modelcv-odf tbody', faceDetectionModels)
   showModel('#modelcv-fld tbody', facialLandmarkDetectionModels)
+  showModel('#modelcv-st tbody', styleTransferModels)
   showModel('#modelcv-ea tbody', emotionAnalysisModels)
   showModel('#modelcv-fr tbody', faceRecognitionModels)
   showModel('#modelnoncv-sc tbody', speechCommandModels)

@@ -51,6 +51,14 @@ Add follwing code for registering service worker in page footer before `</body>`
 
  `: 'https://d3i5xkfad89fac.cloudfront.net/`
 
+ ### examples/style_transfer/StyleTransferExample.js
+
+  Replace `: './`
+
+ with 
+
+ `: 'https://d3i5xkfad89fac.cloudfront.net/style_transfer/`
+
 
 ### examples/skeleton_detection/src/helperFunc.js in Line 33
 

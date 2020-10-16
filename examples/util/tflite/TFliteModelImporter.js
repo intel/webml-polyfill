@@ -21,7 +21,7 @@ class TFliteModelImporter {
         throw Error('Fails to initialize neural network context');
       }
       this._nn = nnNative;
-    } else if (this._backend === 'WASM' || this._backend === 'WebGL') {
+    } else if (this._backend === 'WASM' || this._backend === 'WebGL' || this._backend === 'WebGPU') {
       this._nn = nnPolyfill;
     }
     this._bEagerMode = false;
@@ -140,15 +140,25 @@ class TFliteModelImporter {
     });
   }
 
+  _getOperandValue(index) {
+    return this._operands[index];
+  }
+
   _setOperandValue(index, value) {
     this._model.setOperandValue(index, value);
     this._operands[index].value = value;
+  }
+
+  _setOperandDims(index, dims) {
+    this._model._operands[index].dimensions = dims;
+    this._operands[index].dimensions = dims;
   }
 
   _addOperand(type, value) {
     let index = this._operandIndex++;
     this._model.addOperand(type);
     this._operands[index] = {
+      dimensions: type.dimensions,
       scale: type.scale,
       zeroPoint: type.zeroPoint,
       value: null
@@ -175,6 +185,13 @@ class TFliteModelImporter {
       type: this._nn.TENSOR_FLOAT32,
       dimensions: dims
     }, new Float32Array(tensor));
+  }
+
+  _addTensorInt32(tensor, dims) {
+    return this._addOperand({
+      type: this._nn.TENSOR_INT32,
+      dimensions: dims
+    }, new Int32Array(tensor));
   }
 
   _addOperation(opType, inputs, outputs) {
@@ -282,6 +299,25 @@ class TFliteModelImporter {
           inputs.push(this._addScalarInt32(fuseCode));
           opType = this._nn.MUL;
         } break;
+        case tflite.BuiltinOperator.SUB: {
+          let options = operator.builtinOptions(new tflite.SubOptions());
+          let fuseCode = FuseCodeMap.get(options.fusedActivationFunction());
+          if (typeof fuseCode === 'undefined') {
+            throw new Error(`Fuse code ${options.fusedActivationFunction()} is not supported.`);
+          }
+          inputs.push(this._addScalarInt32(fuseCode));
+          opType = this._nn.SUB;
+        } break;
+        case tflite.BuiltinOperator.DIV: {
+          let options = operator.builtinOptions(new tflite.DivOptions());
+          let fuseCode = FuseCodeMap.get(options.fusedActivationFunction());
+          if (typeof fuseCode === 'undefined') {
+            throw new Error(`Fuse code ${options.fusedActivationFunction()} is not supported.`);
+          }
+          inputs.push(this._addScalarInt32(fuseCode));
+          opType = this._nn.DIV;
+        } break;
+        
         case tflite.BuiltinOperator.CONV_2D: {
           let options = operator.builtinOptions(new tflite.Conv2DOptions());
           let paddingCode = PaddingCodeMap.get(options.padding());
@@ -405,6 +441,53 @@ class TFliteModelImporter {
           inputs.push(this._addScalarInt32(newSize[1]));
           inputs.push(this._addScalarInt32(options.alignCorners() ? 1 : 0));
           opType = this._nn.RESIZE_BILINEAR;
+        } break;
+        case tflite.BuiltinOperator.MIRROR_PAD: {
+          let options = operator.builtinOptions(new tflite.MirrorPadOptions());
+          let mode = options.mode();
+          inputs.splice(1, 0, this._addScalarInt32(mode));
+          opType = this._nn.PAD;
+        } break;
+        case tflite.BuiltinOperator.MEAN: {
+          inputs.push(this._addScalarInt32(1));  //How to get keepDims value?
+          opType = this._nn.MEAN;
+        } break;
+        case tflite.BuiltinOperator.SQUARED_DIFFERENCE: {
+          opType = this._nn.SQUARED_DIFFERENCE;
+        } break;
+        case tflite.BuiltinOperator.TRANSPOSE_CONV: {
+          let options = operator.builtinOptions(new tflite.TransposeConvOptions());
+          let weightsId = inputs[1];
+          let weights = this._getOperandValue(weightsId);
+          let weightsValue = weights.value;
+          let weightsDims = weights.dimensions;
+          let weightsArray = new Float32Array(weightsValue.length);
+          const O = weightsDims[0];
+          const H = weightsDims[1];
+          const W = weightsDims[2];
+          const I = weightsDims[3];
+          for (let o = 0; o < O; ++o) {
+            for (let h = 0; h < H; ++h) {
+              for (let w = 0; w < W; ++w) {
+                for (let i = 0; i < I; ++i) {
+                  weightsArray[h*W*O*I + w*O*I + o*I + i] = weightsValue[o*H*W*I + h*W*I + w*I + i];
+                }
+              }
+            }
+          }
+          weightsDims.splice(2, 0, weightsDims.shift());
+          this._setOperandValue(weightsId, weightsArray);
+          this._setOperandDims(weightsId, weightsDims);
+
+          inputs = [inputs[2], inputs[1], inputs[0]];
+          let stride_h = options.strideH();
+          let stride_w = options.strideW();
+          let strides = [stride_h, stride_w];
+          inputs.push(this._addTensorInt32(strides, [strides.length]));
+          opType = this._nn.TRANSPOSE_CONV_2D;
+        } break;
+        case tflite.BuiltinOperator.POW: {
+          opType = this._nn.POW;
         } break;
         case tflite.BuiltinOperator.TANH: {
           opType = this._nn.TANH;

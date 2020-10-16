@@ -1072,6 +1072,30 @@ const modelZoo = {
     scoreFile: 'https://d3i5xkfad89fac.cloudfront.net/speech_recognition/ark/dev93_scores.ark',
     intro: 'This model was trained by the Kaldi s5 recipe and the Kaldi Nnet (nnet1) framework and using the Wall Street Journal corpus.',
     paperUrl: 'https://docs.openvinotoolkit.org/latest/_inference_engine_samples_speech_sample_README.html'
+  }],
+
+  styleTransferModels: [{
+    modelName: 'Fast Style Transfer (TFLite)',
+    framework: ['WebNN'],
+    format: 'TFLite',
+    modelId: 'fast_style_transfer_tflite',
+    modelSize: '150.7kB',
+    inputSize: [540, 540, 3],
+    outputSize: [540, 540, 3],
+    modelFile: 'https://d3i5xkfad89fac.cloudfront.net/style_transfer/model/starry-night.tflite',
+    intro: 'Neural style transfer is the process of taking the style of one image then applying it to the content of another image.',
+    paperUrl: 'https://arxiv.org/abs/1705.04058'
+  }, {
+    modelName: 'Fast Style Transfer (ONNX)',
+    framework: ['WebNN'],
+    format: 'ONNX',
+    modelId: 'fast_style_transfer_onnx',
+    modelSize: '150.7kB',
+    inputSize: [540, 540, 3],
+    outputSize: [540, 540, 3],
+    modelFile: 'https://d3i5xkfad89fac.cloudfront.net/style_transfer/model/starry-night.onnx',
+    intro: 'Neural style transfer is the process of taking the style of one image then applying it to the content of another image.',
+    paperUrl: 'https://arxiv.org/abs/1705.04058'
   }]
 };
 
@@ -1171,7 +1195,7 @@ const getModelFromGivenModels = (modelsDict, id) => {
 // current this function works for {model: xxxModels}
 const selectModelFromGivenModels = (modelsDict, framework) => {
   let selectedDict = new Object();
-  for (key of Object.keys(modelsDict)) {
+  for(key of Object.keys(modelsDict)) {
     let newModelList = [];
     for (const model of modelsDict[key]) {
       if (model.framework && model.framework.includes(framework)) {
@@ -1180,7 +1204,7 @@ const selectModelFromGivenModels = (modelsDict, framework) => {
     }
     selectedDict[key] = newModelList;
   }
-
+  
   return selectedDict;
 };
 

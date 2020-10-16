@@ -21,7 +21,7 @@ class OnnxModelImporter {
         throw Error('Fails to initialize neural network context');
       }
       this._nn = nnNative;
-    } else if (this._backend === 'WASM' || this._backend === 'WebGL') {
+    } else if (this._backend === 'WASM' || this._backend === 'WebGL' || this._backend === 'WebGPU') {
       this._nn = nnPolyfill;
     }
     this._bEagerMode = false;
@@ -225,6 +225,11 @@ class OnnxModelImporter {
   _setOperandValue(index, value) {
     // Cache operand value. It could be modified later: BN fusion/Unsqueeze
     this._operands[index] = value;
+  }
+
+  _setOperandType(index, type) {
+    // Cache operand type. It could be modified later: Depthwise Conv
+    this._tensorTypes[index] = type;
   }
 
   _addOperand(type, value) {
@@ -544,8 +549,9 @@ class OnnxModelImporter {
         } break;
         case 'Mul':
         case 'Sum':
-        case 'Add': {
-
+        case 'Add': 
+        case 'Sub': 
+        case 'Div': {
           if (node.opType === 'Sum' && node.input.length !== 2) {
             throw new Error(`Only support Sum with two inputs`);
           }
@@ -594,6 +600,26 @@ class OnnxModelImporter {
             opCode = this._nn.ADD;
           else if (node.opType === 'Mul')
             opCode = this._nn.MUL;
+          else if (node.opType === 'Sub')
+            opCode = this._nn.SUB;
+          else
+            opCode = this._nn.DIV;
+        } break;
+        case 'Pow': {
+          // Add inputs
+          console.log(`  inputs: [${node.input}]`);
+          const in1 = node.input[0];
+          const in2 = node.input[1];
+          inputs.push(this._getTensorIdByName(in1));
+          inputs.push(this._getTensorIdByName(in2));
+          // Add outputs
+          const output = node.output[0];
+          const inputType = this._getTensorTypeByName(in1);
+          const outputType = inputType;
+          const outputId = this._addNewTensorOperand(output, outputType);
+          outputs.push(outputId);
+          
+          opCode = this._nn.POW;
         } break;
         case 'Gemm': {
           // Add inputs
@@ -911,6 +937,154 @@ class OnnxModelImporter {
           outputs.push(outputId);
 
           opCode = this._nn.SOFTMAX;
+        } break;
+        case 'Pad': {
+          // opset = 8 (ai.onnx v8)
+          console.log(`  inputs: [${node.input}]`);
+          const input = node.input[0];
+          inputs.push(this._getTensorIdByName(input));
+          const inputDims =  this._getTensorTypeByName(input).dimensions;
+          const padMode = getAttributeValue(node, 'mode', 'constant');
+          let paddingModeCode = 0;
+          // paddingModeCode
+          paddingModeCode = {
+            'constant': 0,
+            'reflect': 1,
+            'edge': 2,
+          }[padMode];
+          inputs.push(this._addScalarInt32(paddingModeCode));
+          const pads = getAttributeValue(node, 'pads', []);
+          if (inputDims.length === 4 && pads.length === 8) {
+            // ONNX pads (NCHW) -> TensorFlow paddings (NHWC)
+            let paddings = [];
+            for (let i = 0; i < pads.length; i++) {
+              paddings.push({
+                0: pads[0],  //N Before
+                1: pads[4],  //N After
+                2: pads[2],  //H Before
+                3: pads[6],  //H After
+                4: pads[3],  //W Before
+                5: pads[7],  //W After
+                6: pads[1],  //C Before
+                7: pads[5],  //C After
+              }[i]);
+            }
+            inputs.push(this._addTensorInt32(paddings, [4, 2]));
+            // Add outputs
+            const output = node.output[0];
+            const outputDimsN = inputDims[0] + paddings[0] + paddings[1];
+            const outputDimsH = inputDims[1] + paddings[2] + paddings[3];
+            const outputDimsW = inputDims[2] + paddings[4] + paddings[5];
+            const outputDimsC = inputDims[3] + paddings[6] + paddings[7];
+            const outputDims = [outputDimsN, outputDimsH, outputDimsW, outputDimsC];
+            const outputType = {type: this._nn.TENSOR_FLOAT32, dimensions: outputDims};
+            const outputId = this._addNewTensorOperand(output, outputType);
+            outputs.push(outputId);
+          } else {
+            throw new Error(`    ${node.opType} (Dims = ${inputDims}) is not supported.`);
+          }
+
+          opCode = this._nn.PAD;
+        } break;
+        case 'ReduceMean': {
+          console.log(`  inputs: [${node.input}]`);
+          const input = node.input[0];
+          inputs.push(this._getTensorIdByName(input));
+          const axes = getAttributeValue(node, 'axes');
+          const inputDims =  this._getTensorTypeByName(input).dimensions;
+          if (inputDims.length === 4) {
+            // NCHW -> NHWC
+            let meanAxes = [];
+            for (let i = 0; i < axes.length; i++) {
+              meanAxes.push({
+                0: 0,
+                1: 3,
+                2: 1,
+                3: 2,
+              }[axes[i]]);
+            }
+            inputs.push(this._addTensorInt32(meanAxes, [meanAxes.length]));
+            const keepdims = getAttributeValue(node, 'keepdims');
+            inputs.push(this._addScalarInt32(keepdims));
+            // Add outputs
+            const output = node.output[0];
+            const N = meanAxes.includes(0) ? 1 : inputDims[0];
+            const H = meanAxes.includes(1) ? 1 : inputDims[1];
+            const W = meanAxes.includes(2) ? 1 : inputDims[2];
+            const C = meanAxes.includes(3) ? 1 : inputDims[3];
+            const outputDims = [N, H, W, C];
+            const outputType = {type: this._nn.TENSOR_FLOAT32, dimensions: outputDims};
+            const outputId = this._addNewTensorOperand(output, outputType);
+            outputs.push(outputId);
+          } else {
+            throw new Error(`    ${node.opType} (Dims = ${inputDims}) is not supported.`);
+          }
+
+          opCode = this._nn.MEAN;
+        } break;
+        case 'ConvTranspose': {
+          console.log(`  inputs: [${node.input}]`);
+          const input = node.input[0];
+          const weights = node.input[1];
+          let inputType = this._getTensorTypeByName(input);
+          const inputDims = inputType.dimensions;
+          const inputBatch = inputDims[0];
+          const inputInDepth = inputDims[3];
+          let weightsType = this._getTensorTypeByName(weights);
+          const weightsDims =  weightsType.dimensions;
+          const weightsInDepth = weightsDims[0];
+          const weightsOutDepth = weightsDims[3];
+          if (inputInDepth !== weightsInDepth) {
+            throw new Error(`  inDepth in weights must match inDepth in input.`);
+          }          
+          inputs.push(this._getTensorIdByName(input));
+          // inDepth x H x W x outDepth -> [H, W, outDepth, inDepth]
+          const weightsId = this._getTensorIdByName(weights);
+          const weightsTensor = this._getOperandValue(weightsId);
+          let weightsArray = new Float32Array(weightsTensor.length);
+          const I = weightsDims[0];
+          const H = weightsDims[1];
+          const W = weightsDims[2];
+          const O = weightsDims[3];
+          for (let i = 0; i < I; ++i) {
+            for (let h = 0; h < H; ++h) {
+              for (let w = 0; w < W; ++w) {
+                for (let o = 0; o < O; ++o) {
+                  weightsArray[h*W*O*I + w*O*I + o*I + i] = weightsTensor[i*H*W*O + h*W*O + w*O + o];
+                }
+              }
+            }
+          }
+          weightsType.dimensions.push(weightsType.dimensions.shift());
+          this._setOperandType(weightsId, weightsType);
+          this._setOperandValue(weightsId, weightsArray);
+          inputs.push(weightsId);
+
+          const outputShapeHW = getAttributeValue(node, 'output_shape');
+          const outputShape = [inputBatch, outputShapeHW[0], outputShapeHW[1], weightsOutDepth];
+          const strides = getAttributeValue(node, 'strides');
+          inputs.push(this._addTensorInt32(outputShape, [outputShape.length]));
+          inputs.push(this._addTensorInt32(strides, [strides.length]));
+          // Add outputs
+          const output = node.output[0];
+          const outputType = {type: this._nn.TENSOR_FLOAT32, dimensions: outputShape};
+          const outputId = this._addNewTensorOperand(output, outputType);
+          outputs.push(outputId);
+
+          opCode = this._nn.TRANSPOSE_CONV_2D;
+        } break;
+        case 'Tanh': {
+          console.log(`  inputs: [${node.input}]`);
+          const input = node.input[0];
+          inputs.push(this._getTensorIdByName(input));
+          // Add outputs
+          const output = node.output[0];
+          const outputDims =  this._getTensorTypeByName(input).dimensions;
+          const outputType = {type: this._nn.TENSOR_FLOAT32, dimensions: outputDims};
+          const outputId = this._addNewTensorOperand(output, outputType);
+          outputs.push(outputId);
+
+          opCode = this._nn.TANH;
         } break;
         default: {
           throw new Error(`    ${node.opType} is not supported.`);
