@@ -124,7 +124,11 @@ class StyleTransferExample extends BaseCameraExample {
         throw new Error('Unrecorgnized model, please check your model list.');
       }
       let stname = $('#' + modelId).attr('title');
-      $('#stname').html(stname);
+      let text = `<div class="vg">
+      <div>the painting style of <span>Van Gogh<span></div><br>
+      <strong>${stname}</strong>
+      </div>`;
+      $('#stname').html(text);
       $("#gallery .gallery-item").removeClass('hl');
       $(e.target).parent().addClass('hl');
       this.main();
@@ -136,7 +140,11 @@ $(document).ready(() => {
   $("#gallery .gallery-image").hover(function(e){
     const modelId = $(e.target).attr('id');
     let stname = $('#' + modelId).attr('title');
-    $('#stname').html(stname);
+    let text = `<div class="vg">
+    <div>the painting style of <span>Van Gogh<span></div><br>
+    <strong>${stname}</strong>
+    </div>`;
+    $('#stname').html(text);
   });
 })
 
