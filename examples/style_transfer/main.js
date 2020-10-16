@@ -7,6 +7,10 @@ $(document).ready(() => {
 
 $(window).load(() => {
   // Execute inference
-  $('#stname').html('The starry night');
+  let text = `<div class="vg">
+  <div>the painting style of <span>Van Gogh<span></div><br>
+  <strong>The Starry Night</strong>
+  </div>`;
+  $('#stname').html(text);
   example.main();
 });

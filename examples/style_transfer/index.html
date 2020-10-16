@@ -2,53 +2,108 @@
 <html lang='en'>
 
 <style type="text/css">
-.photo-scrollbar {
-    /* width: 96px; */
-    height: 380px;
-    overflow: auto;
-    display: inline-block;
-    visibility: hidden;
-}
+  #styletransfer #feedElement {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+  }
 
-#div-photos:hover .photo-scrollbar,
-#div-styles:hover .photo-scrollbar {
-  visibility:visible;
-}
+  @media (max-width: 768px) {
+    #inputCanvas, #outputCanvas, #camInCanvas, #camOutCanvas {
+      max-width: 76vw !important;
+    }
+  }
 
-/* .images {
-  overflow-y: hidden;
- } */
-.image {
-    width:80px;
-    height: 80px;
+  .gallery {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  .gallery-item {
+    flex: 1 0 3rem;
+    margin: 1rem;
+    box-shadow: 0.1rem 0.1rem 0.1rem rgba(0, 0, 0, 0.1);
+    overflow: hidden;
     cursor: pointer;
-}
+  }
 
-.photo-scrollbar::-webkit-scrollbar-track
-{
-	-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.1);
-}
+  .gallery-image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 400ms ease-out;
+  }
 
-.photo-scrollbar::-webkit-scrollbar
-{
-	width: 5px;
-	background-color: #F5F5F5;
-}
+  .gallery-image:hover {
+    transform: scale(1.25);
+  }
 
-.photo-scrollbar::-webkit-scrollbar-thumb
-{
-	background-color: rgba(25, 190, 225, 1.0);	
-  border-radius: 10px;
-	background-image: -webkit-linear-gradient(45deg,
-  rgba(255, 255, 255, .2) 25%,
-    transparent 25%,
-    transparent 50%,
-    rgba(255, 255, 255, .2) 50%,
-    rgba(255, 255, 255, .2) 75%,
-    transparent 75%,
-    transparent)
-}
+  .hl {
+    border: 2px solid rgba(25, 190, 225, 1.0);
+  }
 
+  #stname {
+    padding: 4px 1rem;
+    display: inline-block;
+    margin-bottom: 1rem;
+  }
+
+  @-webkit-keyframes slideIn {
+  to {
+    opacity: 1;
+    -webkit-transform: translate3d(0, 0, 0);
+            transform: translate3d(0, 0, 0);
+  }
+  }
+  @keyframes slideIn {
+    to {
+      opacity: 1;
+      -webkit-transform: translate3d(0, 0, 0);
+              transform: translate3d(0, 0, 0);
+    }
+  }
+
+  #stname .vg {
+    display: inline-block;
+    vertical-align: middle;
+  }
+
+  #stname {
+    color: rgba(15, 76, 129, 1.0);
+    margin-left: 0rem;
+    font-size: 0.6rem;
+    transition: transform 350ms ease;
+  }
+
+  #stname .vg div, #stname .vg strong {
+    display: inline-block;
+    opacity: 0;
+    transform: translate3d(-1rem, 0, 0);
+    animation: slideIn 400ms ease forwards;
+  }
+
+  #stname .vg div {
+    color: rgba(15, 76, 129, 0.75);
+    animation-delay: 700ms;
+    text-transform: uppercase;
+  }
+
+  #stname .vg div span {
+    background-color: rgba(15, 76, 129, 1.0);
+    color: #fff;
+    padding: 2px 0px 2px 6px;
+    display: inline-block;
+    transform: skewX(-15deg);
+    border-radius: 3px;
+    font-weight: 800;
+  }
+
+  #stname .vg strong {
+    font-size: 1.0rem;
+    font-weight: 400;
+    animation-delay: 750ms;
+  }
 </style>
 
 <head>
@@ -128,8 +183,8 @@
             <th class='text-center backendtitle'>Backend</th>
             <td>
               <div class='custom-control custom-switch'>
-                  <input type='checkbox' class='custom-control-input' id='backendswitch'>
-                  <label class='custom-control-label' for='backendswitch'>Dual</label>
+                <input type='checkbox' class='custom-control-input' id='backendswitch'>
+                <label class='custom-control-label' for='backendswitch'>Dual</label>
               </div>
               <div class='g b-polyfill'>
                 <span id='backendpolyfilltitle'>Polyfill</span>
@@ -202,6 +257,28 @@
         </div>
       </div>
 
+      <div class="gallery" id="gallery">
+        <div class="gallery-item hl"><img class="gallery-image"  id="starry-night" src='./img/starrynight.jpg'
+          title="The starry night"></div>
+        <div class="gallery-item"><img class="gallery-image" id="self-portrait" src='./img/self-portrait.jpg'
+          title="Self-Portrait" /></div>
+        <div class="gallery-item"><img class="gallery-image" id="bedroom" src='./img/bedroom.jpg'
+          title="Vincent`s Bedroom in Arles" /></div>
+        <div class="gallery-item"><img class="gallery-image" id="sunflowers-bew" src='./img/Sunflowers-Bew.jpg'
+          title="“Sunflowers” (1889)" /></div>
+        <div class="gallery-item"><img class="gallery-image" id="red-vineyards" src='./img/Red-Vineyards.jpg'
+          title="The Red Vineyard" /></div>
+        <div class="gallery-item"><img class="gallery-image" id="sien_with_a_cigar" src='./img/sien_with_a_cigar.jpg'
+          title="Sien with a cigar" /></div>
+        <div class="gallery-item"><img class="gallery-image" id="la-campesinos" src='./img/la-campesinos.jpg'
+          title="Rest from Work" /></div>
+        <div class="gallery-item"><img class="gallery-image" id="soup-distribution" src='./img/Soup-Distribution.jpg'
+          title="Soup Distribution in a Public Soup Kitchen" /></div>
+        <div class="gallery-item"><img class="gallery-image" id="wheatfield_with_crows" src='./img/Wheatfield_with_Crows.jpg'
+          title="Wheatfield with Crows" /></div>
+
+      </div>
+
       <div class='tab-content clearfix' style='display: none;' id='progressmodel'>
         <div class='loading-page'>
           <div class='counter'>
@@ -242,41 +319,11 @@
                     <img id='feedElement' hidden crossorigin='anonymous' class='img-fluid' alt='Responsive image'
                       src='./img/travelspace.jpg'>
                     <canvas id='inputCanvas'></canvas>
-                    <div class="photo-scrollbar">
-                      <div id="images-photo">
-                        <ul style="list-style: none; padding-inline-start: 0px;">
-                          <li><img class="image" id="travelspace" src='./img/travelspace.jpg' /></li>
-                          <li><img class="image" id="fanjason" src='./img/fanjason.jpg' /></li>
-                          <li><img class="image" id="orangeboynd" src='./img/orangeboynd.jpg' /></li>
-                          <li><img class="image" id="sunflower" src='./img/sunflower.jpg' /></li>
-                          <li><img class="image" id="sommerach" src='./img/sommerach.jpg' /></li>
-                          <li><img class="image" id="ghostsmelancholy" src='./img/ghostsmelancholy.jpg' /></li>
-                          <li><img class="image" id="partnerthail" src='./img/partnerthail.jpg' /></li>
-                          <li><img class="image" id="whenorway" src='./img/whenorway.jpg' /></li>
-                          <li><img class="image" id="localfarmer" src='./img/localfarmer.jpg' /></li>
-                        </ul>
-                      </div>
-                    </div>
                   </div>
                 </div>
                 <div class='col bt-3 mb-3' style="display: flex;">
                   <div id='div-styles' style="margin: auto; display: flex;">
                     <canvas id='outputCanvas'></canvas>
-                    <div class="photo-scrollbar">
-                      <div id="images-style">
-                        <ul style="list-style: none; padding-inline-start: 0px;">
-                          <li><img class="image" id="starry-night" src='./img/starrynight.jpg' title="The starry night" /></li>
-                          <li><img class="image" id="self-portrait" src='./img/self-portrait.jpg'  title="Self-Portrait" /></li>
-                          <li><img class="image" id="bedroom" src='./img/bedroom.jpg'  title="Vincent`s Bedroom in Arles" /></li>
-                          <li><img class="image" id="sunflowers-bew" src='./img/Sunflowers-Bew.jpg'  title="“Sunflowers” (1889)" /></li>
-                          <li><img class="image" id="red-vineyards" src='./img/Red-Vineyards.jpg' title="The Red Vineyard"  /></li>
-                          <li><img class="image" id="sien_with_a_cigar" src='./img/sien_with_a_cigar.jpg'  title="Sien with a cigar" /></li>
-                          <li><img class="image" id="soup-distribution" src='./img/Soup-Distribution.jpg'  title="Soup Distribution in a Public Soup Kitchen" /></li>
-                          <li><img class="image" id="wheatfield_with_crows" src='./img/Wheatfield_with_Crows.jpg'  title="Wheatfield with Crows" /></li>
-                          <li><img class="image" id="la-campesinos" src='./img/la-campesinos.jpg'  title="Rest from Work" /></li>
-                        </ul>
-                      </div>
-                    </div>
                   </div>
                 </div>
               </div>
@@ -329,25 +376,10 @@
                 </div>
               </div>
               <video id='feedMediaElement' autoplay playsinline style="display: none;"></video>
-              
+
               <div class='col bt-3 mb-3' style="display: flex;">
                 <div id='div-styles' style="margin: auto; display: flex;">
                   <canvas id='camOutCanvas'></canvas>
-                  <div class="photo-scrollbar">
-                    <div id="images-style">
-                      <ul style="list-style: none; padding-inline-start: 0px;">
-                        <li><img class="image" id="starry-night" src='./img/starrynight.jpg' title="The starry night" /></li>
-                        <li><img class="image" id="self-portrait" src='./img/self-portrait.jpg'  title="Self-Portrait" /></li>
-                        <li><img class="image" id="bedroom" src='./img/bedroom.jpg'  title="Vincent`s Bedroom in Arles" /></li>
-                        <li><img class="image" id="sunflowers-bew" src='./img/Sunflowers-Bew.jpg'  title="“Sunflowers” (1889)" /></li>
-                        <li><img class="image" id="red-vineyards" src='./img/Red-Vineyards.jpg' title="The Red Vineyard"  /></li>
-                        <li><img class="image" id="sien_with_a_cigar" src='./img/sien_with_a_cigar.jpg'  title="Sien with a cigar" /></li>
-                        <li><img class="image" id="soup-distribution" src='./img/Soup-Distribution.jpg'  title="Soup Distribution in a Public Soup Kitchen" /></li>
-                        <li><img class="image" id="wheatfield_with_crows" src='./img/Wheatfield_with_Crows.jpg'  title="Wheatfield with Crows" /></li>
-                        <li><img class="image" id="la-campesinos" src='./img/la-campesinos.jpg'  title="Rest from Work" /></li>
-                      </ul>
-                    </div>
-                  </div>
                 </div>
               </div>
             </div>
@@ -458,10 +490,11 @@
   <script async src="https://www.googletagmanager.com/gtag/js?id=UA-147662084-1"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
+    function gtag() { dataLayer.push(arguments); }
     gtag('js', new Date());
 
     gtag('config', 'UA-147662084-1');
   </script>
 </body>
+
 </html>

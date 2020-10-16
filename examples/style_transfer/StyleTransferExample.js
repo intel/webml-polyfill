@@ -102,31 +102,17 @@ class StyleTransferExample extends BaseCameraExample {
       ctx.drawImage(outCanvas, 0, 0, outputCanvas.width, outputCanvas.height);
     };
 
-    const updateUI = (canvasId) => {
-      const outputCanvas = document.getElementById(canvasId);
-      const psElement = document.getElementsByClassName('photo-scrollbar');
-      for(let i=0; i<psElement.length; i++) {
-        psElement[i].style.height = outputCanvas.height + 'px';
-      }
-    }
-
     if(this._currentInputType == 'image') {
       drawInput(this._currentInputElement, 'inputCanvas');
       drawOutput(output.tensor,'inputCanvas', 'outputCanvas');
-      updateUI('outputCanvas');
     } else {
       drawInput(this._currentInputElement, 'camInCanvas');
       drawOutput(output.tensor,'camInCanvas', 'camOutCanvas');
-      updateUI('camOutCanvas');
     }
   };
 
   _customUI = () => {
-    $("div#images-photo .image").click((e) => {
-      this._feedElement.src = $(e.target).attr('src');
-      this.main();
-    });
-    $("div#images-style .image").click((e) => {
+    $("#gallery .gallery-image").click((e) => {
       const modelId = $(e.target).attr('id');
       const model = getModelById(this.stModels, modelId);
       if (model != null) {
@@ -138,8 +124,27 @@ class StyleTransferExample extends BaseCameraExample {
         throw new Error('Unrecorgnized model, please check your model list.');
       }
       let stname = $('#' + modelId).attr('title');
-      $('#stname').html(stname);
+      let text = `<div class="vg">
+      <div>the painting style of <span>Van Gogh<span></div><br>
+      <strong>${stname}</strong>
+      </div>`;
+      $('#stname').html(text);
+      $("#gallery .gallery-item").removeClass('hl');
+      $(e.target).parent().addClass('hl');
       this.main();
     });
   };
 }
+
+$(document).ready(() => {
+  $("#gallery .gallery-image").hover(function(e){
+    const modelId = $(e.target).attr('id');
+    let stname = $('#' + modelId).attr('title');
+    let text = `<div class="vg">
+    <div>the painting style of <span>Van Gogh<span></div><br>
+    <strong>${stname}</strong>
+    </div>`;
+    $('#stname').html(text);
+  });
+})
+
