@@ -176,7 +176,7 @@ const singleModelTable = (modelList, category) => {
 const setModelComponents = (models, selectedModelIdStr) => {
   $('.model').remove();
   let formatTypes = [];
-
+  console.log(models);
   for (let [category, modelList] of Object.entries(models)) {
     let formats = singleModelTable(modelList, category);
     formatTypes.push(...formats);

@@ -149,6 +149,9 @@ class SemanticSegmentationExample extends BaseCameraExample {
       case 'OpenCV.js':
         runner = new SemanticSegmentationOpenCVRunner();
         break;
+      case 'OpenVINO.js':
+        runner = new SemanticSegmentationOpenVINORunner();
+        break;
     }
     runner.setProgressHandler(updateLoadingProgressComponent);
     return runner;

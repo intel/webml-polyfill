@@ -14,8 +14,9 @@ class BaseExample extends BaseApp {
     this._track = null;
     this._stats = new Stats();
     this._currentModelInfo = {};
-    this._currentFramework; //'OpenCV.js' | 'WebNN'
+    this._currentFramework; //'OpenCV.js' | 'WebNN' | 'OpenVINO.js'
     this._currentOpenCVJSBackend; // 'WASM' | 'SIMD' | 'Threads' | 'Threads+SIMD'
+    this._currentOpenVINOJSBackend;// 'WASM' | 'WebGL' | 'WebML' | 'WebGPU'
     this._runtimeInitialized = false; // for 'OpenCV.js', always true for other framework
     this._currentTimeoutId = 0;
     this._isStreaming = false; // for inference camera video
@@ -153,6 +154,15 @@ class BaseExample extends BaseApp {
   };
 
   /**
+   * This method is to set '_currentOpenVINOJSBackend'.
+   * @param {string} backend A string that for OpenCV.js backend.
+   */
+  _setOpenVINOJSBackend = (backend) => {
+    this._currentOpenVINOJSBackend = backend;
+  };
+
+
+  /**
    * This method is to set '_runtimeInitialized'.
    * @param {boolean} flag A boolean that for whether OpenCV.js runtime initialized.
    */
@@ -227,6 +237,14 @@ class BaseExample extends BaseApp {
             }
             locSearch = `?b=${this._currentOpenCVJSBackend}&m=${this._currentModelId}&s=${this._currentInputType}&d=${this._hiddenControlsFlag}&f=${this._currentFramework}`;
             break;
+          case 'OpenVINO.js':
+            $('.backend').hide();
+            $('.opencvjsbackend').hide();
+            const openVINObackend = parseSearchParams('b');
+            this._setOpenVINOJSBackend(openVINObackend)
+            this._setRuntimeInitialized(true);
+            locSearch = `?m=${this.openVINObackend}&s=${this._currentInputType}&d=${this._hiddenControlsFlag}&f=${this._currentFramework}`;
+            break;
         }
       }
     } else {
@@ -236,6 +254,9 @@ class BaseExample extends BaseApp {
           break;
         case 'OpenCV.js':
           locSearch = `?b=${this._currentOpenCVJSBackend}&m=${this._currentModelId}&s=${this._currentInputType}&d=${this._hiddenControlsFlag}&f=${this._currentFramework}`;
+          break;
+        case 'OpenVINO.js':
+          locSearch = `?b=${this._currentOpenVINOJSBackend}&m=${this._currentModelId}&s=${this._currentInputType}&d=${this._hiddenControlsFlag}&f=${this._currentFramework}`;
           break;
       }
     }
@@ -282,6 +303,10 @@ class BaseExample extends BaseApp {
         $('.backend').hide();
         $('.opencvjsbackend').show();
         updateOpenCVJSBackendComponentsStyle(this._currentOpenCVJSBackend);
+        break;
+      case 'OpenVINO.js':
+        $('.backend').hide();
+        $('.opencvjsbackend').hide();
         break;
     }
     updateSIMDNotes();
@@ -373,6 +398,22 @@ class BaseExample extends BaseApp {
         this._modelClickBinding();
         this._runner = null;
         this._resetOutput();
+        this.main();
+      } else if (framework === 'OpenVINO.js') {
+        
+
+
+        $('.opencvjsbackend').hide();
+        $('.backend').show();
+        $('#progressruntime').hide();
+        this._setFramework(framework);
+        this._setRuntimeInitialized(true);
+        this._updateHistoryEntryURL();
+        this._showDynamicComponents();
+        this._modelClickBinding();
+        this._runner = null;
+        this._resetOutput();
+        updateTitleComponent(this._currentBackend, null, this._currentModelId, this._inferenceModels);
         this.main();
       }
     });
@@ -824,6 +865,7 @@ class BaseExample extends BaseApp {
    * then shows the post processing of inference result on UI.
    */
   main = async () => {
+    console.log(this._runtimeInitialized);
     if (!this._runtimeInitialized) {
       console.log(`Runtime isn't initialized`);
       return;
@@ -834,7 +876,10 @@ class BaseExample extends BaseApp {
       updateTitleComponent(this._currentBackend, this._currentPrefer, this._currentModelId, this._inferenceModels);
     } else if (this._currentFramework === 'OpenCV.js') {
       updateTitleComponent(this._currentOpenCVJSBackend, null, this._currentModelId, this._inferenceModels);
+    } else if (this._currentFramework === 'OpenVINO.js') {
+      updateTitleComponent(this._currentBackend, null, this._currentModelId, this._inferenceModels);
     }
+    console.log(location.search);
 
     if (this._currentModelId === 'none') {
       showErrorComponent('No model selected', 'Please select model to start prediction.');

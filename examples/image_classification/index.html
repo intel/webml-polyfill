@@ -371,6 +371,15 @@
     </div>
   </div>
 
+  <script>
+      try {
+        window.nodeRequire = require;
+        delete window.exports;
+        delete window.module;
+      } catch(e) {
+        console.log("Node module is not supported");
+      }
+  </script>
   <script src='../static/lib/jquery/jquery.min.js'></script>
   <script src='../static/lib/jquery/jquery-migrate-3.0.1.min.js'></script>
   <script src='../static/lib/superfish/superfish.min.js'></script>
@@ -390,6 +399,7 @@
   <script src='../util/BaseRunner.js'></script>
   <script src='../util/WebNNRunner.js'></script>
   <script src='../util/OpenCVRunner.js'></script>
+  <script src='../util/OpenVINORunner.js'></script>
   <script src='../util/BaseApp.js'></script>
   <script src='../util/BaseExample.js'></script>
   <script src='../util/BaseCameraExample.js'></script>
@@ -408,6 +418,7 @@
   <script src='../util/caffe2/Caffe2ModelUtils.js'></script>
   <script src='../util/caffe2/Caffe2ModelImporter.js'></script>
   <script src='ImageClassificationOpenCVRunner.js'></script>
+  <script src='ImageClassificationOpenVINORunner.js'></script>
   <script src='ImageClassificationExample.js'></script>
   <script src='main.js'></script>
 

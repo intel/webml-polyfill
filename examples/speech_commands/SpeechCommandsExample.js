@@ -33,7 +33,14 @@ class SpeechCommandsExample extends BaseMircophoneExample {
 
   /** @override */
   _createRunner = () => {
-    const runner = new WebNNRunner();
+    let runner;
+    switch (this._currentFramework) {
+      case 'WebNN':
+        runner = new WebNNRunner();
+        break;
+      case 'OpenVINO.js':
+        runner = new OpenVINORunner();
+    }
     runner.setProgressHandler(updateLoadingProgressComponent);
     return runner;
   };

@@ -19,7 +19,14 @@ class SpeechRecognitionExample extends BaseMircophoneExample {
 
   /** @override */
   _createRunner = () => {
-    const runner = new SpeechRecognitionRunner();
+    let runner;
+    switch (this._currentFramework) {
+      case 'WebNN':
+        runner = new SpeechRecognitionRunner();
+        break;
+      case 'OpenVINO.js':
+        runner = new SpeechRecognitionOpenVINORunner();
+    }
     runner.setProgressHandler(updateLoadingProgressComponent);
     return runner;
   };

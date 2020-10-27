@@ -276,7 +276,7 @@ const modelZoo = {
     paperUrl: 'https://arxiv.org/abs/1608.06993'
   }, {
     modelName: 'SqueezeNet (OpenVino)',
-    framework: ['WebNN'],
+    framework: ['WebNN', 'OpenVINO.js'],
     format: 'OpenVINO',
     modelId: 'squeezenet_openvino',
     modelSize: '4.9MB',
@@ -292,7 +292,7 @@ const modelZoo = {
     paperUrl: 'https://arxiv.org/abs/1602.07360'
   }, {
     modelName: 'MobileNet v1 (OpenVino)',
-    framework: ['WebNN'],
+    framework: ['WebNN', 'OpenVINO.js'],
     format: 'OpenVINO',
     modelId: 'mobilenet_v1_openvino',
     modelSize: '16.9MB',
@@ -309,7 +309,7 @@ const modelZoo = {
     paperUrl: 'https://arxiv.org/pdf/1704.04861.pdf'
   }, {
     modelName: 'MobileNet v2 (OpenVino)',
-    framework: ['WebNN'],
+    framework: ['WebNN', 'OpenVINO.js'],
     format: 'OpenVINO',
     modelId: 'mobilenet_v2_openvino',
     modelSize: '14.0MB',
@@ -326,7 +326,7 @@ const modelZoo = {
     paperUrl: 'https://arxiv.org/abs/1801.04381'
   }, {
     modelName: 'ResNet50 v1 (OpenVino)',
-    framework: ['WebNN'],
+    framework: ['WebNN', 'OpenVINO.js'],
     format: 'OpenVINO',
     modelId: 'resnet50_v1_openvino',
     modelSize: '102.1MB',
@@ -342,7 +342,7 @@ const modelZoo = {
     paperUrl: 'https://arxiv.org/abs/1512.03385'
   }, {
     modelName: 'DenseNet 121 (OpenVino)',
-    framework: ['WebNN'],
+    framework: ['WebNN', 'OpenVINO.js'],
     format: 'OpenVINO',
     modelId: 'densenet_121_openvino',
     modelSize: '31.9MB',
@@ -364,7 +364,7 @@ const modelZoo = {
     paperUrl: 'https://arxiv.org/abs/1608.06993'
   }, {
     modelName: 'Inception v2 (OpenVino)',
-    framework: ['WebNN'],
+    framework: ['WebNN', 'OpenVINO.js'],
     format: 'OpenVINO',
     modelId: 'inception_v2_openvino',
     modelSize: '44.7MB',
@@ -380,7 +380,7 @@ const modelZoo = {
     paperUrl: 'https://arxiv.org/abs/1512.00567'
   }, {
     modelName: 'Inception v4 (OpenVino)',
-    framework: ['WebNN'],
+    framework: ['WebNN', 'OpenVINO.js'],
     format: 'OpenVINO',
     modelId: 'inception_v4_openvino',
     modelSize: '170.6MB',
@@ -713,7 +713,7 @@ const modelZoo = {
     paperUrl: 'https://arxiv.org/abs/1802.02611'
   }, {
     modelName: 'Deeplab_224_Atrous (OpenVINO)',
-    framework: ['WebNN'],
+    framework: ['WebNN', 'OpenVINO.js'],
     format: 'OpenVINO',
     modelId: 'deeplab_mobilenet_v2_224_atrous_openvino',
     modelSize: '8.4MB',
@@ -730,7 +730,7 @@ const modelZoo = {
     paperUrl: 'https://arxiv.org/abs/1802.02611'
   }, {
     modelName: 'Deeplab_224_Quant (OpenVINO)',
-    framework: ['WebNN'],
+    framework: ['WebNN', 'OpenVINO.js'],
     format: 'OpenVINO',
     modelId: 'deeplab_224_quant_openvino',
     isQuantized: true,
@@ -749,7 +749,7 @@ const modelZoo = {
     paperUrl: 'https://arxiv.org/abs/1802.02611'
   }, {
     modelName: 'Deeplab_257_Atrous (OpenVINO)',
-    framework: ['WebNN'],
+    framework: ['WebNN', 'OpenVINO.js'],
     format: 'OpenVINO',
     modelId: 'deeplab_mobilenet_v2_257_atrous_openvino',
     modelSize: '8.4MB',
@@ -766,7 +766,7 @@ const modelZoo = {
     paperUrl: 'https://arxiv.org/abs/1802.02611'
   }, {
     modelName: 'Deeplab_257_Quant (OpenVINO)',
-    framework: ['WebNN'],
+    framework: ['WebNN', 'OpenVINO.js'],
     format: 'OpenVINO',
     modelId: 'deeplab_257_quant_openvino',
     isQuantized: true,
@@ -785,7 +785,7 @@ const modelZoo = {
     paperUrl: 'https://arxiv.org/abs/1802.02611'
   }, {
     modelName: 'Deeplab_321_Atrous (OpenVINO)',
-    framework: ['WebNN'],
+    framework: ['WebNN', 'OpenVINO.js'],
     format: 'OpenVINO',
     modelId: 'deeplab_mobilenet_v2_321_atrous_openvino',
     modelSize: '8.4MB',
@@ -802,7 +802,7 @@ const modelZoo = {
     paperUrl: 'https://arxiv.org/abs/1802.02611'
   }, {
     modelName: 'Deeplab_321_Quant (OpenVINO)',
-    framework: ['WebNN'],
+    framework: ['WebNN', 'OpenVINO.js'],
     format: 'OpenVINO',
     modelId: 'deeplab_321_quant_openvino',
     isQuantized: true,
@@ -821,7 +821,7 @@ const modelZoo = {
     paperUrl: 'https://arxiv.org/abs/1802.02611'
   }, {
     modelName: 'Deeplab_513_Atrous (OpenVINO)',
-    framework: ['WebNN'],
+    framework: ['WebNN', 'OpenVINO.js'],
     format: 'OpenVINO',
     modelId: 'deeplab_mobilenet_v2_513_atrous_openvino',
     modelSize: '8.4MB',
@@ -838,7 +838,7 @@ const modelZoo = {
     paperUrl: 'https://arxiv.org/abs/1802.02611'
   }, {
     modelName: 'Deeplab_513_Quant (OpenVINO)',
-    framework: ['WebNN'],
+    framework: ['WebNN', 'OpenVINO.js'],
     format: 'OpenVINO',
     modelId: 'deeplab_513_quant_openvino',
     isQuantized: true,
@@ -1083,7 +1083,7 @@ const modelZoo = {
     paperUrl: 'https://www.isca-speech.org/archive/interspeech_2015/papers/i15_1478.pdf'
   }, {
     modelName: 'KWS DNN (OpenVINO)',
-    framework: ['WebNN'],
+    framework: ['WebNN', 'OpenVINO.js'],
     format: 'OpenVINO',
     modelId: 'kws_dnn_openvino',
     modelSize: '320kB',
@@ -1153,7 +1153,7 @@ const modelZoo = {
 
   speechRecognitionModels: [{
     modelName: 'wsj_dnn5b (OpenVINO)',
-    framework: ['WebNN'],
+    framework: ['WebNN', 'OpenVINO.js'],
     format: 'OpenVINO',
     modelId: 'wsj_dnn5b_openvino',
     modelSize: '115.6MB',
