@@ -27,6 +27,7 @@ export default class Model {
     this._backend = options.backend;
     this._eager = options.eager || false;
     this._supportedOps = options.supportedOps || new Set();
+    this.isOpenVINOModel = options.isOpenVINOModel || false;
     this._isQuantized = false;
     this._unsupportedOp = new Set([OperationCode.BATCH_TO_SPACE_ND]);
     this._hasUnsupportedOp = false;

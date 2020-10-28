@@ -44,6 +44,7 @@ class OpenVINOModelImporter {
       backend: this._backend,
       eager: this._bEagerMode,
       supportedOps: this._supportedOps,
+      isOpenVINOModel: true,
     };
     this._model = await this._nn.createModel(options);
 
@@ -89,7 +90,7 @@ class OpenVINOModelImporter {
         this._compilation._preparedModel._deleteAll();
       }
 
-      this._model = await this._nn.createModel({ backend: this._backend });
+      this._model = await this._nn.createModel({ backend: this._backend, isOpenVINOModel: true});
       this._addTensorOperands();
       lastNodeIndex = this._addOpsAndParams(lastNodeIndex);
       const lastNode = graph.nodes[lastNodeIndex];
@@ -730,8 +731,7 @@ class OpenVINOModelImporter {
           const inDims = input.shape();
           const inputId = this._getTensorId(input);
           const transposeOrder = node.inputs[1];
-          const orderTensor = transposeOrder.getInitializer()
-          // const order = orderTensor.filter(x => orderTensor.indexOf(x)%2 === 0); 
+          const orderTensor = transposeOrder.getInitializer();
 
           let order = [];
           for (let i = 0; i < orderTensor.length; i++) {
@@ -826,7 +826,6 @@ class OpenVINOModelImporter {
           const input = node.inputs[0];
           console.log(`  input shape: [${input.shape()}]`);
           const axis = node.getInt('axis');
-
           inputs.push(this._getTensorId(input));
           inputs.push(this._addScalarFloat32(1.0)); // Set beta to 1.0
           inputs.push(this._addScalarInt32(axis));
@@ -881,16 +880,13 @@ class OpenVINOModelImporter {
           inputs.push(this._addScalarInt32(outDims[3]));
           inputs.push(this._addScalarInt32(outDims[2]));
 
-          // Specify NCHW layout
-          inputs.push(this._addScalarInt32(1))
-          
           const align_corners = node.getInt("align_corners");
           if (align_corners !== 'undefined') {
             inputs.push(this._addScalarInt32(align_corners));
           }
 
           // Specify NCHW layout
-          inputs.push(this._addScalarInt32(0))
+          inputs.push(this._addScalarInt32(1))
 
           // Add output
           const outputType = {
