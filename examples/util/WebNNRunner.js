@@ -327,6 +327,7 @@ class WebNNRunner extends BaseRunner {
     const channelScheme = preOptions.channelScheme || 'RGB';
     const imageChannels = options.imageChannels || 4; // RGBA
     const drawOptions = options.drawOptions;
+    const nchwFlag = preOptions.nchwFlag || false;
 
     let canvasElement = document.createElement('canvas');
     canvasElement.width = width;
@@ -359,17 +360,26 @@ class WebNNRunner extends BaseRunner {
           for (let h = 0; h < height; ++h) {
             for (let w = 0; w < width; ++w) {
               let value = pixels[h * width * imageChannels + w * imageChannels + c];
-              tensor[h * width * channels + w * channels + c] = (value - mean[c]) / std[c];
+              if (nchwFlag) {
+                tensor[c * width * height + h * width + w] = (value - mean[c]) / std[c];
+              } else {
+                tensor[h * width * channels + w * channels + c] = (value - mean[c]) / std[c];
+              }
             }
           }
         }
+
       } else if (channels === 1) {
         for (let c = 0; c < channels; ++c) {
           for (let h = 0; h < height; ++h) {
             for (let w = 0; w < width; ++w) {
               let index = h * width * imageChannels + w * imageChannels + c;
               let value = (pixels[index] + pixels[index + 1] + pixels[index + 2]) / 3;
-              tensor[h * width * channels + w * channels + c] = (value - mean[c]) / std[c];
+              if (nchwFlag) {
+                tensor[c * width * height + h * width + w] = (value - mean[c]) / std[c];
+              } else {
+                tensor[h * width * channels + w * channels + c] = (value - mean[c]) / std[c];
+              }
             }
           }
         }
@@ -379,7 +389,11 @@ class WebNNRunner extends BaseRunner {
         for (let h = 0; h < height; ++h) {
           for (let w = 0; w < width; ++w) {
             let value = pixels[h * width * imageChannels + w * imageChannels + (channels - c - 1)];
-            tensor[h * width * channels + w * channels + c] = (value - mean[c]) / std[c];
+            if (nchwFlag) {
+              tensor[c * width * height + h * width + w] = (value - mean[c]) / std[c];
+            } else {
+              tensor[h * width * channels + w * channels + c] = (value - mean[c]) / std[c];
+            }
           }
         }
       }
