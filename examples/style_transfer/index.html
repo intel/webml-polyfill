@@ -1,15 +1,120 @@
 <!DOCTYPE html>
 <html lang='en'>
 
+<style type="text/css">
+  #styletransfer #feedElement {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+  }
+
+  @media (max-width: 768px) {
+    #inputCanvas, #outputCanvas, #camInCanvas, #camOutCanvas {
+      max-width: 76vw !important;
+    }
+  }
+
+  .gallery {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  .gallery-item {
+    flex: 1 0 3rem;
+    margin: 1rem;
+    box-shadow: 0.1rem 0.1rem 0.1rem rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    cursor: pointer;
+  }
+
+  .gallery-image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 400ms ease-out;
+  }
+
+  .gallery-image:hover {
+    transform: scale(1.25);
+  }
+
+  .hl {
+    border: 2px solid rgba(25, 190, 225, 1.0);
+  }
+
+  #stname {
+    padding: 4px 1rem;
+    display: inline-block;
+    margin-bottom: 1rem;
+  }
+
+  @-webkit-keyframes slideIn {
+  to {
+    opacity: 1;
+    -webkit-transform: translate3d(0, 0, 0);
+            transform: translate3d(0, 0, 0);
+  }
+  }
+  @keyframes slideIn {
+    to {
+      opacity: 1;
+      -webkit-transform: translate3d(0, 0, 0);
+              transform: translate3d(0, 0, 0);
+    }
+  }
+
+  #stname .vg {
+    display: inline-block;
+    vertical-align: middle;
+  }
+
+  #stname {
+    color: rgba(15, 76, 129, 1.0);
+    margin-left: 0rem;
+    font-size: 0.6rem;
+    transition: transform 350ms ease;
+  }
+
+  #stname .vg div, #stname .vg strong {
+    display: inline-block;
+    opacity: 0;
+    transform: translate3d(-1rem, 0, 0);
+    animation: slideIn 400ms ease forwards;
+  }
+
+  #stname .vg div {
+    color: rgba(15, 76, 129, 0.75);
+    animation-delay: 700ms;
+    text-transform: uppercase;
+  }
+
+  #stname .vg div span {
+    background-color: rgba(15, 76, 129, 1.0);
+    color: #fff;
+    padding: 2px 0px 2px 6px;
+    display: inline-block;
+    transform: skewX(-15deg);
+    border-radius: 3px;
+    font-weight: 800;
+  }
+
+  #stname .vg strong {
+    font-size: 1.0rem;
+    font-weight: 400;
+    animation-delay: 750ms;
+  }
+</style>
+
 <head>
   <meta charset='utf-8'>
-  <title>Web Neural Network API - Examples - Semantic Segmentation</title>
+  <title>Web Neural Network API - Examples - Style Transfer</title>
   <meta content='width=device-width, initial-scale=1.0' name='viewport'>
   <meta
-    content='Semantic Segmentation, DeepLab, WebML, Web Machine Learning, Machine Learning for Web, Neural Networks, WebNN, WebNN API, Web Neural Network API'
+    content='Style Transfer, WebML, Web Machine Learning, Machine Learning for Web, Neural Networks, WebNN, WebNN API, Web Neural Network API'
     name='keywords'>
   <meta
-    content='Semantic Segmentation, DeepLab, WebML, Web Machine Learning, Machine Learning for Web, Neural Networks, WebNN, WebNN API, Web Neural Network API'
+    content='Style Transfer, WebML, Web Machine Learning, Machine Learning for Web, Neural Networks, WebNN, WebNN API, Web Neural Network API'
     name='description'>
   <link rel="apple-touch-icon" sizes="180x180" href="../static/img/favicon/apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="32x32" href="../static/img/favicon/favicon-32x32.png">
@@ -19,7 +124,7 @@
   <link href='../static/css/style.css' rel='stylesheet'>
 </head>
 
-<body id='semanticsegmentation'>
+<body id='styletransfer'>
   <header id='header'>
     <div class='container'>
       <div id='logo' class='pull-left'>
@@ -78,8 +183,8 @@
             <th class='text-center backendtitle'>Backend</th>
             <td>
               <div class='custom-control custom-switch'>
-                  <input type='checkbox' class='custom-control-input' id='backendswitch'>
-                  <label class='custom-control-label' for='backendswitch'>Dual</label>
+                <input type='checkbox' class='custom-control-input' id='backendswitch'>
+                <label class='custom-control-label' for='backendswitch'>Dual</label>
               </div>
               <div class='g b-polyfill'>
                 <span id='backendpolyfilltitle'>Polyfill</span>
@@ -106,28 +211,16 @@
                   class='ols'></span> from <span id='polyfillbackend' class='ols'></span>: </div>
             </td>
           </tr>
-          <tr class='opencvjsbackend' style='display:none;'>
-            <th class='text-center'>Backend</th>
-            <td>
-              <input type='radio' name='opencvjsbackend' class='d-none' id='opencvjswasm' value='WASM'>
-              <label id='l-opencvjswasm' for='opencvjswasm' class='checked'>WASM</label>
-              <input type='radio' name='opencvjsbackend' class='d-none' id='opencvjssimd' value='SIMD'>
-              <label id='l-opencvjssimd' for='opencvjssimd'>SIMD</label>
-              <input type='radio' name='opencvjsbackend' class='d-none' id='opencvjsthreads' value='Threads'>
-              <label id='l-opencvjsthreads' for='opencvjsthreads'>Threads</label>
-              <input type='radio' name='opencvjsbackend' class='d-none' id='opencvjsthreadssimd' value='Threads+SIMD'>
-              <label id='l-opencvjsthreadssimd' for='opencvjsthreadssimd'>Threads+SIMD</label>
-            </td>
-          </tr>
         </tbody>
       </table>
     </div>
   </form>
+
   <section class='ic' id='ic'>
     <div class='container' id='container'>
       <a id='extra' href='#' class='mb-1 mt-3'>
         <h3 class='text-center ex' id='ictitle'>
-          Semantic Segmentation
+          Style Transfer
         </h3>
         <span class='fa chevron-up'>
           <svg aria-hidden='true' data-prefix='fas' data-icon='chevron-up' class='svg-inline--fa fa-chevron-up fa-w-14'
@@ -164,6 +257,28 @@
         </div>
       </div>
 
+      <div class="gallery" id="gallery">
+        <div class="gallery-item hl"><img class="gallery-image"  id="starry-night" src='./img/starrynight.jpg'
+          title="The starry night"></div>
+        <div class="gallery-item"><img class="gallery-image" id="self-portrait" src='./img/self-portrait.jpg'
+          title="Self-Portrait" /></div>
+        <div class="gallery-item"><img class="gallery-image" id="bedroom" src='./img/bedroom.jpg'
+          title="Vincent`s Bedroom in Arles" /></div>
+        <div class="gallery-item"><img class="gallery-image" id="sunflowers-bew" src='./img/Sunflowers-Bew.jpg'
+          title="“Sunflowers” (1889)" /></div>
+        <div class="gallery-item"><img class="gallery-image" id="red-vineyards" src='./img/Red-Vineyards.jpg'
+          title="The Red Vineyard" /></div>
+        <div class="gallery-item"><img class="gallery-image" id="sien_with_a_cigar" src='./img/sien_with_a_cigar.jpg'
+          title="Sien with a cigar" /></div>
+        <div class="gallery-item"><img class="gallery-image" id="la-campesinos" src='./img/la-campesinos.jpg'
+          title="Rest from Work" /></div>
+        <div class="gallery-item"><img class="gallery-image" id="soup-distribution" src='./img/Soup-Distribution.jpg'
+          title="Soup Distribution in a Public Soup Kitchen" /></div>
+        <div class="gallery-item"><img class="gallery-image" id="wheatfield_with_crows" src='./img/Wheatfield_with_Crows.jpg'
+          title="Wheatfield with Crows" /></div>
+
+      </div>
+
       <div class='tab-content clearfix' style='display: none;' id='progressmodel'>
         <div class='loading-page'>
           <div class='counter'>
@@ -183,140 +298,93 @@
           </div>
         </div>
       </div>
-
-      <div class='tab-content clearfix' style='display: none;' id='progressruntime'>
-        <div class='loading-page'>
-          <div class='counter'>
-            <div class='loading'>
-              <div></div>
-              <div></div>
-              <div></div>
-              <div></div>
-              <div></div>
-              <div></div>
-              <div></div>
-              <div></div>
-              <div></div>
-            </div>
-            <p id='progressruntimestep' class="prog prog-done">Loading OpenCV.js runtime ...</p>
-          </div>
-        </div>
-      </div>
-
       <div class='tab-content clearfix' style='display: none;' id='resulterror'>
         <div class='c'>
-          <div class='errortitle'></div>
-          <div class='errordescription'></div>
+          <div class='errortitle'>Prediction Failed</div>
+          <div class='errordescription'>Please check error log for more details</div>
         </div>
       </div>
-
+      <div id='inference' class='shoulddisplay' style='display: none;'>
+        <div class='row text-center tc' id='inferencetitle'>
+          <div id='inferenceTime'></div>
+        </div>
+      </div>
       <div class='tab-content clearfix row'>
-        <div class='icdisplay' style='display: none;'>
-          <div id='fullscreen'>
-            <i class='fa expand'>
-              <svg aria-hidden='true' data-prefix='fas' data-icon='expand' class='svg-inline--fa fa-expand fa-w-14'
-                role='img' viewBox='0 0 448 512'>
-                <path fill='currentColor'
-                  d='M0 180V56c0-13.3 10.7-24 24-24h124c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12H64v84c0 6.6-5.4 12-12 12H12c-6.6 0-12-5.4-12-12zM288 44v40c0 6.6 5.4 12 12 12h84v84c0 6.6 5.4 12 12 12h40c6.6 0 12-5.4 12-12V56c0-13.3-10.7-24-24-24H300c-6.6 0-12 5.4-12 12zm148 276h-40c-6.6 0-12 5.4-12 12v84h-84c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12h124c13.3 0 24-10.7 24-24V332c0-6.6-5.4-12-12-12zM160 468v-40c0-6.6-5.4-12-12-12H64v-84c0-6.6-5.4-12-12-12H12c-6.6 0-12 5.4-12 12v124c0 13.3 10.7 24 24 24h124c6.6 0 12-5.4 12-12z'>
-                </path>
-              </svg>
-            </i>
-            <i class='fa compress' style='display:none;'>
-              <svg aria-hidden='true' data-prefix='fas' data-icon='compress' class='svg-inline--fa fa-compress fa-w-14'
-                role='img' viewBox='0 0 448 512'>
-                <path fill='currentColor'
-                  d='M436 192H312c-13.3 0-24-10.7-24-24V44c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v84h84c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12zm-276-24V44c0-6.6-5.4-12-12-12h-40c-6.6 0-12 5.4-12 12v84H12c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12h124c13.3 0 24-10.7 24-24zm0 300V344c0-13.3-10.7-24-24-24H12c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12h84v84c0 6.6 5.4 12 12 12h40c6.6 0 12-5.4 12-12zm192 0v-84h84c6.6 0 12-5.4 12-12v-40c0-6.6-5.4-12-12-12H312c-13.3 0-24 10.7-24 24v124c0 6.6 5.4 12 12 12h40c6.6 0 12-5.4 12-12z'>
-                </path>
-              </svg>
-            </i>
-          </div>
-          <canvas id='canvasvideo'></canvas>
-          <div id='cameraswitcher' class='custom-control custom-switch'>
-              <input type='checkbox' class='custom-control-input' id='cameraswitch'>
-              <label class='custom-control-label' for='cameraswitch'>Front-facing</label>
+        <div class='tab-pane text-center active col-sm' id='imagetab'>
+          <div class='icdisplay' style='display: none;'>
+            <div class='col-lg-12 col-xs-12 text-center'>
+              <div class='row'>
+                <div class='col bt-3 mb-3' style="display: flex;">
+                  <div id='div-photos' style="margin: auto; display: flex;">
+                    <img id='feedElement' hidden crossorigin='anonymous' class='img-fluid' alt='Responsive image'
+                      src='./img/travelspace.jpg'>
+                    <canvas id='inputCanvas'></canvas>
+                  </div>
+                </div>
+                <div class='col bt-3 mb-3' style="display: flex;">
+                  <div id='div-styles' style="margin: auto; display: flex;">
+                    <canvas id='outputCanvas'></canvas>
+                  </div>
+                </div>
+              </div>
+              <div class='row'>
+                <div class='col'>
+                  <div class='box' id='stname'></div>
+                </div>
+              </div>
+              <div class='row mt-1'>
+                <div class='col'>
+                  <div class='box'>
+                    <input type='file' name='f[]' id='input' accept='image/*' class='inputfile inputf' />
+                    <label for='input'><svg width='20' height='17' viewBox='0 0 20 17'>
+                        <path
+                          d='M10 0l-5.2 4.9h3.3v5.1h3.8v-5.1h3.3l-5.2-4.9zm9.3 11.5l-3.2-2.1h-2l3.4 2.6h-3.5c-.1 0-.2.1-.2.1l-.8 2.3h-6l-.8-2.2c-.1-.1-.1-.2-.2-.2h-3.6l3.4-2.6h-2l-3.2 2.1c-.4.3-.7 1-.6 1.5l.6 3.1c.1.5.7.9 1.2.9h16.3c.6 0 1.1-.4 1.3-.9l.6-3.1c.1-.5-.2-1.2-.7-1.5z' />
+                      </svg>
+                      <span>Pick Image</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-        <div id='inference' class='shoulddisplay col-sm' style='display: none;'>
-          <div class='row text-center tc' id='inferencetitle'>
-            <div id='inferenceTime'></div>
-            <div id='fps' style='display: none;'></div>
-          </div>
-          <div class='controls text-left' data-select='blur'>
+        <div class='tab-pane text-center col-sm' id='cameratab'>
+          <div class='icdisplay' style='display: none;'>
+            <div id='fps' style="margin-bottom: 20px;"></div>
+            <!-- <div id='fullscreen'>
+              <i class='fa expand'>
+                <svg aria-hidden='true' data-prefix='fas' data-icon='expand' class='svg-inline--fa fa-expand fa-w-14'
+                  role='img' viewBox='0 0 448 512'>
+                  <path fill='currentColor'
+                    d='M0 180V56c0-13.3 10.7-24 24-24h124c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12H64v84c0 6.6-5.4 12-12 12H12c-6.6 0-12-5.4-12-12zM288 44v40c0 6.6 5.4 12 12 12h84v84c0 6.6 5.4 12 12 12h40c6.6 0 12-5.4 12-12V56c0-13.3-10.7-24-24-24H300c-6.6 0-12 5.4-12 12zm148 276h-40c-6.6 0-12 5.4-12 12v84h-84c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12h124c13.3 0 24-10.7 24-24V332c0-6.6-5.4-12-12-12zM160 468v-40c0-6.6-5.4-12-12-12H64v-84c0-6.6-5.4-12-12-12H12c-6.6 0-12 5.4-12 12v124c0 13.3 10.7 24 24 24h124c6.6 0 12-5.4 12-12z'>
+                  </path>
+                </svg>
+              </i>
+              <i class='fa compress' style='display:none;'>
+                <svg aria-hidden='true' data-prefix='fas' data-icon='compress'
+                  class='svg-inline--fa fa-compress fa-w-14' role='img' viewBox='0 0 448 512'>
+                  <path fill='currentColor'
+                    d='M436 192H312c-13.3 0-24-10.7-24-24V44c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v84h84c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12zm-276-24V44c0-6.6-5.4-12-12-12h-40c-6.6 0-12 5.4-12 12v84H12c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12h124c13.3 0 24-10.7 24-24zm0 300V344c0-13.3-10.7-24-24-24H12c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12h84v84c0 6.6 5.4 12 12 12h40c6.6 0 12-5.4 12-12zm192 0v-84h84c6.6 0 12-5.4 12-12v-40c0-6.6-5.4-12-12-12H312c-13.3 0-24 10.7-24 24v124c0 6.6 5.4 12 12 12h40c6.6 0 12-5.4 12-12z'>
+                  </path>
+                </svg>
+              </i>
+            </div> -->
             <div class='row'>
-              <div class='label'>
-                EFFECT:</span>
+              <div class='col bt-3 mb-3' style="display: flex;">
+                <div id='div-photos' style="margin: auto; display: flex;">
+                  <canvas id='camInCanvas'></canvas>
+                </div>
               </div>
-              <div class='btn-group btn-group-toggle btn-group-sm effects-select' data-toggle='buttons'>
-                <label class='btn btn-secondary'>
-                  <input type='radio' value='label' autocomplete='off' checked> MAP
-                </label>
-                <label class='btn btn-secondary'>
-                  <input type='radio' value='fill' autocomplete='off'> FILL
-                </label>
-                <label class='btn btn-secondary'>
-                  <input type='radio' value='image' autocomplete='off'> IMG
-                </label>
-                <label class='btn btn-secondary'>
-                  <input type='radio' value='blur' autocomplete='off'> BLUR
-                </label>
-              </div>
-            </div>
+              <video id='feedMediaElement' autoplay playsinline style="display: none;"></video>
 
-            <div class='row refine-edge-wrapper'>
-              <div class='label'>
-                REFINE EDGE: <span class='refine-edge-value'></span>
+              <div class='col bt-3 mb-3' style="display: flex;">
+                <div id='div-styles' style="margin: auto; display: flex;">
+                  <canvas id='camOutCanvas'></canvas>
+                </div>
               </div>
-              <div class='slidecontainer'><input type='range' min='0' max='60' value='0' class='slider'
-                  id='refineEdgeSlider'></div>
-            </div>
-
-            <div class='row blur-wrapper'>
-              <div class='label'>
-                BLUR RADIUS: <span class='blur-radius-value'></span>
-              </div>
-              <div class='slidecontainer'><input type='range' min='0' max='50' value='0' class='slider' id='blurSlider'>
-              </div>
-            </div>
-
-            <div class='row color-picker-wrapper justify-content-center'>
-              <div class='label'>
-                BACKGROUND: <span class='bg-value'></span>
-              </div>
-              <div id='color-picker-container'></div>
-            </div>
-
-            <div class='row select-bg-wrapper justify-content-center text-center'>
-              <div class='label'>
-                <label class='btn btn-outline-primary btn-sm'>
-                  Select Background <input type='file' id='chooseBackground' accept='image/*' hidden>
-                </label>
-                <button id='clearBackground' class='btn btn-outline-secondary btn-sm'>
-                  Clear Background
-                </button>
-              </div>
-            </div>
-
-            <div class='row color-map-alpha-wrapper'>
-              <div class='label'>
-                OPACITY: <span class='color-map-alpha-value'></span>
-              </div>
-              <div class='slidecontainer'><input type='range' min='0' max='100' value='0' class='slider'
-                  id='colorMapAlphaSlider'></div>
-            </div>
-
-            <div class='row labels-wrapper' id='labelitem'>
             </div>
           </div>
         </div>
-      </div>
-      <div id='pickimage' class='mt-2 box text-center' style='display: none;'>
-        <input type='file' name='f[]' id='input' accept='image/*' class='inputfile inputf' />
-        <label for='input'><svg width='20' height='17' viewBox='0 0 20 17'>
-            <path
-              d='M10 0l-5.2 4.9h3.3v5.1h3.8v-5.1h3.3l-5.2-4.9zm9.3 11.5l-3.2-2.1h-2l3.4 2.6h-3.5c-.1 0-.2.1-.2.1l-.8 2.3h-6l-.8-2.2c-.1-.1-.1-.2-.2-.2h-3.6l3.4-2.6h-2l-3.2 2.1c-.4.3-.7 1-.6 1.5l.6 3.1c.1.5.7.9 1.2.9h16.3c.6 0 1.1-.4 1.3-.9l.6-3.1c.1-.5-.2-1.2-.7-1.5z' />
-          </svg>
-          <span>Pick Image</span>
-        </label>
       </div>
     </div>
   </section>
@@ -333,8 +401,7 @@
           <div class='webmlbadge mb-4'>
             <div class='webml-title'>W3C Spec</div>
             <div class='webml-status-true'><a href='https://webmachinelearning.github.io/webnn/#usecases'
-                title='W3C Web Neural Network API Use Cases'>Use
-                Cases</a></div>
+                title='W3C Web Neural Network API Use Cases'>Use Cases</a></div>
           </div>
           <p>&copy;2019 <a href='../index.html'>WebNN API</a></p>
         </div>
@@ -343,9 +410,6 @@
   </footer>
 
   <div id='overlay'></div>
-
-  <video id='feedMediaElement' autoplay playsinline></video>
-  <img id='feedElement' crossorigin='anonymous' class='img-fluid' alt='Responsive image' src='./img/woman.jpg'>
 
   <a href='https://github.com/intel/webml-polyfill/' class='github-corner' aria-label='View source on GitHub'>
     <svg width='70' height='70' viewBox='0 0 250 250'
@@ -399,18 +463,14 @@
   <script src='../static/lib/greensock/tweenmax.js'></script>
   <script src='../static/lib/stats.customized.min.js'></script>
   <script src='../static/lib/protobuf.min.js'></script>
-  <script src='../static/lib/iro.min.js'></script>
-
   <script src='../static/js/ui.common.js'></script>
 
   <script src='../../dist/webml-polyfill.js'></script>
-
 
   <script src='../util/base.js'></script>
   <script src='../util/modelZoo.js'></script>
   <script src='../util/BaseRunner.js'></script>
   <script src='../util/WebNNRunner.js'></script>
-  <script src='../util/OpenCVRunner.js'></script>
   <script src='../util/BaseApp.js'></script>
   <script src='../util/BaseExample.js'></script>
   <script src='../util/BaseCameraExample.js'></script>
@@ -423,29 +483,18 @@
   <script src='../util/onnx/onnx.js'></script>
   <script src='../util/onnx/OnnxModelUtils.js'></script>
   <script src='../util/onnx/OnnxModelImporter.js'></script>
-  <script src='../util/openvino/openvino.js'></script>
-  <script src='../util/openvino/OpenVINOModelUtils.js'></script>
-  <script src='../util/openvino/OpenVINOModelImporter.js'></script>
 
-  <script src='src/WebGLUtils.js'></script>
-  <script src='src/Shader.js'></script>
-  <script src='src/GuidedFilter.js'></script>
-  <script src='src/DrawOutputs.js'></script>
-
-
-  <script src='SemanticSegmentationRunner.js'></script>
-  <script src='SemanticSegmentationExample.js'></script>
-  <script src='SemanticSegmentationOpenCVRunner.js'></script>
+  <script src='StyleTransferExample.js'></script>
   <script src='main.js'></script>
-
 
   <script async src="https://www.googletagmanager.com/gtag/js?id=UA-147662084-1"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
+    function gtag() { dataLayer.push(arguments); }
     gtag('js', new Date());
 
     gtag('config', 'UA-147662084-1');
   </script>
 </body>
+
 </html>

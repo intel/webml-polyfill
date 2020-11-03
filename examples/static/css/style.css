@@ -220,7 +220,7 @@ section {
   padding: 85px 0;
 }
 
-#imageclassification section, #posenet section, #semanticsegmentation section, #objectdetection section, #superresolution section, #faciallandmarkdetection section, #emotionanalysis section, #speechcommands section, #speechrecognition section, #facerecognition section {
+#imageclassification section, #posenet section, #semanticsegmentation section, #objectdetection section, #superresolution section, #faciallandmarkdetection section, #emotionanalysis section, #speechcommands section, #speechrecognition section, #facerecognition section, #styletransfer section {
   padding: 0px 0;
 }
 

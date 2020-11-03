@@ -34,6 +34,11 @@ If you are interested, please refer to [WebNN Chromium build repo](https://githu
 * How to build WebNN Chromium on [Windows](https://github.com/intel/webml-polyfill/wiki/How-to-build-chromium-on-Windows), [Linux](https://github.com/intel/webml-polyfill/wiki/How-to-build-chromium-on-Linux), [macOS](https://github.com/intel/webml-polyfill/wiki/How-to-build-chromium-on-macOS), [ChromeOS](https://github.com/intel/webml-polyfill/wiki/How-to-build-chromium-on-ChromeOS) and [Android](https://github.com/intel/webml-polyfill/wiki/How-to-build-chromium-for-Android)
 * [How to run Chromium builds with WebNN API](https://github.com/intel/webml-polyfill/wiki/How-to-Run-Chromium-builds-with-WebNN-API)
 
+### Benchmarks
+
+* [Web AI Workload](https://intel.github.io/webml-polyfill/workload/) Use this tool to collect the performance-related metrics (inference time, etc) of various models and kernels on your local device with Wasm, WebGL, or WebNN backends. The [Web AI Workload](https://intel.github.io/webml-polyfill/workload/) also supports to measure the OpenCV.js DNN performance with Wasm, Wasm Threads and Wasm SIMD.
+* [OpenCV.js Performance Test](https://intel.github.io/webml-polyfill/workload/opencv_threshold) Use this tool to collect the OpenCV.js performance for image processing with Wasm, Wasm Threads and Wasm SIMD.
+
 ## Building & Testing
 
 ### Install

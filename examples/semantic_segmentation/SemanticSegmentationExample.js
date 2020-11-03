@@ -172,11 +172,31 @@ class SemanticSegmentationExample extends BaseCameraExample {
   /** @override */
   _processExtra = (output) => {
     const width = this._currentModelInfo.inputSize[1];
+    const nchwLayout = this._currentModelInfo.preOptions.nchwFlag || false;
     const imWidth = this._currentInputElement.naturalWidth | this._currentInputElement.videoWidth;
     const imHeight = this._currentInputElement.naturalHeight | this._currentInputElement.videoHeight;
     const resizeRatio = Math.max(Math.max(imWidth, imHeight) / width, 1);
     const scaledWidth = Math.floor(imWidth / resizeRatio);
     const scaledHeight = Math.floor(imHeight / resizeRatio);
+    if (nchwLayout && this._currentModelInfo.outputSize.length == 3) {
+      let temp = Array.from(output.tensor);
+      const height = this._currentModelInfo.outputSize[0];
+      const width = this._currentModelInfo.outputSize[1];
+      const channels = this._currentModelInfo.outputSize[2];
+
+      for (let c = 0; c < channels; ++c) {
+        for (let y = 0; y < height; ++y) {
+          for (let x = 0; x < width; ++x) {
+            let dst_index, src_index;
+            dst_index = y * width * channels +
+              x * channels + c;
+            src_index = c * height * width +
+              y * width + x;
+            output.tensor[dst_index] = temp[src_index];
+          }
+        }
+      }
+    }
     const segMap = {
       data: output.tensor,
       outputShape: this._currentModelInfo.outputSize,

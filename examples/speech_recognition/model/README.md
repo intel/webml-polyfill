@@ -4,7 +4,7 @@ Install OpenVINO toolkit following the [Install Guides](https://docs.openvinotoo
 
 ## 2. Download wsj_dnn5b_smbr model
 
-Download the pre-trained model from https://download.01.org/openvinotoolkit/models_contrib/speech/kaldi/wsj_dnn5b_smbr/ or using the [converted model](https://drive.google.com/drive/folders/1oGeppm0zgxivRXbTEhlbalhFUL8Atwaz?usp=sharing).
+Download the pre-trained model from https://download.01.org/openvinotoolkit/models_contrib/speech/kaldi/wsj_dnn5b_smbr/ or using the [converted model](https://drive.google.com/drive/folders/1jZ3exaojtRHLz44Ex0ccUTNN-io_0Jkb?usp=sharing).
 
 ## 3. Convert model
 
