@@ -584,7 +584,7 @@ const modelZoo = {
   }],
 
   semanticSegmentationModels: [{
-    modelName: 'Deeplab 224 (TFLite)',
+    modelName: 'Deeplab_224 (TFLite)',
     framework: ['WebNN'],
     format: 'TFLite',
     modelId: 'deeplab_mobilenet_v2_224_tflite',
@@ -600,7 +600,7 @@ const modelZoo = {
     intro: 'DeepLab is a state-of-art deep learning model for semantic image segmentation, where the goal is to assign semantic labels (e.g., person, dog, cat and so on) to every pixel in the input image.',
     paperUrl: 'https://arxiv.org/abs/1802.02611'
   }, {
-    modelName: 'Deeplab 224 Atrous (TFLite)',
+    modelName: 'Deeplab_224_Atrous (TFLite)',
     framework: ['WebNN'],
     format: 'TFLite',
     modelId: 'deeplab_mobilenet_v2_224_atrous_tflite',
@@ -616,7 +616,7 @@ const modelZoo = {
     intro: 'Equivalent to the model above (without dilated suffix) but only available on platforms that natively support atrous convolution.',
     paperUrl: 'https://arxiv.org/abs/1802.02611'
   }, {
-    modelName: 'Deeplab 257 (TFLite)',
+    modelName: 'Deeplab_257 (TFLite)',
     framework: ['WebNN'],
     format: 'TFLite',
     modelId: 'deeplab_mobilenet_v2_257_tflite',
@@ -632,7 +632,7 @@ const modelZoo = {
     intro: 'DeepLab is a state-of-art deep learning model for semantic image segmentation, where the goal is to assign semantic labels (e.g., person, dog, cat and so on) to every pixel in the input image.',
     paperUrl: 'https://arxiv.org/abs/1802.02611'
   }, {
-    modelName: 'Deeplab 257 Atrous (TFLite)',
+    modelName: 'Deeplab_257_Atrous (TFLite)',
     framework: ['WebNN'],
     format: 'TFLite',
     modelId: 'deeplab_mobilenet_v2_257_atrous_tflite',
@@ -648,7 +648,7 @@ const modelZoo = {
     intro: 'Equivalent to the model above (without dilated suffix) but only available on platforms that natively support atrous convolution.',
     paperUrl: 'https://arxiv.org/abs/1802.02611'
   }, {
-    modelName: 'Deeplab 321 (TFLite)',
+    modelName: 'Deeplab_321 (TFLite)',
     framework: ['WebNN'],
     format: 'TFLite',
     modelId: 'deeplab_mobilenet_v2_321_tflite',
@@ -664,7 +664,7 @@ const modelZoo = {
     intro: 'DeepLab is a state-of-art deep learning model for semantic image segmentation, where the goal is to assign semantic labels (e.g., person, dog, cat and so on) to every pixel in the input image.',
     paperUrl: 'https://arxiv.org/abs/1802.02611'
   }, {
-    modelName: 'Deeplab 321 Atrous (TFLite)',
+    modelName: 'Deeplab_321_Atrous (TFLite)',
     framework: ['WebNN'],
     format: 'TFLite',
     modelId: 'deeplab_mobilenet_v2_321_atrous_tflite',
@@ -680,7 +680,7 @@ const modelZoo = {
     intro: 'Equivalent to the model above (without dilated suffix) but only available on platforms that natively support atrous convolution.',
     paperUrl: 'https://arxiv.org/abs/1802.02611'
   }, {
-    modelName: 'Deeplab 513 (TFLite)',
+    modelName: 'Deeplab_513 (TFLite)',
     framework: ['WebNN'],
     format: 'TFLite',
     modelId: 'deeplab_mobilenet_v2_513_tflite',
@@ -696,7 +696,7 @@ const modelZoo = {
     intro: 'DeepLab is a state-of-art deep learning model for semantic image segmentation, where the goal is to assign semantic labels (e.g., person, dog, cat and so on) to every pixel in the input image.',
     paperUrl: 'https://arxiv.org/abs/1802.02611'
   }, {
-    modelName: 'Deeplab 513 Atrous (TFLite)',
+    modelName: 'Deeplab_513_Atrous (TFLite)',
     framework: ['WebNN'],
     format: 'TFLite',
     modelId: 'deeplab_mobilenet_v2_513_atrous_tflite',
@@ -712,7 +712,7 @@ const modelZoo = {
     intro: 'Equivalent to the model above (without dilated suffix) but only available on platforms that natively support atrous convolution.',
     paperUrl: 'https://arxiv.org/abs/1802.02611'
   }, {
-    modelName: 'Deeplab 224 Atrous (OpenVINO)',
+    modelName: 'Deeplab_224_Atrous (OpenVINO)',
     framework: ['WebNN'],
     format: 'OpenVINO',
     modelId: 'deeplab_mobilenet_v2_224_atrous_openvino',
@@ -729,7 +729,7 @@ const modelZoo = {
     intro: 'Equivalent to the model above (without dilated suffix) but only available on platforms that natively support atrous convolution.',
     paperUrl: 'https://arxiv.org/abs/1802.02611'
   }, {
-    modelName: 'Deeplabv3 224 Quant (OpenVINO)',
+    modelName: 'Deeplab_224_Quant (OpenVINO)',
     framework: ['WebNN'],
     format: 'OpenVINO',
     modelId: 'deeplab_224_quant_openvino',
@@ -748,7 +748,7 @@ const modelZoo = {
     intro: 'Equivalent to the model above (without dilated suffix) but only available on platforms that natively support atrous convolution.',
     paperUrl: 'https://arxiv.org/abs/1802.02611'
   }, {
-    modelName: 'Deeplab 257 Atrous (OpenVINO)',
+    modelName: 'Deeplab_257_Atrous (OpenVINO)',
     framework: ['WebNN'],
     format: 'OpenVINO',
     modelId: 'deeplab_mobilenet_v2_257_atrous_openvino',
@@ -765,7 +765,7 @@ const modelZoo = {
     intro: 'Equivalent to the model above (without dilated suffix) but only available on platforms that natively support atrous convolution.',
     paperUrl: 'https://arxiv.org/abs/1802.02611'
   }, {
-    modelName: 'Deeplabv3 257 Quant (OpenVINO)',
+    modelName: 'Deeplab_257_Quant (OpenVINO)',
     framework: ['WebNN'],
     format: 'OpenVINO',
     modelId: 'deeplab_257_quant_openvino',
@@ -784,7 +784,7 @@ const modelZoo = {
     intro: 'Equivalent to the model above (without dilated suffix) but only available on platforms that natively support atrous convolution.',
     paperUrl: 'https://arxiv.org/abs/1802.02611'
   }, {
-    modelName: 'Deeplab 321 Atrous (OpenVINO)',
+    modelName: 'Deeplab_321_Atrous (OpenVINO)',
     framework: ['WebNN'],
     format: 'OpenVINO',
     modelId: 'deeplab_mobilenet_v2_321_atrous_openvino',
@@ -801,7 +801,7 @@ const modelZoo = {
     intro: 'Equivalent to the model above (without dilated suffix) but only available on platforms that natively support atrous convolution.',
     paperUrl: 'https://arxiv.org/abs/1802.02611'
   }, {
-    modelName: 'Deeplabv3 321 Quant (OpenVINO)',
+    modelName: 'Deeplab_321_Quant (OpenVINO)',
     framework: ['WebNN'],
     format: 'OpenVINO',
     modelId: 'deeplab_321_quant_openvino',
@@ -820,7 +820,7 @@ const modelZoo = {
     intro: 'Equivalent to the model above (without dilated suffix) but only available on platforms that natively support atrous convolution.',
     paperUrl: 'https://arxiv.org/abs/1802.02611'
   }, {
-    modelName: 'Deeplab 513 Atrous (OpenVINO)',
+    modelName: 'Deeplab_513_Atrous (OpenVINO)',
     framework: ['WebNN'],
     format: 'OpenVINO',
     modelId: 'deeplab_mobilenet_v2_513_atrous_openvino',
@@ -837,7 +837,7 @@ const modelZoo = {
     intro: 'Equivalent to the model above (without dilated suffix) but only available on platforms that natively support atrous convolution.',
     paperUrl: 'https://arxiv.org/abs/1802.02611'
   }, {
-    modelName: 'Deeplabv3 513 Quant (OpenVINO)',
+    modelName: 'Deeplab_513_Quant (OpenVINO)',
     framework: ['WebNN'],
     format: 'OpenVINO',
     modelId: 'deeplab_513_quant_openvino',
@@ -856,7 +856,7 @@ const modelZoo = {
     intro: 'Equivalent to the model above (without dilated suffix) but only available on platforms that natively support atrous convolution.',
     paperUrl: 'https://arxiv.org/abs/1802.02611'
   }, {
-    modelName: 'Deeplab 224 (Tensorflow)',
+    modelName: 'Deeplab_224 (Tensorflow)',
     framework: ['OpenCV.js'],
     format: 'Tensorflow',
     modelId: 'opt_deeplabv3_mnv2_224',
@@ -873,7 +873,7 @@ const modelZoo = {
     intro: 'DeepLab is a state-of-art deep learning model for semantic image segmentation, where the goal is to assign semantic labels to every pixel in the input image.',
     paperUrl: 'https://arxiv.org/abs/1606.00915'
   }, {
-    modelName: 'Deeplab 257 (Tensorflow)',
+    modelName: 'Deeplab_257 (Tensorflow)',
     framework: ['OpenCV.js'],
     format: 'Tensorflow',
     modelId: 'opt_deeplabv3_mnv2_257',
@@ -890,7 +890,7 @@ const modelZoo = {
     intro: 'DeepLab is a state-of-art deep learning model for semantic image segmentation, where the goal is to assign semantic labels to every pixel in the input image.',
     paperUrl: 'https://arxiv.org/abs/1606.00915'
   }, {
-    modelName: 'Deeplab 321 (Tensorflow)',
+    modelName: 'Deeplab_321 (Tensorflow)',
     framework: ['OpenCV.js'],
     format: 'Tensorflow',
     modelId: 'opt_deeplabv3_mnv2_321',
@@ -907,7 +907,7 @@ const modelZoo = {
     intro: 'DeepLab is a state-of-art deep learning model for semantic image segmentation, where the goal is to assign semantic labels to every pixel in the input image.',
     paperUrl: 'https://arxiv.org/abs/1606.00915'
   }, {
-    modelName: 'Deeplab 513 (Tensorflow)',
+    modelName: 'Deeplab_513 (Tensorflow)',
     framework: ['OpenCV.js'],
     format: 'Tensorflow',
     modelId: 'opt_deeplabv3_mnv2_513',
