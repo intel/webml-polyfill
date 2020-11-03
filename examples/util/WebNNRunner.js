@@ -231,6 +231,11 @@ class WebNNRunner extends BaseRunner {
       inputSize: this._currentModelInfo.inputSize // for caffe2 model
     };
 
+    if (configs.backend !== 'WebML' &&
+      configs.isQuantized === true && configs.isIE === true) {
+      throw new Error(`This backend hasn't supported OpenVINO quantized models.`);
+    }
+
     switch (this._rawModel._rawFormat) {
       case 'TFLITE':
         model = new TFliteModelImporter(configs);

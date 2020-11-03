@@ -308,6 +308,25 @@ const modelZoo = {
     intro: 'An efficient Convolutional Neural Networks for Mobile Vision Applications.',
     paperUrl: 'https://arxiv.org/pdf/1704.04861.pdf'
   }, {
+    modelName: 'MobileNet v1 Quant (OpenVino)',
+    framework: ['WebNN'],
+    format: 'OpenVINO',
+    modelId: 'mobilenet_v1_quant_openvino',
+    isQuantized: true,
+    isIE: true,
+    modelSize: '4.4MB',
+    modelFile: '../image_classification/model/mobilenet_v1_1.0_224_quant.bin',
+    labelsFile: '../image_classification/model/labels1001.txt',
+    inputSize: [224, 224, 3],
+    outputSize: 1001,
+    preOptions: {
+      mean: [127.5, 127.5, 127.5],
+      std: [127.5, 127.5, 127.5],
+      nchwFlag: true,
+    },
+    intro: 'An efficient Convolutional Neural Networks for Mobile Vision Applications.',
+    paperUrl: 'https://arxiv.org/pdf/1704.04861.pdf'
+  }, {
     modelName: 'MobileNet v2 (OpenVino)',
     framework: ['WebNN'],
     format: 'OpenVINO',
@@ -325,12 +344,49 @@ const modelZoo = {
     intro: 'MobileNetV2 improves the state of the art performance of mobile models.',
     paperUrl: 'https://arxiv.org/abs/1801.04381'
   }, {
+    modelName: 'MobileNet v2 Quant (OpenVino)',
+    framework: ['WebNN'],
+    format: 'OpenVINO',
+    modelId: 'mobilenet_v2_quant_openvino',
+    isQuantized: true,
+    isIE: true,
+    modelSize: '3.7MB',
+    modelFile: '../image_classification/model/mobilenet_v2_1.0_224_quant.bin',
+    labelsFile: '../image_classification/model/labels1001.txt',
+    inputSize: [224, 224, 3],
+    outputSize: 1001,
+    preOptions: {
+      mean: [127.5, 127.5, 127.5],
+      std: [127.5, 127.5, 127.5],
+      nchwFlag: true,
+    },
+    intro: 'MobileNetV2 improves the state of the art performance of mobile models.',
+    paperUrl: 'https://arxiv.org/abs/1801.04381'
+  }, {
     modelName: 'ResNet50 v1 (OpenVino)',
     framework: ['WebNN'],
     format: 'OpenVINO',
     modelId: 'resnet50_v1_openvino',
     modelSize: '102.1MB',
     modelFile: '../image_classification/model/resnet-50.bin',
+    labelsFile: '../image_classification/model/labels1001.txt',
+    inputSize: [224, 224, 3],
+    outputSize: 1001,
+    preOptions: {
+      mean: [123.68,116.78,103.94],
+      nchwFlag: true,
+    },
+    intro: 'A residual learning framework to ease the training of networks that are substantially deeper than those used previously. This result won the 1st place on the ILSVRC 2015 classification task.',
+    paperUrl: 'https://arxiv.org/abs/1512.03385'
+  }, {
+    modelName: 'ResNet50 v1 Quant (OpenVino)',
+    framework: ['WebNN'],
+    format: 'OpenVINO',
+    modelId: 'resnet50_v1_quant_openvino',
+    isQuantized: true,
+    isIE: true,
+    modelSize: '25.8MB',
+    modelFile: '../image_classification/model/resnet-50_quant.bin',
     labelsFile: '../image_classification/model/labels1001.txt',
     inputSize: [224, 224, 3],
     outputSize: 1001,

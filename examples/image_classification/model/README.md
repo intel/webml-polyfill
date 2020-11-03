@@ -17,13 +17,16 @@ Download the following model packages, then uncompress them if necessary and mov
 16. [DenseNet 121(Onnx)](https://s3.amazonaws.com/download.onnx/models/opset_9/densenet121.tar.gz) (Untar it and rename `model.onnx` to `densenet121.onnx`)
 17. [SqueezeNet(OpenVINO)](https://drive.google.com/drive/folders/1hkrHRV7bI66GRMYZ26hhEqq5mxt-TdPt?usp=sharing) (`squeezenet1.1.{bin,xml}` in the shared folder)
 18. [MobileNet v1(OpenVINO)](https://drive.google.com/drive/folders/1hkrHRV7bI66GRMYZ26hhEqq5mxt-TdPt?usp=sharing) (`mobilenet_v1_1.0_224.{bin,xml}` in the shared folder)
-19. [MobileNet v2(OpenVINO)](https://drive.google.com/drive/folders/1hkrHRV7bI66GRMYZ26hhEqq5mxt-TdPt?usp=sharing) (`mobilenet_v2_1.0_224.{bin,xml}` in the shared folder)
-20. [ResNet50 v1(OpenVINO)](https://drive.google.com/drive/folders/1hkrHRV7bI66GRMYZ26hhEqq5mxt-TdPt?usp=sharing) (`resnet-50.{bin,xml}` in the shared folder)
-21. [DenseNet 121(OpenVINO)](https://drive.google.com/drive/folders/1hkrHRV7bI66GRMYZ26hhEqq5mxt-TdPt?usp=sharing) (`densenet-121.{bin,xml}` in the shared folder)
-22. [Inception (GoogLeNet) v2(OpenVINO)](https://drive.google.com/drive/folders/1hkrHRV7bI66GRMYZ26hhEqq5mxt-TdPt?usp=sharing) (`googlenet-v2.{bin,xml}` in the shared folder)
-23. [Inception (GoogLeNet) v4(OpenVINO)](https://drive.google.com/drive/folders/1hkrHRV7bI66GRMYZ26hhEqq5mxt-TdPt?usp=sharing) (`googlenet-v4.{bin,xml}` in the shared folder)
-24. [Squeezenet (Caffe2)](https://github.com/facebookarchive/models/tree/master/squeezenet) or [Squeezenet (Caffe2)](https://drive.google.com/drive/folders/12WRLD3IaobFxVcagD0nyp_nW4-JvGybL) (rename `predict_net.pb` to `squeezenet_predict.pb` and rename `init_net.pb` to `squeezenet_init.pb`)
-25. [Mobilenet v1 (Caffe2)](https://drive.google.com/drive/folders/1z_5l-ztBZsfDaRziP6paUhlZNuKoYdTN) (rename `predict_net.pb` to `mobilenet_v1_quant_predict.pb` and rename `init_net.pb` to `mobilenet_v1_quant_init.pb`)
+19. [MobileNet v1 Quant (OpenVINO)](https://drive.google.com/drive/folders/1hkrHRV7bI66GRMYZ26hhEqq5mxt-TdPt?usp=sharing) (`mobilenet_v1_1.0_224_quant.{bin,xml}` in the shared folder)
+20. [MobileNet v2 (OpenVINO)](https://drive.google.com/drive/folders/1hkrHRV7bI66GRMYZ26hhEqq5mxt-TdPt?usp=sharing) (`mobilenet_v2_1.0_224.{bin,xml}` in the shared folder)
+21. [MobileNet v2 Quant(OpenVINO)](https://drive.google.com/drive/folders/1hkrHRV7bI66GRMYZ26hhEqq5mxt-TdPt?usp=sharing) (`mobilenet_v2_1.0_224_quant.{bin,xml}` in the shared folder)
+22. [ResNet50 v1(OpenVINO)](https://drive.google.com/drive/folders/1hkrHRV7bI66GRMYZ26hhEqq5mxt-TdPt?usp=sharing) (`resnet-50_quant.{bin,xml}` in the shared folder)
+23. [ResNet50 v1 Quant(OpenVINO)](https://drive.google.com/drive/folders/1hkrHRV7bI66GRMYZ26hhEqq5mxt-TdPt?usp=sharing) (`resnet-50_quant.{bin,xml}` in the shared folder)
+24. [DenseNet 121(OpenVINO)](https://drive.google.com/drive/folders/1hkrHRV7bI66GRMYZ26hhEqq5mxt-TdPt?usp=sharing) (`densenet-121.{bin,xml}` in the shared folder)
+25. [Inception (GoogLeNet) v2(OpenVINO)](https://drive.google.com/drive/folders/1hkrHRV7bI66GRMYZ26hhEqq5mxt-TdPt?usp=sharing) (`googlenet-v2.{bin,xml}` in the shared folder)
+26. [Inception (GoogLeNet) v4(OpenVINO)](https://drive.google.com/drive/folders/1hkrHRV7bI66GRMYZ26hhEqq5mxt-TdPt?usp=sharing) (`googlenet-v4.{bin,xml}` in the shared folder)
+27. [Squeezenet (Caffe2)](https://github.com/facebookarchive/models/tree/master/squeezenet) or [Squeezenet (Caffe2)](https://drive.google.com/drive/folders/12WRLD3IaobFxVcagD0nyp_nW4-JvGybL) (rename `predict_net.pb` to `squeezenet_predict.pb` and rename `init_net.pb` to `squeezenet_init.pb`)
+28. [Mobilenet v1 (Caffe2)](https://drive.google.com/drive/folders/1z_5l-ztBZsfDaRziP6paUhlZNuKoYdTN) (rename `predict_net.pb` to `mobilenet_v1_quant_predict.pb` and rename `init_net.pb` to `mobilenet_v1_quant_init.pb`)
 
 The model files are:
 ```
@@ -47,8 +50,11 @@ densenet121.onnx
 
 squeezenet1.1.{bin,xml}
 mobilenet_v1_1.0_224.{bin,xml}
+mobilenet_v1_1.0_224_quant.{bin,xml}
 mobilenet_v2_1.0_224.{bin,xml}
+mobilenet_v2_1.0_224_quant.{bin,xml}
 resnet-50.{bin,xml}
+resnet-50_quant.{bin,xml}
 densenet-121.{bin,xml}
 googlenet-v2.{bin,xml}
 googlenet-v4.{bin,xml}
@@ -69,4 +75,4 @@ ilsvrc2012labels.txt
 For TFLite and ONNX and caffe2 models, please check out [TensorFlow Hosted Models](https://www.tensorflow.org/lite/guide/hosted_models) and [ONNX Model Zoo](https://github.com/onnx/models) and [Caffe2 Model Zoo](https://github.com/facebookarchive/models) for details.
 
 For OpenVINO models, they are converted from either Caffe models or TensorFlow frozen graphs by [Model Optimizer in the OpenVINO toolkit](https://docs.openvinotoolkit.org/latest/_docs_MO_DG_prepare_model_Prepare_Trained_Model.html).
-For those converted from caffe models, such as SqueezeNet, ResNet50 v1, DenseNet 121, Inception v2/v4, you could download using the [model downloader](https://github.com/opencv/open_model_zoo/tree/master/model_downloader) and convert them according to [this doc](https://docs.openvinotoolkit.org/latest/_docs_MO_DG_prepare_model_convert_model_Convert_Model_From_Caffe.html). For those converted from TensorFlow models, such as MobileNet v1/v2, you could download them from [TensorFlow Hosted Models](https://www.tensorflow.org/lite/guide/hosted_models) and convert them according to [this doc](https://docs.openvinotoolkit.org/latest/_docs_MO_DG_prepare_model_convert_model_Convert_Model_From_TensorFlow.html).
+For those converted from caffe models, such as SqueezeNet, DenseNet 121, Inception v2/v4, you could download using the [model downloader](https://github.com/opencv/open_model_zoo/tree/master/model_downloader) and convert them according to [this doc](https://docs.openvinotoolkit.org/latest/_docs_MO_DG_prepare_model_convert_model_Convert_Model_From_Caffe.html). For those converted from TensorFlow models, such as MobileNet v1/v2, ResNet50 v1, you could download them from [TensorFlow Hosted Models](https://www.tensorflow.org/lite/guide/hosted_models) and convert them according to [this doc](https://docs.openvinotoolkit.org/latest/_docs_MO_DG_prepare_model_convert_model_Convert_Model_From_TensorFlow.html).
