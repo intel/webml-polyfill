@@ -286,6 +286,7 @@ const modelZoo = {
     outputSize: 1000,
     preOptions: {
       channelScheme: 'BGR',
+      nchwFlag: true,
     },
     intro: 'A light-weight CNN providing Alexnet level accuracy with 50X fewer parameters.',
     paperUrl: 'https://arxiv.org/abs/1602.07360'
@@ -302,6 +303,7 @@ const modelZoo = {
     preOptions: {
       mean: [127.5, 127.5, 127.5],
       std: [127.5, 127.5, 127.5],
+      nchwFlag: true,
     },
     intro: 'An efficient Convolutional Neural Networks for Mobile Vision Applications.',
     paperUrl: 'https://arxiv.org/pdf/1704.04861.pdf'
@@ -318,6 +320,7 @@ const modelZoo = {
     preOptions: {
       mean: [127.5, 127.5, 127.5],
       std: [127.5, 127.5, 127.5],
+      nchwFlag: true,
     },
     intro: 'MobileNetV2 improves the state of the art performance of mobile models.',
     paperUrl: 'https://arxiv.org/abs/1801.04381'
@@ -328,11 +331,12 @@ const modelZoo = {
     modelId: 'resnet50_v1_openvino',
     modelSize: '102.1MB',
     modelFile: '../image_classification/model/resnet-50.bin',
-    labelsFile: '../image_classification/model/labels1000.txt',
+    labelsFile: '../image_classification/model/labels1001.txt',
     inputSize: [224, 224, 3],
-    outputSize: 1000,
+    outputSize: 1001,
     preOptions: {
-      channelScheme: 'BGR',
+      mean: [123.68,116.78,103.94],
+      nchwFlag: true,
     },
     intro: 'A residual learning framework to ease the training of networks that are substantially deeper than those used previously. This result won the 1st place on the ILSVRC 2015 classification task.',
     paperUrl: 'https://arxiv.org/abs/1512.03385'
@@ -351,6 +355,7 @@ const modelZoo = {
       std: [0.225, 0.224, 0.229],
       norm: true,
       channelScheme: 'BGR',
+      nchwFlag: true,
     },
     postOptions: {
       softmax: true,
@@ -369,6 +374,7 @@ const modelZoo = {
     outputSize: 1000,
     preOptions: {
       channelScheme: 'BGR',
+      nchwFlag: true,
     },
     intro: 'Inception-v2 is trained for the ImageNet Large Visual Recognition Challenge.',
     paperUrl: 'https://arxiv.org/abs/1512.00567'
@@ -379,12 +385,13 @@ const modelZoo = {
     modelId: 'inception_v4_openvino',
     modelSize: '170.6MB',
     modelFile: '../image_classification/model/googlenet-v4.bin',
-    labelsFile: '../image_classification/model/labels1000.txt',
+    labelsFile: '../image_classification/model/labels1001.txt',
     inputSize: [299, 299, 3],
-    outputSize: 1000,
+    outputSize: 1001,
     preOptions: {
       mean: [127.5, 127.5, 127.5],
       std: [127.5, 127.5, 127.5],
+      nchwFlag: true,
     },
     intro: 'Inception architecture that has been shown to achieve very good performance at relatively low computational cost.',
     paperUrl: 'https://arxiv.org/abs/1602.07261'
@@ -715,8 +722,28 @@ const modelZoo = {
     inputSize: [224, 224, 3],
     outputSize: [224, 224, 1],
     preOptions: {
-      mean: [127.5, 127.5, 127.5],
-      std: [127.5, 127.5, 127.5],
+      mean: [0, 0, 0],
+      std: [1, 1, 1],
+      nchwFlag: true,
+    },
+    intro: 'Equivalent to the model above (without dilated suffix) but only available on platforms that natively support atrous convolution.',
+    paperUrl: 'https://arxiv.org/abs/1802.02611'
+  }, {
+    modelName: 'Deeplabv3 224 Quant (OpenVINO)',
+    framework: ['WebNN'],
+    format: 'OpenVINO',
+    modelId: 'deeplab_224_quant_openvino',
+    isQuantized: true,
+    isIE: true,
+    modelSize: '2.3MB',
+    modelFile: '../semantic_segmentation/model/deeplab_mobilenetv2_224_dilated_quant.bin',
+    labelsFile: '../semantic_segmentation/model/labels.txt',
+    inputSize: [224, 224, 3],
+    outputSize: [224, 224, 1],
+    preOptions: {
+      mean: [0, 0, 0],
+      std: [1, 1, 1],
+      nchwFlag: true,
     },
     intro: 'Equivalent to the model above (without dilated suffix) but only available on platforms that natively support atrous convolution.',
     paperUrl: 'https://arxiv.org/abs/1802.02611'
@@ -731,8 +758,28 @@ const modelZoo = {
     inputSize: [257, 257, 3],
     outputSize: [257, 257, 1],
     preOptions: {
-      mean: [127.5, 127.5, 127.5],
-      std: [127.5, 127.5, 127.5],
+      mean: [0, 0, 0],
+      std: [1, 1, 1],
+      nchwFlag: true,
+    },
+    intro: 'Equivalent to the model above (without dilated suffix) but only available on platforms that natively support atrous convolution.',
+    paperUrl: 'https://arxiv.org/abs/1802.02611'
+  }, {
+    modelName: 'Deeplabv3 257 Quant (OpenVINO)',
+    framework: ['WebNN'],
+    format: 'OpenVINO',
+    modelId: 'deeplab_257_quant_openvino',
+    isQuantized: true,
+    isIE: true,
+    modelSize: '2.3MB',
+    modelFile: '../semantic_segmentation/model/deeplab_mobilenetv2_257_dilated_quant.bin',
+    labelsFile: '../semantic_segmentation/model/labels.txt',
+    inputSize: [257, 257, 3],
+    outputSize: [257, 257, 1],
+    preOptions: {
+      mean: [0, 0, 0],
+      std: [1, 1, 1],
+      nchwFlag: true,
     },
     intro: 'Equivalent to the model above (without dilated suffix) but only available on platforms that natively support atrous convolution.',
     paperUrl: 'https://arxiv.org/abs/1802.02611'
@@ -747,8 +794,28 @@ const modelZoo = {
     inputSize: [321, 321, 3],
     outputSize: [321, 321, 1],
     preOptions: {
-      mean: [127.5, 127.5, 127.5],
-      std: [127.5, 127.5, 127.5],
+      mean: [0, 0, 0],
+      std: [1, 1, 1],
+      nchwFlag: true,
+    },
+    intro: 'Equivalent to the model above (without dilated suffix) but only available on platforms that natively support atrous convolution.',
+    paperUrl: 'https://arxiv.org/abs/1802.02611'
+  }, {
+    modelName: 'Deeplabv3 321 Quant (OpenVINO)',
+    framework: ['WebNN'],
+    format: 'OpenVINO',
+    modelId: 'deeplab_321_quant_openvino',
+    isQuantized: true,
+    isIE: true,
+    modelSize: '2.3MB',
+    modelFile: '../semantic_segmentation/model/deeplab_mobilenetv2_321_dilated_quant.bin',
+    labelsFile: '../semantic_segmentation/model/labels.txt',
+    inputSize: [321, 321, 3],
+    outputSize: [321, 321, 1],
+    preOptions: {
+      mean: [0, 0, 0],
+      std: [1, 1, 1],
+      nchwFlag: true,
     },
     intro: 'Equivalent to the model above (without dilated suffix) but only available on platforms that natively support atrous convolution.',
     paperUrl: 'https://arxiv.org/abs/1802.02611'
@@ -763,8 +830,28 @@ const modelZoo = {
     inputSize: [513, 513, 3],
     outputSize: [513, 513, 1],
     preOptions: {
-      mean: [127.5, 127.5, 127.5],
-      std: [127.5, 127.5, 127.5],
+      mean: [0, 0, 0],
+      std: [1, 1, 1],
+      nchwFlag: true,
+    },
+    intro: 'Equivalent to the model above (without dilated suffix) but only available on platforms that natively support atrous convolution.',
+    paperUrl: 'https://arxiv.org/abs/1802.02611'
+  }, {
+    modelName: 'Deeplabv3 513 Quant (OpenVINO)',
+    framework: ['WebNN'],
+    format: 'OpenVINO',
+    modelId: 'deeplab_513_quant_openvino',
+    isQuantized: true,
+    isIE: true,
+    modelSize: '2.3MB',
+    modelFile: '../semantic_segmentation/model/deeplab_mobilenetv2_513_dilated_quant.bin',
+    labelsFile: '../semantic_segmentation/model/labels.txt',
+    inputSize: [513, 513, 3],
+    outputSize: [513, 513, 1],
+    preOptions: {
+      mean: [0, 0, 0],
+      std: [1, 1, 1],
+      nchwFlag: true,
     },
     intro: 'Equivalent to the model above (without dilated suffix) but only available on platforms that natively support atrous convolution.',
     paperUrl: 'https://arxiv.org/abs/1802.02611'
@@ -1013,6 +1100,9 @@ const modelZoo = {
       filterbankChannelCount: 40,
       dctCoefficientCount: 10,
     },
+    preOptions: {
+      nchwFlag: true,
+    },
     intro: 'A small-footprint keyword spotting (KWS) on Microcontroller.',
     paperUrl: 'https://arxiv.org/pdf/1711.07128.pdf'
   }],
@@ -1030,6 +1120,7 @@ const modelZoo = {
       mean: [0, 0, 0, 0],
       std: [1, 1, 1, 1],
       channelScheme: 'BGR',
+      nchwFlag: true,
     },
     postOptions: {
       distanceMetric: 'euclidean',
@@ -1050,6 +1141,7 @@ const modelZoo = {
       mean: [0, 0, 0, 0],
       std: [1, 1, 1, 1],
       channelScheme: 'BGR',
+      nchwFlag: true,
     },
     postOptions: {
       distanceMetric: 'cosine',
@@ -1070,6 +1162,9 @@ const modelZoo = {
     modelFile: '../speech_recognition/model/wsj_dnn5b.bin',
     arkFile: '../speech_recognition/ark/dev93.ark',
     scoreFile: '../speech_recognition/ark/dev93_scores.ark',
+     preOptions: {
+      nchwFlag: true,
+    },
     intro: 'This model was trained by the Kaldi s5 recipe and the Kaldi Nnet (nnet1) framework and using the Wall Street Journal corpus.',
     paperUrl: 'https://docs.openvinotoolkit.org/latest/_inference_engine_samples_speech_sample_README.html'
   }],

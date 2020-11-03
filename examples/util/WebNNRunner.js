@@ -136,8 +136,17 @@ class WebNNRunner extends BaseRunner {
    * @returns {function} This returns Uint8Array or Float32Array function or other typedArray function if inherited.
    */
   _getInputTensorTypedArray = () => {
-    const typedArray = this._currentModelInfo.isQuantized || false ? (this._currentModelInfo.isDNNL || false ? Int8Array : Uint8Array) : Float32Array;
-    return typedArray;
+    if (this._currentModelInfo.isQuantized || false) {
+      if (this._currentModelInfo.isDNNL || false) {
+        return Int8Array;
+      } else if (this._currentModelInfo.isIE || false){
+        return Float32Array;
+      } else {
+        return Uint8Array;
+      }
+    } else {
+      return Float32Array;
+    }
   };
 
   /**
@@ -154,7 +163,7 @@ class WebNNRunner extends BaseRunner {
    */
   _getOutputTensorTypedArray = () => {
     // Override by inherited if needed
-    const typedArray = this._currentModelInfo.isQuantized || false ? (this._currentModelInfo.isDNNL || false ? Float32Array : Uint8Array) : Float32Array;
+    const typedArray = this._currentModelInfo.isQuantized || false ? (this._currentModelInfo.isDNNL || this._currentModelInfo.isIE || false ? Float32Array : Uint8Array) : Float32Array;
     return typedArray;
   };
 
@@ -217,6 +226,7 @@ class WebNNRunner extends BaseRunner {
       softmax: postOptions.softmax || false,
       inputScaleFactor: options.scaleFactor, // for GNA
       isQuantized: this._currentModelInfo.isQuantized || false,
+      isIE: this._currentModelInfo.isIE || false,
       isDNNL: this._currentModelInfo.isDNNL || false,
       inputSize: this._currentModelInfo.inputSize // for caffe2 model
     };
@@ -317,6 +327,7 @@ class WebNNRunner extends BaseRunner {
     const channelScheme = preOptions.channelScheme || 'RGB';
     const imageChannels = options.imageChannels || 4; // RGBA
     const drawOptions = options.drawOptions;
+    const nchwFlag = preOptions.nchwFlag || false;
 
     let canvasElement = document.createElement('canvas');
     canvasElement.width = width;
@@ -349,17 +360,26 @@ class WebNNRunner extends BaseRunner {
           for (let h = 0; h < height; ++h) {
             for (let w = 0; w < width; ++w) {
               let value = pixels[h * width * imageChannels + w * imageChannels + c];
-              tensor[h * width * channels + w * channels + c] = (value - mean[c]) / std[c];
+              if (nchwFlag) {
+                tensor[c * width * height + h * width + w] = (value - mean[c]) / std[c];
+              } else {
+                tensor[h * width * channels + w * channels + c] = (value - mean[c]) / std[c];
+              }
             }
           }
         }
+
       } else if (channels === 1) {
         for (let c = 0; c < channels; ++c) {
           for (let h = 0; h < height; ++h) {
             for (let w = 0; w < width; ++w) {
               let index = h * width * imageChannels + w * imageChannels + c;
               let value = (pixels[index] + pixels[index + 1] + pixels[index + 2]) / 3;
-              tensor[h * width * channels + w * channels + c] = (value - mean[c]) / std[c];
+              if (nchwFlag) {
+                tensor[c * width * height + h * width + w] = (value - mean[c]) / std[c];
+              } else {
+                tensor[h * width * channels + w * channels + c] = (value - mean[c]) / std[c];
+              }
             }
           }
         }
@@ -369,7 +389,11 @@ class WebNNRunner extends BaseRunner {
         for (let h = 0; h < height; ++h) {
           for (let w = 0; w < width; ++w) {
             let value = pixels[h * width * imageChannels + w * imageChannels + (channels - c - 1)];
-            tensor[h * width * channels + w * channels + c] = (value - mean[c]) / std[c];
+            if (nchwFlag) {
+              tensor[c * width * height + h * width + w] = (value - mean[c]) / std[c];
+            } else {
+              tensor[h * width * channels + w * channels + c] = (value - mean[c]) / std[c];
+            }
           }
         }
       }
@@ -597,7 +621,9 @@ class WebNNRunner extends BaseRunner {
         bin: OpenVINOModelImporter,
       }[fileExtension];
       const model = await new importer({
-        isQuantized: this._currentModelInfo.isQuantized,
+        isQuantized: this._currentModelInfo.isQuantized || false,
+        isIE: this._currentModelInfo.isIE || false,
+        isDNN: this._currentModelInfo.isDNN || false,
         rawModel: this._rawModel,
         backend: config.backend,
         prefer: config.prefer || null,
