@@ -1,6 +1,6 @@
 # Prerequisites
 
-Download [KWS_DNN](https://drive.google.com/drive/folders/1B8RaXuUw1eCYOAGHS6ntaEi1ksOjuMKG) and [KWS_CNN](https://drive.google.com/open?id=195qDe5xaz6VmIegg5OPE6Ih7UinWVhnf) then put them here.
+Download [KWS_DNN](https://drive.google.com/drive/folders/1b5MANOiJCSt0N9YVHCtMny_UsaGfQAuE?usp=sharing) and [KWS_CNN](https://drive.google.com/open?id=195qDe5xaz6VmIegg5OPE6Ih7UinWVhnf) then put them here.
 
 The model files are:
 

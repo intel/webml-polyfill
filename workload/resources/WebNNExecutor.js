@@ -64,6 +64,7 @@ class WebNNExecutor extends BaseExecutor {
     this._inferenceTimeList = [];
     try {
       for (let i = 0;  i < iterations; i++) {
+        // Removed progress animation to get correct performance data
         // logger.log(`Iteration: ${i + 1} / ${iterations}`);
         // await new Promise(resolve => requestAnimationFrame(resolve));
         await this._executeSingle();
