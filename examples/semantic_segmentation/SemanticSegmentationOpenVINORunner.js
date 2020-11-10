@@ -13,5 +13,4 @@ class SemanticSegmentationOpenVINORunner extends OpenVINORunner {
         let outputTensor = this._output;
         return outputTensor;
     };
-
 }

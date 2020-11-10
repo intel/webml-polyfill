@@ -22,6 +22,7 @@ class ImageClassificationExample extends BaseCameraExample {
         break;
       case 'OpenVINO.js':
         runner = new ImageClassificationOpenVINORunner();
+        break;
     }
     runner.setProgressHandler(updateLoadingProgressComponent);
     return runner;
@@ -30,17 +31,15 @@ class ImageClassificationExample extends BaseCameraExample {
   /** @override */
   _processExtra = (output) => {
     let labelClasses;
-    console.log(output);
     switch (this._currentFramework) {
       case 'WebNN':
         const deQuantizeParams =  this._runner.getDeQuantizeParams();
         labelClasses = getTopClasses(output.tensor, output.labels, 3, deQuantizeParams);
         break;
       case 'OpenCV.js':
-        labelClasses = getTopClasses(output.tensor, output.labels, 3);
-        break;
       case 'OpenVINO.js':
         labelClasses = getTopClasses(output.tensor, output.labels, 3);
+        break;
     }
     $('#inferenceresult').show();
     labelClasses.forEach((c, i) => {

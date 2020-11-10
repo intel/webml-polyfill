@@ -40,6 +40,7 @@ class SpeechCommandsExample extends BaseMircophoneExample {
         break;
       case 'OpenVINO.js':
         runner = new OpenVINORunner();
+        break;
     }
     runner.setProgressHandler(updateLoadingProgressComponent);
     return runner;

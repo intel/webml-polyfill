@@ -26,6 +26,7 @@ class SpeechRecognitionExample extends BaseMircophoneExample {
         break;
       case 'OpenVINO.js':
         runner = new SpeechRecognitionOpenVINORunner();
+        break;
     }
     runner.setProgressHandler(updateLoadingProgressComponent);
     return runner;
