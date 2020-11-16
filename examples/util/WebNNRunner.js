@@ -259,7 +259,7 @@ class WebNNRunner extends BaseRunner {
     await this._model.createCompiledModel();
 
     this._saveDetails();
-    this._doWarmup();
+    await this._doWarmup();
   };
 
   /**
