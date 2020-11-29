@@ -16,7 +16,7 @@ class BaseExample extends BaseApp {
     this._currentModelInfo = {};
     this._currentFramework; //'OpenCV.js' | 'WebNN' | 'OpenVINO.js'
     this._currentOpenCVJSBackend; // 'WASM' | 'SIMD' | 'Threads' | 'Threads+SIMD'
-    this._currentOpenVINOJSBackend;// 'WASM' | 'WebGL' | 'WebML' | 'WebGPU'
+    this._currentOpenVINOJSBackend = 'CPU';// 'CPU' | 'GPU'
     this._runtimeInitialized = false; // for 'OpenCV.js', always true for other framework
     this._currentTimeoutId = 0;
     this._isStreaming = false; // for inference camera video
@@ -219,6 +219,7 @@ class BaseExample extends BaseApp {
           case 'WebNN':
             $('.backend').show();
             $('.opencvjsbackend').hide();
+            $('.openvinojsbackend').hide();
             this._setRuntimeInitialized(true);
             const prefer = parseSearchParams('prefer');
             this._setPrefer(prefer);
@@ -229,6 +230,7 @@ class BaseExample extends BaseApp {
           case 'OpenCV.js':
             $('.backend').hide();
             $('.opencvjsbackend').show();
+            $('.openvinojsbackend').hide();
             const opencvBackend = parseSearchParams('b');
             if (opencvBackend != this._currentOpenCVJSBackend) {
               showOpenCVRuntimeProgressComponent();
@@ -240,10 +242,11 @@ class BaseExample extends BaseApp {
           case 'OpenVINO.js':
             $('.backend').hide();
             $('.opencvjsbackend').hide();
+            $('.openvinojsbackend').show();
             const openVINObackend = parseSearchParams('b');
-            this._setOpenVINOJSBackend(openVINObackend)
+            this._setOpenVINOJSBackend(openVINObackend);
             this._setRuntimeInitialized(true);
-            locSearch = `?m=${this.openVINObackend}&s=${this._currentInputType}&d=${this._hiddenControlsFlag}&f=${this._currentFramework}`;
+            locSearch = `?m=${this._currentOpenVINOJSBackend}&s=${this._currentInputType}&d=${this._hiddenControlsFlag}&f=${this._currentFramework}`;
             break;
         }
       }
@@ -298,15 +301,19 @@ class BaseExample extends BaseApp {
         }
         updateBackendComponents(this._currentBackend, this._currentPrefer);
         $('.opencvjsbackend').hide();
+        $('.openvinojsbackend').hide();
         break;
       case 'OpenCV.js':
         $('.backend').hide();
         $('.opencvjsbackend').show();
+        $('.openvinojsbackend').hide();
         updateOpenCVJSBackendComponentsStyle(this._currentOpenCVJSBackend);
         break;
       case 'OpenVINO.js':
         $('.backend').hide();
         $('.opencvjsbackend').hide();
+        $('.openvinojsbackend').show();
+        updateOpenVINOJSBackendComponentsStyle(this._currentOpenVINOJSBackend);
         break;
     }
     updateSIMDNotes();
@@ -360,6 +367,7 @@ class BaseExample extends BaseApp {
       updateFrameworkComponentsStyle(framework);
       if (framework === 'OpenCV.js') {
         $('.backend').hide();
+        $('.openvinojsbackend').hide();
         $('.offload').hide();
         $('.opencvjsbackend').show();
         this._setRuntimeInitialized(false);
@@ -389,6 +397,7 @@ class BaseExample extends BaseApp {
         updateTitleComponent(this._currentOpenCVJSBackend, null, this._currentModelId, this._inferenceModels);
       } else if (framework === 'WebNN') {
         $('.opencvjsbackend').hide();
+        $('.openvinojsbackend').hide();
         $('.backend').show();
         $('#progressruntime').hide();
         this._setFramework(framework);
@@ -400,11 +409,9 @@ class BaseExample extends BaseApp {
         this._resetOutput();
         this.main();
       } else if (framework === 'OpenVINO.js') {
-        
-
-
         $('.opencvjsbackend').hide();
-        $('.backend').show();
+        $('.backend').hide();
+        $('.openvinojsbackend').show();
         $('#progressruntime').hide();
         this._setFramework(framework);
         this._setRuntimeInitialized(true);
@@ -412,8 +419,11 @@ class BaseExample extends BaseApp {
         this._showDynamicComponents();
         this._modelClickBinding();
         this._runner = null;
+        if (typeof this._currentOpenVINOJSBackend === 'undefined') {
+          this._setOpenVINOJSBackend('CPU');
+        }
         this._resetOutput();
-        updateTitleComponent(this._currentBackend, null, this._currentModelId, this._inferenceModels);
+        updateTitleComponent(this._currentOpenVINOJSBackend, null, this._currentModelId, this._inferenceModels);
         this.main();
       }
     });
@@ -579,6 +589,17 @@ class BaseExample extends BaseApp {
       this._updateHistoryEntryURL();
     });
 
+    // Click trigger of openvinojsbackend <input> element
+    $('input:radio[name=openvinojsbackend]').click(() => {
+      $('.alert').hide();
+      let selectedBackend = $('input:radio[name="openvinojsbackend"]:checked').attr('value');
+      updateOpenVINOJSBackendComponentsStyle(selectedBackend);
+      this._setOpenVINOJSBackend(selectedBackend);
+      const locSearch = `?b=${this._currentOpenVINOJSBackend}&m=${this._currentModelId}&s=${this._currentInputType}&d=${this._hiddenControlsFlag}&f=${this._currentFramework}`;
+      this._updateHistoryEntryURL();
+      this.main();
+    });
+
     // Click trigger to do inference with <img> element
     $('#img').click(() => {
       $('.alert').hide();
@@ -702,6 +723,8 @@ class BaseExample extends BaseApp {
         const supportedOps = getSupportedOps(this._currentBackend, this._currentPrefer);
         options.supportedOps = supportedOps;
         options.eagerMode = false;
+    } else if (this._currentFramework === 'OpenVINO.js') {
+        options.backend = this._currentOpenVINOJSBackend;
     }
 
     return options;
@@ -877,7 +900,7 @@ class BaseExample extends BaseApp {
     } else if (this._currentFramework === 'OpenCV.js') {
       updateTitleComponent(this._currentOpenCVJSBackend, null, this._currentModelId, this._inferenceModels);
     } else if (this._currentFramework === 'OpenVINO.js') {
-      updateTitleComponent(this._currentBackend, null, this._currentModelId, this._inferenceModels);
+      updateTitleComponent(this._currentOpenVINOJSBackend, null, this._currentModelId, this._inferenceModels);
     }
     console.log(location.search);
 

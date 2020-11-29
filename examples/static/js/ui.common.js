@@ -226,6 +226,18 @@ const updateOpenCVJSBackendComponentsStyle = (selectedBackend) => {
   $('#l-opencvjs' + _selectedBackend).addClass('checked');
 };
 
+const updateOpenVINOJSBackendComponentsStyle = (selectedBackend) => {
+  const _selectedBackend = selectedBackend.toLocaleLowerCase().replace(' ', '');
+  $('.openvinojsbackend input').attr('disabled', false);
+  $('.openvinojsbackend label').removeClass('cursordefault');
+  $('#openvinojsbackend' + _selectedBackend).attr('disabled', true);
+  $('#l-openvinojsbackend' + _selectedBackend).addClass('cursordefault');
+  $('.openvinojsbackend input').removeAttr('checked');
+  $('.openvinojsbackend label').removeClass('checked');
+  $('#openvinojs' + _selectedBackend).attr('checked', 'checked');
+  $('#l-openvinojs' + _selectedBackend).addClass('checked');
+}
+
 const setPreferenceTipComponents = () => {
   if ($('#backendpolyfilltitle')) {
     $('#backendpolyfilltitle').attr('data-html', 'true')
