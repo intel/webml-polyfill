@@ -38,34 +38,6 @@ class OpenVINORunner extends BaseRunner {
     this._setBackend(null);
   };
 
-  // _configureBackend = ()=> {
-  //   if (this._ieCore !== null) {
-  //     const availableDevices = this._ieCore.getAvailableDevices();
-  //     const brows = $('.device');
-  //     brows.empty();
-  //     for (const device of availableDevices) {
-  //       const deviceName = device.replace(/ \(.*\)$/, '');
-  //       const deviceLow = deviceName.toLowerCase();
-  //       if (device === "GNA") {
-  //         continue;
-  //       }
-  //       if (device === "CPU") {
-  //           brows.append($(`<input type='radio' name='openvinojsbackend' class='d-none' id='openvinojs${
-  //               deviceLow}' value='${deviceName}'>`));
-  //           brows.append($(`<label id='l-openvinojs${deviceLow}' for='openvinojs${
-  //               deviceLow}' class='checked'>${deviceName}</label>`));
-  //       } else {
-  //         brows.append($(`<input type='radio' name='openvinojsbackend' class='d-none' id='openvinojs${
-  //           deviceLow}' value='${deviceName}'>`));
-  //         brows.append($(`<label id='l-openvinojs${deviceLow}' for='openvinojs${
-  //             deviceLow}'>${deviceName}</label>`));
-  //       }
-  //     }
-  //   } else {
-  //     throw new Error(`The infernece-engine-node is not worked, please check the Node.js platform is enabled`);
-  //   }
-  // }
-
   _setDeQuantizeParams = (params) => {
     this._deQuantizeParams = params;
   };

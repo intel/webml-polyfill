@@ -888,7 +888,6 @@ class BaseExample extends BaseApp {
    * then shows the post processing of inference result on UI.
    */
   main = async () => {
-    console.log(this._runtimeInitialized);
     if (!this._runtimeInitialized) {
       console.log(`Runtime isn't initialized`);
       return;
@@ -902,7 +901,7 @@ class BaseExample extends BaseApp {
     } else if (this._currentFramework === 'OpenVINO.js') {
       updateTitleComponent(this._currentOpenVINOJSBackend, null, this._currentModelId, this._inferenceModels);
     }
-    console.log(location.search);
+
 
     if (this._currentModelId === 'none') {
       showErrorComponent('No model selected', 'Please select model to start prediction.');

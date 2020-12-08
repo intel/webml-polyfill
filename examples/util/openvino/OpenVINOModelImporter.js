@@ -46,9 +46,6 @@ class OpenVINOModelImporter {
       supportedOps: this._supportedOps,
       isOpenVINOModel: true,
     };
-    console.log(this._backend);
-    console.log(this._bEagerMode);
-    console.log(this._supportedOps);
     this._model = await this._nn.createModel(options);
 
     this._addTensorOperands();

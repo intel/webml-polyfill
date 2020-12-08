@@ -1,7 +1,6 @@
 const example = new ImageClassificationExample({model: imageClassificationModels});
 
 let specialoffer = () => {
-  //http://localhost:8080/examples/image_classification_opencv/?prefer=none&b=WASM&m=resnet50_v1_openvino&s=image&d=0&f=WebNN
   let f = parseSearchParams('f')
   let url = location.href.replace('image_classification/', 'image_classification_opencv/')
   let urlimg = url.replace('s=camera', 's=image')
