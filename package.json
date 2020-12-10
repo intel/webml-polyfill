@@ -36,7 +36,7 @@
     "babel-polyfill": "^6.26.0",
     "babel-preset-env": "^1.6.1",
     "chromedriver": "85.0.0",
-    "fast-csv": ">=4.3.6",
+    "fast-csv": "^4.3.6",
     "file-loader": "^5.0.2",
     "globby": "^8.0.1",
     "http-server": "^0.12.1",
