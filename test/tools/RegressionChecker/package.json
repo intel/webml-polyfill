@@ -13,7 +13,7 @@
   },
   "devDependencies": {
     "chromedriver": "^79.0.0",
-    "fast-csv": "^2.4.1",
+    "fast-csv": "^4.3.6",
     "selenium-webdriver": "^4.0.0-alpha.5",
     "cheerio": "^1.0.0-rc.3"
   }
