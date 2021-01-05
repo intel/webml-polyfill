@@ -695,9 +695,9 @@ class Workload {
       }
       logger.group('Result');
       const results = summarize(inferenceResults.inferenceTimeList);
-      const results_median = summarizeMedian(inferenceResults.inferenceTimeList);
+      const resultsMedian = summarizeMedian(inferenceResults.inferenceTimeList);
       logger.log(`Inference Time (Average): <em style="color:green;font-weight:bolder;">${results.mean.toFixed(2)}+-${results.std.toFixed(2)}</em> [ms]`);
-      logger.log(`Inference Time (Median): <em style="color:green;font-weight:bolder;">${results_median.median.toFixed(2)}</em> [ms]`);
+      logger.log(`Inference Time (Median): <em style="color:green;font-weight:bolder;">${resultsMedian.median.toFixed(2)}</em> [ms]`);
       if (inferenceResults.decodeTime !== 0.0) {
         logger.log(`Decode Time: <em style="color:green;font-weight:bolder;">${inferenceResults.decodeTime.toFixed(2)}</em> [ms]`);
       }
