@@ -563,6 +563,24 @@ class Workload {
       }
     };
 
+    // Use median inference metric
+    const summarizeMedian = (results) => {
+      if (results.length !== 0) {
+        // remove first run, which is regarded as "warming up" execution
+        results.shift();
+        const median = arr => {
+          arr = arr.sort((a, b) => a - b);
+          return arr.length % 2 !== 0 ? arr[Math.floor(arr.length / 2)] : (arr[arr.length / 2 - 1] + arr[arr.length / 2]) / 2;
+        };
+        let med = median(results)
+        return {
+          median: med
+        };
+      } else {
+        return null;
+      }
+    };
+
     const summarizeProf = (results) => {
       const lines = [];
       if (!results) {
@@ -677,7 +695,9 @@ class Workload {
       }
       logger.group('Result');
       const results = summarize(inferenceResults.inferenceTimeList);
-      logger.log(`Inference Time: <em style="color:green;font-weight:bolder;">${results.mean.toFixed(2)}+-${results.std.toFixed(2)}</em> [ms]`);
+      const resultsMedian = summarizeMedian(inferenceResults.inferenceTimeList);
+      logger.log(`Inference Time (Average): <em style="color:green;font-weight:bolder;">${results.mean.toFixed(2)}+-${results.std.toFixed(2)}</em> [ms]`);
+      logger.log(`Inference Time (Median): <em style="color:green;font-weight:bolder;">${resultsMedian.median.toFixed(2)}</em> [ms]`);
       if (inferenceResults.decodeTime !== 0.0) {
         logger.log(`Decode Time: <em style="color:green;font-weight:bolder;">${inferenceResults.decodeTime.toFixed(2)}</em> [ms]`);
       }
