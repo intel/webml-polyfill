@@ -25,10 +25,10 @@
   },
   "homepage": "https://github.com/intel/webml-polyfill#readme",
   "devDependencies": {
-    "@tensorflow/tfjs-backend-wasm": "2.7.0",
-    "@tensorflow/tfjs-backend-webgl": "2.7.0",
+    "@tensorflow/tfjs-backend-wasm": "2.8.5",
+    "@tensorflow/tfjs-backend-webgl": "2.8.5",
     "@tensorflow/tfjs-backend-webgpu": "0.0.1-alpha.4",
-    "@tensorflow/tfjs-core": "2.7.0",
+    "@tensorflow/tfjs-core": "2.8.5",
     "@webgpu/glslang": "0.0.12",
     "@webgpu/types": "0.0.24",
     "babel-core": "^6.26.0",
