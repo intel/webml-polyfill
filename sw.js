@@ -1,4 +1,4 @@
-const CACHE_NAME = 'v47';
+const CACHE_NAME = 'v52';
 let urlsToCache = [];
 
 self.addEventListener('install', function (event) {

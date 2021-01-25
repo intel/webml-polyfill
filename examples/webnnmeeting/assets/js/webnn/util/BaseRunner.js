@@ -54,8 +54,16 @@ class BaseRunner {
     this._rawModel = rawModel;
   };
 
-  _setLoadedFlag = (flag) => {
-    this._bLoaded = flag;
+  _setLoadedFlag = (info) => {
+    if (typeof info === "boolean") {
+      this._bLoaded = info;
+    } else {
+      if (this._currentModelInfo.modelFile === info) {
+        this._bLoaded = true;
+      } else {
+        this._bLoaded = false;
+      }
+    }
   };
 
   _setModel = (model) => {
@@ -162,7 +170,7 @@ class BaseRunner {
   };
 
   loadModel = async (modelInfo) => {
-    if (this._bLoaded && this._currentModelInfo.modelFile === modelInfo.modelFile) {
+    if (this._bLoaded) {
       console.log(`${this._currentModelInfo.modelFile} already loaded.`);
       return;
     }
