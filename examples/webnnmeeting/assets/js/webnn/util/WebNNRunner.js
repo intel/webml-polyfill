@@ -177,7 +177,7 @@ class WebNNRunner extends BaseRunner {
 
   /** @override */
   doInitialization = (modelInfo) => {
-    this._setLoadedFlag(false);
+    this._setLoadedFlag(modelInfo.modelFile);
     this._setInitializedFlag(false);
     this._setBackend(null);
     this._setPrefer(null);
