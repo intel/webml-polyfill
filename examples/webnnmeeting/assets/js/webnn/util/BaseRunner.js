@@ -70,10 +70,18 @@ class BaseRunner {
 
   /**
    * This method is to set '_bLoaded'.
-   * @param {boolean} flag A boolean that for whether model loaded.
+   * @param {(string|boolean)} info A load model file path or a boolean that for whether model loaded.
    */
-  _setLoadedFlag = (flag) => {
-    this._bLoaded = flag;
+  _setLoadedFlag = (info) => {
+    if (typeof info === "boolean") {
+      this._bLoaded = info;
+    } else {
+      if (this._currentModelInfo.modelFile === info) {
+        this._bLoaded = true;
+      } else {
+        this._bLoaded = false;
+      }
+    }
   };
 
   /**
@@ -149,7 +157,7 @@ class BaseRunner {
    *     See modelInfo details from above '_setModelInfo' method.
    */
   loadModel = async (modelInfo, workload) => {
-    if (this._bLoaded && this._currentModelInfo.modelFile === modelInfo.modelFile) {
+    if (this._bLoaded) {
       console.log(`${this._currentModelInfo.modelFile} already loaded.`);
       return;
     }
