@@ -76,11 +76,11 @@ class BaseRunner {
     if (typeof info === "boolean") {
       this._bLoaded = info;
     } else {
-      if (this._currentModelInfo.modelFile === info) {
-        this._bLoaded = true;
-      } else {
+      // if (this._currentModelInfo.modelFile === info) {
+      // this._bLoaded = true;
+      // } else {
         this._bLoaded = false;
-      }
+      // }
     }
   };
 
