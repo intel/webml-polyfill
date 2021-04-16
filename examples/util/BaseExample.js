@@ -811,12 +811,11 @@ class BaseExample extends BaseApp {
   /**
    * This method is for running OpenCV.js framework, execute main method when OpenCV.js runtime was initialized.
    */
-  onOpenCvReady = () => {
-    cv.onRuntimeInitialized = () => {
-      $('#progressruntime').hide();
-      this._setRuntimeInitialized(true);
-      this.main();
-    }
+  onOpenCvReady = async () => {
+    cv = await cv;
+    $('#progressruntime').hide();
+    this._setRuntimeInitialized(true);
+    this.main();
   }
 
   /**
