@@ -1,3 +1,7 @@
+# Deprecated
+
+W3C Launched the Web Machine Learning Working Group in April 2021, the Web Neural Network Polyfill project has been moved to [https://github.com/webmachinelearning/webnn-polyfill](https://github.com/webmachinelearning/webnn-polyfill). You can also get latest updates for the Web Neural Network API and other relevant projects in [github.com/webmachinelearning](https://github.com/webmachinelearning).
+
 # Web Machine Learning
 
 ## Web Neural Network (WebNN) API polyfill and examples
