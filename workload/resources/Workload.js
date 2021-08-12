@@ -531,12 +531,10 @@ class Workload {
   /**
    * This method is for running OpenCV.js framework, execute main method when OpenCV.js runtime was initialized.
    */
-  _onOpenCvReady = () => {
-    cv.onRuntimeInitialized = () => {
-      // $('#progressruntime').hide();
-      this._setRuntimeInitialized(true);
-      this._main();
-    }
+  _onOpenCvReady = async () => {
+    cv = await cv;
+    this._setRuntimeInitialized(true);
+    this._main();
   };
 
   _main = async () => {
