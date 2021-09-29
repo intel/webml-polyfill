@@ -357,10 +357,10 @@ const updateBackendComponents = (backend, prefer) => {
 
   // Required from feedback
   if (prefer === 'sustained' & currentOS === 'Mac OS') {
-    $('#l-sustained').html('SUSTAINED_SPEED');
+    $('#l-sustained').html('WebNN (Sustained)');
     $('#l-sustained').append(`<span class='nbackend'>MPS</span>`);
   } else {
-    $('#l-sustained').html('SUSTAINED_SPEED');
+    $('#l-sustained').html('WebNN (Sustained)');
   }
 };
 
