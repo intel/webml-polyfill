@@ -240,6 +240,7 @@ class Workload {
     $('#webnnprefer').show();
     $("#preferselect option[value='none']").prop("selected", true);
     document.querySelector('#preferselect option[value=none]').disabled = false;
+    $('#steps').hide();
     this._updateOpsSelect();
     this._showImage();
   };
@@ -250,6 +251,7 @@ class Workload {
     $('#webnnprefer').hide();
     $('#supportedopsselect').hide();
     $('#opencvjscatg').show();
+    $('#steps').show();
     this._setRuntimeInitialized(false);
     this._setCategoryComponent(category);
     this._setModelComponent(modelId);
