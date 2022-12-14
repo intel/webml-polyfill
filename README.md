@@ -12,36 +12,35 @@ The [Web Neural Network (WebNN) API](https://webmachinelearning.github.io/webnn/
 
 ## Project Build Status
 
-MacOS | Linux | Windows
--------- | -------- | --------
-[![Build Status](https://api.travis-ci.com/intel/webml-polyfill.svg?branch=master)](https://travis-ci.com/intel/webml-polyfill) | [![CircleCI](https://circleci.com/gh/intel/webml-polyfill/tree/master.svg?style=svg)](https://circleci.com/gh/intel/webml-polyfill/tree/master) | [![Build status](https://ci.appveyor.com/api/projects/status/6xjudmjja1mcyo1m/branch/master?svg=true)](https://ci.appveyor.com/project/ibelem/webml-polyfill-egsl9/branch/master)
+| MacOS                                                                                                                           | Linux                                                                                                                                           | Windows                                                                                                                                                                           |
+| ------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [![Build Status](https://api.travis-ci.com/intel/webml-polyfill.svg?branch=master)](https://travis-ci.com/intel/webml-polyfill) | [![CircleCI](https://circleci.com/gh/intel/webml-polyfill/tree/master.svg?style=svg)](https://circleci.com/gh/intel/webml-polyfill/tree/master) | [![Build status](https://ci.appveyor.com/api/projects/status/6xjudmjja1mcyo1m/branch/master?svg=true)](https://ci.appveyor.com/project/ibelem/webml-polyfill-egsl9/branch/master) |
 
 ## Examples
 
-* [WebNN API Examples](https://intel.github.io/webml-polyfill/examples/)
-* [WebNN Meeting (Intelligent Collaboration)](https://github.com/intel/webml-polyfill/tree/master/examples/webnnmeeting)
+- [WebNN API Examples](https://intel.github.io/webml-polyfill/examples/)
 
 <img src="./examples/static/img/qr.png" width="160" height="160" alt="WebNN API Examples QR Code">
 
 ### Supported Backends
 
-* Polyfill
-  * WASM: TensorFlow.js WebAssembly backend builds on top of the XNNPACK library
-  * WebGL: TensorFlow.js GPU accelerated WebGL backend
-  * WebGPU: WIP
-* WebNN: Web Neural Network (WebNN) API
+- Polyfill
+  - WASM: TensorFlow.js WebAssembly backend builds on top of the XNNPACK library
+  - WebGL: TensorFlow.js GPU accelerated WebGL backend
+  - WebGPU: WIP
+- WebNN: Web Neural Network (WebNN) API
 
 ### Run example with hardware accelerated WebNN backend
 
 If you are interested, please refer to [WebNN Chromium build repo](https://github.com/otcshare/chromium-src) and WIKI:
 
-* How to build WebNN Chromium on [Windows](https://github.com/intel/webml-polyfill/wiki/How-to-build-chromium-on-Windows), [Linux](https://github.com/intel/webml-polyfill/wiki/How-to-build-chromium-on-Linux), [macOS](https://github.com/intel/webml-polyfill/wiki/How-to-build-chromium-on-macOS), [ChromeOS](https://github.com/intel/webml-polyfill/wiki/How-to-build-chromium-on-ChromeOS) and [Android](https://github.com/intel/webml-polyfill/wiki/How-to-build-chromium-for-Android)
-* [How to run Chromium builds with WebNN API](https://github.com/intel/webml-polyfill/wiki/How-to-Run-Chromium-builds-with-WebNN-API)
+- How to build WebNN Chromium on [Windows](https://github.com/intel/webml-polyfill/wiki/How-to-build-chromium-on-Windows), [Linux](https://github.com/intel/webml-polyfill/wiki/How-to-build-chromium-on-Linux), [macOS](https://github.com/intel/webml-polyfill/wiki/How-to-build-chromium-on-macOS), [ChromeOS](https://github.com/intel/webml-polyfill/wiki/How-to-build-chromium-on-ChromeOS) and [Android](https://github.com/intel/webml-polyfill/wiki/How-to-build-chromium-for-Android)
+- [How to run Chromium builds with WebNN API](https://github.com/intel/webml-polyfill/wiki/How-to-Run-Chromium-builds-with-WebNN-API)
 
 ### Benchmarks
 
-* [Web AI Workload](https://intel.github.io/webml-polyfill/workload/) Use this tool to collect the performance-related metrics (inference time, etc) of various models and kernels on your local device with Wasm, WebGL, or WebNN backends. The [Web AI Workload](https://intel.github.io/webml-polyfill/workload/) also supports to measure the OpenCV.js DNN performance with Wasm, Wasm Threads and Wasm SIMD.
-* [OpenCV.js Performance Test](https://intel.github.io/webml-polyfill/workload/opencv_threshold) Use this tool to collect the OpenCV.js performance for image processing with Wasm, Wasm Threads and Wasm SIMD.
+- [Web AI Workload](https://intel.github.io/webml-polyfill/workload/) Use this tool to collect the performance-related metrics (inference time, etc) of various models and kernels on your local device with Wasm, WebGL, or WebNN backends. The [Web AI Workload](https://intel.github.io/webml-polyfill/workload/) also supports to measure the OpenCV.js DNN performance with Wasm, Wasm Threads and Wasm SIMD.
+- [OpenCV.js Performance Test](https://intel.github.io/webml-polyfill/workload/opencv_threshold) Use this tool to collect the OpenCV.js performance for image processing with Wasm, Wasm Threads and Wasm SIMD.
 
 ## Building & Testing
 
