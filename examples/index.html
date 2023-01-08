@@ -496,6 +496,15 @@
     </svg>
   </a>
 
+  <script>
+    try {
+      window.nodeRequire = require;
+      delete window.exports;
+      delete window.module;
+    } catch(e) {
+      console.log("Node module is not supported");
+    }
+  </script>
   <script src='static/lib/jquery/jquery.min.js'></script>
   <script src='static/lib/jquery/jquery-migrate-3.0.1.min.js'></script>
   <script src='static/lib/superfish/superfish.min.js'></script>

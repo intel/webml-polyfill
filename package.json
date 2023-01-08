@@ -51,6 +51,7 @@
     "typescript": "^3.9.5",
     "webpack": "^4.26.0",
     "webpack-cli": "^3.1.2",
-    "webpack-dev-server": "^3.1.10"
+    "webpack-dev-server": "^3.1.10",
+    "inference-engine-node": "^0.1.4"
   }
 }

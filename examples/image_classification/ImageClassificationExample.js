@@ -20,6 +20,9 @@ class ImageClassificationExample extends BaseCameraExample {
       case 'OpenCV.js':
         runner = new ImageClassificationOpenCVRunner();
         break;
+      case 'OpenVINO.js':
+        runner = new ImageClassificationOpenVINORunner();
+        break;
     }
     runner.setProgressHandler(updateLoadingProgressComponent);
     return runner;
@@ -34,6 +37,7 @@ class ImageClassificationExample extends BaseCameraExample {
         labelClasses = getTopClasses(output.tensor, output.labels, 3, deQuantizeParams);
         break;
       case 'OpenCV.js':
+      case 'OpenVINO.js':
         labelClasses = getTopClasses(output.tensor, output.labels, 3);
         break;
     }

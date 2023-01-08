@@ -109,6 +109,15 @@
               </div>
             </td>
           </tr>
+          <tr class="openvinojsbackend", style="display:none;">
+            <th class='text-center'>Backend</th>
+            <td>
+              <input type='radio' name='openvinojsbackend' class='d-none' id='openvinojscpu' value='CPU'>
+              <label id='l-openvinojscpu' for='openvinojscpu' class='checked'>CPU</label>
+              <input type='radio' name='openvinojsbackend' class='d-none' id='openvinojsgpu' value='GPU'>
+              <label id='l-openvinojsgpu' for='openvinojsgpu'>GPU</label>
+            </td>
+          </tr>
         </tbody>
       </table>
     </div>
@@ -402,6 +411,16 @@
       </div>
     </div>
   </div>
+
+  <script>
+      try {
+        window.nodeRequire = require;
+        delete window.exports;
+        delete window.module;
+      } catch(e) {
+        console.log("Node module is not supported");
+      }
+  </script>
   <script src='../static/lib/jquery/jquery.min.js'></script>
   <script src='../static/lib/jquery/jquery-migrate-3.0.1.min.js'></script>
   <script src='../static/lib/superfish/superfish.min.js'></script>
@@ -420,6 +439,7 @@
   <script src='../util/modelZoo.js'></script>
   <script src='../util/BaseRunner.js'></script>
   <script src='../util/WebNNRunner.js'></script>
+  <script src='../util/OpenVINORunner.js'></script>
   <script src='../util/BaseApp.js'></script>
   <script src='../util/BaseExample.js'></script>
   <script src='../util/BaseMircophoneExample.js'></script>

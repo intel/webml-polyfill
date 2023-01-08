@@ -27,6 +27,11 @@ $(document).ready(() => {
   $('#frameworkWebNN').click(function() {
     $('#opencvspecial').hide()
   })
+
+  $('#frameworkOpenVINOjs').click(function() {
+    $('#opencvspecial').hide()
+  })
+
 });
 
 $(window).load(() => {
