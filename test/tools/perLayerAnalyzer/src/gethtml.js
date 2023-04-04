@@ -1,27 +1,45 @@
-const fs = require('fs');
-const path = require('path');
+const fs = require("fs");
+const path = require("path");
 
-let buf = '';
-let caseList = '\n';
+let buf = "";
+let caseList = "\n";
 let htmlValue;
 var RCjson = JSON.parse(fs.readFileSync("./config.json"));
 var modelName = RCjson.modelName;
-let result = 'real';
+let result = "real";
 for (i = 0; i < modelName.length; i++) {
-  let filePath1 = path.join(__dirname, '..', '..', '..', 'realmodel', 'testcase', `${modelName[i]}`, `${modelName[i]}.txt`);
-  if (!fs.existsSync(filePath1)) throw (`Can't get ${filePath1}`);
+  let filePath1 = path.join(
+    __dirname,
+    "..",
+    "..",
+    "..",
+    "realmodel",
+    "testcase",
+    `${modelName[i]}`,
+    `${modelName[i]}.txt`
+  );
+  if (!fs.existsSync(filePath1)) throw `Can't get ${filePath1}`;
   let data_model = fs.readFileSync(filePath1);
   data_model_length = JSON.parse(data_model);
   generateHtml(data_model_length, i);
   result += `_${modelName[i]}`;
-};
-result += '.html';
-let filePath = path.join(__dirname, '..', '..', '..', 'realmodel', 'testcase', `${modelName[0]}`, `${modelName[0]}.txt`);
-let stream = fs.createReadStream(filePath, {flags: 'r', encoding: 'utf-8'});
-stream.on('data', function (d) {
+}
+result += ".html";
+let filePath = path.join(
+  __dirname,
+  "..",
+  "..",
+  "..",
+  "realmodel",
+  "testcase",
+  `${modelName[0]}`,
+  `${modelName[0]}.txt`
+);
+let stream = fs.createReadStream(filePath, { flags: "r", encoding: "utf-8" });
+stream.on("data", function (d) {
   buf += d.toString();
 });
-stream.on('end', () => {
+stream.on("end", () => {
   htmlValue = begin + caseList + end;
   saveHtml(htmlValue, result);
 });
@@ -68,7 +86,7 @@ let begin = `
     </table>
   </div>
   <div id="mocha"></div>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/mocha/4.0.1/mocha.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/chai/4.1.2/chai.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/fetch/2.0.3/fetch.min.js"></script>
@@ -80,8 +98,7 @@ let begin = `
   <script>
     mocha.setup('bdd');
     mocha.setup({timeout:50000});
-  </script>`
-
+  </script>`;
 
 let end = ` <script>
   mocha.globals(['jQuery']);
@@ -138,14 +155,17 @@ let end = ` <script>
   </script>
 </body>
 </html>
-`
+`;
 async function saveHtml(input, output) {
-  let saveFileDirs = path.join(__dirname, '..', '..', '..');
-  let saveStream = fs.createWriteStream(path.join(saveFileDirs, output), {flags: 'w', encoding: 'utf-8'});
-  saveStream.on('error', (err) => {
+  let saveFileDirs = path.join(__dirname, "..", "..", "..");
+  let saveStream = fs.createWriteStream(path.join(saveFileDirs, output), {
+    flags: "w",
+    encoding: "utf-8",
+  });
+  saveStream.on("error", (err) => {
     console.error(err);
   });
-  if (typeof (input) === 'object') {
+  if (typeof input === "object") {
     saveStream.write(JSON.stringify(input));
   } else {
     saveStream.write(input);

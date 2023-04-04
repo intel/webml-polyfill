@@ -1,39 +1,42 @@
 <html>
-  <head>
-    <meta charset="utf-8">
-    <title>WebML Polyfill | Mocha Tests</title>
-    <link href="./static/mocha/3.0.2/mocha.css" rel="stylesheet" />
-  </head>
-  <body>
-    <div id="mocha"></div>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/mocha/4.0.1/mocha.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/chai/4.1.2/chai.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/fetch/2.0.3/fetch.min.js"></script>
-    <script src="../dist/webml-polyfill.js"></script>
-    <script src="./utils.js"></script>
-    <!--For test end2end test cases-->
-    <script src="../examples/util/base.js"></script>
-    <script src="../examples/third_party/protobuf.min.js"></script>
-    <script src="../examples/util/onnx/onnx.js"></script>
-    <script src="../examples/util/onnx/OnnxModelUtils.js"></script>
-    <script src="../examples/util/onnx/OnnxModelImporter.js"></script>
-    <!--For test end2end test cases-->
-    <script>
-      window.onload = setOptions;
-      mocha.setup('bdd');
-    </script>
-    <script src="./unit-test/test-base.js"></script>
-    <script src="./unit-test/test-Model.js"></script>
-    <script src="./unit-test/test-Compilation.js"></script>
-    <script src="./unit-test/test-Execution.js"></script>
-    <script src="./cts/test/cts-all.js"></script>
-    <script src="./cts/test_supplement/cts_supplement-all.js"></script>
-    <script src="./end2end-test/end2end_test-all.js"></script>
-    <script>
-      window.mochaFinish = false;
-      mocha.globals(['jQuery']);
-      mocha.run(function() {window.mochaFinish = true});
-    </script>
-  </body>
+
+<head>
+  <meta charset="utf-8">
+  <title>WebML Polyfill | Mocha Tests</title>
+  <link href="./static/mocha/3.0.2/mocha.css" rel="stylesheet" />
+</head>
+
+<body>
+  <div id="mocha"></div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mocha/4.0.1/mocha.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chai/4.1.2/chai.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/fetch/2.0.3/fetch.min.js"></script>
+  <script src="../dist/webml-polyfill.js"></script>
+  <script src="./utils.js"></script>
+  <!--For test end2end test cases-->
+  <script src="../examples/util/base.js"></script>
+  <script src="../examples/third_party/protobuf.min.js"></script>
+  <script src="../examples/util/onnx/onnx.js"></script>
+  <script src="../examples/util/onnx/OnnxModelUtils.js"></script>
+  <script src="../examples/util/onnx/OnnxModelImporter.js"></script>
+  <!--For test end2end test cases-->
+  <script>
+    window.onload = setOptions;
+    mocha.setup('bdd');
+  </script>
+  <script src="./unit-test/test-base.js"></script>
+  <script src="./unit-test/test-Model.js"></script>
+  <script src="./unit-test/test-Compilation.js"></script>
+  <script src="./unit-test/test-Execution.js"></script>
+  <script src="./cts/test/cts-all.js"></script>
+  <script src="./cts/test_supplement/cts_supplement-all.js"></script>
+  <script src="./end2end-test/end2end_test-all.js"></script>
+  <script>
+    window.mochaFinish = false;
+    mocha.globals(['jQuery']);
+    mocha.run(function () { window.mochaFinish = true });
+  </script>
+</body>
+
 </html>
