@@ -181,7 +181,8 @@
                     </li>
                     <li class="cr boolean">
                       <div><span class="property-name" title="ShowPose">Pose</span>
-                        <div class="c"><input id="sdshowpose" type="checkbox" checked="checked"><label class=""></label></div>
+                        <div class="c"><input id="sdshowpose" type="checkbox" checked="checked"><label class=""></label>
+                        </div>
                       </div>
                     </li>
                     <li class="cr boolean">
@@ -191,7 +192,8 @@
                     </li>
                     <li class="cr boolean">
                       <div><span class="property-name" title="UseAtrousConvOps">AtrousConv</span>
-                        <div class="c"><input id="sduseatrousconvops" type="checkbox" checked="checked"><label class=""></label></div>
+                        <div class="c"><input id="sduseatrousconvops" type="checkbox" checked="checked"><label
+                            class=""></label></div>
                       </div>
                     </li>
                   </ul>
@@ -279,7 +281,7 @@
 
 
       <div id='inference' class='shoulddisplay mt-3' style='display: none;'>
-          <div class='row text-center tc' id='inferencetitle'>
+        <div class='row text-center tc' id='inferencetitle'>
           <div id='inferenceTime'></div>
         </div>
       </div>
@@ -292,7 +294,8 @@
             <div class='col-lg-12 col-xs-12 text-center'>
               <div class='row'>
                 <div class='col bt-3 mb-3'>
-                  <img id='feedElement' hidden crossorigin='anonymous' class='img-fluid' alt='Responsive image' src='./img/download.png'>
+                  <img id='feedElement' hidden crossorigin='anonymous' class='img-fluid' alt='Responsive image'
+                    src='./img/download.png'>
                   <canvas id='canvas'></canvas>
                   <h4>Single Pose Estimation</h4>
                 </div>
@@ -338,7 +341,7 @@
             </div>
             <video id='feedMediaElement' autoplay playsinline hidden></video>
             <div id='showcanvas' class='text-center'>
-              <canvas id='canvasvideo' width=640 height=480 ></canvas>
+              <canvas id='canvasvideo' width=640 height=480></canvas>
             </div>
             <div id='cameraswitcher' class='custom-control custom-switch'>
               <input type='checkbox' class='custom-control-input' id='cameraswitch'>
@@ -413,8 +416,8 @@
     </div>
   </div>
 
-  <script src='../static/lib/jquery/jquery.min.js'></script>
-  <script src='../static/lib/jquery/jquery-migrate-3.0.1.min.js'></script>
+  <script src='../static/lib/jquery/jquery-3.6.4.min.js'></script>
+  <script src='../static/lib/jquery/jquery-migrate-3.4.1.min.js'></script>
   <script src='../static/lib/superfish/superfish.min.js'></script>
   <script src='../static/lib/bootstrap/js/bootstrap.bundle.min.js'></script>
   <script src='../static/lib/easing/easing.js'></script>
@@ -443,10 +446,11 @@
   <script async src="https://www.googletagmanager.com/gtag/js?id=UA-147662084-1"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
+    function gtag() { dataLayer.push(arguments); }
     gtag('js', new Date());
 
     gtag('config', 'UA-147662084-1');
   </script>
 </body>
+
 </html>
